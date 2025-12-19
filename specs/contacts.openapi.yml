@@ -1,0 +1,2511 @@
+openapi: 3.1.0
+info:
+  description: API for Mailtrap.io Contacts functionality
+  version: 2.0-oas3
+  title: Contacts API
+  contact:
+    name: Mailtrap
+    url: 'https://help.mailtrap.io'
+    email: support@mailtrap.io
+  license:
+    name: Creative Commons Attribution-ShareAlike 4.0 International (CC BY-SA 4.0)
+    url: 'https://creativecommons.org/licenses/by-sa/4.0/'
+security:
+  - HeaderAuth: []
+  - BearerAuth: []
+servers:
+  - description: Mailtrap API
+    url: 'https://mailtrap.io'
+tags:
+  - name: contacts-api
+    x-page-title: Contacts API
+    x-page-description: Manage email contacts and lists
+    description: |
+      ## Contacts API
+
+      Build and manage your email contact database with powerful segmentation and field management capabilities.
+
+      {% hint style="info" %}
+      **Key Features**: Contact management, list segmentation, custom fields, bulk import/export, GDPR compliance
+      {% endhint %}
+
+      ### Getting Started
+
+      {% tabs %}
+      {% tab title="Contacts" %}
+      **Contact Management:**
+      - Create and update contacts
+      - Store custom field data
+      - Track subscription status
+      - Manage contact preferences
+      {% endtab %}
+
+      {% tab title="Lists" %}
+      **List Segmentation:**
+      - Create targeted contact lists
+      - Dynamic segmentation rules
+      - List membership management
+      - Bulk operations
+      {% endtab %}
+
+      {% tab title="Import/Export" %}
+      **Data Operations:**
+      - CSV bulk import
+      - Contact export for analysis
+      - Field mapping
+      - Duplicate handling
+      {% endtab %}
+      {% endtabs %}
+
+  - name: Contacts
+    x-parent: contacts-api
+    x-page-title: Contacts
+    x-page-description: Manage individual contacts
+    description: Manage contacts
+
+  - name: Contact Lists
+    x-parent: contacts-api
+    x-page-title: Contact Lists
+    x-page-description: Organize contacts into lists
+    description: Manage contact lists
+
+  - name: Contact Fields
+    x-parent: contacts-api
+    x-page-title: Custom Fields
+    x-page-description: Define custom contact fields
+    description: Manage contact fields
+
+  - name: Contact Imports
+    x-parent: contacts-api
+    x-page-title: Bulk Import
+    x-page-description: Import contacts from CSV
+    description: Manage contact import jobs
+
+  - name: Contact Exports
+    x-parent: contacts-api
+    x-page-title: Export Data
+    x-page-description: Export contact data
+    description: Manage contact exports
+
+  - name: Contact Events
+    x-parent: contacts-api
+    x-page-title: Contact Events
+    x-page-description: Track contact interactions
+    description: Manage contact events
+paths:
+  '/api/accounts/{account_id}/contacts':
+    post:
+      operationId: createContact
+      summary: Create a new Contact
+      description: Create a new contact
+      tags:
+        - Contacts
+      x-codeSamples:
+        - lang: javascript
+          label: Node.js
+          source: |
+            import { MailtrapClient } from "mailtrap";
+
+            const client = new MailtrapClient({
+              token: "YOUR_API_TOKEN"
+            });
+
+            const contact = await client.contacts.create({
+              email: "john.smith@example.com",
+              fields: {
+                first_name: "John",
+                last_name: "Smith",
+                company: "Example Inc"
+              },
+              list_ids: [1, 2, 3]
+            });
+
+            console.log(`Contact created: ${contact.email}`);
+        - lang: php
+          label: PHP
+          source: |
+            use Mailtrap\Config;
+            use Mailtrap\MailtrapGeneralClient;
+
+            $config = new Config('YOUR_API_TOKEN');
+            $client = new MailtrapGeneralClient($config);
+
+            $contact = $client->contacts($accountId)->create([
+                'email' => 'john.smith@example.com',
+                'fields' => [
+                    'first_name' => 'John',
+                    'last_name' => 'Smith',
+                    'company' => 'Example Inc'
+                ],
+                'list_ids' => [1, 2, 3]
+            ]);
+
+            echo "Contact created: {$contact['email']}\n";
+        - lang: python
+          label: Python
+          source: |
+            import mailtrap as mt
+
+            client = mt.MailtrapClient(
+                token="YOUR_API_TOKEN",
+                account_id=ACCOUNT_ID
+            )
+
+            contact = client.contacts_api.contacts.create(
+                mt.CreateContactParams(
+                    email="john.smith@example.com",
+                    fields={
+                        "first_name": "John",
+                        "last_name": "Smith",
+                        "company": "Example Inc"
+                    },
+                    list_ids=[1, 2, 3]
+                )
+            )
+
+            print(f"Contact created: {contact.email}")
+        - lang: ruby
+          label: Ruby
+          source: |
+            require 'mailtrap'
+
+            client = Mailtrap::Client.new(api_key: 'YOUR_API_TOKEN')
+            contacts = Mailtrap::ContactsAPI.new(account_id, client)
+
+            contact = contacts.create(
+              email: 'john.smith@example.com',
+              fields: {
+                'first_name' => 'John',
+                'last_name' => 'Smith',
+                'company' => 'Example Inc'
+              },
+              list_ids: [1, 2, 3]
+            )
+
+            puts "Contact created: #{contact.email}"
+        - lang: csharp
+          label: .NET
+          source: |
+            using Mailtrap;
+
+            var client = new MailtrapClient("YOUR_API_TOKEN");
+
+            var request = new CreateContactRequest("john.smith@example.com");
+            request.Fields.Add("first_name", "John");
+            request.Fields.Add("last_name", "Smith");
+            request.Fields.Add("company", "Example Inc");
+            request.ListIds.AddRange(new[] { 1, 2, 3 });
+
+            var response = await client
+                .Account(accountId)
+                .Contacts()
+                .Create(request);
+
+            Console.WriteLine($"Contact created: {response.Contact.Email}");
+        - lang: java
+          label: Java
+          source: |
+            import io.mailtrap.config.MailtrapConfig;
+            import io.mailtrap.factory.MailtrapClientFactory;
+            import io.mailtrap.model.request.contact.CreateContactRequest;
+
+            var config = new MailtrapConfig.Builder()
+                .token("YOUR_API_TOKEN")
+                .build();
+
+            var client = MailtrapClientFactory
+                .createMailtrapClient(config);
+
+            var fields = new HashMap<String, Object>();
+            fields.put("first_name", "John");
+            fields.put("last_name", "Smith");
+            fields.put("company", "Example Inc");
+
+            var request = new CreateContactRequest(
+                "john.smith@example.com",
+                fields,
+                Arrays.asList(1, 2, 3)
+            );
+
+            var contact = client.contactsApi().contacts()
+                .createContact(accountId, request);
+            System.out.println("Contact created: " + contact.getEmail());
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ContactCreateRequest_2'
+      responses:
+        '201':
+          description: Contact created successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Contact_2'
+              example:
+                data:
+                  id: 018dd5e3-f6d2-7c00-8f9b-e5c3f2d8a132
+                  status: subscribed
+                  email: john.smith@example.com
+                  fields:
+                    first_name: John
+                    last_name: Smith
+                  list_ids:
+                    - 1
+                    - 2
+                    - 3
+                  created_at: 1742820600230
+                  updated_at: 1742820600230
+        '401':
+          $ref: '#/components/responses/UNAUTHENTICATED'
+        '403':
+          $ref: '#/components/responses/PERMISSION_DENIED'
+        '409':
+          description: A Contact with the same email is already being created.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                errors: Contact exists
+        '422':
+          description: Returns validation errors.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnprocessableEntity'
+              example:
+                errors:
+                  email:
+                    - Email is invalid
+        '429':
+          $ref: '#/components/responses/LIMIT_EXCEEDED'
+        '500':
+          $ref: '#/components/responses/INTERNAL_ERROR'
+    parameters:
+      - $ref: '#/components/parameters/account_id'
+  '/api/accounts/{account_id}/contacts/{contact_identifier}':
+    get:
+      description: Get contact using UUID or email (URL encoded)
+      operationId: getContact
+      summary: Get contact
+      tags:
+        - Contacts
+      x-codeSamples:
+        - lang: javascript
+          label: Node.js
+          source: |
+            import { MailtrapClient } from "mailtrap";
+
+            const client = new MailtrapClient({
+              token: "YOUR_API_TOKEN"
+            });
+
+            // Get by contact ID
+            const contact = await client.contacts.get(contactId);
+
+            // Or get by email (URL encoded)
+            const contactByEmail = await client.contacts.get(
+              encodeURIComponent("john.smith@example.com")
+            );
+
+            console.log(`Contact: ${contact.email}`);
+            console.log(`Status: ${contact.status}`);
+        - lang: php
+          label: PHP
+          source: |
+            use Mailtrap\Config;
+            use Mailtrap\MailtrapContactsClient;
+
+            $config = new Config('YOUR_API_TOKEN');
+            $client = new MailtrapContactsClient($config);
+
+            // Get by contact ID
+            $contact = $client->contacts($accountId)->get($contactId);
+
+            // Or get by email (URL encoded)
+            $contactByEmail = $client->contacts($accountId)->get(
+                urlencode('john.smith@example.com')
+            );
+
+            echo "Contact: {$contact['email']}\n";
+            echo "Status: {$contact['status']}\n";
+        - lang: python
+          label: Python
+          source: |
+            import mailtrap as mt
+
+            client = mt.MailtrapClient(
+                token="YOUR_API_TOKEN",
+                account_id=ACCOUNT_ID
+            )
+
+            # Get by contact ID
+            contact = client.contacts_api.contacts.get_by_id(contact_id)
+
+            # Or get by email
+            contact_by_email = client.contacts_api.contacts.get_by_id(
+                "john.smith@example.com"
+            )
+
+            print(f"Contact: {contact.email}")
+            print(f"Status: {contact.status}")
+        - lang: ruby
+          label: Ruby
+          source: |
+            require 'mailtrap'
+
+            client = Mailtrap::Client.new(api_key: 'YOUR_API_TOKEN')
+            contacts = Mailtrap::ContactsAPI.new(account_id, client)
+
+            # Get by contact ID
+            contact = contacts.get(contact_id)
+
+            # Or get by email (URL encoded)
+            contact_by_email = contacts.get(
+              CGI.escape('john.smith@example.com')
+            )
+
+            puts "Contact: #{contact.email}"
+            puts "Status: #{contact.status}"
+        - lang: csharp
+          label: .NET
+          source: |
+            using Mailtrap;
+            using System.Web;
+
+            var client = new MailtrapClient("YOUR_API_TOKEN");
+
+            // Get by contact ID
+            var contact = await client
+                .Account(accountId)
+                .Contact(contactId)
+                .GetDetails();
+
+            // Or get by email (URL encoded)
+            var contactByEmail = await client
+                .Account(accountId)
+                .Contact(HttpUtility.UrlEncode("john.smith@example.com"))
+                .GetDetails();
+
+            Console.WriteLine($"Contact: {contact.Contact.Email}");
+            Console.WriteLine($"Status: {contact.Contact.Status}");
+        - lang: java
+          label: Java
+          source: |
+            import io.mailtrap.config.MailtrapConfig;
+            import io.mailtrap.factory.MailtrapClientFactory;
+            import java.net.URLEncoder;
+
+            var config = new MailtrapConfig.Builder()
+                .token("YOUR_API_TOKEN")
+                .build();
+
+            var client = MailtrapClientFactory
+                .createMailtrapClient(config);
+
+            // Get by contact ID
+            var contact = client.contactsApi().contacts()
+                .getContact(accountId, contactId);
+
+            // Or get by email (URL encoded)
+            var contactByEmail = client.contactsApi().contacts()
+                .getContact(
+                accountId,
+                URLEncoder.encode("john.smith@example.com", "UTF-8")
+            );
+
+            System.out.println("Contact: " + contact.getEmail());
+            System.out.println("Status: " + contact.getStatus());
+      responses:
+        '200':
+          description: OK.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Contact_2'
+              example:
+                $ref: '#/paths/~1api~1accounts~1%7Baccount_id%7D~1contacts/post/responses/201/content/application~1json/example'
+        '401':
+          $ref: '#/components/responses/UNAUTHENTICATED'
+        '403':
+          $ref: '#/components/responses/PERMISSION_DENIED'
+        '404':
+          $ref: '#/components/responses/NOT_FOUND'
+        '429':
+          $ref: '#/components/responses/LIMIT_EXCEEDED'
+        '500':
+          $ref: '#/components/responses/INTERNAL_ERROR'
+    patch:
+      description: Update contact using UUID or email (URL encoded)
+      operationId: updateContact
+      x-codeSamples:
+        - lang: javascript
+          label: Node.js
+          source: |
+            const { MailtrapClient } = require("mailtrap");
+            const client = new MailtrapClient({ token: "YOUR_API_KEY", accountId: "YOUR_ACCOUNT_ID" });
+            const updatedContact = await client.contacts.update("contact_id_or_email", { email: "new@example.com", fields: { first_name: "John" } });
+        - lang: php
+          label: PHP
+          source: |
+            <?php
+            use Mailtrap\Config;
+            use Mailtrap\MailtrapGeneralClient;
+            use Mailtrap\DTO\Request\Contact\UpdateContact;
+            $config = new Config("YOUR_API_KEY");
+            $contacts = (new MailtrapGeneralClient($config))->contacts(12345);
+            $response = $contacts->updateContactById("contact_id", UpdateContact::init("new@example.com", ["first_name" => "John"]));
+        - lang: python
+          label: Python
+          source: |
+            import mailtrap as mt
+            client = mt.MailtrapClient(token="YOUR_API_KEY", account_id="YOUR_ACCOUNT_ID")
+            params = mt.UpdateContactParams(email="new@example.com", fields={"first_name": "John"})
+            updated_contact = client.contacts_api.contacts.update("contact_id_or_email", params)
+        - lang: ruby
+          label: Ruby
+          source: |
+            require 'mailtrap'
+            client = Mailtrap::Client.new(api_key: 'YOUR_API_KEY')
+            contacts = Mailtrap::ContactsAPI.new(12345, client)
+            updated = contacts.upsert("contact_id", email: "new@example.com", fields: { first_name: "John" })
+        - lang: csharp
+          label: C#
+          source: |
+            using Mailtrap;
+            using Mailtrap.Contacts;
+            var mailtrapClient = new MailtrapClient("YOUR_API_KEY");
+            var contactResource = mailtrapClient.Account(12345).Contact("contact_id");
+            var request = new UpdateContactRequest("new@example.com");
+            request.Fields.Add("first_name", "John");
+            var response = await contactResource.Update(request);
+        - lang: java
+          label: Java
+          source: |
+            import io.mailtrap.config.MailtrapConfig;
+            import io.mailtrap.factory.MailtrapClientFactory;
+            import io.mailtrap.model.request.contacts.*;
+            MailtrapConfig config = new MailtrapConfig.Builder().token("YOUR_API_KEY").build();
+            var client = MailtrapClientFactory.createMailtrapClient(config);
+            var request = new UpdateContactRequest(new UpdateContact("new@example.com", Map.of("first_name", "John"), List.of(), List.of(), false));
+            var response = client.contactsApi().contacts().updateContact(12345L, "contact_id_or_email", request);
+      summary: Update contact
+      tags:
+        - Contacts
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ContactUpdateRequest_2'
+      responses:
+        '200':
+          description: OK.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ContactUpdateResponse_2'
+        '401':
+          $ref: '#/components/responses/UNAUTHENTICATED'
+        '403':
+          $ref: '#/components/responses/PERMISSION_DENIED'
+        '409':
+          description: A Contact with the same email is already being created.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                errors: Contact exists
+        '422':
+          description: Returns validation errors.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnprocessableEntity'
+              example:
+                errors:
+                  email:
+                    - - is invalid
+                  base:
+                    - - 'same list_ids 1, 2 and 3 are specified both as included and excluded'
+                  birthdate:
+                    - - is invalid
+                  list_id_included:
+                    - - contains invalid data
+        '429':
+          $ref: '#/components/responses/LIMIT_EXCEEDED'
+        '500':
+          $ref: '#/components/responses/INTERNAL_ERROR'
+    delete:
+      description: Delete contact using UUID or email (URL encoded)
+      operationId: deleteContact
+      x-codeSamples:
+        - lang: javascript
+          label: Node.js
+          source: |
+            const { MailtrapClient } = require("mailtrap");
+            const client = new MailtrapClient({ token: "YOUR_API_KEY", accountId: "YOUR_ACCOUNT_ID" });
+            await client.contacts.delete("contact_id_or_email");
+        - lang: php
+          label: PHP
+          source: |
+            <?php
+            use Mailtrap\Config;
+            use Mailtrap\MailtrapGeneralClient;
+            $config = new Config("YOUR_API_KEY");
+            $contacts = (new MailtrapGeneralClient($config))->contacts(12345);
+            $response = $contacts->deleteContactById("contact_id");
+        - lang: python
+          label: Python
+          source: |
+            import mailtrap as mt
+            client = mt.MailtrapClient(token="YOUR_API_KEY", account_id="YOUR_ACCOUNT_ID")
+            deleted = client.contacts_api.contacts.delete("contact_id_or_email")
+        - lang: ruby
+          label: Ruby
+          source: |
+            require 'mailtrap'
+            client = Mailtrap::Client.new(api_key: 'YOUR_API_KEY')
+            contacts = Mailtrap::ContactsAPI.new(12345, client)
+            contacts.delete("contact_id")
+        - lang: csharp
+          label: C#
+          source: |
+            using Mailtrap;
+            using Mailtrap.Contacts;
+            var mailtrapClient = new MailtrapClient("YOUR_API_KEY");
+            var contactResource = mailtrapClient.Account(12345).Contact("contact_id");
+            await contactResource.Delete();
+        - lang: java
+          label: Java
+          source: |
+            import io.mailtrap.config.MailtrapConfig;
+            import io.mailtrap.factory.MailtrapClientFactory;
+            MailtrapConfig config = new MailtrapConfig.Builder().token("YOUR_API_KEY").build();
+            var client = MailtrapClientFactory.createMailtrapClient(config);
+            client.contactsApi().contacts().deleteContact(12345L, "contact_id_or_email");
+      summary: Delete contact
+      tags:
+        - Contacts
+      responses:
+        '204':
+          description: Contact successfully deleted
+        '401':
+          $ref: '#/components/responses/UNAUTHENTICATED'
+        '403':
+          $ref: '#/components/responses/PERMISSION_DENIED'
+        '404':
+          $ref: '#/components/responses/NOT_FOUND'
+        '429':
+          $ref: '#/components/responses/LIMIT_EXCEEDED'
+        '500':
+          $ref: '#/components/responses/INTERNAL_ERROR'
+    parameters:
+      - $ref: '#/components/parameters/account_id'
+      - $ref: '#/components/parameters/contact_identifier'
+  '/api/accounts/{account_id}/contacts/{contact_identifier}/events':
+    post:
+      operationId: createContactEvent
+      summary: Create contact event
+      description: Submit custom event for contact
+      tags:
+        - Contact Events
+      x-codeSamples:
+        - lang: javascript
+          label: Node.js
+          source: |
+            const { MailtrapClient } = require("mailtrap");
+            const client = new MailtrapClient({ token: "YOUR_API_KEY", accountId: YOUR_ACCOUNT_ID });
+            const event = await client.contacts.createEvent("contact_id", { name: "UserLogin", params: { user_id: 101, is_active: true } });
+            console.log(event);
+        - lang: php
+          label: PHP
+          source: |
+            <?php
+            use Mailtrap\Config;
+            use Mailtrap\MailtrapGeneralClient;
+            $config = new Config("YOUR_API_KEY");
+            $contacts = (new MailtrapGeneralClient($config))->contacts(12345);
+            $response = $contacts->createEvent("contact_id", ["name" => "UserLogin", "params" => ["user_id" => 101, "is_active" => true]]);
+        - lang: python
+          label: Python
+          source: |
+            import mailtrap as mt
+            client = mt.MailtrapClient(token="YOUR_API_KEY", account_id=YOUR_ACCOUNT_ID)
+            event = client.contacts_api.contacts.create_event("contact_id", name="UserLogin", params={"user_id": 101, "is_active": True})
+            print(event)
+        - lang: ruby
+          label: Ruby
+          source: |
+            require 'mailtrap'
+            client = Mailtrap::Client.new(api_key: 'YOUR_API_KEY')
+            contacts = Mailtrap::ContactsAPI.new(12345, client)
+            event = contacts.create_event("contact_id", name: "UserLogin", params: { user_id: 101, is_active: true })
+        - lang: csharp
+          label: C#
+          source: |
+            using Mailtrap;
+            var client = new MailtrapClient("YOUR_API_KEY");
+            var eventParams = new Dictionary<string, object> { { "user_id", 101 }, { "is_active", true } };
+            var response = await client.Account(accountId).Contact("contact_id").CreateEvent("UserLogin", eventParams);
+        - lang: java
+          label: Java
+          source: |
+            import io.mailtrap.config.MailtrapConfig;
+            import io.mailtrap.factory.MailtrapClientFactory;
+            var config = new MailtrapConfig.Builder().token("YOUR_API_KEY").build();
+            var client = MailtrapClientFactory.createMailtrapClient(config);
+            var params = Map.of("user_id", 101, "is_active", true);
+            var response = client.contactsApi().contacts().createEvent(accountId, "contact_id", "UserLogin", params);
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ContactEventCreateRequest'
+      responses:
+        '201':
+          description: OK.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ContactEventCreateResponse'
+        '401':
+          $ref: '#/components/responses/UNAUTHENTICATED'
+        '403':
+          $ref: '#/components/responses/PERMISSION_DENIED'
+        '404':
+          $ref: '#/components/responses/NOT_FOUND'
+        '422':
+          description: Returns validation errors.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnprocessableEntity'
+              example:
+                errors:
+                  name:
+                    - - must be a string
+                      - is too long
+                  params:
+                    - - must be a hash
+                      - key 'foo' is too long
+                      - value for 'bar' is too long
+        '429':
+          $ref: '#/components/responses/LIMIT_EXCEEDED'
+        '500':
+          $ref: '#/components/responses/INTERNAL_ERROR'
+    parameters:
+      - $ref: '#/components/parameters/account_id'
+      - $ref: '#/components/parameters/contact_identifier'
+  '/api/accounts/{account_id}/contacts/exports':
+    post:
+      description: Create a new Contact Export
+      operationId: createContactExport
+      summary: Create Contact Export
+      tags:
+        - Contact Exports
+      x-codeSamples:
+        - lang: javascript
+          label: Node.js
+          source: |
+            const { MailtrapClient } = require("mailtrap");
+            const client = new MailtrapClient({ token: "YOUR_API_KEY", accountId: YOUR_ACCOUNT_ID });
+            const exportJob = await client.contacts.exports.create({ filters: [{ name: "list_id", operator: "equal", value: [1, 2] }] });
+            console.log(`Export started: ${exportJob.id}`);
+        - lang: php
+          label: PHP
+          source: |
+            <?php
+            use Mailtrap\Config;
+            use Mailtrap\MailtrapGeneralClient;
+            $config = new Config("YOUR_API_KEY");
+            $exports = (new MailtrapGeneralClient($config))->contactExports(12345);
+            $response = $exports->create(["filters" => [["name" => "list_id", "operator" => "equal", "value" => [1, 2]]]]);
+        - lang: python
+          label: Python
+          source: |
+            import mailtrap as mt
+            client = mt.MailtrapClient(token="YOUR_API_KEY", account_id=YOUR_ACCOUNT_ID)
+            export_job = client.contacts_api.exports.create(filters=[{"name": "list_id", "operator": "equal", "value": [1, 2]}])
+            print(f"Export started: {export_job.id}")
+        - lang: ruby
+          label: Ruby
+          source: |
+            require 'mailtrap'
+            client = Mailtrap::Client.new(api_key: 'YOUR_API_KEY')
+            exports = Mailtrap::ContactExportsAPI.new(12345, client)
+            export_job = exports.create(filters: [{ name: "list_id", operator: "equal", value: [1, 2] }])
+        - lang: csharp
+          label: C#
+          source: |
+            using Mailtrap;
+            var client = new MailtrapClient("YOUR_API_KEY");
+            var filters = new List<ExportFilter> { new ExportFilter { Name = "list_id", Operator = "equal", Value = new[] { 1, 2 } } };
+            var response = await client.Account(accountId).ContactExports().Create(filters);
+        - lang: java
+          label: Java
+          source: |
+            import io.mailtrap.config.MailtrapConfig;
+            import io.mailtrap.factory.MailtrapClientFactory;
+            var config = new MailtrapConfig.Builder().token("YOUR_API_KEY").build();
+            var client = MailtrapClientFactory.createMailtrapClient(config);
+            var filters = List.of(Map.of("name", "list_id", "operator", "equal", "value", List.of(1, 2)));
+            var response = client.contactsApi().exports().create(accountId, filters);
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ContactExportRequest'
+      responses:
+        '201':
+          description: Contact Export created successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ContactExport'
+              example:
+                id: 1
+                status: started
+                created_at: '2021-01-01T00:00:00Z'
+                updated_at: '2021-01-01T00:00:00Z'
+                url: null
+        '401':
+          $ref: '#/components/responses/UNAUTHENTICATED'
+        '403':
+          $ref: '#/components/responses/PERMISSION_DENIED'
+        '422':
+          description: Returns validation errors.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnprocessableEntity'
+              example:
+                errors:
+                  filters: invalid
+                  base:
+                    - There is a previous export initiated. You will be notified by email once it is completed.
+        '429':
+          $ref: '#/components/responses/LIMIT_EXCEEDED'
+        '500':
+          $ref: '#/components/responses/INTERNAL_ERROR'
+    parameters:
+      - $ref: '#/components/parameters/account_id'
+  '/api/accounts/{account_id}/contacts/exports/{export_id}':
+    get:
+      description: Get Contact Export
+      operationId: getContactExport
+      summary: Get Contact Export
+      tags:
+        - Contact Exports
+      x-codeSamples:
+        - lang: javascript
+          label: Node.js
+          source: |
+            const { MailtrapClient } = require("mailtrap");
+            const client = new MailtrapClient({ token: "YOUR_API_KEY", accountId: YOUR_ACCOUNT_ID });
+            const exportStatus = await client.contacts.exports.get(exportId);
+            console.log(`Status: ${exportStatus.status}, URL: ${exportStatus.url}`);
+        - lang: php
+          label: PHP
+          source: |
+            <?php
+            use Mailtrap\Config;
+            use Mailtrap\MailtrapGeneralClient;
+            $config = new Config("YOUR_API_KEY");
+            $exports = (new MailtrapGeneralClient($config))->contactExports(12345);
+            $response = $exports->get($exportId);
+        - lang: python
+          label: Python
+          source: |
+            import mailtrap as mt
+            client = mt.MailtrapClient(token="YOUR_API_KEY", account_id=YOUR_ACCOUNT_ID)
+            export_status = client.contacts_api.exports.get(export_id)
+            print(f"Status: {export_status.status}, URL: {export_status.url}")
+        - lang: ruby
+          label: Ruby
+          source: |
+            require 'mailtrap'
+            client = Mailtrap::Client.new(api_key: 'YOUR_API_KEY')
+            exports = Mailtrap::ContactExportsAPI.new(12345, client)
+            export_status = exports.get(export_id)
+        - lang: csharp
+          label: C#
+          source: |
+            using Mailtrap;
+            var client = new MailtrapClient("YOUR_API_KEY");
+            var response = await client.Account(accountId).ContactExport(exportId).GetStatus();
+        - lang: java
+          label: Java
+          source: |
+            import io.mailtrap.config.MailtrapConfig;
+            import io.mailtrap.factory.MailtrapClientFactory;
+            var config = new MailtrapConfig.Builder().token("YOUR_API_KEY").build();
+            var client = MailtrapClientFactory.createMailtrapClient(config);
+            var response = client.contactsApi().exports().get(accountId, exportId);
+      responses:
+        '200':
+          description: OK.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ContactExport'
+              examples:
+                Started:
+                  value:
+                    id: 1
+                    status: started
+                    created_at: '2021-01-01T00:00:00Z'
+                    updated_at: '2021-01-01T00:00:00Z'
+                    url: null
+                Finished:
+                  value:
+                    id: 1
+                    status: finished
+                    created_at: '2021-01-01T00:00:00Z'
+                    updated_at: '2021-01-01T00:00:00Z'
+                    url: 'https://example.com/export.csv.gz'
+        '401':
+          $ref: '#/components/responses/UNAUTHENTICATED'
+        '403':
+          $ref: '#/components/responses/PERMISSION_DENIED'
+        '404':
+          $ref: '#/components/responses/NOT_FOUND'
+        '429':
+          $ref: '#/components/responses/LIMIT_EXCEEDED'
+        '500':
+          $ref: '#/components/responses/INTERNAL_ERROR'
+    parameters:
+      - $ref: '#/components/parameters/account_id'
+      - $ref: '#/components/parameters/export_id'
+  '/api/accounts/{account_id}/contacts/imports':
+    post:
+      description: 'Import contacts in bulk with support for custom fields and list management. Existing contacts with matching email addresses will be updated automatically. You can import up to 50,000 contacts per request. The import process runs asynchronously - use the returned import ID to check the status and results.'
+      operationId: importContacts
+      summary: Import contacts
+      tags:
+        - Contact Imports
+      x-codeSamples:
+        - lang: javascript
+          label: Node.js
+          source: |
+            const { MailtrapClient } = require("mailtrap");
+            const client = new MailtrapClient({ token: "YOUR_API_KEY", accountId: YOUR_ACCOUNT_ID });
+            const importJob = await client.contacts.imports.create({
+              contacts: [
+                { email: "user1@example.com", fields: { first_name: "John" }, list_ids_included: [1, 2] },
+                { email: "user2@example.com", fields: { first_name: "Jane" }, list_ids_included: [1] }
+              ]
+            });
+            console.log(`Import started: ${importJob.id}`);
+        - lang: php
+          label: PHP
+          source: |
+            <?php
+            use Mailtrap\Config;
+            use Mailtrap\MailtrapGeneralClient;
+            $config = new Config("YOUR_API_KEY");
+            $imports = (new MailtrapGeneralClient($config))->contactImports(12345);
+            $response = $imports->create(["contacts" => [
+                ["email" => "user1@example.com", "fields" => ["first_name" => "John"], "list_ids_included" => [1, 2]]
+            ]]);
+        - lang: python
+          label: Python
+          source: |
+            import mailtrap as mt
+            client = mt.MailtrapClient(token="YOUR_API_KEY", account_id=YOUR_ACCOUNT_ID)
+            import_job = client.contacts_api.imports.create(contacts=[
+                {"email": "user1@example.com", "fields": {"first_name": "John"}, "list_ids_included": [1, 2]},
+                {"email": "user2@example.com", "fields": {"first_name": "Jane"}, "list_ids_included": [1]}
+            ])
+            print(f"Import started: {import_job.id}")
+        - lang: ruby
+          label: Ruby
+          source: |
+            require 'mailtrap'
+            client = Mailtrap::Client.new(api_key: 'YOUR_API_KEY')
+            imports = Mailtrap::ContactImportsAPI.new(12345, client)
+            import_job = imports.create(contacts: [
+              { email: "user1@example.com", fields: { first_name: "John" }, list_ids_included: [1, 2] }
+            ])
+        - lang: csharp
+          label: C#
+          source: |
+            using Mailtrap;
+            var client = new MailtrapClient("YOUR_API_KEY");
+            var contacts = new[] { new ImportContact { Email = "user1@example.com", Fields = new { first_name = "John" } } };
+            var response = await client.Account(accountId).ContactImports().Create(contacts);
+        - lang: java
+          label: Java
+          source: |
+            import io.mailtrap.config.MailtrapConfig;
+            import io.mailtrap.factory.MailtrapClientFactory;
+            var config = new MailtrapConfig.Builder().token("YOUR_API_KEY").build();
+            var client = MailtrapClientFactory.createMailtrapClient(config);
+            var contacts = List.of(Map.of("email", "user1@example.com", "fields", Map.of("first_name", "John")));
+            var response = client.contactsApi().imports().create(accountId, contacts);
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ContactImportRequest'
+      responses:
+        '201':
+          description: Contact Import created successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ContactImport'
+              example:
+                id: 1
+                status: started
+        '401':
+          $ref: '#/components/responses/UNAUTHENTICATED'
+        '403':
+          $ref: '#/components/responses/PERMISSION_DENIED'
+        '422':
+          description: Returns validation errors.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ContactImportErrors'
+              example:
+                errors:
+                  - email: test@example.com
+                    errors:
+                      base:
+                        - contacts limit reached
+                        - cannot import more than 50000 contacts at once
+                      email:
+                        - is invalid
+                        - top level domain is too short
+                      fields:
+                        - 'contains invalid values: invalid_field'
+                      field_merge_tag:
+                        - is invalid
+        '500':
+          $ref: '#/components/responses/INTERNAL_ERROR'
+    parameters:
+      - $ref: '#/components/parameters/account_id'
+  '/api/accounts/{account_id}/contacts/imports/{import_id}':
+    get:
+      description: Get Contact Import
+      operationId: getContactImport
+      summary: Get Contact Import
+      tags:
+        - Contact Imports
+      x-codeSamples:
+        - lang: javascript
+          label: Node.js
+          source: |
+            const { MailtrapClient } = require("mailtrap");
+            const client = new MailtrapClient({ token: "YOUR_API_KEY", accountId: YOUR_ACCOUNT_ID });
+            const importStatus = await client.contacts.imports.get(importId);
+            console.log(`Status: ${importStatus.status}, Created: ${importStatus.created_contacts_count}`);
+        - lang: php
+          label: PHP
+          source: |
+            <?php
+            use Mailtrap\Config;
+            use Mailtrap\MailtrapGeneralClient;
+            $config = new Config("YOUR_API_KEY");
+            $imports = (new MailtrapGeneralClient($config))->contactImports(12345);
+            $response = $imports->get($importId);
+        - lang: python
+          label: Python
+          source: |
+            import mailtrap as mt
+            client = mt.MailtrapClient(token="YOUR_API_KEY", account_id=YOUR_ACCOUNT_ID)
+            import_status = client.contacts_api.imports.get(import_id)
+            print(f"Status: {import_status.status}")
+        - lang: ruby
+          label: Ruby
+          source: |
+            require 'mailtrap'
+            client = Mailtrap::Client.new(api_key: 'YOUR_API_KEY')
+            imports = Mailtrap::ContactImportsAPI.new(12345, client)
+            import_status = imports.get(import_id)
+        - lang: csharp
+          label: C#
+          source: |
+            using Mailtrap;
+            var client = new MailtrapClient("YOUR_API_KEY");
+            var response = await client.Account(accountId).ContactImport(importId).GetStatus();
+        - lang: java
+          label: Java
+          source: |
+            import io.mailtrap.config.MailtrapConfig;
+            import io.mailtrap.factory.MailtrapClientFactory;
+            var config = new MailtrapConfig.Builder().token("YOUR_API_KEY").build();
+            var client = MailtrapClientFactory.createMailtrapClient(config);
+            var response = client.contactsApi().imports().get(accountId, importId);
+      responses:
+        '200':
+          description: OK.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ContactImport'
+              examples:
+                Started:
+                  value:
+                    id: 1
+                    status: started
+                Finished:
+                  value:
+                    id: 1
+                    status: finished
+                    created_contacts_count: 1
+                    updated_contacts_count: 3
+                    contacts_over_limit_count: 3
+        '401':
+          $ref: '#/components/responses/UNAUTHENTICATED'
+        '403':
+          $ref: '#/components/responses/PERMISSION_DENIED'
+        '404':
+          $ref: '#/components/responses/NOT_FOUND'
+        '500':
+          $ref: '#/components/responses/INTERNAL_ERROR'
+    parameters:
+      - $ref: '#/components/parameters/account_id'
+      - $ref: '#/components/parameters/import_id'
+  '/api/accounts/{account_id}/contacts/lists':
+    get:
+      description: Get all contact lists existing in your account
+      operationId: contactLists
+      summary: Get all Contact Lists
+      tags:
+        - Contact Lists
+      x-codeSamples:
+        - lang: javascript
+          label: Node.js
+          source: |
+            const { MailtrapClient } = require("mailtrap");
+            const client = new MailtrapClient({ token: "YOUR_API_KEY", accountId: YOUR_ACCOUNT_ID });
+            const lists = await client.contacts.lists.getAll();
+            lists.forEach(list => console.log(`${list.id}: ${list.name}`));
+        - lang: php
+          label: PHP
+          source: |
+            <?php
+            use Mailtrap\Config;
+            use Mailtrap\MailtrapGeneralClient;
+            $config = new Config("YOUR_API_KEY");
+            $lists = (new MailtrapGeneralClient($config))->contactLists(12345);
+            $response = $lists->getAll();
+        - lang: python
+          label: Python
+          source: |
+            import mailtrap as mt
+            client = mt.MailtrapClient(token="YOUR_API_KEY", account_id=YOUR_ACCOUNT_ID)
+            lists = client.contacts_api.lists.get_all()
+            for lst in lists:
+                print(f"{lst.id}: {lst.name}")
+        - lang: ruby
+          label: Ruby
+          source: |
+            require 'mailtrap'
+            client = Mailtrap::Client.new(api_key: 'YOUR_API_KEY')
+            lists = Mailtrap::ContactListsAPI.new(12345, client)
+            all_lists = lists.get_all
+        - lang: csharp
+          label: C#
+          source: |
+            using Mailtrap;
+            var client = new MailtrapClient("YOUR_API_KEY");
+            var lists = await client.Account(accountId).ContactLists().GetAll();
+        - lang: java
+          label: Java
+          source: |
+            import io.mailtrap.config.MailtrapConfig;
+            import io.mailtrap.factory.MailtrapClientFactory;
+            var config = new MailtrapConfig.Builder().token("YOUR_API_KEY").build();
+            var client = MailtrapClientFactory.createMailtrapClient(config);
+            var response = client.contactsApi().lists().getAll(accountId);
+      responses:
+        '200':
+          description: OK.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ContactList_2'
+              example:
+                - id: 26730
+                  name: Customers
+                - id: 26731
+                  name: Old Contacts
+        '401':
+          $ref: '#/components/responses/UNAUTHENTICATED'
+        '403':
+          $ref: '#/components/responses/PERMISSION_DENIED'
+        '429':
+          $ref: '#/components/responses/LIMIT_EXCEEDED'
+        '500':
+          $ref: '#/components/responses/INTERNAL_ERROR'
+    post:
+      description: Create new Contact Lists
+      operationId: createContactList
+      summary: Create Contact List
+      tags:
+        - Contact Lists
+      x-codeSamples:
+        - lang: javascript
+          label: Node.js
+          source: |
+            const { MailtrapClient } = require("mailtrap");
+            const client = new MailtrapClient({ token: "YOUR_API_KEY", accountId: YOUR_ACCOUNT_ID });
+            const list = await client.contacts.lists.create({ name: "Customers" });
+            console.log(`Created list: ${list.id}`);
+        - lang: php
+          label: PHP
+          source: |
+            <?php
+            use Mailtrap\Config;
+            use Mailtrap\MailtrapGeneralClient;
+            $config = new Config("YOUR_API_KEY");
+            $lists = (new MailtrapGeneralClient($config))->contactLists(12345);
+            $response = $lists->create(["name" => "Customers"]);
+        - lang: python
+          label: Python
+          source: |
+            import mailtrap as mt
+            client = mt.MailtrapClient(token="YOUR_API_KEY", account_id=YOUR_ACCOUNT_ID)
+            list = client.contacts_api.lists.create(name="Customers")
+            print(f"Created list: {list.id}")
+        - lang: ruby
+          label: Ruby
+          source: |
+            require 'mailtrap'
+            client = Mailtrap::Client.new(api_key: 'YOUR_API_KEY')
+            lists = Mailtrap::ContactListsAPI.new(12345, client)
+            new_list = lists.create(name: "Customers")
+        - lang: csharp
+          label: C#
+          source: |
+            using Mailtrap;
+            var client = new MailtrapClient("YOUR_API_KEY");
+            var list = await client.Account(accountId).ContactLists().Create("Customers");
+        - lang: java
+          label: Java
+          source: |
+            import io.mailtrap.config.MailtrapConfig;
+            import io.mailtrap.factory.MailtrapClientFactory;
+            var config = new MailtrapConfig.Builder().token("YOUR_API_KEY").build();
+            var client = MailtrapClientFactory.createMailtrapClient(config);
+            var response = client.contactsApi().lists().create(accountId, "Customers");
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+            example:
+              name: Customers
+      responses:
+        '200':
+          description: Contact List Created.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ContactList_2'
+              example:
+                id: 26730
+                name: Customers
+        '401':
+          $ref: '#/components/responses/UNAUTHENTICATED'
+        '403':
+          $ref: '#/components/responses/PERMISSION_DENIED'
+        '429':
+          $ref: '#/components/responses/LIMIT_EXCEEDED'
+        '500':
+          $ref: '#/components/responses/INTERNAL_ERROR'
+    parameters:
+      - $ref: '#/components/parameters/account_id'
+  '/api/accounts/{account_id}/contacts/lists/{list_id}':
+    get:
+      description: Get a contact list by ID
+      operationId: getContactList
+      summary: Get Contact List
+      tags:
+        - Contact Lists
+      x-codeSamples:
+        - lang: javascript
+          label: Node.js
+          source: |
+            const { MailtrapClient } = require("mailtrap");
+            const client = new MailtrapClient({ token: "YOUR_API_KEY", accountId: YOUR_ACCOUNT_ID });
+            const list = await client.contacts.lists.get(listId);
+            console.log(`List: ${list.name}`);
+        - lang: php
+          label: PHP
+          source: |
+            <?php
+            use Mailtrap\Config;
+            use Mailtrap\MailtrapGeneralClient;
+            $config = new Config("YOUR_API_KEY");
+            $lists = (new MailtrapGeneralClient($config))->contactLists(12345);
+            $response = $lists->get($listId);
+        - lang: python
+          label: Python
+          source: |
+            import mailtrap as mt
+            client = mt.MailtrapClient(token="YOUR_API_KEY", account_id=YOUR_ACCOUNT_ID)
+            list = client.contacts_api.lists.get(list_id)
+            print(f"List: {list.name}")
+        - lang: ruby
+          label: Ruby
+          source: |
+            require 'mailtrap'
+            client = Mailtrap::Client.new(api_key: 'YOUR_API_KEY')
+            lists = Mailtrap::ContactListsAPI.new(12345, client)
+            list = lists.get(list_id)
+        - lang: csharp
+          label: C#
+          source: |
+            using Mailtrap;
+            var client = new MailtrapClient("YOUR_API_KEY");
+            var list = await client.Account(accountId).ContactList(listId).GetDetails();
+        - lang: java
+          label: Java
+          source: |
+            import io.mailtrap.config.MailtrapConfig;
+            import io.mailtrap.factory.MailtrapClientFactory;
+            var config = new MailtrapConfig.Builder().token("YOUR_API_KEY").build();
+            var client = MailtrapClientFactory.createMailtrapClient(config);
+            var response = client.contactsApi().lists().get(accountId, listId);
+      responses:
+        '200':
+          description: Returns attributes of the contact list.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ContactList_2'
+        '401':
+          $ref: '#/components/responses/UNAUTHENTICATED'
+        '403':
+          $ref: '#/components/responses/PERMISSION_DENIED'
+        '404':
+          $ref: '#/components/responses/NOT_FOUND'
+        '429':
+          $ref: '#/components/responses/LIMIT_EXCEEDED'
+        '500':
+          $ref: '#/components/responses/INTERNAL_ERROR'
+    patch:
+      description: Update existing Contact List
+      operationId: updateContactList
+      summary: Update Contact List
+      tags:
+        - Contact Lists
+      x-codeSamples:
+        - lang: javascript
+          label: Node.js
+          source: |
+            const { MailtrapClient } = require("mailtrap");
+            const client = new MailtrapClient({ token: "YOUR_API_KEY", accountId: YOUR_ACCOUNT_ID });
+            const list = await client.contacts.lists.update(listId, { name: "Former Customers" });
+        - lang: php
+          label: PHP
+          source: |
+            <?php
+            use Mailtrap\Config;
+            use Mailtrap\MailtrapGeneralClient;
+            $config = new Config("YOUR_API_KEY");
+            $lists = (new MailtrapGeneralClient($config))->contactLists(12345);
+            $response = $lists->update($listId, ["name" => "Former Customers"]);
+        - lang: python
+          label: Python
+          source: |
+            import mailtrap as mt
+            client = mt.MailtrapClient(token="YOUR_API_KEY", account_id=YOUR_ACCOUNT_ID)
+            list = client.contacts_api.lists.update(list_id, name="Former Customers")
+        - lang: ruby
+          label: Ruby
+          source: |
+            require 'mailtrap'
+            client = Mailtrap::Client.new(api_key: 'YOUR_API_KEY')
+            lists = Mailtrap::ContactListsAPI.new(12345, client)
+            lists.update(list_id, name: "Former Customers")
+        - lang: csharp
+          label: C#
+          source: |
+            using Mailtrap;
+            var client = new MailtrapClient("YOUR_API_KEY");
+            await client.Account(accountId).ContactList(listId).Update("Former Customers");
+        - lang: java
+          label: Java
+          source: |
+            import io.mailtrap.config.MailtrapConfig;
+            import io.mailtrap.factory.MailtrapClientFactory;
+            var config = new MailtrapConfig.Builder().token("YOUR_API_KEY").build();
+            var client = MailtrapClientFactory.createMailtrapClient(config);
+            var response = client.contactsApi().lists().update(accountId, listId, "Former Customers");
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  maxLength: 255
+            example:
+              name: Former Customers
+      responses:
+        '200':
+          description: OK.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ContactList_2'
+              example:
+                id: 26730
+                name: Former Customers
+        '401':
+          $ref: '#/components/responses/UNAUTHENTICATED'
+        '403':
+          $ref: '#/components/responses/PERMISSION_DENIED'
+        '404':
+          $ref: '#/components/responses/NOT_FOUND'
+        '429':
+          $ref: '#/components/responses/LIMIT_EXCEEDED'
+        '500':
+          $ref: '#/components/responses/INTERNAL_ERROR'
+    delete:
+      description: Delete existing Contact List
+      operationId: deleteContactList
+      summary: Delete Contact List
+      tags:
+        - Contact Lists
+      x-codeSamples:
+        - lang: javascript
+          label: Node.js
+          source: |
+            const { MailtrapClient } = require("mailtrap");
+            const client = new MailtrapClient({ token: "YOUR_API_KEY", accountId: YOUR_ACCOUNT_ID });
+            await client.contacts.lists.delete(listId);
+        - lang: php
+          label: PHP
+          source: |
+            <?php
+            use Mailtrap\Config;
+            use Mailtrap\MailtrapGeneralClient;
+            $config = new Config("YOUR_API_KEY");
+            $lists = (new MailtrapGeneralClient($config))->contactLists(12345);
+            $lists->delete($listId);
+        - lang: python
+          label: Python
+          source: |
+            import mailtrap as mt
+            client = mt.MailtrapClient(token="YOUR_API_KEY", account_id=YOUR_ACCOUNT_ID)
+            client.contacts_api.lists.delete(list_id)
+        - lang: ruby
+          label: Ruby
+          source: |
+            require 'mailtrap'
+            client = Mailtrap::Client.new(api_key: 'YOUR_API_KEY')
+            lists = Mailtrap::ContactListsAPI.new(12345, client)
+            lists.delete(list_id)
+        - lang: csharp
+          label: C#
+          source: |
+            using Mailtrap;
+            var client = new MailtrapClient("YOUR_API_KEY");
+            await client.Account(accountId).ContactList(listId).Delete();
+        - lang: java
+          label: Java
+          source: |
+            import io.mailtrap.config.MailtrapConfig;
+            import io.mailtrap.factory.MailtrapClientFactory;
+            var config = new MailtrapConfig.Builder().token("YOUR_API_KEY").build();
+            var client = MailtrapClientFactory.createMailtrapClient(config);
+            client.contactsApi().lists().delete(accountId, listId);
+      responses:
+        '204':
+          description: Contact List successfully deleted
+        '401':
+          $ref: '#/components/responses/UNAUTHENTICATED'
+        '403':
+          $ref: '#/components/responses/PERMISSION_DENIED'
+        '404':
+          $ref: '#/components/responses/NOT_FOUND'
+        '429':
+          $ref: '#/components/responses/LIMIT_EXCEEDED'
+        '500':
+          $ref: '#/components/responses/INTERNAL_ERROR'
+    parameters:
+      - $ref: '#/components/parameters/account_id'
+      - $ref: '#/components/parameters/list_id'
+  '/api/accounts/{account_id}/contacts/fields':
+    get:
+      description: Get all Contact Fields existing in your account
+      operationId: contactFields
+      summary: Get all Contact Fields
+      tags:
+        - Contact Fields
+      x-codeSamples:
+        - lang: javascript
+          label: Node.js
+          source: |
+            const { MailtrapClient } = require("mailtrap");
+            const client = new MailtrapClient({ token: "YOUR_API_KEY", accountId: YOUR_ACCOUNT_ID });
+            const fields = await client.contacts.fields.getAll();
+            fields.forEach(field => console.log(`${field.name}: ${field.data_type}`));
+        - lang: php
+          label: PHP
+          source: |
+            <?php
+            use Mailtrap\Config;
+            use Mailtrap\MailtrapGeneralClient;
+            $config = new Config("YOUR_API_KEY");
+            $fields = (new MailtrapGeneralClient($config))->contactFields(12345);
+            $response = $fields->getAll();
+        - lang: python
+          label: Python
+          source: |
+            import mailtrap as mt
+            client = mt.MailtrapClient(token="YOUR_API_KEY", account_id=YOUR_ACCOUNT_ID)
+            fields = client.contacts_api.fields.get_all()
+            for field in fields:
+                print(f"{field.name}: {field.data_type}")
+        - lang: ruby
+          label: Ruby
+          source: |
+            require 'mailtrap'
+            client = Mailtrap::Client.new(api_key: 'YOUR_API_KEY')
+            fields = Mailtrap::ContactFieldsAPI.new(12345, client)
+            all_fields = fields.get_all
+        - lang: csharp
+          label: C#
+          source: |
+            using Mailtrap;
+            var client = new MailtrapClient("YOUR_API_KEY");
+            var fields = await client.Account(accountId).ContactFields().GetAll();
+        - lang: java
+          label: Java
+          source: |
+            import io.mailtrap.config.MailtrapConfig;
+            import io.mailtrap.factory.MailtrapClientFactory;
+            var config = new MailtrapConfig.Builder().token("YOUR_API_KEY").build();
+            var client = MailtrapClientFactory.createMailtrapClient(config);
+            var response = client.contactsApi().fields().getAll(accountId);
+      responses:
+        '200':
+          description: OK.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ContactField'
+              example:
+                - id: 6730
+                  name: First name
+                  type: text
+                  merge_tag: first_name
+                - id: 6731
+                  name: Birthdate
+                  type: date
+                  merge_tag: birthdate
+                - id: 6732
+                  name: Cats count
+                  type: integer
+                  merge_tag: cats_count
+        '401':
+          $ref: '#/components/responses/UNAUTHENTICATED'
+        '403':
+          $ref: '#/components/responses/PERMISSION_DENIED'
+        '429':
+          $ref: '#/components/responses/LIMIT_EXCEEDED'
+        '500':
+          $ref: '#/components/responses/INTERNAL_ERROR'
+    post:
+      description: |
+        Create new Contact Fields. Please note, you can have up to 40 fields.
+      operationId: createContactField
+      summary: Create Contact Field
+      tags:
+        - Contact Fields
+      x-codeSamples:
+        - lang: javascript
+          label: Node.js
+          source: |
+            const { MailtrapClient } = require("mailtrap");
+            const client = new MailtrapClient({ token: "YOUR_API_KEY", accountId: YOUR_ACCOUNT_ID });
+            const field = await client.contacts.fields.create({ name: "Company", data_type: "text", merge_tag: "company" });
+            console.log(`Field created: ${field.id}`);
+        - lang: php
+          label: PHP
+          source: |
+            <?php
+            use Mailtrap\Config;
+            use Mailtrap\MailtrapGeneralClient;
+            $config = new Config("YOUR_API_KEY");
+            $fields = (new MailtrapGeneralClient($config))->contactFields(12345);
+            $response = $fields->create(["name" => "Company", "data_type" => "text", "merge_tag" => "company"]);
+        - lang: python
+          label: Python
+          source: |
+            import mailtrap as mt
+            client = mt.MailtrapClient(token="YOUR_API_KEY", account_id=YOUR_ACCOUNT_ID)
+            field = client.contacts_api.fields.create(name="Company", data_type="text", merge_tag="company")
+            print(f"Field created: {field.id}")
+        - lang: ruby
+          label: Ruby
+          source: |
+            require 'mailtrap'
+            client = Mailtrap::Client.new(api_key: 'YOUR_API_KEY')
+            fields = Mailtrap::ContactFieldsAPI.new(12345, client)
+            new_field = fields.create(name: "Company", data_type: "text", merge_tag: "company")
+        - lang: csharp
+          label: C#
+          source: |
+            using Mailtrap;
+            var client = new MailtrapClient("YOUR_API_KEY");
+            var field = await client.Account(accountId).ContactFields().Create("Company", "text", "company");
+        - lang: java
+          label: Java
+          source: |
+            import io.mailtrap.config.MailtrapConfig;
+            import io.mailtrap.factory.MailtrapClientFactory;
+            var config = new MailtrapConfig.Builder().token("YOUR_API_KEY").build();
+            var client = MailtrapClientFactory.createMailtrapClient(config);
+            var response = client.contactsApi().fields().create(accountId, "Company", "text", "company");
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  maxLength: 80
+                data_type:
+                  type: string
+                  enum:
+                    - text
+                    - integer
+                    - float
+                    - boolean
+                    - date
+                merge_tag:
+                  type: string
+                  maxLength: 80
+                  description: Personalize your campaigns by adding a merge tag. This field will be replaced with unique contact details for each recipient.
+            example:
+              name: My Contact Field
+              data_type: text
+              merge_tag: my_contact_field
+      responses:
+        '201':
+          description: Contact Field Created.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ContactField'
+              example:
+                id: 26730
+                name: My Contact Field
+                data_type: text
+                merge_tag: my_contact_field
+        '401':
+          $ref: '#/components/responses/UNAUTHENTICATED'
+        '403':
+          $ref: '#/components/responses/PERMISSION_DENIED'
+        '422':
+          description: Returns validation errors.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnprocessableEntity'
+              example:
+                errors:
+                  name:
+                    - - is too long (maximum is 80 characters)
+                      - has already been taken
+                  merge_tag:
+                    - - is too long (maximum is 80 characters)
+                      - has already been taken
+        '429':
+          $ref: '#/components/responses/LIMIT_EXCEEDED'
+        '500':
+          $ref: '#/components/responses/INTERNAL_ERROR'
+    parameters:
+      - $ref: '#/components/parameters/account_id'
+  '/api/accounts/{account_id}/contacts/fields/{field_id}':
+    get:
+      description: Get a contact Field by ID
+      operationId: getContactField
+      summary: Get Contact Field
+      tags:
+        - Contact Fields
+      x-codeSamples:
+        - lang: javascript
+          label: Node.js
+          source: |
+            const { MailtrapClient } = require("mailtrap");
+            const client = new MailtrapClient({ token: "YOUR_API_KEY", accountId: YOUR_ACCOUNT_ID });
+            const field = await client.contacts.fields.get(fieldId);
+            console.log(`Field: ${field.name} (${field.data_type})`);
+        - lang: php
+          label: PHP
+          source: |
+            <?php
+            use Mailtrap\Config;
+            use Mailtrap\MailtrapGeneralClient;
+            $config = new Config("YOUR_API_KEY");
+            $fields = (new MailtrapGeneralClient($config))->contactFields(12345);
+            $response = $fields->get($fieldId);
+        - lang: python
+          label: Python
+          source: |
+            import mailtrap as mt
+            client = mt.MailtrapClient(token="YOUR_API_KEY", account_id=YOUR_ACCOUNT_ID)
+            field = client.contacts_api.fields.get(field_id)
+            print(f"Field: {field.name} ({field.data_type})")
+        - lang: ruby
+          label: Ruby
+          source: |
+            require 'mailtrap'
+            client = Mailtrap::Client.new(api_key: 'YOUR_API_KEY')
+            fields = Mailtrap::ContactFieldsAPI.new(12345, client)
+            field = fields.get(field_id)
+        - lang: csharp
+          label: C#
+          source: |
+            using Mailtrap;
+            var client = new MailtrapClient("YOUR_API_KEY");
+            var field = await client.Account(accountId).ContactField(fieldId).GetDetails();
+        - lang: java
+          label: Java
+          source: |
+            import io.mailtrap.config.MailtrapConfig;
+            import io.mailtrap.factory.MailtrapClientFactory;
+            var config = new MailtrapConfig.Builder().token("YOUR_API_KEY").build();
+            var client = MailtrapClientFactory.createMailtrapClient(config);
+            var response = client.contactsApi().fields().get(accountId, fieldId);
+      responses:
+        '200':
+          description: Returns attributes of the contact field.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ContactField'
+              example:
+                $ref: '#/paths/~1api~1accounts~1%7Baccount_id%7D~1contacts~1fields/post/responses/201/content/application~1json/example'
+        '401':
+          $ref: '#/components/responses/UNAUTHENTICATED'
+        '403':
+          $ref: '#/components/responses/PERMISSION_DENIED'
+        '404':
+          $ref: '#/components/responses/NOT_FOUND'
+        '429':
+          $ref: '#/components/responses/LIMIT_EXCEEDED'
+        '500':
+          $ref: '#/components/responses/INTERNAL_ERROR'
+    patch:
+      description: |
+        Update existing Contact Field. Please note, you cannot change data_type of the field.
+      operationId: updateContactField
+      summary: Update Contact Field
+      tags:
+        - Contact Fields
+      x-codeSamples:
+        - lang: javascript
+          label: Node.js
+          source: |
+            const { MailtrapClient } = require("mailtrap");
+            const client = new MailtrapClient({ token: "YOUR_API_KEY", accountId: YOUR_ACCOUNT_ID });
+            const field = await client.contacts.fields.update(fieldId, { name: "Updated Name", merge_tag: "updated_name" });
+        - lang: php
+          label: PHP
+          source: |
+            <?php
+            use Mailtrap\Config;
+            use Mailtrap\MailtrapGeneralClient;
+            $config = new Config("YOUR_API_KEY");
+            $fields = (new MailtrapGeneralClient($config))->contactFields(12345);
+            $response = $fields->update($fieldId, ["name" => "Updated Name", "merge_tag" => "updated_name"]);
+        - lang: python
+          label: Python
+          source: |
+            import mailtrap as mt
+            client = mt.MailtrapClient(token="YOUR_API_KEY", account_id=YOUR_ACCOUNT_ID)
+            field = client.contacts_api.fields.update(field_id, name="Updated Name", merge_tag="updated_name")
+        - lang: ruby
+          label: Ruby
+          source: |
+            require 'mailtrap'
+            client = Mailtrap::Client.new(api_key: 'YOUR_API_KEY')
+            fields = Mailtrap::ContactFieldsAPI.new(12345, client)
+            fields.update(field_id, name: "Updated Name", merge_tag: "updated_name")
+        - lang: csharp
+          label: C#
+          source: |
+            using Mailtrap;
+            var client = new MailtrapClient("YOUR_API_KEY");
+            await client.Account(accountId).ContactField(fieldId).Update("Updated Name", "updated_name");
+        - lang: java
+          label: Java
+          source: |
+            import io.mailtrap.config.MailtrapConfig;
+            import io.mailtrap.factory.MailtrapClientFactory;
+            var config = new MailtrapConfig.Builder().token("YOUR_API_KEY").build();
+            var client = MailtrapClientFactory.createMailtrapClient(config);
+            var response = client.contactsApi().fields().update(accountId, fieldId, "Updated Name", "updated_name");
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  maxLength: 80
+                merge_tag:
+                  type: string
+                  maxLength: 80
+                  description: Personalize your campaigns by adding a merge tag. This field will be replaced with unique contact details for each recipient.
+            example:
+              name: Updated name
+              merge_tag: updated_name
+      responses:
+        '200':
+          description: OK.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ContactField'
+              example:
+                id: 6730
+                name: Updated name
+                data_type: text
+                merge_tag: updated_name
+        '401':
+          $ref: '#/components/responses/UNAUTHENTICATED'
+        '403':
+          $ref: '#/components/responses/PERMISSION_DENIED'
+        '404':
+          $ref: '#/components/responses/NOT_FOUND'
+        '422':
+          description: Returns validation errors.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnprocessableEntity'
+              example:
+                errors:
+                  name:
+                    - - is too long (maximum is 80 characters)
+                      - has already been taken
+                  merge_tag:
+                    - - is too long (maximum is 80 characters)
+                      - has already been taken
+        '429':
+          $ref: '#/components/responses/LIMIT_EXCEEDED'
+        '500':
+          $ref: '#/components/responses/INTERNAL_ERROR'
+    delete:
+      description: |
+        Delete existing Contact Field Please, note, you cannot delete a Contact Field which is used in Automations, Email Campaigns (started or scheduled), and in conditions of Contact Segments (you'll see the corresponding error)
+      operationId: deleteContactField
+      summary: Delete Contact Field
+      tags:
+        - Contact Fields
+      x-codeSamples:
+        - lang: javascript
+          label: Node.js
+          source: |
+            const { MailtrapClient } = require("mailtrap");
+            const client = new MailtrapClient({ token: "YOUR_API_KEY", accountId: YOUR_ACCOUNT_ID });
+            await client.contacts.fields.delete(fieldId);
+        - lang: php
+          label: PHP
+          source: |
+            <?php
+            use Mailtrap\Config;
+            use Mailtrap\MailtrapGeneralClient;
+            $config = new Config("YOUR_API_KEY");
+            $fields = (new MailtrapGeneralClient($config))->contactFields(12345);
+            $fields->delete($fieldId);
+        - lang: python
+          label: Python
+          source: |
+            import mailtrap as mt
+            client = mt.MailtrapClient(token="YOUR_API_KEY", account_id=YOUR_ACCOUNT_ID)
+            client.contacts_api.fields.delete(field_id)
+        - lang: ruby
+          label: Ruby
+          source: |
+            require 'mailtrap'
+            client = Mailtrap::Client.new(api_key: 'YOUR_API_KEY')
+            fields = Mailtrap::ContactFieldsAPI.new(12345, client)
+            fields.delete(field_id)
+        - lang: csharp
+          label: C#
+          source: |
+            using Mailtrap;
+            var client = new MailtrapClient("YOUR_API_KEY");
+            await client.Account(accountId).ContactField(fieldId).Delete();
+        - lang: java
+          label: Java
+          source: |
+            import io.mailtrap.config.MailtrapConfig;
+            import io.mailtrap.factory.MailtrapClientFactory;
+            var config = new MailtrapConfig.Builder().token("YOUR_API_KEY").build();
+            var client = MailtrapClientFactory.createMailtrapClient(config);
+            client.contactsApi().fields().delete(accountId, fieldId);
+      responses:
+        '204':
+          description: Contact Field successfully deleted
+        '401':
+          $ref: '#/components/responses/UNAUTHENTICATED'
+        '403':
+          $ref: '#/components/responses/PERMISSION_DENIED'
+        '404':
+          $ref: '#/components/responses/NOT_FOUND'
+        '422':
+          description: Returns validation errors.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnprocessableEntity'
+              example:
+                errors:
+                  usage:
+                    - 'This field is used in the steps of automation(s): %{automation names}.'
+                    - 'This field is used in the scheduled/started campaign(s): %{campaign names}.'
+                    - 'This field is used in the conditions of segment(s): {segment names}.'
+        '429':
+          $ref: '#/components/responses/LIMIT_EXCEEDED'
+        '500':
+          $ref: '#/components/responses/INTERNAL_ERROR'
+    parameters:
+      - $ref: '#/components/parameters/account_id'
+      - $ref: '#/components/parameters/field_id'
+components:
+  securitySchemes:
+    HeaderAuth:
+      type: apiKey
+      description: Pass the API token in the Api-Token
+      in: header
+      name: Api-Token
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    Contact:
+      $ref: '#/components/schemas/Contact_2'
+    ContactUpdateRequest:
+      $ref: '#/components/schemas/ContactUpdateRequest_2'
+    ContactUpdateResponse:
+      $ref: '#/components/schemas/ContactUpdateResponse_2'
+    ContactCreateRequest:
+      $ref: '#/components/schemas/ContactCreateRequest_2'
+    ContactList:
+      $ref: '#/components/schemas/ContactList_2'
+    Contact_2:
+      type: object
+      properties:
+        data:
+          type: object
+          properties:
+            id:
+              type: string
+            email:
+              type: string
+            fields:
+              type: object
+              description: |-
+                Object of fields in the following format:
+                  field_1_merge_tag: string | integer | float | boolean | date string in ISO-8601 format (yyyy-mm-dd);
+            list_ids:
+              type: array
+              items:
+                type: integer
+            status:
+              type: string
+              enum:
+                - subscribed
+                - unsubscribed
+              description: |-
+                The status of the contact:
+                  - "subscribed" if its email was NOT in the suppression list
+                  - "unsubscribed" otherwise
+            created_at:
+              type: integer
+              format: timestampMillis
+            updated_at:
+              type: integer
+              format: timestampMillis
+    ContactCreateRequest_2:
+      title: ContactCreateRequest
+      type: object
+      required:
+        - contact
+      properties:
+        contact:
+          type: object
+          required:
+            - email
+          properties:
+            email:
+              type: string
+            fields:
+              type: object
+            list_ids:
+              type: array
+              items:
+                type: integer
+      example:
+        contact:
+          email: john.smith@example.com
+          fields:
+            first_name: John
+            last_name: Smith
+          list_ids:
+            - 1
+            - 2
+            - 3
+    ContactEventCreateRequest:
+      title: ContactEventCreateRequest
+      type: object
+      properties:
+        name:
+          type: string
+          maxLength: 255
+        params:
+          type: object
+          description: A hash of string keys and scalar JSON values
+          propertyNames:
+            type: string
+            maxLength: 255
+          additionalProperties:
+            oneOf:
+              - type: string
+                nullable: true
+              - type: number
+              - type: boolean
+      example:
+        name: UserLogin
+        params:
+          user_id: 101
+          user_name: John Smith
+          is_active: true
+          last_seen: null
+    ContactEventCreateResponse:
+      type: object
+      properties:
+        contact_id:
+          type: string
+        contact_email:
+          type: string
+        name:
+          type: string
+          maxLength: 255
+        params:
+          type: object
+          description: A hash of string keys and scalar JSON values
+          propertyNames:
+            type: string
+            maxLength: 255
+          additionalProperties:
+            oneOf:
+              - type: string
+                nullable: true
+              - type: number
+              - type: boolean
+      example:
+        contact_id: 018dd5e3-f6d2-7c00-8f9b-e5c3f2d8a132
+        contact_email: john.smith@example.com
+        name: UserLogin
+        params:
+          user_id: 101
+          user_name: John Smith
+          is_active: true
+          last_seen: null
+    ContactExport:
+      type: object
+      properties:
+        id:
+          type: integer
+        status:
+          type: string
+          enum:
+            - created
+            - started
+            - finished
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+        url:
+          type: string
+          nullable: true
+          format: uri
+          description: The URL of the exported contacts file. Only available when the export is finished.
+    ContactExportRequest:
+      title: ContactExportRequest
+      type: object
+      properties:
+        filters:
+          type: array
+          description: Array of filters to apply to the search
+          items:
+            $ref: '#/components/schemas/ContactExportRequest/Filter'
+      example:
+        filters:
+          - name: list_id
+            operator: equal
+            value:
+              - 101
+              - 102
+          - name: subscription_status
+            operator: equal
+            value: subscribed
+      Filter:
+        oneOf:
+          - $ref: '#/components/schemas/ContactExportRequest/ListIdFilter'
+          - $ref: '#/components/schemas/ContactExportRequest/SubscriptionStatusFilter'
+        discriminator:
+          propertyName: name
+          mapping:
+            list_id: ListIdFilter
+            subscription_status: '#/SubscriptionStatusFilter'
+      ListIdFilter:
+        type: object
+        required:
+          - name
+          - operator
+          - value
+        description: Filter by list ids
+        properties:
+          name:
+            type: string
+            enum:
+              - list_id
+          operator:
+            type: string
+            enum:
+              - equal
+          value:
+            type: array
+            items:
+              type: integer
+        example:
+          name: list_id
+          operator: equal
+          value:
+            - 1
+            - 2
+      SubscriptionStatusFilter:
+        type: object
+        required:
+          - name
+          - operator
+          - value
+        description: Filter by subscription status
+        properties:
+          name:
+            type: string
+            enum:
+              - subscription_status
+          operator:
+            type: string
+            enum:
+              - equal
+          value:
+            type: string
+            enum:
+              - subscribed
+              - unsubscribed
+        example:
+          name: subscription_status
+          operator: equal
+          value: unsubscribed
+    ContactField:
+      title: ContactField
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+          maxLength: 80
+        data_type:
+          type: string
+          enum:
+            - text
+            - integer
+            - float
+            - boolean
+            - date
+        merge_tag:
+          type: string
+          maxLength: 80
+          description: Personalize your campaigns by adding a merge tag. This field will be replaced with unique contact details for each recipient.
+    ContactImport:
+      type: object
+      properties:
+        id:
+          type: integer
+        status:
+          type: string
+          enum:
+            - created
+            - started
+            - finished
+            - failed
+        created_contacts_count:
+          type: integer
+          description: '_optional_, provided only if __status__ is `finished`'
+        updated_contacts_count:
+          type: integer
+          description: '_optional_, provided only if __status__ is `finished`'
+        contacts_over_limit_count:
+          type: integer
+          description: '_optional_, provided only if __status__ is `finished`'
+    ContactImportErrors:
+      title: UnprocessableEntity
+      type: object
+      properties:
+        errors:
+          type: array
+          items:
+            type: object
+            properties:
+              email:
+                type: string
+                example: test@example.com
+              errors:
+                type: object
+                properties:
+                  base:
+                    type: array
+                    items:
+                      type: string
+                    examples:
+                      - contacts limit reached
+                      - 'same list_ids {id} are specified both as included and excluded'
+                  email:
+                    type: array
+                    items:
+                      type: string
+                    examples:
+                      - is invalid
+                      - top level domain is too short
+                  fields:
+                    type: array
+                    items:
+                      type: string
+                    examples:
+                      - 'contains invalid values: invalid_field'
+                  field_merge_tag:
+                    type: array
+                    items:
+                      type: string
+                    examples:
+                      - is invalid
+    ContactImportRequest:
+      title: Contact Import Request
+      type: object
+      properties:
+        contacts:
+          type: array
+          items:
+            type: object
+            properties:
+              email:
+                type: string
+              fields:
+                type: object
+                description: |-
+                  Object of fields in the following format:
+                    field_merge_tag: string | integer | float | boolean | date string in ISO-8601 format (yyyy-mm-dd);
+              list_ids_included:
+                type: array
+                items:
+                  type: integer
+              list_ids_excluded:
+                type: array
+                items:
+                  type: integer
+      example:
+        contacts:
+          - email: customer1@example.com
+            fields:
+              first_name: John
+              last_name: Smith
+              zip_code: 11111
+            list_ids_included:
+              - 1
+              - 2
+              - 3
+            list_ids_excluded:
+              - 4
+              - 5
+              - 6
+          - email: customer2@example.com
+            fields:
+              first_name: Joe
+              last_name: Doe
+              zip_code: 22222
+            list_ids_included:
+              - 1
+            list_ids_excluded:
+              - 4
+    ContactList_2:
+      title: ContactList
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+          maxLength: 255
+      example:
+        id: 26730
+        name: My Contact List
+    ContactUpdateRequest_2:
+      title: ContactUpdateRequest
+      type: object
+      required:
+        - contact
+      properties:
+        contact:
+          type: object
+          required:
+            - email
+          properties:
+            email:
+              type: string
+            fields:
+              type: object
+            list_ids_included:
+              type: array
+              items:
+                type: integer
+            list_ids_excluded:
+              type: array
+              items:
+                type: integer
+            unsubscribed:
+              type: boolean
+      example:
+        contact:
+          email: customer1@example.com
+          fields:
+            first_name: John
+            last_name: Smith
+            zip_code: 11111
+          list_ids_included:
+            - 1
+            - 2
+            - 3
+          list_ids_excluded:
+            - 4
+            - 5
+            - 6
+          unsubscribed: false
+    ContactUpdateResponse_2:
+      title: ContactUpdateResponse
+      type: object
+      properties:
+        action:
+          type: string
+          enum:
+            - created
+            - updated
+          description: |-
+            Performed action on the contact:
+              - "created" if contact does not exist
+              - "updated" if contact exists
+        data:
+          type: object
+          properties:
+            id:
+              type: string
+            email:
+              type: string
+            fields:
+              type: object
+              description: |-
+                Object of fields in the following format:
+                  field_1_merge_tag: string | integer | float | boolean | date string in ISO-8601 format (yyyy-mm-dd);
+            list_ids:
+              type: array
+              items:
+                type: integer
+            status:
+              type: string
+              enum:
+                - subscribed
+                - unsubscribed
+              description: |-
+                The status of the contact:
+                  - "subscribed" if its email was NOT in the suppression list
+                  - "unsubscribed" otherwise
+            created_at:
+              type: integer
+              format: timestampMillis
+            updated_at:
+              type: integer
+              format: timestampMillis
+      example:
+        action: updated
+        data:
+          id: 018dd5e3-f6d2-7c00-8f9b-e5c3f2d8a132
+          status: subscribed
+          email: john.smith@example.com
+          fields:
+            first_name: John
+            last_name: Smith
+          list_ids:
+            - 1
+            - 2
+            - 3
+          created_at: 1740659901189
+          updated_at: 1742903266889
+    ErrorResponse:
+      title: ErrorResponse
+      type: object
+      properties:
+        errors:
+          type: string
+          description: Error message
+          example: Unexpected error
+    NotFoundResponse:
+      title: NotFoundResponse
+      type: object
+      properties:
+        error:
+          type: string
+          description: Error message
+          example: Not Found
+    PermissionsDeniedResponse:
+      title: PermissionsDeniedResponse
+      type: object
+      properties:
+        errors:
+          type: string
+          description: Error message
+          example: Access forbidden
+    RateLimitExceededResponse:
+      title: RateLimitExceededResponse
+      type: object
+      properties:
+        errors:
+          type: string
+          description: Error message
+          example: Rate limit exceeded
+    UnauthenticatedResponse:
+      title: UnauthenticatedResponse
+      type: object
+      properties:
+        error:
+          type: string
+          description: Error message
+          example: Incorrect API token
+    UnprocessableEntity:
+      title: UnprocessableEntity
+      type: object
+      properties:
+        errors:
+          type: object
+          description: Validation errors per attribute. Entire record errors are under `base` key.
+  examples: {}
+  responses:
+    UNAUTHENTICATED:
+      description: Returns unauthorized error message. Check your credentials.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/UnauthenticatedResponse'
+    LIMIT_EXCEEDED:
+      description: Rate limit exceeded for the current account.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/RateLimitExceededResponse'
+    PERMISSION_DENIED:
+      description: Returns forbidden error message. Check your permissions.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/PermissionsDeniedResponse'
+    INTERNAL_ERROR:
+      description: Internal error. Retry later or contact support.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    NOT_FOUND:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/NotFoundResponse'
+  parameters:
+    account_id:
+      description: Unique account ID
+      name: account_id
+      in: path
+      required: true
+      schema:
+        type: integer
+        format: int64
+        minimum: 1
+        example: 3229
+    contact_identifier:
+      name: contact_identifier
+      description: Contact UUID or Email
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid or email
+        example: 018dd5e3-f6d2-7c00-8f9b-e5c3f2d8a132
+    list_id:
+      description: Unique list ID
+      name: list_id
+      in: path
+      required: true
+      schema:
+        type: integer
+        format: int64
+        minimum: 1
+        example: 3229
+    field_id:
+      description: Unique Contact Field ID
+      name: field_id
+      in: path
+      required: true
+      schema:
+        type: integer
+        format: int64
+        minimum: 1
+        example: 3229
+    import_id:
+      description: Unique Contact Import ID
+      name: import_id
+      in: path
+      required: true
+      schema:
+        type: integer
+        format: int64
+        example: 3229
+    export_id:
+      description: Unique Contact Export ID
+      name: export_id
+      in: path
+      required: true
+      schema:
+        type: integer
+        format: int64
+        example: 3229

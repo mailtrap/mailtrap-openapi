@@ -1,0 +1,713 @@
+openapi: 3.1.0
+info:
+  description: API for Mailtrap.io Email Templates functionality
+  version: 2.0-oas3
+  title: Email Templates
+  contact:
+    name: Mailtrap
+    url: 'https://help.mailtrap.io'
+    email: support@mailtrap.io
+  license:
+    name: Creative Commons Attribution-ShareAlike 4.0 International (CC BY-SA 4.0)
+    url: 'https://creativecommons.org/licenses/by-sa/4.0/'
+security:
+  - HeaderAuth: []
+  - BearerAuth: []
+servers:
+  - description: Mailtrap API
+    url: 'https://mailtrap.io'
+tags:
+  - name: templates
+    x-page-title: Templates
+    x-page-description: Manage email templates
+    description: Manage email templates
+paths:
+  '/api/accounts/{account_id}/email_templates':
+    get:
+      description: Get all email templates existing in your account
+      operationId: emailTemplates
+      summary: Get all Email Templates
+      tags:
+        - templates
+      x-codeSamples:
+        - lang: javascript
+          label: Node.js
+          source: |
+            const { MailtrapClient } = require("mailtrap");
+            const client = new MailtrapClient({ token: "YOUR_API_KEY", accountId: YOUR_ACCOUNT_ID });
+            const templates = await client.templates.getAll();
+            templates.forEach(tpl => console.log(`${tpl.name}: ${tpl.uuid}`));
+        - lang: php
+          label: PHP
+          source: |
+            <?php
+            use Mailtrap\Config;
+            use Mailtrap\MailtrapGeneralClient;
+            $config = new Config("YOUR_API_KEY");
+            $templates = (new MailtrapGeneralClient($config))->emailTemplates(12345);
+            $response = $templates->getAll();
+        - lang: python
+          label: Python
+          source: |
+            import mailtrap as mt
+            client = mt.MailtrapClient(token="YOUR_API_KEY", account_id=YOUR_ACCOUNT_ID)
+            templates = client.email_templates_api.templates.get_all()
+            for tpl in templates:
+                print(f"{tpl.name}: {tpl.uuid}")
+        - lang: ruby
+          label: Ruby
+          source: |
+            require 'mailtrap'
+            client = Mailtrap::Client.new(api_key: 'YOUR_API_KEY')
+            templates = Mailtrap::EmailTemplatesAPI.new(12345, client)
+            all_templates = templates.get_all
+        - lang: csharp
+          label: C#
+          source: |
+            using Mailtrap;
+            var client = new MailtrapClient("YOUR_API_KEY");
+            var templates = await client.Account(accountId).EmailTemplates().GetAll();
+        - lang: java
+          label: Java
+          source: |
+            import io.mailtrap.config.MailtrapConfig;
+            import io.mailtrap.factory.MailtrapClientFactory;
+            var config = new MailtrapConfig.Builder().token("YOUR_API_KEY").build();
+            var client = MailtrapClientFactory.createMailtrapClient(config);
+            var response = client.emailTemplatesApi().templates().getAll(accountId);
+      responses:
+        '200':
+          description: OK.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/EmailTemplateResponse'
+              example:
+                - id: 26730
+                  name: Promotion Template
+                  uuid: b81aabcd-1a1e-41cf-91b6-eca0254b3d96
+                  category: Promotion
+                  subject: Promotion Template subject
+                  body_text: Text body
+                  body_html: <div>body</div>
+                  created_at: '2025-01-01T10:00:00Z'
+                  updated_at: '2025-01-02T10:00:00Z'
+                - id: 26731
+                  name: Newsletter Template
+                  uuid: b81aabcd-1a1e-41cf-91b6-eca0254b3d97
+                  category: Newsletter
+                  subject: Newsletter Template subject
+                  body_text: Text body
+                  body_html: <div>body</div>
+                  created_at: '2025-01-01T10:00:00Z'
+                  updated_at: '2025-01-02T10:00:00Z'
+        '401':
+          $ref: '#/components/responses/UNAUTHENTICATED'
+        '403':
+          $ref: '#/components/responses/PERMISSION_DENIED'
+        '500':
+          $ref: '#/components/responses/INTERNAL_ERROR'
+    post:
+      description: Create a new email template
+      operationId: createEmailTemplate
+      summary: Create Email Template
+      tags:
+        - templates
+      x-codeSamples:
+        - lang: javascript
+          label: Node.js
+          source: |
+            import { MailtrapClient } from "mailtrap";
+
+            const client = new MailtrapClient({
+              token: "YOUR_API_TOKEN"
+            });
+
+            const template = await client.templates.create({
+              name: "Welcome Email",
+              subject: "Welcome to {{company_name}}, {{user_name}}!",
+              category: "onboarding",
+              body_html: `
+                <h1>Welcome {{user_name}}!</h1>
+                <p>Thank you for joining {{company_name}}.</p>
+                <a href="{{activation_url}}">Activate Account</a>
+              `,
+              body_text: `
+                Welcome {{user_name}}!
+                Thank you for joining {{company_name}}.
+                Activate your account: {{activation_url}}
+              `
+            });
+
+            console.log(`Template created: ${template.uuid}`);
+        - lang: php
+          label: PHP
+          source: |
+            use Mailtrap\Config;
+            use Mailtrap\MailtrapGeneralClient;
+
+            $config = new Config('YOUR_API_TOKEN');
+            $client = new MailtrapGeneralClient($config);
+
+            $template = $client->emailTemplates($accountId)->create([
+                'name' => 'Welcome Email',
+                'subject' => 'Welcome to {{company_name}}, {{user_name}}!',
+                'category' => 'onboarding',
+                'body_html' => '
+                  <h1>Welcome {{user_name}}!</h1>
+                  <p>Thank you for joining {{company_name}}.</p>
+                  <a href="{{activation_url}}">Activate Account</a>
+                ',
+                'body_text' => '
+                  Welcome {{user_name}}!
+                  Thank you for joining {{company_name}}.
+                  Activate your account: {{activation_url}}
+                '
+            ]);
+
+            echo "Template created: {$template['uuid']}\n";
+        - lang: python
+          label: Python
+          source: |
+            import mailtrap as mt
+
+            client = mt.MailtrapClient(
+                token="YOUR_API_TOKEN",
+                account_id=ACCOUNT_ID
+            )
+
+            template = client.email_templates_api.templates.create(
+                mt.CreateEmailTemplateParams(
+                    name="Welcome Email",
+                    subject="Welcome to {{company_name}}, {{user_name}}!",
+                    category="onboarding",
+                    body_html="""
+                      <h1>Welcome {{user_name}}!</h1>
+                      <p>Thank you for joining {{company_name}}.</p>
+                      <a href="{{activation_url}}">Activate Account</a>
+                    """,
+                    body_text="""
+                      Welcome {{user_name}}!
+                      Thank you for joining {{company_name}}.
+                      Activate your account: {{activation_url}}
+                    """
+                )
+            )
+
+            print(f"Template created: {template.uuid}")
+        - lang: ruby
+          label: Ruby
+          source: |
+            require 'mailtrap'
+
+            client = Mailtrap::Client.new(api_key: 'YOUR_API_TOKEN')
+            templates = Mailtrap::EmailTemplatesAPI.new(account_id, client)
+
+            template = templates.create(
+              name: 'Welcome Email',
+              subject: 'Welcome to {{company_name}}, {{user_name}}!',
+              category: 'onboarding',
+              body_html: '
+                <h1>Welcome {{user_name}}!</h1>
+                <p>Thank you for joining {{company_name}}.</p>
+                <a href="{{activation_url}}">Activate Account</a>
+              ',
+              body_text: '
+                Welcome {{user_name}}!
+                Thank you for joining {{company_name}}.
+                Activate your account: {{activation_url}}
+              '
+            )
+
+            puts "Template created: #{template.uuid}"
+        - lang: csharp
+          label: .NET
+          source: |
+            using Mailtrap;
+
+            var client = new MailtrapClient("YOUR_API_TOKEN");
+
+            var request = new CreateTemplateRequest
+            {
+                Name = "Welcome Email",
+                Subject = "Welcome to {{company_name}}, {{user_name}}!",
+                Category = "onboarding",
+                BodyHtml = @"
+                  <h1>Welcome {{user_name}}!</h1>
+                  <p>Thank you for joining {{company_name}}.</p>
+                  <a href=""{{activation_url}}"">Activate Account</a>
+                ",
+                BodyText = @"
+                  Welcome {{user_name}}!
+                  Thank you for joining {{company_name}}.
+                  Activate your account: {{activation_url}}
+                "
+            };
+
+            var template = await client
+                .Account(accountId)
+                .Templates()
+                .Create(request);
+
+            Console.WriteLine($"Template created: {template.Uuid}");
+        - lang: java
+          label: Java
+          source: |
+            import io.mailtrap.config.MailtrapConfig;
+            import io.mailtrap.factory.MailtrapClientFactory;
+            import io.mailtrap.model.request.template.CreateTemplateRequest;
+
+            var config = new MailtrapConfig.Builder()
+                .token("YOUR_API_TOKEN")
+                .build();
+
+            var client = MailtrapClientFactory
+                .createMailtrapClient(config);
+
+            var request = new CreateTemplateRequest(
+                "Welcome Email",
+                "Welcome to {{company_name}}, {{user_name}}!",
+                "onboarding",
+                """
+                  <h1>Welcome {{user_name}}!</h1>
+                  <p>Thank you for joining {{company_name}}.</p>
+                  <a href="{{activation_url}}">Activate Account</a>
+                """,
+                """
+                  Welcome {{user_name}}!
+                  Thank you for joining {{company_name}}.
+                  Activate your account: {{activation_url}}
+                """
+            );
+
+            var template = client.emailTemplatesApi()
+                .emailTemplates()
+                .createEmailTemplate(accountId, request);
+            System.out.println("Template created: " + template.getUuid());
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EmailTemplateRequest'
+      responses:
+        '201':
+          description: Email template created successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EmailTemplateResponse'
+        '401':
+          $ref: '#/components/responses/UNAUTHENTICATED'
+        '403':
+          $ref: '#/components/responses/PERMISSION_DENIED'
+        '422':
+          description: Returns validation errors.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnprocessableEntity'
+              example:
+                errors:
+                  name:
+                    - - can't be blank
+                  subject:
+                    - - can't be blank
+                  category:
+                    - - can't be blank
+        '500':
+          $ref: '#/components/responses/INTERNAL_ERROR'
+    parameters:
+      - $ref: '#/components/parameters/account_id'
+  '/api/accounts/{account_id}/email_templates/{email_template_id}':
+    get:
+      description: Get an email template by ID
+      operationId: getEmailTemplate
+      summary: Get Email Template
+      tags:
+        - templates
+      x-codeSamples:
+        - lang: javascript
+          label: Node.js
+          source: |
+            const { MailtrapClient } = require("mailtrap");
+            const client = new MailtrapClient({ token: "YOUR_API_KEY", accountId: YOUR_ACCOUNT_ID });
+            const template = await client.templates.get(templateId);
+            console.log(`Template: ${template.name} (UUID: ${template.uuid})`);
+        - lang: php
+          label: PHP
+          source: |
+            <?php
+            use Mailtrap\Config;
+            use Mailtrap\MailtrapGeneralClient;
+            $config = new Config("YOUR_API_KEY");
+            $templates = (new MailtrapGeneralClient($config))->emailTemplates(12345);
+            $response = $templates->get($templateId);
+        - lang: python
+          label: Python
+          source: |
+            import mailtrap as mt
+            client = mt.MailtrapClient(token="YOUR_API_KEY", account_id=YOUR_ACCOUNT_ID)
+            template = client.email_templates_api.templates.get(template_id)
+            print(f"Template: {template.name} (UUID: {template.uuid})")
+        - lang: ruby
+          label: Ruby
+          source: |
+            require 'mailtrap'
+            client = Mailtrap::Client.new(api_key: 'YOUR_API_KEY')
+            templates = Mailtrap::EmailTemplatesAPI.new(12345, client)
+            template = templates.get(template_id)
+        - lang: csharp
+          label: C#
+          source: |
+            using Mailtrap;
+            var client = new MailtrapClient("YOUR_API_KEY");
+            var template = await client.Account(accountId).EmailTemplate(templateId).GetDetails();
+        - lang: java
+          label: Java
+          source: |
+            import io.mailtrap.config.MailtrapConfig;
+            import io.mailtrap.factory.MailtrapClientFactory;
+            var config = new MailtrapConfig.Builder().token("YOUR_API_KEY").build();
+            var client = MailtrapClientFactory.createMailtrapClient(config);
+            var response = client.emailTemplatesApi().templates().get(accountId, templateId);
+      responses:
+        '200':
+          description: Returns attributes of the email template.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EmailTemplateResponse'
+        '401':
+          $ref: '#/components/responses/UNAUTHENTICATED'
+        '403':
+          $ref: '#/components/responses/PERMISSION_DENIED'
+        '404':
+          $ref: '#/components/responses/NOT_FOUND'
+        '500':
+          $ref: '#/components/responses/INTERNAL_ERROR'
+    patch:
+      description: Update an email template
+      operationId: updateEmailTemplate
+      summary: Update Email Template
+      tags:
+        - templates
+      x-codeSamples:
+        - lang: javascript
+          label: Node.js
+          source: |
+            const { MailtrapClient } = require("mailtrap");
+            const client = new MailtrapClient({ token: "YOUR_API_KEY", accountId: YOUR_ACCOUNT_ID });
+            const template = await client.templates.update(templateId, { name: "Updated Template", subject: "New Subject" });
+        - lang: php
+          label: PHP
+          source: |
+            <?php
+            use Mailtrap\Config;
+            use Mailtrap\MailtrapGeneralClient;
+            $config = new Config("YOUR_API_KEY");
+            $templates = (new MailtrapGeneralClient($config))->emailTemplates(12345);
+            $response = $templates->update($templateId, ["name" => "Updated Template", "subject" => "New Subject"]);
+        - lang: python
+          label: Python
+          source: |
+            import mailtrap as mt
+            client = mt.MailtrapClient(token="YOUR_API_KEY", account_id=YOUR_ACCOUNT_ID)
+            template = client.email_templates_api.templates.update(template_id, name="Updated Template", subject="New Subject")
+        - lang: ruby
+          label: Ruby
+          source: |
+            require 'mailtrap'
+            client = Mailtrap::Client.new(api_key: 'YOUR_API_KEY')
+            templates = Mailtrap::EmailTemplatesAPI.new(12345, client)
+            templates.update(template_id, name: "Updated Template", subject: "New Subject")
+        - lang: csharp
+          label: C#
+          source: |
+            using Mailtrap;
+            var client = new MailtrapClient("YOUR_API_KEY");
+            await client.Account(accountId).EmailTemplate(templateId).Update(new { Name = "Updated Template", Subject = "New Subject" });
+        - lang: java
+          label: Java
+          source: |
+            import io.mailtrap.config.MailtrapConfig;
+            import io.mailtrap.factory.MailtrapClientFactory;
+            var config = new MailtrapConfig.Builder().token("YOUR_API_KEY").build();
+            var client = MailtrapClientFactory.createMailtrapClient(config);
+            var response = client.emailTemplatesApi().templates().update(accountId, templateId, request);
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EmailTemplateRequest'
+      responses:
+        '200':
+          description: Email template updated successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EmailTemplateResponse'
+        '401':
+          $ref: '#/components/responses/UNAUTHENTICATED'
+        '403':
+          $ref: '#/components/responses/PERMISSION_DENIED'
+        '404':
+          $ref: '#/components/responses/NOT_FOUND'
+        '422':
+          description: Returns validation errors.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnprocessableEntity'
+              example:
+                errors:
+                  name:
+                    - - can't be blank
+                  subject:
+                    - - can't be blank
+                  category:
+                    - - can't be blank
+        '500':
+          $ref: '#/components/responses/INTERNAL_ERROR'
+    parameters:
+      - $ref: '#/components/parameters/account_id'
+      - $ref: '#/components/parameters/email_template_id'
+    delete:
+      description: Delete an email template
+      operationId: deleteEmailTemplate
+      summary: Delete Email Template
+      tags:
+        - templates
+      x-codeSamples:
+        - lang: javascript
+          label: Node.js
+          source: |
+            const { MailtrapClient } = require("mailtrap");
+            const client = new MailtrapClient({ token: "YOUR_API_KEY", accountId: YOUR_ACCOUNT_ID });
+            await client.templates.delete(templateId);
+        - lang: php
+          label: PHP
+          source: |
+            <?php
+            use Mailtrap\Config;
+            use Mailtrap\MailtrapGeneralClient;
+            $config = new Config("YOUR_API_KEY");
+            $templates = (new MailtrapGeneralClient($config))->emailTemplates(12345);
+            $templates->delete($templateId);
+        - lang: python
+          label: Python
+          source: |
+            import mailtrap as mt
+            client = mt.MailtrapClient(token="YOUR_API_KEY", account_id=YOUR_ACCOUNT_ID)
+            client.email_templates_api.templates.delete(template_id)
+        - lang: ruby
+          label: Ruby
+          source: |
+            require 'mailtrap'
+            client = Mailtrap::Client.new(api_key: 'YOUR_API_KEY')
+            templates = Mailtrap::EmailTemplatesAPI.new(12345, client)
+            templates.delete(template_id)
+        - lang: csharp
+          label: C#
+          source: |
+            using Mailtrap;
+            var client = new MailtrapClient("YOUR_API_KEY");
+            await client.Account(accountId).EmailTemplate(templateId).Delete();
+        - lang: java
+          label: Java
+          source: |
+            import io.mailtrap.config.MailtrapConfig;
+            import io.mailtrap.factory.MailtrapClientFactory;
+            var config = new MailtrapConfig.Builder().token("YOUR_API_KEY").build();
+            var client = MailtrapClientFactory.createMailtrapClient(config);
+            client.emailTemplatesApi().templates().delete(accountId, templateId);
+      responses:
+        '204':
+          description: No Content
+        '401':
+          $ref: '#/components/responses/UNAUTHENTICATED'
+        '403':
+          $ref: '#/components/responses/PERMISSION_DENIED'
+        '404':
+          $ref: '#/components/responses/NOT_FOUND'
+        '500':
+          $ref: '#/components/responses/INTERNAL_ERROR'
+      parameters:
+        - $ref: '#/components/parameters/account_id'
+        - $ref: '#/components/parameters/email_template_id'
+components:
+  securitySchemes:
+    HeaderAuth:
+      type: apiKey
+      description: Pass the API token in the Api-Token
+      in: header
+      name: Api-Token
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    EmailTemplate:
+      $ref: '#/components/schemas/EmailTemplateResponse'
+    EmailTemplateRequest:
+      title: EmailTemplateRequest
+      type: object
+      required:
+        - email_template
+      properties:
+        email_template:
+          type: object
+          required:
+            - name
+            - subject
+            - category
+          properties:
+            name:
+              type: string
+              maxLength: 255
+            category:
+              type: string
+              maxLength: 255
+            subject:
+              type: string
+              maxLength: 255
+            body_text:
+              type: string
+              maxLength: 10000000
+            body_html:
+              type: string
+              maxLength: 10000000
+      example:
+        email_template:
+          name: My Email Template
+          subject: Promotional Email
+          category: Promotional
+          body_html: <div>Template Body</div>
+          body_text: Template Body
+    EmailTemplateResponse:
+      title: EmailTemplateResponse
+      type: object
+      properties:
+        id:
+          type: integer
+        uuid:
+          type: string
+          format: uuid
+        name:
+          type: string
+          maxLength: 255
+        category:
+          type: string
+          maxLength: 255
+        subject:
+          type: string
+          maxLength: 255
+        body_text:
+          type: string
+          maxLength: 10000000
+        body_html:
+          type: string
+          maxLength: 10000000
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+      example:
+        id: 26730
+        uuid: 018dd5e3-f6d2-7c00-8f9b-e5c3f2d8a132
+        name: My Email Template
+        subject: Promotional Email
+        category: Promotional
+        body_html: <div>Template Body</div>
+        body_text: Template Body
+        created_at: '2021-01-01T00:00:00Z'
+        updated_at: '2021-01-01T00:00:00Z'
+    ErrorResponse:
+      title: ErrorResponse
+      type: object
+      properties:
+        errors:
+          type: string
+          description: Error message
+          example: Unexpected error
+    NotFoundResponse:
+      title: NotFoundResponse
+      type: object
+      properties:
+        error:
+          type: string
+          description: Error message
+          example: Not Found
+    PermissionsDeniedResponse:
+      title: PermissionsDeniedResponse
+      type: object
+      properties:
+        errors:
+          type: string
+          description: Error message
+          example: Access forbidden
+    UnauthenticatedResponse:
+      title: UnauthenticatedResponse
+      type: object
+      properties:
+        error:
+          type: string
+          description: Error message
+          example: Incorrect API token
+    UnprocessableEntity:
+      title: UnprocessableEntity
+      type: object
+      properties:
+        errors:
+          type: object
+          description: Validation errors per attribute. Entire record errors are under `base` key.
+  examples: {}
+  responses:
+    UNAUTHENTICATED:
+      description: Returns unauthorized error message. Check your credentials.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/UnauthenticatedResponse'
+    PERMISSION_DENIED:
+      description: Returns forbidden error message. Check your permissions.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/PermissionsDeniedResponse'
+    INTERNAL_ERROR:
+      description: Internal error. Retry later or contact support.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    NOT_FOUND:
+      description: Email Template not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/NotFoundResponse'
+  parameters:
+    account_id:
+      description: Unique account ID
+      name: account_id
+      in: path
+      required: true
+      schema:
+        type: integer
+        format: int64
+        minimum: 1
+        example: 3229
+    email_template_id:
+      description: Unique email template ID
+      name: email_template_id
+      in: path
+      required: true
+      schema:
+        type: integer
+        format: int64
+        minimum: 1
+        example: 3229

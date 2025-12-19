@@ -1,0 +1,1556 @@
+openapi: 3.1.0
+info:
+  title: Email API
+  version: 2.0.0
+  description: |
+    Manage sending domains, suppressions, and email templates for your Mailtrap account.
+  contact:
+    name: Mailtrap Support
+    url: 'https://help.mailtrap.io'
+    email: support@mailtrap.io
+  license:
+    name: Creative Commons Attribution-ShareAlike 4.0 International (CC BY-SA 4.0)
+    url: 'https://creativecommons.org/licenses/by-sa/4.0/'
+  x-logo:
+    url: 'https://mailtrap.io/wp-content/uploads/2021/04/mailtrap-logo.svg'
+
+servers:
+  - description: Mailtrap API
+    url: 'https://mailtrap.io'
+
+security:
+  - HeaderAuth: []
+  - BearerAuth: []
+
+tags:
+  - name: domains
+    x-page-title: Sending Domains
+    x-page-description: Manage verified sending domains
+    description: |
+      Configure and verify domains for email sending to ensure deliverability.
+
+  - name: suppressions
+    x-page-title: Suppressions
+    x-page-description: Manage suppressed email addresses
+    description: |
+      Control which email addresses should not receive emails from your account.
+
+  - name: templates
+    x-page-title: Templates
+    x-page-description: Manage email templates
+    description: |
+      Create and manage reusable email templates with dynamic content.
+
+paths:
+  /api/accounts/{account_id}/sending_domains:
+    post:
+      summary: Create sending domain
+      description: |
+        Create a sending domain for email authentication. After creation, verify the domain by adding DNS records.
+
+        **Process:**
+        1. Create the domain
+        2. Add DNS records (SPF, DKIM, DMARC)
+        3. Verify the records
+        4. Start sending emails
+      operationId: createSendingDomain
+      tags:
+        - domains
+      x-codeSamples:
+        - lang: javascript
+          label: Node.js
+          source: |
+            import { MailtrapClient } from "mailtrap";
+
+            const client = new MailtrapClient({
+              token: process.env.MAILTRAP_API_KEY,
+              accountId: YOUR_ACCOUNT_ID
+            });
+
+            const domain = await client.sendingDomains.create({
+              domain_name: "example.com"
+            });
+
+            console.log("Created domain:", domain);
+        - lang: php
+          label: PHP
+          source: |
+            <?php
+            use Mailtrap\Config;
+            use Mailtrap\MailtrapSendingClient;
+
+            $config = new Config($_ENV['MAILTRAP_API_KEY']);
+            $accountId = (int) $_ENV['MAILTRAP_ACCOUNT_ID'];
+
+            $sendingDomains = (new MailtrapSendingClient($config))
+                ->domains($accountId);
+
+            $response = $sendingDomains->createSendingDomain('example.com');
+        - lang: python
+          label: Python
+          source: |
+            import mailtrap as mt
+
+            client = mt.MailtrapClient(
+                token="YOUR_API_KEY",
+                account_id=YOUR_ACCOUNT_ID
+            )
+
+            params = mt.CreateSendingDomainParams(domain_name="example.com")
+            domain = client.sending_domains_api.sending_domains.create(params)
+
+            print(f"Created domain: {domain}")
+        - lang: ruby
+          label: Ruby
+          source: |
+            require 'mailtrap'
+
+            client = Mailtrap::Client.new(api_key: 'YOUR_API_KEY')
+            sending_domains = Mailtrap::SendingDomainsAPI.new(
+              YOUR_ACCOUNT_ID,
+              client
+            )
+
+            domain = sending_domains.create(domain_name: 'example.com')
+            puts domain
+        - lang: csharp
+          label: .NET
+          source: |
+            using Mailtrap;
+            using Mailtrap.SendingDomains.Requests;
+
+            var client = new MailtrapClient("YOUR_API_KEY");
+            var accountResource = client.Account(accountId);
+
+            var domainsResource = accountResource.SendingDomains();
+
+            var request = new CreateSendingDomainRequest("example.com");
+            var domain = await domainsResource.Create(request);
+
+            Console.WriteLine($"Created domain: {domain.DomainName}");
+        - lang: java
+          label: Java
+          source: |
+            import io.mailtrap.config.MailtrapConfig;
+            import io.mailtrap.factory.MailtrapClientFactory;
+            import io.mailtrap.model.request.sendingdomains.CreateSendingDomainRequest;
+            import static io.mailtrap.model.request.sendingdomains.CreateSendingDomainRequest.SendingDomainData;
+
+            var config = new MailtrapConfig.Builder()
+                .token("YOUR_API_KEY")
+                .build();
+
+            var client = MailtrapClientFactory
+                .createMailtrapClient(config);
+
+            var request = new CreateSendingDomainRequest(
+                new SendingDomainData("example.com")
+            );
+
+            var domain = client.sendingApi().domains()
+                .create(ACCOUNT_ID, request);
+
+            System.out.println(domain);
+        - lang: shell
+          label: 'cURL'
+          source: |
+            curl -X POST https://mailtrap.io/api/accounts/{account_id}/sending_domains \
+              -H 'Authorization: Bearer YOUR_API_KEY' \
+              -H 'Content-Type: application/json' \
+              -d '{
+                "sending_domain": {
+                  "domain_name": "example.com"
+                }
+              }'
+      parameters:
+        - $ref: '#/components/parameters/account_id'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - sending_domain
+              properties:
+                sending_domain:
+                  type: object
+                  required:
+                    - domain_name
+                  properties:
+                    domain_name:
+                      type: string
+                      format: hostname
+                      description: Your domain name
+                      example: example.com
+            example:
+              sending_domain:
+                domain_name: example.com
+      responses:
+        '200':
+          $ref: '#/components/responses/SendingDomainResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+
+    get:
+      summary: List sending domains
+      description: Get all sending domains and their verification status
+      operationId: getSendingDomains
+      tags:
+        - domains
+      x-codeSamples:
+        - lang: javascript
+          label: Node.js
+          source: |
+            import { MailtrapClient } from "mailtrap";
+
+            const client = new MailtrapClient({
+              token: process.env.MAILTRAP_API_KEY,
+              accountId: YOUR_ACCOUNT_ID
+            });
+
+            const domains = await client.sendingDomains.getList();
+
+            console.log("Sending domains:", domains);
+        - lang: php
+          label: PHP
+          source: |
+            <?php
+            use Mailtrap\Config;
+            use Mailtrap\MailtrapSendingClient;
+            use Mailtrap\Helper\ResponseHelper;
+
+            $config = new Config($_ENV['MAILTRAP_API_KEY']);
+            $accountId = (int) $_ENV['MAILTRAP_ACCOUNT_ID'];
+
+            $sendingDomains = (new MailtrapSendingClient($config))
+                ->domains($accountId);
+
+            $response = $sendingDomains->getSendingDomains();
+            $domains = ResponseHelper::toArray($response);
+        - lang: python
+          label: Python
+          source: |
+            import mailtrap as mt
+
+            client = mt.MailtrapClient(
+                token="YOUR_API_KEY",
+                account_id=YOUR_ACCOUNT_ID
+            )
+
+            domains = client.sending_domains_api.sending_domains.get_list()
+
+            for domain in domains:
+                print(f"Domain: {domain.domain_name}, Verified: {domain.dns_verified}")
+        - lang: ruby
+          label: Ruby
+          source: |
+            require 'mailtrap'
+
+            client = Mailtrap::Client.new(api_key: 'YOUR_API_KEY')
+            sending_domains = Mailtrap::SendingDomainsAPI.new(
+              YOUR_ACCOUNT_ID,
+              client
+            )
+
+            domains = sending_domains.list
+            domains.each do |domain|
+              puts "Domain: #{domain.domain_name}"
+            end
+        - lang: csharp
+          label: .NET
+          source: |
+            using Mailtrap;
+
+            var client = new MailtrapClient("YOUR_API_KEY");
+            var accountResource = client.Account(accountId);
+
+            var domainsResource = accountResource.SendingDomains();
+
+            var domains = await domainsResource.GetAll();
+
+            foreach (var domain in domains)
+            {
+                Console.WriteLine($"Domain: {domain.DomainName}, Verified: {domain.DnsVerified}");
+            }
+        - lang: java
+          label: Java
+          source: |
+            import io.mailtrap.config.MailtrapConfig;
+            import io.mailtrap.factory.MailtrapClientFactory;
+
+            var config = new MailtrapConfig.Builder()
+                .token("YOUR_API_KEY")
+                .build();
+
+            var client = MailtrapClientFactory
+                .createMailtrapClient(config);
+
+            var domains = client.sendingApi().domains()
+                .getSendingDomains(ACCOUNT_ID);
+
+            domains.forEach(domain ->
+                System.out.println("Domain: " + domain.getDomainName())
+            );
+        - lang: shell
+          label: 'cURL'
+          source: |
+            curl -X GET https://mailtrap.io/api/accounts/{account_id}/sending_domains \
+              -H 'Authorization: Bearer YOUR_API_KEY'
+      parameters:
+        - $ref: '#/components/parameters/account_id'
+      responses:
+        '200':
+          $ref: '#/components/responses/SendingDomainsResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /api/accounts/{account_id}/sending_domains/{sending_domain_id}:
+    get:
+      summary: Get sending domain
+      description: Get details and verification status of a specific sending domain
+      operationId: getSendingDomain
+      tags:
+        - domains
+      x-codeSamples:
+        - lang: javascript
+          label: Node.js
+          source: |
+            import { MailtrapClient } from "mailtrap";
+
+            const client = new MailtrapClient({
+              token: process.env.MAILTRAP_API_KEY,
+              accountId: YOUR_ACCOUNT_ID
+            });
+
+            const domainId = 12345;
+            const domain = await client.sendingDomains.get(domainId);
+
+            console.log("Domain details:", domain);
+        - lang: php
+          label: PHP
+          source: |
+            <?php
+            use Mailtrap\Config;
+            use Mailtrap\MailtrapSendingClient;
+            use Mailtrap\Helper\ResponseHelper;
+
+            $config = new Config($_ENV['MAILTRAP_API_KEY']);
+            $accountId = (int) $_ENV['MAILTRAP_ACCOUNT_ID'];
+
+            $sendingDomains = (new MailtrapSendingClient($config))
+                ->domains($accountId);
+
+            $domainId = 12345;
+            $response = $sendingDomains->getDomainById($domainId);
+            $domain = ResponseHelper::toArray($response);
+        - lang: python
+          label: Python
+          source: |
+            import mailtrap as mt
+
+            client = mt.MailtrapClient(
+                token="YOUR_API_KEY",
+                account_id=YOUR_ACCOUNT_ID
+            )
+
+            domain_id = 12345
+            domain = client.sending_domains_api.sending_domains.get_by_id(domain_id)
+
+            print(f"Domain: {domain.domain_name}")
+            print(f"DNS Verified: {domain.dns_verified}")
+        - lang: ruby
+          label: Ruby
+          source: |
+            require 'mailtrap'
+
+            client = Mailtrap::Client.new(api_key: 'YOUR_API_KEY')
+            sending_domains = Mailtrap::SendingDomainsAPI.new(
+              YOUR_ACCOUNT_ID,
+              client
+            )
+
+            domain_id = 12345
+            domain = sending_domains.get(domain_id)
+
+            puts "Domain: #{domain.domain_name}"
+        - lang: csharp
+          label: .NET
+          source: |
+            using Mailtrap;
+
+            var client = new MailtrapClient("YOUR_API_KEY");
+            var accountResource = client.Account(accountId);
+
+            var domainId = 12345;
+            var domainResource = accountResource.SendingDomain(domainId);
+
+            var domain = await domainResource.GetDetails();
+
+            Console.WriteLine($"Domain: {domain.DomainName}");
+        - lang: java
+          label: Java
+          source: |
+            import io.mailtrap.config.MailtrapConfig;
+            import io.mailtrap.factory.MailtrapClientFactory;
+
+            var config = new MailtrapConfig.Builder()
+                .token("YOUR_API_KEY")
+                .build();
+
+            var client = MailtrapClientFactory
+                .createMailtrapClient(config);
+
+            long domainId = 12345L;
+            var domain = client.sendingApi().domains()
+                .getSendingDomain(ACCOUNT_ID, domainId);
+
+            System.out.println("Domain: " + domain.getDomainName());
+        - lang: shell
+          label: 'cURL'
+          source: |
+            curl -X GET https://mailtrap.io/api/accounts/{account_id}/sending_domains/{sending_domain_id} \
+              -H 'Authorization: Bearer YOUR_API_KEY'
+      parameters:
+        - $ref: '#/components/parameters/account_id'
+        - $ref: '#/components/parameters/sending_domain_id'
+      responses:
+        '200':
+          $ref: '#/components/responses/SendingDomainResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    delete:
+      summary: Delete sending domain
+      description: Remove a sending domain from your account
+      operationId: deleteSendingDomain
+      tags:
+        - domains
+      x-codeSamples:
+        - lang: javascript
+          label: Node.js
+          source: |
+            import { MailtrapClient } from "mailtrap";
+
+            const client = new MailtrapClient({
+              token: process.env.MAILTRAP_API_KEY,
+              accountId: YOUR_ACCOUNT_ID
+            });
+
+            const domainId = 12345;
+            await client.sendingDomains.delete(domainId);
+
+            console.log("Domain deleted successfully");
+        - lang: php
+          label: PHP
+          source: |
+            <?php
+            use Mailtrap\Config;
+            use Mailtrap\MailtrapSendingClient;
+
+            $config = new Config($_ENV['MAILTRAP_API_KEY']);
+            $accountId = (int) $_ENV['MAILTRAP_ACCOUNT_ID'];
+
+            $sendingDomains = (new MailtrapSendingClient($config))
+                ->domains($accountId);
+
+            $domainId = 12345;
+            $response = $sendingDomains->deleteSendingDomain($domainId);
+        - lang: python
+          label: Python
+          source: |
+            import mailtrap as mt
+
+            client = mt.MailtrapClient(
+                token="YOUR_API_KEY",
+                account_id=YOUR_ACCOUNT_ID
+            )
+
+            domain_id = 12345
+            client.sending_domains_api.sending_domains.delete(domain_id)
+
+            print("Domain deleted successfully")
+        - lang: ruby
+          label: Ruby
+          source: |
+            require 'mailtrap'
+
+            client = Mailtrap::Client.new(api_key: 'YOUR_API_KEY')
+            sending_domains = Mailtrap::SendingDomainsAPI.new(
+              YOUR_ACCOUNT_ID,
+              client
+            )
+
+            domain_id = 12345
+            sending_domains.delete(domain_id)
+
+            puts "Domain deleted successfully"
+        - lang: csharp
+          label: .NET
+          source: |
+            using Mailtrap;
+
+            var client = new MailtrapClient("YOUR_API_KEY");
+            var accountResource = client.Account(accountId);
+
+            var domainId = 12345;
+            var domainResource = accountResource.SendingDomain(domainId);
+
+            await domainResource.Delete();
+
+            Console.WriteLine("Domain deleted successfully");
+        - lang: java
+          label: Java
+          source: |
+            import io.mailtrap.config.MailtrapConfig;
+            import io.mailtrap.factory.MailtrapClientFactory;
+
+            var config = new MailtrapConfig.Builder()
+                .token("YOUR_API_KEY")
+                .build();
+
+            var client = MailtrapClientFactory
+                .createMailtrapClient(config);
+
+            long domainId = 12345L;
+            client.sendingApi().domains()
+                .deleteSendingDomain(ACCOUNT_ID, domainId);
+
+            System.out.println("Domain deleted successfully");
+        - lang: shell
+          label: 'cURL'
+          source: |
+            curl -X DELETE https://mailtrap.io/api/accounts/{account_id}/sending_domains/{sending_domain_id} \
+              -H 'Authorization: Bearer YOUR_API_KEY'
+      parameters:
+        - $ref: '#/components/parameters/account_id'
+        - $ref: '#/components/parameters/sending_domain_id'
+      responses:
+        '204':
+          description: Domain successfully deleted
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /api/accounts/{account_id}/sending_domains/{sending_domain_id}/send_setup_instructions:
+    post:
+      summary: Send setup instructions
+      description: Email DNS configuration instructions for the sending domain
+      operationId: sendSendingDomainSetupInstructions
+      tags:
+        - domains
+      x-codeSamples:
+        - lang: javascript
+          label: Node.js
+          source: |
+            import { MailtrapClient } from "mailtrap";
+
+            const client = new MailtrapClient({
+              token: process.env.MAILTRAP_API_KEY,
+              accountId: YOUR_ACCOUNT_ID
+            });
+
+            const domainId = 12345;
+            await client.sendingDomains.sendSetupInstructions(
+              domainId,
+              "devops@example.com"
+            );
+
+            console.log("Setup instructions sent");
+        - lang: php
+          label: PHP
+          source: |
+            <?php
+            use Mailtrap\Config;
+            use Mailtrap\MailtrapSendingClient;
+
+            $config = new Config($_ENV['MAILTRAP_API_KEY']);
+            $accountId = (int) $_ENV['MAILTRAP_ACCOUNT_ID'];
+
+            $sendingDomains = (new MailtrapSendingClient($config))
+                ->domains($accountId);
+
+            $domainId = 12345;
+            $email = 'devops@example.com';
+
+            $response = $sendingDomains->sendDomainSetupInstructions(
+                $domainId,
+                $email
+            );
+        - lang: python
+          label: Python
+          source: |
+            import mailtrap as mt
+
+            client = mt.MailtrapClient(
+                token="YOUR_API_KEY",
+                account_id=YOUR_ACCOUNT_ID
+            )
+
+            domain_id = 12345
+            params = mt.SendSetupInstructionsParams(email="devops@example.com")
+            client.sending_domains_api.sending_domains.send_setup_instructions(
+                domain_id, params
+            )
+
+            print("Setup instructions sent")
+        - lang: ruby
+          label: Ruby
+          source: |
+            require 'mailtrap'
+
+            client = Mailtrap::Client.new(api_key: 'YOUR_API_KEY')
+            sending_domains = Mailtrap::SendingDomainsAPI.new(
+              YOUR_ACCOUNT_ID,
+              client
+            )
+
+            domain_id = 12345
+            sending_domains.send_setup_instructions(
+              domain_id,
+              'devops@example.com'
+            )
+
+            puts "Setup instructions sent"
+        - lang: csharp
+          label: .NET
+          source: |
+            using Mailtrap;
+            using Mailtrap.SendingDomains.Requests;
+
+            var client = new MailtrapClient("YOUR_API_KEY");
+            var accountResource = client.Account(accountId);
+
+            var domainId = 12345;
+            var domainResource = accountResource.SendingDomain(domainId);
+
+            var request = new SendingDomainInstructionsRequest(
+                "devops@example.com"
+            );
+            await domainResource.SendInstructions(request);
+
+            Console.WriteLine("Setup instructions sent");
+        - lang: java
+          label: Java
+          source: |
+            import io.mailtrap.config.MailtrapConfig;
+            import io.mailtrap.factory.MailtrapClientFactory;
+            import io.mailtrap.model.request.sendingdomains.SendingDomainsSetupInstructionsRequest;
+
+            var config = new MailtrapConfig.Builder()
+                .token("YOUR_API_KEY")
+                .build();
+
+            var client = MailtrapClientFactory
+                .createMailtrapClient(config);
+
+            long domainId = 12345L;
+            var request = new SendingDomainsSetupInstructionsRequest(
+                "devops@example.com"
+            );
+
+            client.sendingApi().domains()
+                .sendSendingDomainsSetupInstructions(
+                    ACCOUNT_ID,
+                    domainId,
+                    request
+                );
+
+            System.out.println("Setup instructions sent");
+        - lang: shell
+          label: 'cURL'
+          source: |
+            curl -X POST https://mailtrap.io/api/accounts/{account_id}/sending_domains/{sending_domain_id}/send_setup_instructions \
+              -H 'Authorization: Bearer YOUR_API_KEY' \
+              -H 'Content-Type: application/json' \
+              -d '{
+                "email": "devops@example.com"
+              }'
+      parameters:
+        - $ref: '#/components/parameters/account_id'
+        - $ref: '#/components/parameters/sending_domain_id'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+              properties:
+                email:
+                  type: string
+                  format: email
+                  description: Email address to receive setup instructions
+            example:
+              email: devops@example.com
+      responses:
+        '204':
+          description: Instructions sent successfully
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+
+  /api/accounts/{account_id}/suppressions:
+    get:
+      summary: List suppressions
+      description: |
+        List and search suppressed email addresses. Returns up to 1000 suppressions per request.
+
+        Suppressed emails will not receive any emails from your account.
+      operationId: getSuppressions
+      tags:
+        - suppressions
+      x-codeSamples:
+        - lang: javascript
+          label: Node.js
+          source: |
+            import { MailtrapClient } from "mailtrap";
+
+            const client = new MailtrapClient({
+              token: process.env.MAILTRAP_API_KEY,
+              accountId: YOUR_ACCOUNT_ID
+            });
+
+            // Get all suppressions
+            const suppressions = await client.suppressions.getList();
+
+            // Or search for specific email
+            const filtered = await client.suppressions.getList({
+              email: "suppressed@example.com"
+            });
+
+            console.log("Suppressions:", suppressions);
+        - lang: php
+          label: PHP
+          source: |
+            <?php
+            use Mailtrap\Config;
+            use Mailtrap\MailtrapSendingClient;
+            use Mailtrap\Helper\ResponseHelper;
+
+            $config = new Config($_ENV['MAILTRAP_API_KEY']);
+            $accountId = (int) $_ENV['MAILTRAP_ACCOUNT_ID'];
+
+            $suppressions = (new MailtrapSendingClient($config))
+                ->suppressions($accountId);
+
+            // Get all suppressions
+            $response = $suppressions->getSuppressions();
+
+            // Or search for specific email
+            $response = $suppressions->getSuppressions('suppressed@example.com');
+
+            $data = ResponseHelper::toArray($response);
+        - lang: python
+          label: Python
+          source: |
+            import mailtrap as mt
+
+            client = mt.MailtrapClient(
+                token="YOUR_API_KEY",
+                account_id=YOUR_ACCOUNT_ID
+            )
+
+            # Get all suppressions
+            suppressions = client.suppressions_api.suppressions.get_list()
+
+            # Or search for specific email
+            filtered = client.suppressions_api.suppressions.get_list("suppressed@example.com")
+
+            for suppression in suppressions:
+                print(f"Email: {suppression.email}, Type: {suppression.type}")
+        - lang: ruby
+          label: Ruby
+          source: |
+            require 'mailtrap'
+
+            client = Mailtrap::Client.new(api_key: 'YOUR_API_KEY')
+            suppressions = Mailtrap::SuppressionsAPI.new(
+              YOUR_ACCOUNT_ID,
+              client
+            )
+
+            # Get all suppressions
+            all_suppressions = suppressions.list
+
+            # Or search for specific email
+            filtered = suppressions.list(email: 'suppressed@example.com')
+
+            all_suppressions.each do |suppression|
+              puts "Email: #{suppression.email}"
+            end
+        - lang: csharp
+          label: .NET
+          source: |
+            using Mailtrap;
+            using Mailtrap.Suppressions.Models;
+
+            var client = new MailtrapClient("YOUR_API_KEY");
+            var accountResource = client.Account(accountId);
+
+            var suppressionsResource = accountResource.Suppressions();
+
+            // Get all suppressions
+            var suppressions = await suppressionsResource.Fetch();
+
+            // Or search for specific email
+            var filter = new SuppressionFilter
+            {
+                Email = "suppressed@example.com"
+            };
+            var filtered = await suppressionsResource.Fetch(filter);
+
+            foreach (var suppression in suppressions)
+            {
+                Console.WriteLine($"Email: {suppression.Email}");
+            }
+        - lang: java
+          label: Java
+          source: |
+            import io.mailtrap.config.MailtrapConfig;
+            import io.mailtrap.factory.MailtrapClientFactory;
+
+            var config = new MailtrapConfig.Builder()
+                .token("YOUR_API_KEY")
+                .build();
+
+            var client = MailtrapClientFactory
+                .createMailtrapClient(config);
+
+            // Get all suppressions
+            var suppressions = client.sendingApi().suppressions()
+                .search(ACCOUNT_ID, null);
+
+            // Or search for specific email
+            var filtered = client.sendingApi().suppressions()
+                .search(ACCOUNT_ID, "suppressed@example.com");
+
+            suppressions.forEach(suppression ->
+                System.out.println("Email: " + suppression.getEmail())
+            );
+        - lang: shell
+          label: 'cURL'
+          source: |
+            # Get all suppressions
+            curl -X GET https://mailtrap.io/api/accounts/{account_id}/suppressions \
+              -H 'Authorization: Bearer YOUR_API_KEY'
+
+            # Search for specific email
+            curl -X GET 'https://mailtrap.io/api/accounts/{account_id}/suppressions?email=suppressed@example.com' \
+              -H 'Authorization: Bearer YOUR_API_KEY'
+      parameters:
+        - $ref: '#/components/parameters/account_id'
+        - name: email
+          in: query
+          description: Search for specific email address
+          schema:
+            type: string
+            format: email
+            example: suppressed@example.com
+      responses:
+        '200':
+          $ref: '#/components/responses/GetSuppressionsResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /api/accounts/{account_id}/suppressions/{suppression_id}:
+    delete:
+      summary: Delete suppression
+      description: Remove an email from the suppression list to allow sending again
+      operationId: deleteSuppression
+      tags:
+        - suppressions
+      x-codeSamples:
+        - lang: javascript
+          label: Node.js
+          source: |
+            import { MailtrapClient } from "mailtrap";
+
+            const client = new MailtrapClient({
+              token: process.env.MAILTRAP_API_KEY,
+              accountId: YOUR_ACCOUNT_ID
+            });
+
+            const suppressionId = "abc123-def456";
+            const result = await client.suppressions.delete(suppressionId);
+
+            console.log("Suppression removed:", result);
+        - lang: php
+          label: PHP
+          source: |
+            <?php
+            use Mailtrap\Config;
+            use Mailtrap\MailtrapSendingClient;
+
+            $config = new Config($_ENV['MAILTRAP_API_KEY']);
+            $accountId = (int) $_ENV['MAILTRAP_ACCOUNT_ID'];
+
+            $suppressions = (new MailtrapSendingClient($config))
+                ->suppressions($accountId);
+
+            $suppressionId = 'abc123-def456';
+            $response = $suppressions->deleteSuppression($suppressionId);
+        - lang: python
+          label: Python
+          source: |
+            import mailtrap as mt
+
+            client = mt.MailtrapClient(
+                token="YOUR_API_KEY",
+                account_id=YOUR_ACCOUNT_ID
+            )
+
+            suppression_id = "abc123-def456"
+            deleted = client.suppressions_api.suppressions.delete(suppression_id)
+
+            print(f"Suppression removed: {deleted.email}")
+        - lang: ruby
+          label: Ruby
+          source: |
+            require 'mailtrap'
+
+            client = Mailtrap::Client.new(api_key: 'YOUR_API_KEY')
+            suppressions = Mailtrap::SuppressionsAPI.new(
+              YOUR_ACCOUNT_ID,
+              client
+            )
+
+            suppression_id = 'abc123-def456'
+            result = suppressions.delete(suppression_id)
+
+            puts "Suppression removed: #{result.email}"
+        - lang: csharp
+          label: .NET
+          source: |
+            using Mailtrap;
+
+            var client = new MailtrapClient("YOUR_API_KEY");
+            var accountResource = client.Account(accountId);
+
+            var suppressionId = "abc123-def456";
+            var suppressionResource = accountResource.Suppression(suppressionId);
+
+            var result = await suppressionResource.Delete();
+
+            Console.WriteLine($"Suppression removed: {result.Email}");
+        - lang: java
+          label: Java
+          source: |
+            import io.mailtrap.config.MailtrapConfig;
+            import io.mailtrap.factory.MailtrapClientFactory;
+
+            var config = new MailtrapConfig.Builder()
+                .token("YOUR_API_KEY")
+                .build();
+
+            var client = MailtrapClientFactory
+                .createMailtrapClient(config);
+
+            String suppressionId = "abc123-def456";
+            var result = client.sendingApi().suppressions()
+                .deleteSuppression(ACCOUNT_ID, suppressionId);
+
+            System.out.println("Suppression removed: " + result.getEmail());
+        - lang: shell
+          label: 'cURL'
+          source: |
+            curl -X DELETE https://mailtrap.io/api/accounts/{account_id}/suppressions/{suppression_id} \
+              -H 'Authorization: Bearer YOUR_API_KEY'
+      parameters:
+        - $ref: '#/components/parameters/account_id'
+        - $ref: '#/components/parameters/suppression_id'
+      responses:
+        '200':
+          $ref: '#/components/responses/DeleteSuppressionResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /api/accounts/{account_id}/email_templates:
+    get:
+      description: Get all email templates existing in your account
+      operationId: emailTemplates
+      summary: Get all Email Templates
+      tags:
+        - templates
+      x-codeSamples:
+        - lang: javascript
+          label: Node.js
+          source: |
+            const { MailtrapClient } = require("mailtrap");
+            const client = new MailtrapClient({ token: "YOUR_API_KEY", accountId: YOUR_ACCOUNT_ID });
+            const templates = await client.templates.getAll();
+            templates.forEach(tpl => console.log(`${tpl.name}: ${tpl.uuid}`));
+        - lang: php
+          label: PHP
+          source: |
+            <?php
+            use Mailtrap\Config;
+            use Mailtrap\MailtrapGeneralClient;
+            $config = new Config("YOUR_API_KEY");
+            $templates = (new MailtrapGeneralClient($config))->emailTemplates(12345);
+            $response = $templates->getAll();
+        - lang: python
+          label: Python
+          source: |
+            import mailtrap as mt
+            client = mt.MailtrapClient(token="YOUR_API_KEY", account_id=YOUR_ACCOUNT_ID)
+            templates = client.email_templates_api.templates.get_list()
+            for tpl in templates:
+                print(f"{tpl.name}: {tpl.uuid}")
+        - lang: ruby
+          label: Ruby
+          source: |
+            require 'mailtrap'
+            client = Mailtrap::Client.new(api_key: 'YOUR_API_KEY')
+            templates = Mailtrap::EmailTemplatesAPI.new(12345, client)
+            all_templates = templates.get_all
+        - lang: csharp
+          label: .NET
+          source: |
+            using Mailtrap;
+            var client = new MailtrapClient("YOUR_API_KEY");
+            var templates = await client.Account(accountId).EmailTemplates().GetAll();
+        - lang: java
+          label: Java
+          source: |
+            import io.mailtrap.config.MailtrapConfig;
+            import io.mailtrap.factory.MailtrapClientFactory;
+            var config = new MailtrapConfig.Builder().token("YOUR_API_KEY").build();
+            var client = MailtrapClientFactory.createMailtrapClient(config);
+            var response = client.emailTemplatesApi().templates().getAll(accountId);
+        - lang: shell
+          label: cURL
+          source: |
+            curl -X GET "https://mailtrap.io/api/accounts/{account_id}/email_templates" \
+              -H "Api-Token: YOUR_API_KEY"
+      responses:
+        '200':
+          description: OK.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/EmailTemplateResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+    post:
+      description: Create a new email template
+      operationId: createEmailTemplate
+      summary: Create Email Template
+      tags:
+        - templates
+      x-codeSamples:
+        - lang: javascript
+          label: Node.js
+          source: |
+            import { MailtrapClient } from "mailtrap";
+            const client = new MailtrapClient({ token: "YOUR_API_TOKEN" });
+            const template = await client.templates.create({
+              name: "Welcome Email",
+              subject: "Welcome to {{company_name}}!",
+              category: "onboarding",
+              body_html: "<h1>Welcome {{user_name}}!</h1>",
+              body_text: "Welcome {{user_name}}!"
+            });
+            console.log(`Template created: ${template.uuid}`);
+        - lang: php
+          label: PHP
+          source: |
+            use Mailtrap\Config;
+            use Mailtrap\MailtrapGeneralClient;
+            $config = new Config('YOUR_API_TOKEN');
+            $client = new MailtrapGeneralClient($config);
+            $template = $client->emailTemplates($accountId)->create([
+                'name' => 'Welcome Email',
+                'subject' => 'Welcome to {{company_name}}!',
+                'category' => 'onboarding',
+                'body_html' => '<h1>Welcome {{user_name}}!</h1>',
+                'body_text' => 'Welcome {{user_name}}!'
+            ]);
+        - lang: python
+          label: Python
+          source: |
+            import mailtrap as mt
+            client = mt.MailtrapClient(token="YOUR_API_TOKEN", account_id=ACCOUNT_ID)
+            template = client.email_templates_api.templates.create(
+                mt.CreateEmailTemplateParams(
+                    name="Welcome Email",
+                    subject="Welcome to {{company_name}}!",
+                    category="onboarding",
+                    body_html="<h1>Welcome {{user_name}}!</h1>",
+                    body_text="Welcome {{user_name}}!"
+                )
+            )
+        - lang: ruby
+          label: Ruby
+          source: |
+            require 'mailtrap'
+            client = Mailtrap::Client.new(api_key: 'YOUR_API_TOKEN')
+            templates = Mailtrap::EmailTemplatesAPI.new(account_id, client)
+            template = templates.create(
+              name: 'Welcome Email',
+              subject: 'Welcome to {{company_name}}!',
+              category: 'onboarding',
+              body_html: '<h1>Welcome {{user_name}}!</h1>',
+              body_text: 'Welcome {{user_name}}!'
+            )
+        - lang: csharp
+          label: .NET
+          source: |
+            using Mailtrap;
+            var client = new MailtrapClient("YOUR_API_TOKEN");
+            var request = new CreateTemplateRequest {
+                Name = "Welcome Email",
+                Subject = "Welcome to {{company_name}}!",
+                Category = "onboarding",
+                BodyHtml = "<h1>Welcome {{user_name}}!</h1>",
+                BodyText = "Welcome {{user_name}}!"
+            };
+            var template = await client.Account(accountId).Templates().Create(request);
+        - lang: java
+          label: Java
+          source: |
+            import io.mailtrap.config.MailtrapConfig;
+            import io.mailtrap.factory.MailtrapClientFactory;
+            var config = new MailtrapConfig.Builder().token("YOUR_API_TOKEN").build();
+            var client = MailtrapClientFactory.createMailtrapClient(config);
+            var request = new CreateTemplateRequest(
+                "Welcome Email", "Welcome to {{company_name}}!", "onboarding",
+                "<h1>Welcome {{user_name}}!</h1>", "Welcome {{user_name}}!"
+            );
+            var template = client.emailTemplatesApi().emailTemplates().createEmailTemplate(accountId, request);
+        - lang: shell
+          label: cURL
+          source: |
+            curl -X POST "https://mailtrap.io/api/accounts/{account_id}/email_templates" \
+              -H "Api-Token: YOUR_API_KEY" \
+              -H "Content-Type: application/json" \
+              -d '{
+                "email_template": {
+                  "name": "Welcome Email",
+                  "subject": "Welcome to {{company_name}}!",
+                  "category": "onboarding",
+                  "body_html": "<h1>Welcome {{user_name}}!</h1>",
+                  "body_text": "Welcome {{user_name}}!"
+                }
+              }'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EmailTemplateRequest'
+      responses:
+        '201':
+          description: Email template created successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EmailTemplateResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+    parameters:
+      - $ref: '#/components/parameters/account_id'
+
+  /api/accounts/{account_id}/email_templates/{email_template_id}:
+    get:
+      description: Get an email template by ID
+      operationId: getEmailTemplate
+      summary: Get Email Template
+      tags:
+        - templates
+      x-codeSamples:
+        - lang: javascript
+          label: Node.js
+          source: |
+            const { MailtrapClient } = require("mailtrap");
+            const client = new MailtrapClient({ token: "YOUR_API_KEY", accountId: YOUR_ACCOUNT_ID });
+            const template = await client.templates.get(templateId);
+            console.log(`Template: ${template.name} (UUID: ${template.uuid})`);
+        - lang: shell
+          label: cURL
+          source: |
+            curl -X GET "https://mailtrap.io/api/accounts/{account_id}/email_templates/{email_template_id}" \
+              -H "Api-Token: YOUR_API_KEY"
+      responses:
+        '200':
+          description: Returns attributes of the email template.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EmailTemplateResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    patch:
+      description: Update an email template
+      operationId: updateEmailTemplate
+      summary: Update Email Template
+      tags:
+        - templates
+      x-codeSamples:
+        - lang: javascript
+          label: Node.js
+          source: |
+            const { MailtrapClient } = require("mailtrap");
+            const client = new MailtrapClient({ token: "YOUR_API_KEY", accountId: YOUR_ACCOUNT_ID });
+            const template = await client.templates.update(templateId, { name: "Updated Template", subject: "New Subject" });
+        - lang: shell
+          label: cURL
+          source: |
+            curl -X PATCH "https://mailtrap.io/api/accounts/{account_id}/email_templates/{email_template_id}" \
+              -H "Api-Token: YOUR_API_KEY" \
+              -H "Content-Type: application/json" \
+              -d '{
+                "email_template": {
+                  "name": "Updated Template",
+                  "subject": "New Subject"
+                }
+              }'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EmailTemplateRequest'
+      responses:
+        '200':
+          description: Email template updated successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EmailTemplateResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+    delete:
+      description: Delete an email template
+      operationId: deleteEmailTemplate
+      summary: Delete Email Template
+      tags:
+        - templates
+      x-codeSamples:
+        - lang: javascript
+          label: Node.js
+          source: |
+            const { MailtrapClient } = require("mailtrap");
+            const client = new MailtrapClient({ token: "YOUR_API_KEY", accountId: YOUR_ACCOUNT_ID });
+            await client.templates.delete(templateId);
+        - lang: shell
+          label: cURL
+          source: |
+            curl -X DELETE "https://mailtrap.io/api/accounts/{account_id}/email_templates/{email_template_id}" \
+              -H "Api-Token: YOUR_API_KEY"
+      responses:
+        '204':
+          description: No Content
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    parameters:
+      - $ref: '#/components/parameters/account_id'
+      - $ref: '#/components/parameters/email_template_id'
+
+components:
+  securitySchemes:
+    HeaderAuth:
+      type: apiKey
+      description: API token in Api-Token header
+      in: header
+      name: Api-Token
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: Bearer token authentication
+
+  parameters:
+    account_id:
+      name: account_id
+      in: path
+      required: true
+      description: Account ID
+      schema:
+        type: integer
+        example: 1
+
+    sending_domain_id:
+      name: sending_domain_id
+      in: path
+      required: true
+      description: Sending domain ID
+      schema:
+        type: integer
+        example: 1
+
+    suppression_id:
+      name: suppression_id
+      in: path
+      required: true
+      description: Suppression ID
+      schema:
+        type: integer
+        example: 1
+
+    email_template_id:
+      name: email_template_id
+      in: path
+      required: true
+      description: Email template ID
+      schema:
+        type: integer
+        example: 1
+
+  schemas:
+    SendingDomain:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        domain_name:
+          type: string
+          example: example.com
+        dns_verified:
+          type: boolean
+          example: true
+        compliance_status:
+          type: string
+          enum: [pending, verified, failed]
+          example: verified
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    Suppression:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        email:
+          type: string
+          format: email
+          example: suppressed@example.com
+        reason:
+          type: string
+          enum: [bounce, complaint, unsubscribe, manual]
+          example: bounce
+        created_at:
+          type: string
+          format: date-time
+
+    UnprocessableEntity:
+      type: object
+      properties:
+        errors:
+          type: object
+          additionalProperties:
+            type: array
+            items:
+              type: string
+
+    EmailTemplateRequest:
+      title: EmailTemplateRequest
+      type: object
+      required:
+        - email_template
+      properties:
+        email_template:
+          type: object
+          required:
+            - name
+            - subject
+            - category
+          properties:
+            name:
+              type: string
+              maxLength: 255
+            category:
+              type: string
+              maxLength: 255
+            subject:
+              type: string
+              maxLength: 255
+            body_text:
+              type: string
+              maxLength: 10000000
+            body_html:
+              type: string
+              maxLength: 10000000
+      example:
+        email_template:
+          name: My Email Template
+          subject: Promotional Email
+          category: Promotional
+          body_html: <div>Template Body</div>
+          body_text: Template Body
+
+    EmailTemplateResponse:
+      title: EmailTemplateResponse
+      type: object
+      properties:
+        id:
+          type: integer
+        uuid:
+          type: string
+          format: uuid
+        name:
+          type: string
+          maxLength: 255
+        category:
+          type: string
+          maxLength: 255
+        subject:
+          type: string
+          maxLength: 255
+        body_text:
+          type: string
+          maxLength: 10000000
+        body_html:
+          type: string
+          maxLength: 10000000
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+      example:
+        id: 26730
+        uuid: 018dd5e3-f6d2-7c00-8f9b-e5c3f2d8a132
+        name: My Email Template
+        subject: Promotional Email
+        category: Promotional
+        body_html: <div>Template Body</div>
+        body_text: Template Body
+        created_at: '2021-01-01T00:00:00Z'
+        updated_at: '2021-01-01T00:00:00Z'
+
+    ErrorResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: false
+        errors:
+          type: array
+          items:
+            type: string
+            example: Invalid request
+
+  responses:
+    Unauthorized:
+      description: Unauthorized. Check your API credentials.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+
+    Forbidden:
+      description: Forbidden. Verify domain or check permissions.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: Resource not found
+
+    UnprocessableEntity:
+      description: Validation errors
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/UnprocessableEntity'
+
+    SendingDomainResponse:
+      description: Sending domain details
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/SendingDomain'
+
+    SendingDomainsResponse:
+      description: List of sending domains
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              $ref: '#/components/schemas/SendingDomain'
+
+    GetSuppressionsResponse:
+      description: List of suppressions
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              $ref: '#/components/schemas/Suppression'
+
+    DeleteSuppressionResponse:
+      description: Suppression deleted
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              success:
+                type: boolean
+                example: true
+              message:
+                type: string
+                example: Suppression removed successfully

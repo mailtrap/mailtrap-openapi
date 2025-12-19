@@ -1,0 +1,524 @@
+openapi: 3.1.0
+info:
+  title: Send Email - Bulk
+  version: 2.0.0
+  description: |
+    Send marketing emails and newsletters through the bulk stream optimized for high-volume sending.
+  contact:
+    name: Mailtrap Support
+    url: 'https://help.mailtrap.io'
+    email: support@mailtrap.io
+  license:
+    name: Creative Commons Attribution-ShareAlike 4.0 International (CC BY-SA 4.0)
+    url: 'https://creativecommons.org/licenses/by-sa/4.0/'
+  x-logo:
+    url: 'https://mailtrap.io/wp-content/uploads/2021/04/mailtrap-logo.svg'
+
+servers:
+  - description: Bulk Stream
+    url: 'https://bulk.api.mailtrap.io'
+
+security:
+  - HeaderAuth: []
+  - BearerAuth: []
+
+tags:
+  - name: send-email
+    x-page-title: Send Email - Bulk
+    x-page-icon: envelopes-bulk
+    x-page-description: Send marketing and bulk emails
+    description: |
+      Send marketing emails and newsletters through the bulk stream optimized for high-volume sending.
+
+      {% hint style="info" %}
+      Learn more about [Bulk Stream](https://app.gitbook.com/s/S3xyr7ba7aGO19rc8dSK/email-api-smtp/setup/get-started-bulk-stream) and when to use it.
+      {% endhint %}
+
+paths:
+  /api/send:
+    post:
+      summary: Send bulk email
+      description: |
+        Send marketing emails and newsletters through the bulk stream optimized for high-volume sending.
+
+        **Use cases:**
+        - Marketing campaigns
+        - Newsletters
+        - Announcements
+        - Promotional emails
+      operationId: sendBulkEmail
+      tags:
+        - send-email
+      x-codeSamples:
+        - lang: javascript
+          label: Node.js
+          source: |
+            import { MailtrapClient } from "mailtrap";
+
+            // Initialize client for bulk sending
+            const client = new MailtrapClient({
+              token: process.env.MAILTRAP_API_KEY,
+              bulk: true
+            });
+
+            await client.send({
+              from: { email: "marketing@example.com" },
+              to: [
+                { email: "subscriber1@example.com" },
+                { email: "subscriber2@example.com" }
+              ],
+              subject: "Monthly Newsletter",
+              html: "<h1>Our Latest Updates</h1>",
+              category: "newsletter"
+            });
+        - lang: php
+          label: PHP
+          source: |
+            <?php
+            use Mailtrap\MailtrapClient;
+            use Mailtrap\Mime\MailtrapEmail;
+            use Symfony\Component\Mime\Address;
+
+            // Initialize for bulk sending
+            $mailtrap = MailtrapClient::initSendingEmails(
+                apiKey: $_ENV['MAILTRAP_API_KEY'],
+                isBulk: true
+            );
+
+            $email = (new MailtrapEmail())
+                ->from(new Address('marketing@example.com'))
+                ->to(new Address('subscriber@example.com'))
+                ->subject('Monthly Newsletter')
+                ->html('<h1>Our Latest Updates</h1>')
+                ->category('newsletter');
+
+            $response = $mailtrap->send($email);
+        - lang: python
+          label: Python
+          source: |
+            import mailtrap as mt
+
+            # Initialize client for bulk sending
+            client = mt.MailtrapClient(
+                token="YOUR_API_KEY",
+                bulk=True
+            )
+
+            mail = mt.Mail(
+                sender=mt.Address(email="marketing@example.com"),
+                to=[mt.Address(email="subscriber@example.com")],
+                subject="Monthly Newsletter",
+                html="<h1>Our Latest Updates</h1>",
+                category="newsletter"
+            )
+
+            client.send(mail)
+        - lang: ruby
+          label: Ruby
+          source: |
+            require 'mailtrap'
+
+            # Configure for bulk sending in Rails
+            # config/environments/production.rb
+            config.action_mailer.mailtrap_settings = {
+              api_key: ENV['MAILTRAP_API_KEY'],
+              bulk: true
+            }
+
+            # Or in pure Ruby
+            client = Mailtrap::Client.new(
+              api_key: 'YOUR_API_KEY',
+              bulk: true
+            )
+
+            mail = Mailtrap::Mail.from_content(
+              from: { email: 'marketing@example.com' },
+              to: [{ email: 'subscriber@example.com' }],
+              subject: 'Monthly Newsletter',
+              html: '<h1>Our Latest Updates</h1>',
+              category: 'newsletter'
+            )
+
+            client.send(mail)
+        - lang: csharp
+          label: .NET
+          source: |
+            using Mailtrap;
+
+            // Initialize client for bulk sending
+            var client = new MailtrapClient(
+                "YOUR_API_KEY",
+                new MailtrapOptions { IsBulk = true }
+            );
+
+            var email = new Email
+            {
+                From = new Address("marketing@example.com"),
+                To = new[]
+                {
+                    new Address("subscriber1@example.com"),
+                    new Address("subscriber2@example.com")
+                },
+                Subject = "Monthly Newsletter",
+                Html = "<h1>Our Latest Updates</h1>",
+                Category = "newsletter"
+            };
+
+            await client.Send(email);
+        - lang: java
+          label: Java
+          source: |
+            import io.mailtrap.config.MailtrapConfig;
+            import io.mailtrap.factory.MailtrapClientFactory;
+            import io.mailtrap.model.Address;
+            import io.mailtrap.model.MailtrapMail;
+            import java.util.List;
+
+            var config = new MailtrapConfig.Builder()
+                .token("YOUR_API_KEY")
+                .bulk(true)  // Enable bulk sending
+                .build();
+
+            var client = MailtrapClientFactory
+                .createMailtrapClient(config);
+
+            var mail = MailtrapMail.builder()
+                .from(new Address("marketing@example.com"))
+                .to(List.of(
+                    new Address("subscriber1@example.com"),
+                    new Address("subscriber2@example.com")
+                ))
+                .subject("Monthly Newsletter")
+                .html("<h1>Our Latest Updates</h1>")
+                .category("newsletter")
+                .build();
+
+            client.bulkApi().emails().send(mail);
+        - lang: shell
+          label: 'cURL'
+          source: |
+            curl -X POST https://bulk.api.mailtrap.io/api/send \
+              -H 'Authorization: Bearer YOUR_API_KEY' \
+              -H 'Content-Type: application/json' \
+              -d '{
+                "from": {"email": "marketing@example.com"},
+                "to": [{"email": "subscriber@example.com"}],
+                "subject": "Monthly Newsletter",
+                "html": "<h1>Our Latest Updates</h1>",
+                "category": "newsletter"
+              }'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              oneOf:
+                - $ref: '#/components/schemas/EmailWithText'
+                - $ref: '#/components/schemas/EmailWithHtml'
+                - $ref: '#/components/schemas/EmailWithTextAndHtml'
+                - $ref: '#/components/schemas/EmailFromTemplate'
+      responses:
+        '200':
+          description: Bulk email successfully sent
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SentResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+components:
+  securitySchemes:
+    HeaderAuth:
+      type: apiKey
+      description: API token in Api-Token header
+      in: header
+      name: Api-Token
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: Bearer token authentication
+
+  schemas:
+    Address:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+          example: john@example.com
+        name:
+          type: string
+          example: John Doe
+
+    EmailSender:
+      type: object
+      required:
+        - from
+      properties:
+        from:
+          $ref: '#/components/schemas/Address'
+
+    EmailRecipients:
+      type: object
+      properties:
+        to:
+          type: array
+          maxItems: 1000
+          items:
+            $ref: '#/components/schemas/Address'
+        cc:
+          type: array
+          maxItems: 1000
+          items:
+            $ref: '#/components/schemas/Address'
+        bcc:
+          type: array
+          maxItems: 1000
+          items:
+            $ref: '#/components/schemas/Address'
+
+    EmailReplyTo:
+      type: object
+      properties:
+        reply_to:
+          $ref: '#/components/schemas/Address'
+
+    EmailSubject:
+      type: object
+      required:
+        - subject
+      properties:
+        subject:
+          type: string
+          minLength: 1
+          example: Monthly Newsletter
+
+    EmailText:
+      type: object
+      properties:
+        text:
+          type: string
+          minLength: 1
+          example: Check out our latest updates!
+
+    EmailHtml:
+      type: object
+      properties:
+        html:
+          type: string
+          minLength: 1
+          example: <h1>Our Latest Updates</h1>
+
+    EmailCategory:
+      type: object
+      properties:
+        category:
+          type: string
+          maxLength: 255
+          example: newsletter
+
+    EmailCustomVariables:
+      type: object
+      properties:
+        custom_variables:
+          type: object
+          additionalProperties:
+            type: string
+          example:
+            campaign_id: "CAMP-123"
+            subscriber_id: "SUB-456"
+
+    EmailSendingHeaders:
+      type: object
+      properties:
+        headers:
+          type: object
+          additionalProperties:
+            type: string
+          example:
+            X-Campaign-ID: CAMP-123
+            X-List-Unsubscribe: "<mailto:unsubscribe@example.com>"
+
+    EmailAttachments:
+      type: object
+      properties:
+        attachments:
+          type: array
+          items:
+            type: object
+            required:
+              - content
+              - filename
+            properties:
+              content:
+                type: string
+                description: Base64 encoded content
+                example: base64encodedcontent==
+              filename:
+                type: string
+                example: newsletter.pdf
+              type:
+                type: string
+                description: MIME type
+                example: application/pdf
+              disposition:
+                type: string
+                enum: [attachment, inline]
+                default: attachment
+              content_id:
+                type: string
+                description: For inline attachments
+                example: image001
+
+    TemplateUuid:
+      type: object
+      properties:
+        template_uuid:
+          type: string
+          format: uuid
+          description: Email template UUID
+          example: b81aabcd-1a1e-41cf-91b6-eca0254b3d96
+
+    TemplateVariables:
+      type: object
+      properties:
+        template_variables:
+          type: object
+          description: Template variable values
+          example:
+            user_name: John Doe
+            unsubscribe_link: "https://example.com/unsubscribe"
+
+    EmailWithText:
+      title: Text Only
+      description: Send email with plain text content only
+      allOf:
+        - $ref: '#/components/schemas/EmailSender'
+        - $ref: '#/components/schemas/EmailRecipients'
+        - $ref: '#/components/schemas/EmailReplyTo'
+        - $ref: '#/components/schemas/EmailSubject'
+        - $ref: '#/components/schemas/EmailText'
+        - $ref: '#/components/schemas/EmailAttachments'
+        - $ref: '#/components/schemas/EmailSendingHeaders'
+        - $ref: '#/components/schemas/EmailCustomVariables'
+        - $ref: '#/components/schemas/EmailCategory'
+      required:
+        - from
+        - subject
+        - text
+
+    EmailWithHtml:
+      title: HTML Only
+      description: Send email with HTML content only
+      allOf:
+        - $ref: '#/components/schemas/EmailSender'
+        - $ref: '#/components/schemas/EmailRecipients'
+        - $ref: '#/components/schemas/EmailReplyTo'
+        - $ref: '#/components/schemas/EmailSubject'
+        - $ref: '#/components/schemas/EmailHtml'
+        - $ref: '#/components/schemas/EmailAttachments'
+        - $ref: '#/components/schemas/EmailSendingHeaders'
+        - $ref: '#/components/schemas/EmailCustomVariables'
+        - $ref: '#/components/schemas/EmailCategory'
+      required:
+        - from
+        - subject
+        - html
+
+    EmailWithTextAndHtml:
+      title: Text and HTML
+      description: Send email with both plain text and HTML content
+      allOf:
+        - $ref: '#/components/schemas/EmailSender'
+        - $ref: '#/components/schemas/EmailRecipients'
+        - $ref: '#/components/schemas/EmailReplyTo'
+        - $ref: '#/components/schemas/EmailSubject'
+        - $ref: '#/components/schemas/EmailText'
+        - $ref: '#/components/schemas/EmailHtml'
+        - $ref: '#/components/schemas/EmailAttachments'
+        - $ref: '#/components/schemas/EmailSendingHeaders'
+        - $ref: '#/components/schemas/EmailCustomVariables'
+        - $ref: '#/components/schemas/EmailCategory'
+      required:
+        - from
+        - subject
+        - text
+        - html
+
+    EmailFromTemplate:
+      title: From Template
+      description: Send email using a pre-defined template with variables
+      allOf:
+        - $ref: '#/components/schemas/EmailSender'
+        - $ref: '#/components/schemas/EmailRecipients'
+        - $ref: '#/components/schemas/EmailReplyTo'
+        - $ref: '#/components/schemas/TemplateUuid'
+        - $ref: '#/components/schemas/TemplateVariables'
+        - $ref: '#/components/schemas/EmailAttachments'
+        - $ref: '#/components/schemas/EmailSendingHeaders'
+        - $ref: '#/components/schemas/EmailCustomVariables'
+      required:
+        - from
+        - template_uuid
+
+    SentResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        message_ids:
+          type: array
+          description: Message IDs (one per recipient)
+          items:
+            type: string
+            example: 0c7fd939-02cf-11ed-88c2-0a58a9feac02
+
+    SendEmailErrorResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: false
+        errors:
+          type: array
+          items:
+            type: string
+            example: Invalid sender email address
+
+  responses:
+    BadRequest:
+      description: Bad request. Fix errors listed in response before retrying.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/SendEmailErrorResponse'
+
+    Unauthorized:
+      description: Unauthorized. Check your API credentials.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/SendEmailErrorResponse'
+
+    Forbidden:
+      description: Forbidden. Verify domain or check permissions.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/SendEmailErrorResponse'
+
+    InternalError:
+      description: Internal server error. Retry later or contact support.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/SendEmailErrorResponse'

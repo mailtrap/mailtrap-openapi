@@ -1,0 +1,957 @@
+openapi: 3.1.0
+info:
+  description: API for Mailtrap.io General functionality
+  version: 2.0-oas3
+  title: General
+  contact:
+    name: Mailtrap
+    url: 'https://help.mailtrap.io'
+    email: support@mailtrap.io
+  license:
+    name: Creative Commons Attribution-ShareAlike 4.0 International (CC BY-SA 4.0)
+    url: 'https://creativecommons.org/licenses/by-sa/4.0/'
+security:
+  - HeaderAuth: []
+  - BearerAuth: []
+servers:
+  - description: Mailtrap Sandbox API
+    url: 'https://mailtrap.io'
+tags:
+  - name: general-api
+    x-page-title: General API
+    x-page-description: Account management and administration
+    description: |
+      ## General API
+
+      Manage accounts, users, permissions, and billing for your Mailtrap organization.
+
+      {% hint style="info" %}
+      **Key Features**: Account management, user permissions, billing info, access controls
+      {% endhint %}
+
+      ### Getting Started
+
+      {% tabs %}
+      {% tab title="Accounts" %}
+      **Account Management:**
+      - List all accounts
+      - Get account details
+      - Manage account settings
+      {% endtab %}
+
+      {% tab title="Users & Permissions" %}
+      **Access Control:**
+      - Add/remove users
+      - Set permission levels
+      - Manage invitations
+      - Control resource access
+      {% endtab %}
+
+      {% tab title="Billing" %}
+      **Billing Information:**
+      - View billing details
+      - Check usage limits
+      - Manage subscriptions
+      {% endtab %}
+      {% endtabs %}
+
+  - name: Accounts
+    x-parent: general-api
+    x-page-title: Accounts
+    x-page-description: Manage accounts
+    description: Accounts API
+
+  - name: Account Accesses
+    x-parent: general-api
+    x-page-title: Access Control
+    x-page-description: Manage user access
+    description: Account Accesses
+
+  - name: Account Users
+    x-parent: general-api
+    x-page-title: Users
+    x-page-description: Manage account users
+    description: Account Users API
+
+  - name: Permissions
+    x-parent: general-api
+    x-page-title: Permissions
+    x-page-description: Manage permissions
+    description: Interactions with permission
+
+  - name: Billing
+    x-parent: general-api
+    x-page-title: Billing
+    x-page-description: Billing information
+    description: Account Billing
+paths:
+  /api/accounts:
+    get:
+      operationId: getAllAccounts
+      summary: Get all accounts
+      description: Get a list of your Mailtrap accounts.
+      tags:
+        - Accounts
+      x-codeSamples:
+        - lang: javascript
+          label: Node.js
+          source: |
+            import { MailtrapClient } from "mailtrap";
+
+            const client = new MailtrapClient({
+              token: "YOUR_API_TOKEN"
+            });
+
+            const accounts = await client.accounts.list();
+
+            accounts.forEach(account => {
+              console.log(`Account: ${account.name}`);
+              console.log(`ID: ${account.id}`);
+              console.log(`Access Level: ${account.access_levels[0]}`);
+            });
+        - lang: php
+          label: PHP
+          source: |
+            use Mailtrap\Config;
+            use Mailtrap\MailtrapGeneralClient;
+
+            $config = new Config('YOUR_API_TOKEN');
+            $client = new MailtrapGeneralClient($config);
+
+            $accounts = $client->accounts()->getAll();
+
+            foreach ($accounts as $account) {
+                echo "Account: {$account['name']}\n";
+                echo "ID: {$account['id']}\n";
+                echo "Access Level: {$account['access_levels'][0]}\n";
+            }
+        - lang: python
+          label: Python
+          source: |
+            import mailtrap as mt
+
+            client = mt.MailtrapClient(token="YOUR_API_TOKEN")
+
+            accounts = client.general_api.accounts.get_all()
+
+            for account in accounts:
+                print(f"Account: {account.name}")
+                print(f"ID: {account.id}")
+                print(f"Access Level: {account.access_levels[0]}")
+        - lang: ruby
+          label: Ruby
+          source: |
+            require 'mailtrap'
+
+            client = Mailtrap::Client.new(api_key: 'YOUR_API_TOKEN')
+
+            accounts = client.accounts.list
+
+            accounts.each do |account|
+              puts "Account: #{account.name}"
+              puts "ID: #{account.id}"
+              puts "Access Level: #{account.access_levels[0]}"
+            end
+        - lang: csharp
+          label: .NET
+          source: |
+            using Mailtrap;
+
+            var client = new MailtrapClient("YOUR_API_TOKEN");
+
+            var accounts = await client.Accounts.GetAll();
+
+            foreach (var account in accounts)
+            {
+                Console.WriteLine($"Account: {account.Name}");
+                Console.WriteLine($"ID: {account.Id}");
+                Console.WriteLine($"Access Level: {account.AccessLevels[0]}");
+            }
+        - lang: java
+          label: Java
+          source: |
+            import io.mailtrap.config.MailtrapConfig;
+            import io.mailtrap.factory.MailtrapClientFactory;
+
+            var config = new MailtrapConfig.Builder()
+                .token("YOUR_API_TOKEN")
+                .build();
+
+            var client = MailtrapClientFactory
+                .createMailtrapClient(config)
+                .generalApi();
+
+            var accounts = client.accounts().getAll();
+
+            for (var account : accounts) {
+                System.out.println("Account: " + account.getName());
+                System.out.println("ID: " + account.getId());
+                System.out.println("Access Level: " + account.getAccessLevels().get(0));
+            }
+      responses:
+        '200':
+          description: 'Returns the list of accounts to which the API token has access. **access_levels** can return 1000 (account owner), 100 (admin), 10 (viewer).'
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: integer
+                    name:
+                      type: string
+                    access_levels:
+                      type: array
+                      items:
+                        type: integer
+              example:
+                - id: 26730
+                  name: James
+                  access_levels:
+                    - 100
+                - id: 26731
+                  name: John
+                  access_levels:
+                    - 1000
+        '401':
+          $ref: '#/components/responses/UNAUTHENTICATED'
+  '/api/accounts/{account_id}/account_accesses':
+    get:
+      operationId: getAllUsersInAccount
+      summary: List User & Invite account accesses
+      description: |-
+        Get list of account accesses for which `specifier_type` is `User` or `Invite`. You have to have
+        account admin/owner permissions for this endpoint to work.
+
+        If you specify `project_ids`, `inbox_ids` or `domain_ids`, the endpoint will return account
+        accesses for these resources.
+      tags:
+        - Account Accesses
+      x-codeSamples:
+        - lang: javascript
+          label: Node.js
+          source: |
+            const { MailtrapClient } = require("mailtrap");
+            const client = new MailtrapClient({ token: "YOUR_API_KEY", accountId: YOUR_ACCOUNT_ID });
+            const accesses = await client.accountAccesses.list();
+            accesses.forEach(access => console.log(`User: ${access.specifier.email}, Level: ${access.permission_level}`));
+        - lang: php
+          label: PHP
+          source: |
+            <?php
+            use Mailtrap\Config;
+            use Mailtrap\MailtrapGeneralClient;
+            $config = new Config("YOUR_API_KEY");
+            $accesses = (new MailtrapGeneralClient($config))->accountAccesses(12345);
+            $response = $accesses->getAll();
+        - lang: python
+          label: Python
+          source: |
+            import mailtrap as mt
+            client = mt.MailtrapClient(token="YOUR_API_KEY", account_id=YOUR_ACCOUNT_ID)
+            accesses = client.general_api.account_accesses.get_all()
+            for access in accesses:
+                print(f"User: {access.specifier.email}, Level: {access.permission_level}")
+        - lang: ruby
+          label: Ruby
+          source: |
+            require 'mailtrap'
+            client = Mailtrap::Client.new(api_key: 'YOUR_API_KEY')
+            accesses = Mailtrap::AccountAccessesAPI.new(12345, client).get_all
+        - lang: csharp
+          label: C#
+          source: |
+            using Mailtrap;
+            var client = new MailtrapClient("YOUR_API_KEY");
+            var accesses = await client.Account(accountId).AccountAccesses().GetAll();
+        - lang: java
+          label: Java
+          source: |
+            import io.mailtrap.config.MailtrapConfig;
+            import io.mailtrap.factory.MailtrapClientFactory;
+            var config = new MailtrapConfig.Builder().token("YOUR_API_KEY").build();
+            var client = MailtrapClientFactory.createMailtrapClient(config);
+            var response = client.generalApi().accountAccesses().getAll(accountId);
+      parameters:
+        - name: project_ids
+          description: The identifiers of the projects for which to include the results
+          in: query
+          schema:
+            type: array
+            items:
+              type: string
+            example:
+              - '3938'
+        - name: inbox_ids
+          description: The identifiers of the inboxes for which to include the results
+          in: query
+          schema:
+            type: array
+            items:
+              type: string
+            example:
+              - '3757'
+        - schema:
+            type: array
+            items:
+              type: string
+            example:
+              - '3883'
+          in: query
+          name: domain_ids
+          description: The identifiers of the domains for which to include the results
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AccountAccess'
+        '401':
+          $ref: '#/components/responses/UNAUTHENTICATED'
+        '403':
+          $ref: '#/components/responses/PERMISSION_DENIED'
+    parameters:
+      - $ref: '#/components/parameters/account_id'
+  '/api/accounts/{account_id}/account_accesses/{account_access_id}':
+    delete:
+      operationId: deleteAccountAccessById
+      summary: Remove account access
+      description: |-
+        If specifier type is User, it removes user permissions.
+
+        If specifier type is Invite or ApiToken, it removes specifier along with permissions.
+
+        You have to be an account admin/owner for this endpoint to work.
+      tags:
+        - Account Accesses
+      x-codeSamples:
+        - lang: javascript
+          label: Node.js
+          source: |
+            const { MailtrapClient } = require("mailtrap");
+            const client = new MailtrapClient({ token: "YOUR_API_KEY", accountId: YOUR_ACCOUNT_ID });
+            await client.accountAccesses.delete(accessId);
+        - lang: php
+          label: PHP
+          source: |
+            <?php
+            use Mailtrap\Config;
+            use Mailtrap\MailtrapGeneralClient;
+            $config = new Config("YOUR_API_KEY");
+            $accesses = (new MailtrapGeneralClient($config))->accountAccesses(12345);
+            $accesses->delete($accessId);
+        - lang: python
+          label: Python
+          source: |
+            import mailtrap as mt
+            client = mt.MailtrapClient(token="YOUR_API_KEY", account_id=YOUR_ACCOUNT_ID)
+            client.general_api.account_accesses.delete(access_id)
+        - lang: ruby
+          label: Ruby
+          source: |
+            require 'mailtrap'
+            client = Mailtrap::Client.new(api_key: 'YOUR_API_KEY')
+            Mailtrap::AccountAccessesAPI.new(12345, client).delete(access_id)
+        - lang: csharp
+          label: C#
+          source: |
+            using Mailtrap;
+            var client = new MailtrapClient("YOUR_API_KEY");
+            await client.Account(accountId).AccountAccess(accessId).Delete();
+        - lang: java
+          label: Java
+          source: |
+            import io.mailtrap.config.MailtrapConfig;
+            import io.mailtrap.factory.MailtrapClientFactory;
+            var config = new MailtrapConfig.Builder().token("YOUR_API_KEY").build();
+            var client = MailtrapClientFactory.createMailtrapClient(config);
+            client.generalApi().accountAccesses().delete(accountId, accessId);
+      responses:
+        '200':
+          description: Returns confirmation of successful deletion and id of the deleted access.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: integer
+              example:
+                id: 2981
+        '401':
+          $ref: '#/components/responses/UNAUTHENTICATED'
+        '403':
+          $ref: '#/components/responses/PERMISSION_DENIED'
+        '404':
+          $ref: '#/components/responses/NOT_FOUND'
+    parameters:
+      - $ref: '#/components/parameters/account_id'
+      - schema:
+          type: integer
+          format: int64
+          minimum: 1
+          example: 4788
+        name: account_access_id
+        in: path
+        description: Unique account access ID
+        required: true
+  '/api/accounts/{account_id}/account_accesses/{account_access_id}/permissions/bulk':
+    put:
+      operationId: updateUserPermissions
+      summary: Manage user or token permissions
+      description: |-
+        Manage user or token permissions. For this endpoint, you should send an array of objects (in JSON format) as the body of the request.
+        If you send a combination of **resource_type** and **resource_id** that already exists, the permission is **updated**.
+        If the combination doesn't exist, the permission is **created**.
+      tags:
+        - Permissions
+      x-codeSamples:
+        - lang: javascript
+          label: Node.js
+          source: |
+            const { MailtrapClient } = require("mailtrap");
+            const client = new MailtrapClient({ token: "YOUR_API_KEY", accountId: YOUR_ACCOUNT_ID });
+            await client.permissions.bulkUpdate(accessId, {
+              permissions: [{ resource_id: "3281", resource_type: "account", access_level: "viewer" }]
+            });
+        - lang: php
+          label: PHP
+          source: |
+            <?php
+            use Mailtrap\Config;
+            use Mailtrap\MailtrapGeneralClient;
+            $config = new Config("YOUR_API_KEY");
+            $client = new MailtrapGeneralClient($config);
+            $client->permissions(12345)->bulkUpdate($accessId, ["permissions" => [
+                ["resource_id" => "3281", "resource_type" => "account", "access_level" => "viewer"]
+            ]]);
+        - lang: python
+          label: Python
+          source: |
+            import mailtrap as mt
+            client = mt.MailtrapClient(token="YOUR_API_KEY", account_id=YOUR_ACCOUNT_ID)
+            client.general_api.permissions.bulk_update(access_id, permissions=[
+                {"resource_id": "3281", "resource_type": "account", "access_level": "viewer"}
+            ])
+        - lang: ruby
+          label: Ruby
+          source: |
+            require 'mailtrap'
+            client = Mailtrap::Client.new(api_key: 'YOUR_API_KEY')
+            Mailtrap::PermissionsAPI.new(12345, client).bulk_update(access_id, permissions: [
+              { resource_id: "3281", resource_type: "account", access_level: "viewer" }
+            ])
+        - lang: csharp
+          label: C#
+          source: |
+            using Mailtrap;
+            var client = new MailtrapClient("YOUR_API_KEY");
+            var permissions = new[] { new Permission { ResourceId = "3281", ResourceType = "account", AccessLevel = "viewer" } };
+            await client.Account(accountId).Permissions(accessId).BulkUpdate(permissions);
+        - lang: java
+          label: Java
+          source: |
+            import io.mailtrap.config.MailtrapConfig;
+            import io.mailtrap.factory.MailtrapClientFactory;
+            var config = new MailtrapConfig.Builder().token("YOUR_API_KEY").build();
+            var client = MailtrapClientFactory.createMailtrapClient(config);
+            var permissions = List.of(Map.of("resource_id", "3281", "resource_type", "account", "access_level", "viewer"));
+            client.generalApi().permissions().bulkUpdate(accountId, accessId, permissions);
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                permissions:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      resource_id:
+                        type: string
+                      resource_type:
+                        type: string
+                        enum:
+                          - account
+                          - billing
+                          - project
+                          - inbox
+                          - sending_domain
+                          - email_campaign_permission_scope
+                      access_level:
+                        type: string
+                        additionalProperties:
+                          type:
+                            - string
+                            - integer
+                        description: |-
+                          Use a number or string. The higher the number, the more rights the specifier has:
+                          - 100 or "admin"
+                          - 10 or "viewer"
+                      _destroy:
+                        type: boolean
+                        description: '(Optional) If true, instead of creating/updating the permission, it destroys it.'
+            example:
+              permissions:
+                - resource_id: '3281'
+                  resource_type: account
+                  access_level: viewer
+                - resource_id: '3809'
+                  resource_type: inbox
+                  _destroy: true
+      responses:
+        '200':
+          description: Returns message about successful update of permissions.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+              example:
+                message: Permissions have been updated!
+        '401':
+          $ref: '#/components/responses/UNAUTHENTICATED'
+        '403':
+          $ref: '#/components/responses/PERMISSION_DENIED'
+        '404':
+          $ref: '#/components/responses/NOT_FOUND'
+    parameters:
+      - $ref: '#/components/parameters/account_id'
+      - schema:
+          type: integer
+          format: int64
+          minimum: 1
+          example: 5142
+        name: account_access_id
+        in: path
+        required: true
+        description: Unique account access ID
+  '/api/accounts/{account_id}/permissions/resources':
+    get:
+      operationId: getResources
+      summary: Get resources
+      description: 'Get all resources in your account (Inboxes, Projects, Domains, Email Campaigns, Billing and Account itself) to which the token has admin access.'
+      tags:
+        - Permissions
+      x-codeSamples:
+        - lang: javascript
+          label: Node.js
+          source: |
+            const { MailtrapClient } = require("mailtrap");
+            const client = new MailtrapClient({ token: "YOUR_API_KEY", accountId: YOUR_ACCOUNT_ID });
+            const resources = await client.permissions.getResources();
+            console.log(resources);
+        - lang: php
+          label: PHP
+          source: |
+            <?php
+            use Mailtrap\Config;
+            use Mailtrap\MailtrapGeneralClient;
+            $config = new Config("YOUR_API_KEY");
+            $permissions = (new MailtrapGeneralClient($config))->permissions(12345);
+            $response = $permissions->getResources();
+        - lang: python
+          label: Python
+          source: |
+            import mailtrap as mt
+            client = mt.MailtrapClient(token="YOUR_API_KEY", account_id=YOUR_ACCOUNT_ID)
+            resources = client.general_api.permissions.get_resources()
+            print(resources)
+        - lang: ruby
+          label: Ruby
+          source: |
+            require 'mailtrap'
+            client = Mailtrap::Client.new(api_key: 'YOUR_API_KEY')
+            resources = Mailtrap::PermissionsAPI.new(12345, client).get_resources
+        - lang: csharp
+          label: C#
+          source: |
+            using Mailtrap;
+            var client = new MailtrapClient("YOUR_API_KEY");
+            var resources = await client.Account(accountId).Permissions().GetResources();
+        - lang: java
+          label: Java
+          source: |
+            import io.mailtrap.config.MailtrapConfig;
+            import io.mailtrap.factory.MailtrapClientFactory;
+            var config = new MailtrapConfig.Builder().token("YOUR_API_KEY").build();
+            var client = MailtrapClientFactory.createMailtrapClient(config);
+            var response = client.generalApi().permissions().getResources(accountId);
+      responses:
+        '200':
+          description: |-
+            Returns the resources nested according to their hierarchy.
+
+            - **access_level** in this response represents the access level of the token used to make the request.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: integer
+                    name:
+                      type: string
+                    type:
+                      type: string
+                    access_level:
+                      type: integer
+                    resources:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          id:
+                            type: integer
+                          name:
+                            type: string
+                          type:
+                            type: string
+                          access_level:
+                            type: integer
+                          resources:
+                            type: array
+                            items:
+                              nullable: true
+                              type: object
+              example:
+                - id: 4001
+                  name: My First Project
+                  type: project
+                  access_level: 1
+                  resources:
+                    - id: 3816
+                      name: My First Inbox
+                      type: inbox
+                      access_level: 100
+                      resources: []
+        '401':
+          $ref: '#/components/responses/UNAUTHENTICATED'
+        '403':
+          $ref: '#/components/responses/PERMISSION_DENIED'
+    parameters:
+      - $ref: '#/components/parameters/account_id'
+  '/api/accounts/{account_id}/billing/usage':
+    get:
+      operationId: getAccountBillingUsage
+      summary: Get current billing cycle usage
+      description: Get current billing cycle usage for Email Sandbox and Email Sending (Email API/SMTP).
+      tags:
+        - Billing
+      x-codeSamples:
+        - lang: javascript
+          label: Node.js
+          source: |
+            const { MailtrapClient } = require("mailtrap");
+            const client = new MailtrapClient({ token: "YOUR_API_KEY", accountId: YOUR_ACCOUNT_ID });
+            const usage = await client.billing.getUsage();
+            console.log(`Sandbox sent: ${usage.testing.usage.sent_messages_count.current}/${usage.testing.usage.sent_messages_count.limit}`);
+        - lang: php
+          label: PHP
+          source: |
+            <?php
+            use Mailtrap\Config;
+            use Mailtrap\MailtrapGeneralClient;
+            $config = new Config("YOUR_API_KEY");
+            $billing = (new MailtrapGeneralClient($config))->billing(12345);
+            $response = $billing->getUsage();
+        - lang: python
+          label: Python
+          source: |
+            import mailtrap as mt
+            client = mt.MailtrapClient(token="YOUR_API_KEY", account_id=YOUR_ACCOUNT_ID)
+            usage = client.general_api.billing.get_usage()
+            print(f"Sandbox sent: {usage.testing.usage.sent_messages_count.current}/{usage.testing.usage.sent_messages_count.limit}")
+        - lang: ruby
+          label: Ruby
+          source: |
+            require 'mailtrap'
+            client = Mailtrap::Client.new(api_key: 'YOUR_API_KEY')
+            usage = Mailtrap::BillingAPI.new(12345, client).get_usage
+        - lang: csharp
+          label: C#
+          source: |
+            using Mailtrap;
+            var client = new MailtrapClient("YOUR_API_KEY");
+            var usage = await client.Account(accountId).Billing().GetUsage();
+        - lang: java
+          label: Java
+          source: |
+            import io.mailtrap.config.MailtrapConfig;
+            import io.mailtrap.factory.MailtrapClientFactory;
+            var config = new MailtrapConfig.Builder().token("YOUR_API_KEY").build();
+            var client = MailtrapClientFactory.createMailtrapClient(config);
+            var response = client.generalApi().billing().getUsage(accountId);
+      responses:
+        '200':
+          description: Returns an object with current billing cycle usage for Sandbox and Email Sending (Email API/SMTP) if available.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  billing:
+                    type: object
+                    properties:
+                      cycle_start:
+                        type: string
+                        format: date-time
+                      cycle_end:
+                        type: string
+                        format: date-time
+                  testing:
+                    type: object
+                    properties:
+                      plan:
+                        type: object
+                        properties:
+                          name:
+                            type: string
+                      usage:
+                        type: object
+                        properties:
+                          sent_messages_count:
+                            type: object
+                            properties:
+                              current:
+                                type: integer
+                              limit:
+                                type: integer
+                          forwarded_messages_count:
+                            type: object
+                            properties:
+                              current:
+                                type: integer
+                              limit:
+                                type: integer
+                  sending:
+                    type: object
+                    properties:
+                      plan:
+                        type: object
+                        properties:
+                          name:
+                            type: string
+                      usage:
+                        type: object
+                        properties:
+                          sent_messages_count:
+                            type: object
+                            properties:
+                              current:
+                                type: integer
+                              limit:
+                                type: integer
+              example:
+                billing:
+                  cycle_start: '2024-02-15T21:11:59.624Z'
+                  cycle_end: '2024-02-15T21:11:59.624Z'
+                testing:
+                  plan:
+                    name: Individual
+                  usage:
+                    sent_messages_count:
+                      current: 1234
+                      limit: 5000
+                    forwarded_messages_count:
+                      current: 0
+                      limit: 100
+                sending:
+                  plan:
+                    name: Basic 10K
+                  usage:
+                    sent_messages_count:
+                      current: 6789
+                      limit: 10000
+        '401':
+          $ref: '#/components/responses/UNAUTHENTICATED'
+        '403':
+          $ref: '#/components/responses/PERMISSION_DENIED'
+    parameters:
+      - $ref: '#/components/parameters/account_id'
+components:
+  schemas:
+    AccountAccess:
+      title: AccountAccess
+      description: Assigns resource-specific permissions to a specifier.
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 42
+          description: The unique identifier of the account access
+        specifier_type:
+          type: string
+          enum:
+            - User
+            - Invite
+            - ApiToken
+          example: User
+          description: The type of the specifier that has permissions to the resources
+        specifier:
+          anyOf:
+            - description: Describes a specifier of type `User`
+              properties:
+                id:
+                  type: integer
+                  description: User unique identifier
+                email:
+                  type: string
+                  format: email
+                  description: User email
+                name:
+                  type: string
+                  description: User name
+                two_factor_authentication_enabled:
+                  type: boolean
+                  description: Indicates whether two-factor authentication (2FA) is enabled for the user
+            - description: Describes a specifier of type `Invite`
+              properties:
+                id:
+                  type: integer
+                  description: Invite unique identifier
+                email:
+                  type: string
+                  format: email
+                  description: Email of the invited user
+            - description: Describes a specifier of type `ApiToken`
+              properties:
+                id:
+                  type: integer
+                  description: Api token unique identifier
+                name:
+                  type: string
+                  description: Api token name
+                author_name:
+                  type: string
+                  description: Describes the origin of the token
+                  example: System
+                token:
+                  type: string
+                  description: The token value
+                expires_at:
+                  type: string
+                  format: date-time
+                  description: Api token expiration time
+          description: Entity that has permissions to the resources
+          type: object
+        resources:
+          type: array
+          description: A list of resources to which the specifier has access
+          items:
+            type: object
+            properties:
+              resource_id:
+                type: integer
+                description: The unique identifier of resource to which the specifier has access
+              resource_type:
+                type: string
+                description: The type of resource to which the specifier has access
+                enum:
+                  - account
+                  - billing
+                  - project
+                  - inbox
+                  - sending_domain
+                  - email_campaign_permission_scope
+              access_level:
+                type: integer
+                enum:
+                  - 1000
+                  - 100
+                  - 50
+                  - 10
+                  - 1
+                description: |-
+                  The higher the value, the more rights the specifier has:
+                  - 1000 is for owner
+                  - 100 is for admin
+                  - 50 is for viewer+
+                  - 10 is for viewer
+                  - 1 is for indeterminate
+        permissions:
+          type: object
+          description: Describes the specifier's permissions to resources
+          properties:
+            can_read:
+              type: boolean
+            can_update:
+              type: boolean
+            can_destroy:
+              type: boolean
+            can_leave:
+              type: boolean
+    NotFoundResponse:
+      title: NotFoundResponse
+      type: object
+      properties:
+        error:
+          type: string
+          description: Error message
+          example: Not Found
+    PermissionsDeniedResponse:
+      title: PermissionsDeniedResponse
+      type: object
+      properties:
+        errors:
+          type: string
+          description: Error message
+          example: Access forbidden
+    UnauthenticatedResponse:
+      title: UnauthenticatedResponse
+      type: object
+      properties:
+        error:
+          type: string
+          description: Error message
+          example: Incorrect API token
+  securitySchemes:
+    HeaderAuth:
+      type: apiKey
+      description: Pass the API token in the Api-Token
+      in: header
+      name: Api-Token
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  responses:
+    UNAUTHENTICATED:
+      description: Returns unauthorized error message. Check your credentials.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/UnauthenticatedResponse'
+    PERMISSION_DENIED:
+      description: Returns forbidden error message. Check your permissions.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/PermissionsDeniedResponse'
+    NOT_FOUND:
+      description: Returns not found error message
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/NotFoundResponse'
+  parameters:
+    account_id:
+      description: Unique account ID
+      name: account_id
+      in: path
+      required: true
+      schema:
+        type: integer
+        format: int64
+        minimum: 1
+        example: 3229

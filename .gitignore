@@ -1,0 +1,23 @@
+# macOS
+.DS_Store
+
+# IDEs
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Node (if applicable in future)
+node_modules/
+dist/
+build/
+
+# Reference files (not to be committed)
+helpscout_to_gitbook_redirects.csv
+
