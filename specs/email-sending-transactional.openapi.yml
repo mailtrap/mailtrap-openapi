@@ -6,7 +6,7 @@ info:
     Send transactional emails for order confirmations, password resets, notifications, and other user-triggered communications.
   contact:
     name: Mailtrap Support
-    url: 'https://help.mailtrap.io'
+    url: 'https://docs.mailtrap.io'
     email: support@mailtrap.io
   license:
     name: Creative Commons Attribution-ShareAlike 4.0 International (CC BY-SA 4.0)

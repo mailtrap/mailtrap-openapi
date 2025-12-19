@@ -6,7 +6,7 @@ info:
     Send up to 500 emails in a single API call. Use the Transactional Stream for user-triggered emails or the Bulk Stream for marketing campaigns.
   contact:
     name: Mailtrap Support
-    url: 'https://help.mailtrap.io'
+    url: 'https://docs.mailtrap.io'
     email: support@mailtrap.io
   license:
     name: Creative Commons Attribution-ShareAlike 4.0 International (CC BY-SA 4.0)
