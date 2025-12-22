@@ -634,7 +634,6 @@ paths:
 
             var domainId = 12345;
             var domainResource = client.Account(YOUR_ACCOUNT_ID).SendingDomain(domainId);
-            var domain = await domainResource.GetDetails();
 
             var request = new SendingDomainInstructionsRequest("devops@example.com");
             await domainResource.SendInstructions(request);
@@ -1130,7 +1129,7 @@ paths:
           source: |
             using Mailtrap;
             using Mailtrap.EmailTemplates.Requests;
-            
+
             using var mailtrapFactory = new MailtrapClientFactory("YOUR_API_KEY");
             var client = mailtrapFactory.CreateClient();
 
