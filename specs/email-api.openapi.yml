@@ -41,6 +41,11 @@ tags:
     description: |
       Create and manage reusable email templates with dynamic content.
 
+  - name: stats
+    x-page-title: Stats
+    x-page-description: Email sending stats
+    description: Email sending aggregated stats. The same you see in your Stats dahsboard.
+
 paths:
   /api/accounts/{account_id}/sending_domains:
     post:
@@ -1383,6 +1388,199 @@ paths:
       - $ref: '#/components/parameters/account_id'
       - $ref: '#/components/parameters/email_template_id'
 
+  '/api/accounts/{account_id}/stats':
+    get:
+      operationId: getAccountSendingStats
+      summary: Get account sending stats
+      description: Get account sending stats. Use filters to get specific stats.
+      tags:
+        - stats
+      parameters:
+        - $ref: '#/components/parameters/account_id'
+        - $ref: '#/components/parameters/StartDateQueryFilter'
+        - $ref: '#/components/parameters/EndDateQueryFilter'
+        - $ref: '#/components/parameters/SendingDomainIDsQueryFilter'
+        - $ref: '#/components/parameters/SendingStreamsQueryFilter'
+        - $ref: '#/components/parameters/CategoriesQueryFilter'
+        - $ref: '#/components/parameters/ESPsQueryFilter'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SendingStats'
+        '400':
+          $ref: '#/components/responses/BAD_REQUEST'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '429':
+          $ref: '#/components/responses/LIMIT_EXCEEDED'
+  '/api/accounts/{account_id}/stats/domains':
+    get:
+      operationId: getAccountSendingStatsByDomains
+      summary: Get account sending stats by domains
+      description: Get account sending stats by domains. Use filters to get specific stats.
+      tags:
+        - stats
+      parameters:
+        - $ref: '#/components/parameters/account_id'
+        - $ref: '#/components/parameters/StartDateQueryFilter'
+        - $ref: '#/components/parameters/EndDateQueryFilter'
+        - $ref: '#/components/parameters/SendingDomainIDsQueryFilter'
+        - $ref: '#/components/parameters/SendingStreamsQueryFilter'
+        - $ref: '#/components/parameters/CategoriesQueryFilter'
+        - $ref: '#/components/parameters/ESPsQueryFilter'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    sending_domain_id:
+                      type: integer
+                      format: int64
+                      example: 3938
+                    stats:
+                      type: array
+                      items:
+                        $ref: '#/components/schemas/SendingStats'
+        '400':
+          $ref: '#/components/responses/BAD_REQUEST'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '429':
+          $ref: '#/components/responses/LIMIT_EXCEEDED'
+  '/api/accounts/{account_id}/stats/categories':
+    get:
+      operationId: getAccountSendingStatsByCategories
+      summary: Get account sending stats by categories
+      description: Get account sending stats by categories. Use filters to get specific stats.
+      tags:
+        - stats
+      parameters:
+        - $ref: '#/components/parameters/account_id'
+        - $ref: '#/components/parameters/StartDateQueryFilter'
+        - $ref: '#/components/parameters/EndDateQueryFilter'
+        - $ref: '#/components/parameters/SendingDomainIDsQueryFilter'
+        - $ref: '#/components/parameters/SendingStreamsQueryFilter'
+        - $ref: '#/components/parameters/CategoriesQueryFilter'
+        - $ref: '#/components/parameters/ESPsQueryFilter'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    category:
+                      type: string
+                      example: Welcome Email
+                    stats:
+                      type: array
+                      items:
+                        $ref: '#/components/schemas/SendingStats'
+        '400':
+          $ref: '#/components/responses/BAD_REQUEST'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '429':
+          $ref: '#/components/responses/LIMIT_EXCEEDED'
+  '/api/accounts/{account_id}/stats/email_service_providers':
+    get:
+      operationId: getAccountSendingStatsByEmailServiceProviders
+      summary: Get account sending stats by email service providers
+      description: Get account sending stats by email service providers. Use filters to get specific stats.
+      tags:
+        - stats
+      parameters:
+        - $ref: '#/components/parameters/account_id'
+        - $ref: '#/components/parameters/StartDateQueryFilter'
+        - $ref: '#/components/parameters/EndDateQueryFilter'
+        - $ref: '#/components/parameters/SendingDomainIDsQueryFilter'
+        - $ref: '#/components/parameters/SendingStreamsQueryFilter'
+        - $ref: '#/components/parameters/CategoriesQueryFilter'
+        - $ref: '#/components/parameters/ESPsQueryFilter'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    email_service_provider:
+                      type: string
+                      example: Google
+                    stats:
+                      type: array
+                      items:
+                        $ref: '#/components/schemas/SendingStats'
+        '400':
+          $ref: '#/components/responses/BAD_REQUEST'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '429':
+          $ref: '#/components/responses/LIMIT_EXCEEDED'
+  '/api/accounts/{account_id}/stats/date':
+    get:
+      operationId: getAccountSendingStatsByDate
+      summary: Get account sending stats by date
+      description: Get account sending stats by date. Use filters to get specific stats.
+      tags:
+        - stats
+      parameters:
+        - $ref: '#/components/parameters/account_id'
+        - $ref: '#/components/parameters/StartDateQueryFilter'
+        - $ref: '#/components/parameters/EndDateQueryFilter'
+        - $ref: '#/components/parameters/SendingDomainIDsQueryFilter'
+        - $ref: '#/components/parameters/SendingStreamsQueryFilter'
+        - $ref: '#/components/parameters/CategoriesQueryFilter'
+        - $ref: '#/components/parameters/ESPsQueryFilter'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    date:
+                      type: string
+                      format: date
+                      example: '2025-01-01'
+                    stats:
+                      type: array
+                      items:
+                        $ref: '#/components/schemas/SendingStats'
+        '400':
+          $ref: '#/components/responses/BAD_REQUEST'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '429':
+          $ref: '#/components/responses/LIMIT_EXCEEDED'
+
 components:
   securitySchemes:
     HeaderAuth:
@@ -1432,6 +1630,100 @@ components:
       schema:
         type: integer
         example: 1
+
+    StartDateQueryFilter:
+      name: start_date
+      description: Start date for which to include the results.
+      in: query
+      required: true
+      schema:
+        type: string
+        format: date
+        example: '2025-01-01'
+    EndDateQueryFilter:
+      name: end_date
+      description: End date for which to include the results.
+      in: query
+      required: true
+      schema:
+        type: string
+        format: date
+        example: '2025-12-31'
+    SendingDomainIDsQueryFilter:
+      name: 'sending_domain_ids[]'
+      description: 'IDs of the sending domains for which to include the results. If not provided, results for all sending domains will be included.'
+      in: query
+      schema:
+        type: array
+        items:
+          type: integer
+          format: int64
+        example:
+          - 3938
+          - 3939
+    SendingStreamsQueryFilter:
+      name: 'sending_streams[]'
+      description: 'Sending streams for which to include the results. If not provided, results for all sending streams will be included.'
+      in: query
+      schema:
+        type: array
+        items:
+          type: string
+          enum:
+            - transactional
+            - bulk
+        example:
+          - transactional
+          - bulk
+    CategoriesQueryFilter:
+      name: 'categories[]'
+      description: 'Categories for which to include the results. If not provided, results for all categories will be included.'
+      in: query
+      schema:
+        type: array
+        items:
+          type: string
+        example:
+          - Welcome Email
+          - Password Reset
+    ESPsQueryFilter:
+      name: 'email_service_providers[]'
+      description: 'Email service providers for which to include the results. If not provided, results for all ESPs will be included.'
+      in: query
+      schema:
+        type: array
+        items:
+          type: string
+          enum:
+            - Google
+            - Yahoo
+            - Outlook
+            - Hey
+            - Google Workspace
+            - Zoho Email
+            - ProtonMail
+            - Yandex
+            - iCloud
+            - Office 365
+            - Amazon SES (Simple Email Service)
+            - Proofpoint Email Protection
+            - Mimecast Email Protection
+            - GMX.net
+            - Rackspace
+            - OVH hosted
+            - Linode hosted
+            - GoDaddy
+            - Symantec Email Protection
+            - Barracuda Email Protection
+            - Cisco Email Protection
+            - FastMail
+            - Naver
+            - Seznam
+            - Comcast
+            - Spectrum
+        example:
+          - Google
+          - Yahoo
 
   schemas:
     SendingDomain:
@@ -1562,6 +1854,64 @@ components:
         created_at: '2021-01-01T00:00:00Z'
         updated_at: '2021-01-01T00:00:00Z'
 
+    SendingStats:
+      title: SendingStats
+      type: object
+      properties:
+        delivery_count:
+          type: integer
+          example: 190
+        delivery_rate:
+          type: number
+          format: double
+          example: 0.95
+        bounce_count:
+          type: integer
+          example: 10
+        bounce_rate:
+          type: number
+          format: double
+          example: 0.05
+        open_count:
+          type: integer
+          example: 171
+        open_rate:
+          type: number
+          format: double
+          example: 0.9
+        click_count:
+          type: integer
+          example: 133
+        click_rate:
+          type: number
+          format: double
+          example: 0.7
+        spam_count:
+          type: integer
+          example: 3
+        spam_rate:
+          type: number
+          format: double
+          example: 0.02
+
+    BadRequest:
+      title: BadRequestResponse
+      type: object
+      properties:
+        errors:
+          type: string
+          description: Error message
+          example: Invalid request parameters
+
+    RateLimitExceededResponse:
+      title: RateLimitExceededResponse
+      type: object
+      properties:
+        errors:
+          type: string
+          description: Error message
+          example: Rate limit exceeded
+
     ErrorResponse:
       type: object
       properties:
@@ -1606,6 +1956,20 @@ components:
         application/json:
           schema:
             $ref: '#/components/schemas/UnprocessableEntity'
+
+    BAD_REQUEST:
+      description: Bad request - invalid parameters.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/BadRequest'
+
+    LIMIT_EXCEEDED:
+      description: Rate limit exceeded for the current account.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/RateLimitExceededResponse'
 
     SendingDomainResponse:
       description: Sending domain details
