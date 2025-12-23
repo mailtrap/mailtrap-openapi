@@ -75,6 +75,7 @@ paths:
           label: PHP
           source: |
             <?php
+            use Mailtrap\Helper\ResponseHelper;
             use Mailtrap\MailtrapClient;
             use Mailtrap\Mime\MailtrapEmail;
             use Symfony\Component\Mime\Address;
@@ -93,6 +94,7 @@ paths:
                 ->category('newsletter');
 
             $response = $mailtrap->send($email);
+            var_dump(ResponseHelper::toArray($response));
         - lang: python
           label: Python
           source: |

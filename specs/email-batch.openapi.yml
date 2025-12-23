@@ -93,6 +93,7 @@ paths:
           label: PHP
           source: |
             <?php
+            use Mailtrap\Helper\ResponseHelper;
             use Mailtrap\MailtrapClient;
             use Mailtrap\Mime\MailtrapEmail;
             use Symfony\Component\Mime\Address;
@@ -103,16 +104,18 @@ paths:
             );
 
             $baseEmail = (new MailtrapEmail())
-                ->from(new Address('sender@example.com'))
+                ->from(new Address('sender@example.com', 'Sender'))
                 ->subject('Monthly Newsletter')
                 ->text('Check out our latest updates!');
 
             $recipients = [
-                (new MailtrapEmail())->to(new Address('user1@example.com')),
-                (new MailtrapEmail())->to(new Address('user2@example.com'))
+                (new MailtrapEmail())->to(new Address('user1@example.com', 'User 1')),
+                (new MailtrapEmail())->to(new Address('user2@example.com', 'User 2'))
             ];
 
             $response = $mailtrap->batchSend($recipients, $baseEmail);
+
+            var_dump(ResponseHelper::toArray($response));
         - lang: python
           label: Python
           source: |
