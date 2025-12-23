@@ -124,23 +124,25 @@ paths:
         - lang: php
           label: PHP
           source: |
+            <?php
             use Mailtrap\Config;
             use Mailtrap\MailtrapGeneralClient;
+            use Mailtrap\DTO\Request\Contact\CreateContact;
+            use Mailtrap\Helper\ResponseHelper;
 
-            $config = new Config('YOUR_API_TOKEN');
-            $client = new MailtrapGeneralClient($config);
+            $config = new Config($_ENV['MAILTRAP_API_KEY']);
+            $accountId = $_ENV['MAILTRAP_ACCOUNT_ID'];
+            $contacts = (new MailtrapGeneralClient($config))->contacts($accountId);
 
-            $contact = $client->contacts($accountId)->create([
-                'email' => 'john.smith@example.com',
-                'fields' => [
-                    'first_name' => 'John',
-                    'last_name' => 'Smith',
-                    'company' => 'Example Inc'
-                ],
-                'list_ids' => [1, 2, 3]
-            ]);
+            $response = $contacts->createContact(
+                CreateContact::init(
+                    'john.smith@example.com',
+                    ['first_name' => 'John', 'last_name' => 'Smith', 'company' => 'Example Inc'],
+                    [1, 2, 3] // List IDs
+                )
+            );
 
-            echo "Contact created: {$contact['email']}\n";
+            var_dump(ResponseHelper::toArray($response));
         - lang: python
           label: Python
           source: |
@@ -314,22 +316,22 @@ paths:
         - lang: php
           label: PHP
           source: |
+            <?php
             use Mailtrap\Config;
-            use Mailtrap\MailtrapContactsClient;
+            use Mailtrap\MailtrapGeneralClient;
+            use Mailtrap\Helper\ResponseHelper;
 
-            $config = new Config('YOUR_API_TOKEN');
-            $client = new MailtrapContactsClient($config);
+            $config = new Config($_ENV['MAILTRAP_API_KEY']);
+            $accountId = $_ENV['MAILTRAP_ACCOUNT_ID'];
+            $contacts = (new MailtrapGeneralClient($config))->contacts($accountId);
 
-            // Get by contact ID
-            $contact = $client->contacts($accountId)->get($contactId);
+            // Get contact by ID
+            $response = $contacts->getContactById('019706a8-0000-0000-0000-4f26816b467a');
 
-            // Or get by email (URL encoded)
-            $contactByEmail = $client->contacts($accountId)->get(
-                urlencode('john.smith@example.com')
-            );
+            // OR get contact by email
+            $response = $contacts->getContactByEmail('john.smith@example.com');
 
-            echo "Contact: {$contact['email']}\n";
-            echo "Status: {$contact['status']}\n";
+            var_dump(ResponseHelper::toArray($response));
         - lang: python
           label: Python
           source: |
@@ -453,9 +455,37 @@ paths:
             use Mailtrap\Config;
             use Mailtrap\MailtrapGeneralClient;
             use Mailtrap\DTO\Request\Contact\UpdateContact;
-            $config = new Config("YOUR_API_KEY");
-            $contacts = (new MailtrapGeneralClient($config))->contacts(12345);
-            $response = $contacts->updateContactById("contact_id", UpdateContact::init("new@example.com", ["first_name" => "John"]));
+            use Mailtrap\Helper\ResponseHelper;
+
+            $config = new Config($_ENV['MAILTRAP_API_KEY']);
+            $accountId = $_ENV['MAILTRAP_ACCOUNT_ID'];
+            $contacts = (new MailtrapGeneralClient($config))->contacts($accountId);
+
+            // Update contact by ID
+            $response = $contacts->updateContactById(
+                '019706a8-0000-0000-0000-4f26816b467a',
+                UpdateContact::init(
+                    'john.smith@example.com',
+                    ['first_name' => 'John', 'last_name' => 'Smith'],
+                    [3], // List IDs to add
+                    [1, 2], // List IDs to remove
+                    true // Unsubscribe
+                )
+            );
+
+            // OR update contact by email
+            $response = $contacts->updateContactByEmail(
+                'john.smith@example.com',
+                UpdateContact::init(
+                    'john.smith@example.com',
+                    ['first_name' => 'John', 'last_name' => 'Smith'],
+                    [3],
+                    [1, 2],
+                    true
+                )
+            );
+
+            var_dump(ResponseHelper::toArray($response));
         - lang: python
           label: Python
           source: |
@@ -553,9 +583,18 @@ paths:
             <?php
             use Mailtrap\Config;
             use Mailtrap\MailtrapGeneralClient;
-            $config = new Config("YOUR_API_KEY");
-            $contacts = (new MailtrapGeneralClient($config))->contacts(12345);
-            $response = $contacts->deleteContactById("contact_id");
+
+            $config = new Config($_ENV['MAILTRAP_API_KEY']);
+            $accountId = $_ENV['MAILTRAP_ACCOUNT_ID'];
+            $contacts = (new MailtrapGeneralClient($config))->contacts($accountId);
+
+            // Delete contact by ID
+            $response = $contacts->deleteContactById('019706a8-0000-0000-0000-4f26816b467a');
+
+            // OR delete contact by email
+            $response = $contacts->deleteContactByEmail('john.smith@example.com');
+
+            var_dump($response->getStatusCode());
         - lang: python
           label: Python
           source: |
@@ -625,9 +664,27 @@ paths:
             <?php
             use Mailtrap\Config;
             use Mailtrap\MailtrapGeneralClient;
-            $config = new Config("YOUR_API_KEY");
-            $contacts = (new MailtrapGeneralClient($config))->contacts(12345);
-            $response = $contacts->createEvent("contact_id", ["name" => "UserLogin", "params" => ["user_id" => 101, "is_active" => true]]);
+            use Mailtrap\DTO\Request\Contact\CreateContactEvent;
+            use Mailtrap\Helper\ResponseHelper;
+
+            $config = new Config($_ENV['MAILTRAP_API_KEY']);
+            $accountId = $_ENV['MAILTRAP_ACCOUNT_ID'];
+            $contacts = (new MailtrapGeneralClient($config))->contacts($accountId);
+
+            $response = $contacts->createContactEvent(
+                'john.smith@example.com', // Contact identifier (email or UUID)
+                CreateContactEvent::init(
+                    'UserLogin',
+                    [
+                        'user_id' => 101,
+                        'user_name' => 'John Smith',
+                        'is_active' => true,
+                        'last_seen' => null
+                    ]
+                )
+            );
+
+            var_dump(ResponseHelper::toArray($response));
         - lang: python
           label: Python
           source: |
@@ -719,9 +776,22 @@ paths:
             <?php
             use Mailtrap\Config;
             use Mailtrap\MailtrapGeneralClient;
-            $config = new Config("YOUR_API_KEY");
-            $exports = (new MailtrapGeneralClient($config))->contactExports(12345);
-            $response = $exports->create(["filters" => [["name" => "list_id", "operator" => "equal", "value" => [1, 2]]]]);
+            use Mailtrap\DTO\Request\Contact\ContactExportFilter;
+            use Mailtrap\Helper\ResponseHelper;
+
+            $config = new Config($_ENV['MAILTRAP_API_KEY']);
+            $accountId = $_ENV['MAILTRAP_ACCOUNT_ID'];
+            $contacts = (new MailtrapGeneralClient($config))->contacts($accountId);
+
+            $filters = [
+                // Export contacts that belong to lists 1 or 2
+                ContactExportFilter::init('list_id', 'equal', [1, 2]),
+                // Only subscribed contacts
+                ContactExportFilter::init('subscription_status', 'equal', 'subscribed'),
+            ];
+
+            $response = $contacts->createContactExport($filters);
+            var_dump(ResponseHelper::toArray($response));
         - lang: python
           label: Python
           source: |
@@ -812,9 +882,16 @@ paths:
             <?php
             use Mailtrap\Config;
             use Mailtrap\MailtrapGeneralClient;
-            $config = new Config("YOUR_API_KEY");
-            $exports = (new MailtrapGeneralClient($config))->contactExports(12345);
-            $response = $exports->get($exportId);
+            use Mailtrap\Helper\ResponseHelper;
+
+            $config = new Config($_ENV['MAILTRAP_API_KEY']);
+            $accountId = $_ENV['MAILTRAP_ACCOUNT_ID'];
+            $contacts = (new MailtrapGeneralClient($config))->contacts($accountId);
+
+            $exportId = $_ENV['MAILTRAP_EXPORT_ID'];
+            $response = $contacts->getContactExport($exportId);
+
+            var_dump(ResponseHelper::toArray($response));
         - lang: python
           label: Python
           source: |
@@ -904,11 +981,30 @@ paths:
             <?php
             use Mailtrap\Config;
             use Mailtrap\MailtrapGeneralClient;
-            $config = new Config("YOUR_API_KEY");
-            $imports = (new MailtrapGeneralClient($config))->contactImports(12345);
-            $response = $imports->create(["contacts" => [
-                ["email" => "user1@example.com", "fields" => ["first_name" => "John"], "list_ids_included" => [1, 2]]
-            ]]);
+            use Mailtrap\DTO\Request\Contact\ImportContact;
+            use Mailtrap\Helper\ResponseHelper;
+
+            $config = new Config($_ENV['MAILTRAP_API_KEY']);
+            $accountId = $_ENV['MAILTRAP_ACCOUNT_ID'];
+            $contacts = (new MailtrapGeneralClient($config))->contacts($accountId);
+
+            $contactsToImport = [
+                new ImportContact(
+                    email: 'customer1@example.com',
+                    fields: ['first_name' => 'John', 'last_name' => 'Smith', 'zip_code' => 11111],
+                    listIdsIncluded: [1, 2],
+                    listIdsExcluded: [4, 5]
+                ),
+                new ImportContact(
+                    email: 'customer2@example.com',
+                    fields: ['first_name' => 'Joe', 'last_name' => 'Doe', 'zip_code' => 22222],
+                    listIdsIncluded: [1],
+                    listIdsExcluded: [4]
+                ),
+            ];
+
+            $response = $contacts->importContacts($contactsToImport);
+            var_dump(ResponseHelper::toArray($response));
         - lang: python
           label: Python
           source: |
@@ -1008,9 +1104,16 @@ paths:
             <?php
             use Mailtrap\Config;
             use Mailtrap\MailtrapGeneralClient;
-            $config = new Config("YOUR_API_KEY");
-            $imports = (new MailtrapGeneralClient($config))->contactImports(12345);
-            $response = $imports->get($importId);
+            use Mailtrap\Helper\ResponseHelper;
+
+            $config = new Config($_ENV['MAILTRAP_API_KEY']);
+            $accountId = $_ENV['MAILTRAP_ACCOUNT_ID'];
+            $contacts = (new MailtrapGeneralClient($config))->contacts($accountId);
+
+            $importId = $_ENV['MAILTRAP_IMPORT_ID'];
+            $response = $contacts->getContactImport($importId);
+
+            var_dump(ResponseHelper::toArray($response));
         - lang: python
           label: Python
           source: |
@@ -1089,10 +1192,19 @@ paths:
           source: |
             <?php
             use Mailtrap\Config;
+            use Mailtrap\Helper\ResponseHelper;
             use Mailtrap\MailtrapGeneralClient;
-            $config = new Config("YOUR_API_KEY");
-            $lists = (new MailtrapGeneralClient($config))->contactLists(12345);
-            $response = $lists->getAll();
+
+            $config = new Config($_ENV['MAILTRAP_API_KEY']);
+            $accountId = $_ENV['MAILTRAP_ACCOUNT_ID'];
+            $contacts = (new MailtrapGeneralClient($config))->contacts($accountId);
+
+            try {
+                $response = $contacts->getAllContactLists();
+                var_dump(ResponseHelper::toArray($response));
+            } catch (Exception $e) {
+                echo 'Error: ' . $e->getMessage();
+            }
         - lang: python
           label: Python
           source: |
@@ -1163,10 +1275,19 @@ paths:
           source: |
             <?php
             use Mailtrap\Config;
+            use Mailtrap\Helper\ResponseHelper;
             use Mailtrap\MailtrapGeneralClient;
-            $config = new Config("YOUR_API_KEY");
-            $lists = (new MailtrapGeneralClient($config))->contactLists(12345);
-            $response = $lists->create(["name" => "Customers"]);
+
+            $config = new Config($_ENV['MAILTRAP_API_KEY']);
+            $accountId = $_ENV['MAILTRAP_ACCOUNT_ID'];
+            $contacts = (new MailtrapGeneralClient($config))->contacts($accountId);
+
+            try {
+                $response = $contacts->createContactList('Customers');
+                var_dump(ResponseHelper::toArray($response));
+            } catch (Exception $e) {
+                echo 'Error: ' . $e->getMessage();
+            }
         - lang: python
           label: Python
           source: |
@@ -1245,10 +1366,16 @@ paths:
           source: |
             <?php
             use Mailtrap\Config;
+            use Mailtrap\Helper\ResponseHelper;
             use Mailtrap\MailtrapGeneralClient;
-            $config = new Config("YOUR_API_KEY");
-            $lists = (new MailtrapGeneralClient($config))->contactLists(12345);
-            $response = $lists->get($listId);
+
+            $config = new Config($_ENV['MAILTRAP_API_KEY']);
+            $accountId = $_ENV['MAILTRAP_ACCOUNT_ID'];
+            $listId = $_ENV['MAILTRAP_LIST_ID'];
+            $contacts = (new MailtrapGeneralClient($config))->contacts($accountId);
+
+            $response = $contacts->getContactList($listId);
+            var_dump(ResponseHelper::toArray($response));
         - lang: python
           label: Python
           source: |
@@ -1312,10 +1439,16 @@ paths:
           source: |
             <?php
             use Mailtrap\Config;
+            use Mailtrap\Helper\ResponseHelper;
             use Mailtrap\MailtrapGeneralClient;
-            $config = new Config("YOUR_API_KEY");
-            $lists = (new MailtrapGeneralClient($config))->contactLists(12345);
-            $response = $lists->update($listId, ["name" => "Former Customers"]);
+
+            $config = new Config($_ENV['MAILTRAP_API_KEY']);
+            $accountId = $_ENV['MAILTRAP_ACCOUNT_ID'];
+            $listId = $_ENV['MAILTRAP_LIST_ID'];
+            $contacts = (new MailtrapGeneralClient($config))->contacts($accountId);
+
+            $response = $contacts->updateContactList($listId, 'Former Customers');
+            var_dump(ResponseHelper::toArray($response));
         - lang: python
           label: Python
           source: |
@@ -1393,9 +1526,14 @@ paths:
             <?php
             use Mailtrap\Config;
             use Mailtrap\MailtrapGeneralClient;
-            $config = new Config("YOUR_API_KEY");
-            $lists = (new MailtrapGeneralClient($config))->contactLists(12345);
-            $lists->delete($listId);
+
+            $config = new Config($_ENV['MAILTRAP_API_KEY']);
+            $accountId = $_ENV['MAILTRAP_ACCOUNT_ID'];
+            $listId = $_ENV['MAILTRAP_LIST_ID'];
+            $contacts = (new MailtrapGeneralClient($config))->contacts($accountId);
+
+            $response = $contacts->deleteContactList($listId);
+            echo $response->getStatusCode(); // Should be 204
         - lang: python
           label: Python
           source: |
@@ -1460,9 +1598,14 @@ paths:
             <?php
             use Mailtrap\Config;
             use Mailtrap\MailtrapGeneralClient;
-            $config = new Config("YOUR_API_KEY");
-            $fields = (new MailtrapGeneralClient($config))->contactFields(12345);
-            $response = $fields->getAll();
+            use Mailtrap\Helper\ResponseHelper;
+
+            $config = new Config($_ENV['MAILTRAP_API_KEY']);
+            $accountId = $_ENV['MAILTRAP_ACCOUNT_ID'];
+            $contacts = (new MailtrapGeneralClient($config))->contacts($accountId);
+
+            $response = $contacts->getAllContactFields();
+            var_dump(ResponseHelper::toArray($response));
         - lang: python
           label: Python
           source: |
@@ -1543,9 +1686,14 @@ paths:
             <?php
             use Mailtrap\Config;
             use Mailtrap\MailtrapGeneralClient;
-            $config = new Config("YOUR_API_KEY");
-            $fields = (new MailtrapGeneralClient($config))->contactFields(12345);
-            $response = $fields->create(["name" => "Company", "data_type" => "text", "merge_tag" => "company"]);
+            use Mailtrap\Helper\ResponseHelper;
+
+            $config = new Config($_ENV['MAILTRAP_API_KEY']);
+            $accountId = $_ENV['MAILTRAP_ACCOUNT_ID'];
+            $contacts = (new MailtrapGeneralClient($config))->contacts($accountId);
+
+            $response = $contacts->createContactField('Company', 'text', 'company');
+            var_dump(ResponseHelper::toArray($response));
         - lang: python
           label: Python
           source: |
@@ -1656,9 +1804,15 @@ paths:
             <?php
             use Mailtrap\Config;
             use Mailtrap\MailtrapGeneralClient;
-            $config = new Config("YOUR_API_KEY");
-            $fields = (new MailtrapGeneralClient($config))->contactFields(12345);
-            $response = $fields->get($fieldId);
+            use Mailtrap\Helper\ResponseHelper;
+
+            $config = new Config($_ENV['MAILTRAP_API_KEY']);
+            $accountId = $_ENV['MAILTRAP_ACCOUNT_ID'];
+            $fieldId = $_ENV['MAILTRAP_FIELD_ID'];
+            $contacts = (new MailtrapGeneralClient($config))->contacts($accountId);
+
+            $response = $contacts->getContactField($fieldId);
+            var_dump(ResponseHelper::toArray($response));
         - lang: python
           label: Python
           source: |
@@ -1726,9 +1880,15 @@ paths:
             <?php
             use Mailtrap\Config;
             use Mailtrap\MailtrapGeneralClient;
-            $config = new Config("YOUR_API_KEY");
-            $fields = (new MailtrapGeneralClient($config))->contactFields(12345);
-            $response = $fields->update($fieldId, ["name" => "Updated Name", "merge_tag" => "updated_name"]);
+            use Mailtrap\Helper\ResponseHelper;
+
+            $config = new Config($_ENV['MAILTRAP_API_KEY']);
+            $accountId = $_ENV['MAILTRAP_ACCOUNT_ID'];
+            $fieldId = $_ENV['MAILTRAP_FIELD_ID'];
+            $contacts = (new MailtrapGeneralClient($config))->contacts($accountId);
+
+            $response = $contacts->updateContactField($fieldId, 'Updated Name', 'updated_name');
+            var_dump(ResponseHelper::toArray($response));
         - lang: python
           label: Python
           source: |
@@ -1828,9 +1988,14 @@ paths:
             <?php
             use Mailtrap\Config;
             use Mailtrap\MailtrapGeneralClient;
-            $config = new Config("YOUR_API_KEY");
-            $fields = (new MailtrapGeneralClient($config))->contactFields(12345);
-            $fields->delete($fieldId);
+
+            $config = new Config($_ENV['MAILTRAP_API_KEY']);
+            $accountId = $_ENV['MAILTRAP_ACCOUNT_ID'];
+            $fieldId = $_ENV['MAILTRAP_FIELD_ID'];
+            $contacts = (new MailtrapGeneralClient($config))->contacts($accountId);
+
+            $response = $contacts->deleteContactField($fieldId);
+            var_dump($response->getStatusCode());
         - lang: python
           label: Python
           source: |

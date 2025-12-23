@@ -21,3 +21,5 @@ build/
 # Reference files (not to be committed)
 helpscout_to_gitbook_redirects.csv
 
+
+stoplight_open_api/sandbox.openapi.yml

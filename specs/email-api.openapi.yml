@@ -77,15 +77,17 @@ paths:
           source: |
             <?php
             use Mailtrap\Config;
+            use Mailtrap\Helper\ResponseHelper;
             use Mailtrap\MailtrapSendingClient;
 
             $config = new Config($_ENV['MAILTRAP_API_KEY']);
-            $accountId = (int) $_ENV['MAILTRAP_ACCOUNT_ID'];
+            $accountId = $_ENV['MAILTRAP_ACCOUNT_ID'];
 
             $sendingDomains = (new MailtrapSendingClient($config))
                 ->domains($accountId);
 
             $response = $sendingDomains->createSendingDomain('example.com');
+            var_dump(ResponseHelper::toArray($response));
         - lang: python
           label: Python
           source: |
@@ -221,17 +223,17 @@ paths:
           source: |
             <?php
             use Mailtrap\Config;
-            use Mailtrap\MailtrapSendingClient;
             use Mailtrap\Helper\ResponseHelper;
+            use Mailtrap\MailtrapSendingClient;
 
             $config = new Config($_ENV['MAILTRAP_API_KEY']);
-            $accountId = (int) $_ENV['MAILTRAP_ACCOUNT_ID'];
+            $accountId = $_ENV['MAILTRAP_ACCOUNT_ID'];
 
             $sendingDomains = (new MailtrapSendingClient($config))
                 ->domains($accountId);
 
             $response = $sendingDomains->getSendingDomains();
-            $domains = ResponseHelper::toArray($response);
+            var_dump(ResponseHelper::toArray($response));
         - lang: python
           label: Python
           source: |
@@ -338,18 +340,18 @@ paths:
           source: |
             <?php
             use Mailtrap\Config;
-            use Mailtrap\MailtrapSendingClient;
             use Mailtrap\Helper\ResponseHelper;
+            use Mailtrap\MailtrapSendingClient;
 
             $config = new Config($_ENV['MAILTRAP_API_KEY']);
-            $accountId = (int) $_ENV['MAILTRAP_ACCOUNT_ID'];
+            $accountId = $_ENV['MAILTRAP_ACCOUNT_ID'];
 
             $sendingDomains = (new MailtrapSendingClient($config))
                 ->domains($accountId);
 
-            $domainId = 12345;
+            $domainId = $_ENV['MAILTRAP_DOMAIN_ID'];
             $response = $sendingDomains->getDomainById($domainId);
-            $domain = ResponseHelper::toArray($response);
+            var_dump(ResponseHelper::toArray($response));
         - lang: python
           label: Python
           source: |
@@ -458,13 +460,14 @@ paths:
             use Mailtrap\MailtrapSendingClient;
 
             $config = new Config($_ENV['MAILTRAP_API_KEY']);
-            $accountId = (int) $_ENV['MAILTRAP_ACCOUNT_ID'];
+            $accountId = $_ENV['MAILTRAP_ACCOUNT_ID'];
 
             $sendingDomains = (new MailtrapSendingClient($config))
                 ->domains($accountId);
 
-            $domainId = 12345;
+            $domainId = $_ENV['MAILTRAP_DOMAIN_ID'];
             $response = $sendingDomains->deleteSendingDomain($domainId);
+            var_dump($response->getStatusCode());
         - lang: python
           label: Python
           source: |
@@ -576,18 +579,19 @@ paths:
             use Mailtrap\MailtrapSendingClient;
 
             $config = new Config($_ENV['MAILTRAP_API_KEY']);
-            $accountId = (int) $_ENV['MAILTRAP_ACCOUNT_ID'];
+            $accountId = $_ENV['MAILTRAP_ACCOUNT_ID'];
 
             $sendingDomains = (new MailtrapSendingClient($config))
                 ->domains($accountId);
 
-            $domainId = 12345;
+            $domainId = $_ENV['MAILTRAP_DOMAIN_ID'];
             $email = 'devops@example.com';
 
             $response = $sendingDomains->sendDomainSetupInstructions(
                 $domainId,
                 $email
             );
+            var_dump($response->getStatusCode());
         - lang: python
           label: Python
           source: |
@@ -739,12 +743,13 @@ paths:
           label: PHP
           source: |
             <?php
+
             use Mailtrap\Config;
-            use Mailtrap\MailtrapSendingClient;
             use Mailtrap\Helper\ResponseHelper;
+            use Mailtrap\MailtrapSendingClient;
 
             $config = new Config($_ENV['MAILTRAP_API_KEY']);
-            $accountId = (int) $_ENV['MAILTRAP_ACCOUNT_ID'];
+            $accountId = $_ENV['MAILTRAP_ACCOUNT_ID'];
 
             $suppressions = (new MailtrapSendingClient($config))
                 ->suppressions($accountId);
@@ -755,7 +760,7 @@ paths:
             // Or search for specific email
             $response = $suppressions->getSuppressions('suppressed@example.com');
 
-            $data = ResponseHelper::toArray($response);
+            var_dump(ResponseHelper::toArray($response));
         - lang: python
           label: Python
           source: |
@@ -900,13 +905,14 @@ paths:
             use Mailtrap\MailtrapSendingClient;
 
             $config = new Config($_ENV['MAILTRAP_API_KEY']);
-            $accountId = (int) $_ENV['MAILTRAP_ACCOUNT_ID'];
+            $accountId = $_ENV['MAILTRAP_ACCOUNT_ID'];
 
             $suppressions = (new MailtrapSendingClient($config))
                 ->suppressions($accountId);
 
             $suppressionId = 'abc123-def456';
             $response = $suppressions->deleteSuppression($suppressionId);
+            var_dump($response->getStatusCode());
         - lang: python
           label: Python
           source: |
@@ -1005,11 +1011,19 @@ paths:
           label: PHP
           source: |
             <?php
+
             use Mailtrap\Config;
+            use Mailtrap\Helper\ResponseHelper;
             use Mailtrap\MailtrapGeneralClient;
-            $config = new Config("YOUR_API_KEY");
-            $templates = (new MailtrapGeneralClient($config))->emailTemplates(12345);
-            $response = $templates->getAll();
+
+            $config = new Config($_ENV['MAILTRAP_API_KEY']);
+            $accountId = $_ENV['MAILTRAP_ACCOUNT_ID'];
+
+            $emailTemplates = (new MailtrapGeneralClient($config))
+                ->emailTemplates($accountId);
+
+            $response = $emailTemplates->getAllEmailTemplates();
+            var_dump(ResponseHelper::toArray($response));
         - lang: python
           label: Python
           source: |
@@ -1085,18 +1099,28 @@ paths:
         - lang: php
           label: PHP
           source: |
+            <?php
             use Mailtrap\Config;
+            use Mailtrap\DTO\Request\EmailTemplate;
+            use Mailtrap\Helper\ResponseHelper;
             use Mailtrap\MailtrapGeneralClient;
-            $config = new Config('YOUR_API_TOKEN');
-            $accountId = (int) $_ENV['MAILTRAP_ACCOUNT_ID'];
-            $client = new MailtrapGeneralClient($config);
-            $template = $client->emailTemplates($accountId)->create([
-                'name' => 'Welcome Email',
-                'subject' => 'Welcome to {{company_name}}!',
-                'category' => 'onboarding',
-                'body_html' => '<h1>Welcome {{user_name}}!</h1>',
-                'body_text' => 'Welcome {{user_name}}!'
-            ]);
+
+            $config = new Config($_ENV['MAILTRAP_API_KEY']);
+            $accountId = $_ENV['MAILTRAP_ACCOUNT_ID'];
+
+            $emailTemplates = (new MailtrapGeneralClient($config))
+                ->emailTemplates($accountId);
+
+            $response = $emailTemplates->createEmailTemplate(
+                EmailTemplate::init(
+                    'Welcome Email',
+                    'Welcome to {{company_name}}!',
+                    'onboarding',
+                    'Welcome {{user_name}}!',
+                    '<h1>Welcome {{user_name}}!</h1>'
+                )
+            );
+            var_dump(ResponseHelper::toArray($response));
         - lang: python
           label: Python
           source: |
@@ -1205,6 +1229,23 @@ paths:
             const client = new MailtrapClient({ token: "YOUR_API_KEY", accountId: YOUR_ACCOUNT_ID });
             const template = await client.templates.get(templateId);
             console.log(`Template: ${template.name} (UUID: ${template.uuid})`);
+        - lang: php
+          label: PHP
+          source: |
+            <?php
+            use Mailtrap\Config;
+            use Mailtrap\Helper\ResponseHelper;
+            use Mailtrap\MailtrapGeneralClient;
+
+            $config = new Config($_ENV['MAILTRAP_API_KEY']);
+            $accountId = $_ENV['MAILTRAP_ACCOUNT_ID'];
+
+            $emailTemplates = (new MailtrapGeneralClient($config))
+                ->emailTemplates($accountId);
+
+            $templateId = $_ENV['MAILTRAP_TEMPLATE_ID'];
+            $response = $emailTemplates->getEmailTemplate($templateId);
+            var_dump(ResponseHelper::toArray($response));
         - lang: shell
           label: cURL
           source: |
@@ -1236,6 +1277,33 @@ paths:
             const { MailtrapClient } = require("mailtrap");
             const client = new MailtrapClient({ token: "YOUR_API_KEY", accountId: YOUR_ACCOUNT_ID });
             const template = await client.templates.update(templateId, { name: "Updated Template", subject: "New Subject" });
+        - lang: php
+          label: PHP
+          source: |
+            <?php
+            use Mailtrap\Config;
+            use Mailtrap\DTO\Request\EmailTemplate;
+            use Mailtrap\Helper\ResponseHelper;
+            use Mailtrap\MailtrapGeneralClient;
+
+            $config = new Config($_ENV['MAILTRAP_API_KEY']);
+            $accountId = $_ENV['MAILTRAP_ACCOUNT_ID'];
+
+            $emailTemplates = (new MailtrapGeneralClient($config))
+                ->emailTemplates($accountId);
+
+            $templateId = $_ENV['MAILTRAP_TEMPLATE_ID'];
+            $response = $emailTemplates->updateEmailTemplate(
+                $templateId,
+                EmailTemplate::init(
+                    'Updated Welcome Email',
+                    'Updated Subject',
+                    'Transactional',
+                    'Updated Text Body',
+                    '<div>Updated HTML Body</div>'
+                )
+            );
+            var_dump(ResponseHelper::toArray($response));
         - lang: shell
           label: cURL
           source: |
@@ -1281,6 +1349,22 @@ paths:
             const { MailtrapClient } = require("mailtrap");
             const client = new MailtrapClient({ token: "YOUR_API_KEY", accountId: YOUR_ACCOUNT_ID });
             await client.templates.delete(templateId);
+        - lang: php
+          label: PHP
+          source: |
+            <?php
+            use Mailtrap\Config;
+            use Mailtrap\MailtrapGeneralClient;
+
+            $config = new Config($_ENV['MAILTRAP_API_KEY']);
+            $accountId = $_ENV['MAILTRAP_ACCOUNT_ID'];
+
+            $emailTemplates = (new MailtrapGeneralClient($config))
+                ->emailTemplates($accountId);
+
+            $templateId = $_ENV['MAILTRAP_TEMPLATE_ID'];
+            $response = $emailTemplates->deleteEmailTemplate($templateId);
+            var_dump($response->getStatusCode());
         - lang: shell
           label: cURL
           source: |

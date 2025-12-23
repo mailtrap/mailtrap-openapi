@@ -23,3 +23,4 @@ The specifications are located in the `specs/` directory:
 
 You can import these files into tools like Postman, Swagger UI, or use them with OpenAPI generators to build SDKs for your preferred language.
 
+

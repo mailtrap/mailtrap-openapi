@@ -1,0 +1,35 @@
+name: Lint OpenAPI Specs
+
+on:
+  push:
+    branches: [ main, master ]
+    paths:
+      - 'specs/**'
+      - '.github/workflows/openapi-lint.yml'
+      - '.spectral.yaml'
+  pull_request:
+    branches: [ main, master ]
+    paths:
+      - 'specs/**'
+      - '.github/workflows/openapi-lint.yml'
+      - '.spectral.yaml'
+
+jobs:
+  lint:
+    name: Lint OpenAPI files with Spectral
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install Spectral
+        run: npm install -g @stoplight/spectral-cli
+
+      - name: Lint OpenAPI Specs
+        run: spectral lint "specs/*.openapi.yml" --verbose
+

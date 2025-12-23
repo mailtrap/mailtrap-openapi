@@ -132,17 +132,19 @@ paths:
         - lang: php
           label: PHP
           source: |
+            <?php
             use Mailtrap\Config;
+            use Mailtrap\Helper\ResponseHelper;
             use Mailtrap\MailtrapSandboxClient;
 
-            $config = new Config('YOUR_API_TOKEN');
-            $client = new MailtrapSandboxClient($config);
+            $config = new Config($_ENV['MAILTRAP_API_KEY']);
+            $accountId = $_ENV['MAILTRAP_ACCOUNT_ID'];
 
-            $project = $client->projects($accountId)->create([
-                'project' => ['name' => 'My New Project']
-            ]);
+            $sandboxProjects = (new MailtrapSandboxClient($config))
+                ->projects($accountId);
 
-            var_dump($project);
+            $response = $sandboxProjects->create('My New Project');
+            var_dump(ResponseHelper::toArray($response));
         - lang: python
           label: Python
           source: |
@@ -250,17 +252,19 @@ paths:
         - lang: php
           label: PHP
           source: |
+            <?php
             use Mailtrap\Config;
+            use Mailtrap\Helper\ResponseHelper;
             use Mailtrap\MailtrapSandboxClient;
 
-            $config = new Config('YOUR_API_TOKEN');
-            $client = new MailtrapSandboxClient($config);
+            $config = new Config($_ENV['MAILTRAP_API_KEY']);
+            $accountId = $_ENV['MAILTRAP_ACCOUNT_ID'];
 
-            $projects = $client->projects($accountId)->getList();
+            $sandboxProjects = (new MailtrapSandboxClient($config))
+                ->projects($accountId);
 
-            foreach ($projects as $project) {
-                echo "Project: {$project['name']}, ID: {$project['id']}\n";
-            }
+            $response = $sandboxProjects->getList();
+            var_dump(ResponseHelper::toArray($response));
         - lang: python
           label: Python
           source: |
@@ -366,18 +370,18 @@ paths:
           source: |
             <?php
             use Mailtrap\Config;
-            use Mailtrap\MailtrapSandboxClient;
             use Mailtrap\Helper\ResponseHelper;
+            use Mailtrap\MailtrapSandboxClient;
 
             $config = new Config($_ENV['MAILTRAP_API_KEY']);
-            $accountId = (int) $_ENV['MAILTRAP_ACCOUNT_ID'];
+            $accountId = $_ENV['MAILTRAP_ACCOUNT_ID'];
 
             $sandboxProjects = (new MailtrapSandboxClient($config))
                 ->projects($accountId);
 
-            $projectId = 12345;
+            $projectId = $_ENV['MAILTRAP_PROJECT_ID'];
             $response = $sandboxProjects->getById($projectId);
-            $project = ResponseHelper::toArray($response);
+            var_dump(ResponseHelper::toArray($response));
         - lang: python
           label: Python
           source: |
@@ -474,20 +478,20 @@ paths:
           source: |
             <?php
             use Mailtrap\Config;
-            use Mailtrap\MailtrapSandboxClient;
             use Mailtrap\Helper\ResponseHelper;
+            use Mailtrap\MailtrapSandboxClient;
 
             $config = new Config($_ENV['MAILTRAP_API_KEY']);
-            $accountId = (int) $_ENV['MAILTRAP_ACCOUNT_ID'];
+            $accountId = $_ENV['MAILTRAP_ACCOUNT_ID'];
 
             $sandboxProjects = (new MailtrapSandboxClient($config))
                 ->projects($accountId);
 
-            $projectId = 12345;
+            $projectId = $_ENV['MAILTRAP_PROJECT_ID'];
             $newProjectName = 'Updated Project Name';
 
             $response = $sandboxProjects->updateName($projectId, $newProjectName);
-            $project = ResponseHelper::toArray($response);
+            var_dump(ResponseHelper::toArray($response));
         - lang: python
           label: Python
           source: |
@@ -627,15 +631,13 @@ paths:
             use Mailtrap\MailtrapSandboxClient;
 
             $config = new Config($_ENV['MAILTRAP_API_KEY']);
-            $accountId = (int) $_ENV['MAILTRAP_ACCOUNT_ID'];
+            $accountId = $_ENV['MAILTRAP_ACCOUNT_ID'];
 
             $sandboxProjects = (new MailtrapSandboxClient($config))
                 ->projects($accountId);
 
-            $projectId = 12345;
+            $projectId = $_ENV['MAILTRAP_PROJECT_ID'];
             $response = $sandboxProjects->delete($projectId);
-
-            // Returns HTTP 200 with deleted project ID
             var_dump($response->getStatusCode());
         - lang: python
           label: Python
@@ -778,18 +780,20 @@ paths:
         - lang: php
           label: PHP
           source: |
+            <?php
             use Mailtrap\Config;
+            use Mailtrap\Helper\ResponseHelper;
             use Mailtrap\MailtrapSandboxClient;
 
-            $config = new Config('YOUR_API_TOKEN');
-            $client = new MailtrapSandboxClient($config);
+            $config = new Config($_ENV['MAILTRAP_API_KEY']);
+            $accountId = $_ENV['MAILTRAP_ACCOUNT_ID'];
+            $projectId = $_ENV['MAILTRAP_PROJECT_ID'];
 
-            $inbox = $client->inboxes($accountId)->create($projectId, [
-                'inbox' => ['name' => 'My Test Inbox']
-            ]);
+            $sandboxInboxes = (new MailtrapSandboxClient($config))
+                ->inboxes($accountId);
 
-            echo "Inbox created: {$inbox['name']}\n";
-            echo "SMTP credentials - User: {$inbox['username']}\n";
+            $response = $sandboxInboxes->create($projectId, 'My Test Inbox');
+            var_dump(ResponseHelper::toArray($response));
         - lang: python
           label: Python
           source: |
@@ -910,18 +914,18 @@ paths:
           source: |
             <?php
             use Mailtrap\Config;
-            use Mailtrap\MailtrapSandboxClient;
             use Mailtrap\Helper\ResponseHelper;
+            use Mailtrap\MailtrapSandboxClient;
 
             $config = new Config($_ENV['MAILTRAP_API_KEY']);
-            $accountId = (int) $_ENV['MAILTRAP_ACCOUNT_ID'];
+            $accountId = $_ENV['MAILTRAP_ACCOUNT_ID'];
 
             $sandboxInboxes = (new MailtrapSandboxClient($config))
                 ->inboxes($accountId);
 
-            $inboxId = 12345;
+            $inboxId = $_ENV['MAILTRAP_INBOX_ID'];
             $response = $sandboxInboxes->getInboxAttributes($inboxId);
-            $inboxAttributes = ResponseHelper::toArray($response);
+            var_dump(ResponseHelper::toArray($response));
         - lang: python
           label: Python
           source: |
@@ -1027,14 +1031,13 @@ paths:
             use Mailtrap\MailtrapSandboxClient;
 
             $config = new Config($_ENV['MAILTRAP_API_KEY']);
-            $accountId = (int) $_ENV['MAILTRAP_ACCOUNT_ID'];
+            $accountId = $_ENV['MAILTRAP_ACCOUNT_ID'];
 
             $sandboxInboxes = (new MailtrapSandboxClient($config))
                 ->inboxes($accountId);
 
-            $inboxId = 12345;
+            $inboxId = $_ENV['MAILTRAP_INBOX_ID'];
             $response = $sandboxInboxes->delete($inboxId);
-
             var_dump($response->getStatusCode());
         - lang: python
           label: Python
@@ -1158,23 +1161,23 @@ paths:
           source: |
             <?php
             use Mailtrap\Config;
-            use Mailtrap\MailtrapSandboxClient;
             use Mailtrap\DTO\Request\Inbox;
             use Mailtrap\Helper\ResponseHelper;
+            use Mailtrap\MailtrapSandboxClient;
 
             $config = new Config($_ENV['MAILTRAP_API_KEY']);
-            $accountId = (int) $_ENV['MAILTRAP_ACCOUNT_ID'];
+            $accountId = $_ENV['MAILTRAP_ACCOUNT_ID'];
 
             $sandboxInboxes = (new MailtrapSandboxClient($config))
                 ->inboxes($accountId);
 
-            $inboxId = 12345;
+            $inboxId = $_ENV['MAILTRAP_INBOX_ID'];
             $response = $sandboxInboxes->update(
                 $inboxId,
                 new Inbox('Updated Inbox Name', 'new-username')
             );
 
-            $inbox = ResponseHelper::toArray($response);
+            var_dump(ResponseHelper::toArray($response));
         - lang: python
           label: Python
           source: |
@@ -1307,19 +1310,19 @@ paths:
           source: |
             <?php
             use Mailtrap\Config;
-            use Mailtrap\MailtrapSandboxClient;
             use Mailtrap\Helper\ResponseHelper;
+            use Mailtrap\MailtrapSandboxClient;
 
             $config = new Config($_ENV['MAILTRAP_API_KEY']);
-            $accountId = (int) $_ENV['MAILTRAP_ACCOUNT_ID'];
+            $accountId = $_ENV['MAILTRAP_ACCOUNT_ID'];
 
             $sandboxInboxes = (new MailtrapSandboxClient($config))
                 ->inboxes($accountId);
 
-            $inboxId = 12345;
+            $inboxId = $_ENV['MAILTRAP_INBOX_ID'];
             $response = $sandboxInboxes->clean($inboxId);
 
-            $inbox = ResponseHelper::toArray($response);
+            var_dump(ResponseHelper::toArray($response));
         - lang: python
           label: Python
           source: |
@@ -1426,19 +1429,19 @@ paths:
           source: |
             <?php
             use Mailtrap\Config;
-            use Mailtrap\MailtrapSandboxClient;
             use Mailtrap\Helper\ResponseHelper;
+            use Mailtrap\MailtrapSandboxClient;
 
             $config = new Config($_ENV['MAILTRAP_API_KEY']);
-            $accountId = (int) $_ENV['MAILTRAP_ACCOUNT_ID'];
+            $accountId = $_ENV['MAILTRAP_ACCOUNT_ID'];
 
             $sandboxInboxes = (new MailtrapSandboxClient($config))
                 ->inboxes($accountId);
 
-            $inboxId = 12345;
+            $inboxId = $_ENV['MAILTRAP_INBOX_ID'];
             $response = $sandboxInboxes->markAsRead($inboxId);
-
-            $inbox = ResponseHelper::toArray($response);
+            
+            var_dump(ResponseHelper::toArray($response));
         - lang: python
           label: Python
           source: |
@@ -1545,19 +1548,19 @@ paths:
           source: |
             <?php
             use Mailtrap\Config;
-            use Mailtrap\MailtrapSandboxClient;
             use Mailtrap\Helper\ResponseHelper;
+            use Mailtrap\MailtrapSandboxClient;
 
             $config = new Config($_ENV['MAILTRAP_API_KEY']);
-            $accountId = (int) $_ENV['MAILTRAP_ACCOUNT_ID'];
+            $accountId = $_ENV['MAILTRAP_ACCOUNT_ID'];
 
             $sandboxInboxes = (new MailtrapSandboxClient($config))
                 ->inboxes($accountId);
 
-            $inboxId = 12345;
+            $inboxId = $_ENV['MAILTRAP_INBOX_ID'];
             $response = $sandboxInboxes->resetSmtpCredentials($inboxId);
 
-            $inbox = ResponseHelper::toArray($response);
+            var_dump(ResponseHelper::toArray($response));
         - lang: python
           label: Python
           source: |
@@ -1664,19 +1667,19 @@ paths:
           source: |
             <?php
             use Mailtrap\Config;
-            use Mailtrap\MailtrapSandboxClient;
             use Mailtrap\Helper\ResponseHelper;
+            use Mailtrap\MailtrapSandboxClient;
 
             $config = new Config($_ENV['MAILTRAP_API_KEY']);
-            $accountId = (int) $_ENV['MAILTRAP_ACCOUNT_ID'];
+            $accountId = $_ENV['MAILTRAP_ACCOUNT_ID'];
 
             $sandboxInboxes = (new MailtrapSandboxClient($config))
                 ->inboxes($accountId);
 
-            $inboxId = 12345;
+            $inboxId = $_ENV['MAILTRAP_INBOX_ID'];
             $response = $sandboxInboxes->toggleEmailAddress($inboxId);
 
-            $inbox = ResponseHelper::toArray($response);
+            var_dump(ResponseHelper::toArray($response));
         - lang: python
           label: Python
           source: |
@@ -1783,19 +1786,19 @@ paths:
           source: |
             <?php
             use Mailtrap\Config;
-            use Mailtrap\MailtrapSandboxClient;
             use Mailtrap\Helper\ResponseHelper;
+            use Mailtrap\MailtrapSandboxClient;
 
             $config = new Config($_ENV['MAILTRAP_API_KEY']);
-            $accountId = (int) $_ENV['MAILTRAP_ACCOUNT_ID'];
+            $accountId = $_ENV['MAILTRAP_ACCOUNT_ID'];
 
             $sandboxInboxes = (new MailtrapSandboxClient($config))
                 ->inboxes($accountId);
 
-            $inboxId = 12345;
+            $inboxId = $_ENV['MAILTRAP_INBOX_ID'];
             $response = $sandboxInboxes->resetEmailAddress($inboxId);
 
-            $inbox = ResponseHelper::toArray($response);
+            var_dump(ResponseHelper::toArray($response));
         - lang: python
           label: Python
           source: |
@@ -1899,17 +1902,17 @@ paths:
           source: |
             <?php
             use Mailtrap\Config;
-            use Mailtrap\MailtrapSandboxClient;
             use Mailtrap\Helper\ResponseHelper;
+            use Mailtrap\MailtrapSandboxClient;
 
             $config = new Config($_ENV['MAILTRAP_API_KEY']);
-            $accountId = (int) $_ENV['MAILTRAP_ACCOUNT_ID'];
+            $accountId = $_ENV['MAILTRAP_ACCOUNT_ID'];
 
             $sandboxInboxes = (new MailtrapSandboxClient($config))
                 ->inboxes($accountId);
 
             $response = $sandboxInboxes->getList();
-            $inboxes = ResponseHelper::toArray($response);
+            var_dump(ResponseHelper::toArray($response));
         - lang: python
           label: Python
           source: |
@@ -2007,27 +2010,28 @@ paths:
         - lang: php
           label: PHP
           source: |
-            use Mailtrap\Config;
-            use Mailtrap\EmailHeader\CategoryHeader;
+            <?php
+            use Mailtrap\Helper\ResponseHelper;
             use Mailtrap\MailtrapClient;
+            use Mailtrap\Mime\MailtrapEmail;
             use Symfony\Component\Mime\Address;
-            use Symfony\Component\Mime\Email;
 
-            $apiKey = 'YOUR_API_KEY';
-            $mailtrap = new MailtrapClient(new Config($apiKey));
+            $mailtrap = MailtrapClient::initSendingEmails(
+                apiKey: $_ENV['MAILTRAP_API_KEY'],
+                isSandbox: true,
+                inboxId: $_ENV['MAILTRAP_INBOX_ID']
+            );
 
-            $email = (new Email())
+            $email = (new MailtrapEmail())
                 ->from(new Address('test@example.com', 'Test Sender'))
                 ->to(new Address('user@example.com', 'Test User'))
                 ->subject('Test Email')
                 ->text('This is a test email for sandbox.')
-                ->html('<p>This is a <b>test email</b> for sandbox.</p>')
-                ->addTextHeader('X-MT-Category', 'test');
+                ->html('<p>This is a <b>test email</b> for sandbox.</p>');
 
-            $response = $mailtrap->sandbox()
-                ->inboxes(TEST_INBOX_ID)
-                ->emails()
-                ->send($email);
+            $response = $mailtrap->send($email);
+
+            var_dump(ResponseHelper::toArray($response));
         - lang: python
           label: Python
           source: |
@@ -2213,10 +2217,10 @@ paths:
           label: PHP
           source: |
             <?php
+            use Mailtrap\Helper\ResponseHelper;
             use Mailtrap\MailtrapClient;
             use Mailtrap\Mime\MailtrapEmail;
             use Symfony\Component\Mime\Address;
-            use Mailtrap\Helper\ResponseHelper;
 
             $mailtrap = MailtrapClient::initSendingEmails(
                 apiKey: $_ENV['MAILTRAP_API_KEY'],
@@ -2230,11 +2234,12 @@ paths:
                 ->text('Batch email content');
 
             $recipientEmails = [
-                (new MailtrapEmail())->to(new Address('recipient1@example.com')),
-                (new MailtrapEmail())->to(new Address('recipient2@example.com')),
+                (new MailtrapEmail())->to(new Address('recipient1@example.com', 'Recipient 1')),
+                (new MailtrapEmail())->to(new Address('recipient2@example.com', 'Recipient 2')),
             ];
 
             $response = $mailtrap->batchSend($recipientEmails, $baseEmail);
+
             var_dump(ResponseHelper::toArray($response));
         - lang: python
           label: Python
@@ -2467,17 +2472,17 @@ paths:
           source: |
             <?php
             use Mailtrap\Config;
-            use Mailtrap\MailtrapSandboxClient;
             use Mailtrap\Helper\ResponseHelper;
+            use Mailtrap\MailtrapSandboxClient;
 
             $config = new Config($_ENV['MAILTRAP_API_KEY']);
-            $accountId = (int) $_ENV['MAILTRAP_ACCOUNT_ID'];
-            $inboxId = (int) $_ENV['MAILTRAP_INBOX_ID'];
+            $accountId = $_ENV['MAILTRAP_ACCOUNT_ID'];
+            $inboxId = $_ENV['MAILTRAP_INBOX_ID'];
 
             $sandboxMessages = (new MailtrapSandboxClient($config))
                 ->messages($accountId, $inboxId);
 
-            $messageId = 67890;
+            $messageId = $_ENV['MAILTRAP_MESSAGE_ID'];
             $response = $sandboxMessages->getById($messageId);
 
             var_dump(ResponseHelper::toArray($response));
@@ -2701,17 +2706,17 @@ paths:
           source: |
             <?php
             use Mailtrap\Config;
-            use Mailtrap\MailtrapSandboxClient;
             use Mailtrap\Helper\ResponseHelper;
+            use Mailtrap\MailtrapSandboxClient;
 
             $config = new Config($_ENV['MAILTRAP_API_KEY']);
-            $accountId = (int) $_ENV['MAILTRAP_ACCOUNT_ID'];
-            $inboxId = (int) $_ENV['MAILTRAP_INBOX_ID'];
+            $accountId = $_ENV['MAILTRAP_ACCOUNT_ID'];
+            $inboxId = $_ENV['MAILTRAP_INBOX_ID'];
 
             $sandboxMessages = (new MailtrapSandboxClient($config))
                 ->messages($accountId, $inboxId);
 
-            $messageId = 67890;
+            $messageId = $_ENV['MAILTRAP_MESSAGE_ID'];
             $response = $sandboxMessages->markAsRead($messageId);
 
             var_dump(ResponseHelper::toArray($response));
@@ -2923,13 +2928,13 @@ paths:
             use Mailtrap\MailtrapSandboxClient;
 
             $config = new Config($_ENV['MAILTRAP_API_KEY']);
-            $accountId = (int) $_ENV['MAILTRAP_ACCOUNT_ID'];
-            $inboxId = (int) $_ENV['MAILTRAP_INBOX_ID'];
+            $accountId = $_ENV['MAILTRAP_ACCOUNT_ID'];
+            $inboxId = $_ENV['MAILTRAP_INBOX_ID'];
 
             $sandboxMessages = (new MailtrapSandboxClient($config))
                 ->messages($accountId, $inboxId);
 
-            $messageId = 67890;
+            $messageId = $_ENV['MAILTRAP_MESSAGE_ID'];
             $response = $sandboxMessages->delete($messageId);
 
             var_dump($response->getStatusCode());
@@ -3140,20 +3145,20 @@ paths:
         - lang: php
           label: PHP
           source: |
+            <?php
             use Mailtrap\Config;
+            use Mailtrap\Helper\ResponseHelper;
             use Mailtrap\MailtrapSandboxClient;
 
-            $config = new Config('YOUR_API_TOKEN');
-            $client = new MailtrapSandboxClient($config);
+            $config = new Config($_ENV['MAILTRAP_API_KEY']);
+            $accountId = $_ENV['MAILTRAP_ACCOUNT_ID'];
+            $inboxId = $_ENV['MAILTRAP_INBOX_ID'];
 
-            $messages = $client->messages($accountId)
-                ->getList($inboxId);
+            $sandboxMessages = (new MailtrapSandboxClient($config))
+                ->messages($accountId, $inboxId);
 
-            foreach ($messages as $message) {
-                echo "From: {$message['from_email']}\n";
-                echo "Subject: {$message['subject']}\n";
-                echo "Received: {$message['created_at']}\n";
-            }
+            $response = $sandboxMessages->getList();
+            var_dump(ResponseHelper::toArray($response));
         - lang: python
           label: Python
           source: |
@@ -3326,17 +3331,17 @@ paths:
           source: |
             <?php
             use Mailtrap\Config;
-            use Mailtrap\MailtrapSandboxClient;
             use Mailtrap\Helper\ResponseHelper;
+            use Mailtrap\MailtrapSandboxClient;
 
             $config = new Config($_ENV['MAILTRAP_API_KEY']);
-            $accountId = (int) $_ENV['MAILTRAP_ACCOUNT_ID'];
-            $inboxId = (int) $_ENV['MAILTRAP_INBOX_ID'];
+            $accountId = $_ENV['MAILTRAP_ACCOUNT_ID'];
+            $inboxId = $_ENV['MAILTRAP_INBOX_ID'];
 
             $sandboxMessages = (new MailtrapSandboxClient($config))
                 ->messages($accountId, $inboxId);
 
-            $messageId = 67890;
+            $messageId = $_ENV['MAILTRAP_MESSAGE_ID'];
             $response = $sandboxMessages->forward($messageId, 'recipient@example.com');
 
             var_dump(ResponseHelper::toArray($response));
@@ -3509,13 +3514,19 @@ paths:
           source: |
             <?php
             use Mailtrap\Config;
-            use Mailtrap\MailtrapSandboxClient;
             use Mailtrap\Helper\ResponseHelper;
+            use Mailtrap\MailtrapSandboxClient;
 
             $config = new Config($_ENV['MAILTRAP_API_KEY']);
-            $sandboxMessages = (new MailtrapSandboxClient($config))->messages((int)$_ENV['MAILTRAP_ACCOUNT_ID'], (int)$_ENV['MAILTRAP_INBOX_ID']);
+            $accountId = $_ENV['MAILTRAP_ACCOUNT_ID'];
+            $inboxId = $_ENV['MAILTRAP_INBOX_ID'];
 
-            $response = $sandboxMessages->getSpamScore(67890);
+            $sandboxMessages = (new MailtrapSandboxClient($config))
+                ->messages($accountId, $inboxId);
+
+            $messageId = $_ENV['MAILTRAP_MESSAGE_ID'];
+            $response = $sandboxMessages->getSpamScore($messageId);
+
             var_dump(ResponseHelper::toArray($response));
         - lang: python
           label: Python
@@ -3668,13 +3679,19 @@ paths:
           source: |
             <?php
             use Mailtrap\Config;
-            use Mailtrap\MailtrapSandboxClient;
             use Mailtrap\Helper\ResponseHelper;
+            use Mailtrap\MailtrapSandboxClient;
 
             $config = new Config($_ENV['MAILTRAP_API_KEY']);
-            $sandboxMessages = (new MailtrapSandboxClient($config))->messages((int)$_ENV['MAILTRAP_ACCOUNT_ID'], (int)$_ENV['MAILTRAP_INBOX_ID']);
+            $accountId = $_ENV['MAILTRAP_ACCOUNT_ID'];
+            $inboxId = $_ENV['MAILTRAP_INBOX_ID'];
 
-            $response = $sandboxMessages->getHtmlAnalysis(67890);
+            $sandboxMessages = (new MailtrapSandboxClient($config))
+                ->messages($accountId, $inboxId);
+
+            $messageId = $_ENV['MAILTRAP_MESSAGE_ID'];
+            $response = $sandboxMessages->getHtmlAnalysis($messageId);
+
             var_dump(ResponseHelper::toArray($response));
         - lang: python
           label: Python
@@ -3756,6 +3773,13 @@ paths:
                 example: '{:errors=>"Inbox is not active or you have insufficient permissions"}'
         '404':
           $ref: '#/components/responses/NOT_FOUND'
+        '409':
+          description: Returns conflict error message. Text body does not exist.
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: Conflict
       x-codeSamples:
         - lang: javascript
           label: Node.js
@@ -3769,11 +3793,21 @@ paths:
           source: |
             <?php
             use Mailtrap\Config;
-            use Mailtrap\MailtrapSandboxClient;
             use Mailtrap\Helper\ResponseHelper;
+            use Mailtrap\MailtrapSandboxClient;
+
             $config = new Config($_ENV['MAILTRAP_API_KEY']);
-            $sandboxMessages = (new MailtrapSandboxClient($config))->messages((int)$_ENV['MAILTRAP_ACCOUNT_ID'], (int)$_ENV['MAILTRAP_INBOX_ID']);
-            $textBody = ResponseHelper::toString($sandboxMessages->getText(67890));
+            $accountId = $_ENV['MAILTRAP_ACCOUNT_ID'];
+            $inboxId = $_ENV['MAILTRAP_INBOX_ID'];
+
+            $sandboxMessages = (new MailtrapSandboxClient($config))
+                ->messages($accountId, $inboxId);
+
+            $messageId = $_ENV['MAILTRAP_MESSAGE_ID'];
+            $textBody = ResponseHelper::toString(
+                $sandboxMessages->getText($messageId)
+            );
+
             var_dump($textBody);
         - lang: python
           label: Python
@@ -3892,6 +3926,13 @@ paths:
                 example: '{:errors=>"Inbox is not active or you have insufficient permissions"}'
         '404':
           $ref: '#/components/responses/NOT_FOUND'
+        '409':
+          description: Returns conflict error message. Raw body does not exist.
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: Conflict
       x-codeSamples:
         - lang: javascript
           label: Node.js
@@ -3905,11 +3946,21 @@ paths:
           source: |
             <?php
             use Mailtrap\Config;
-            use Mailtrap\MailtrapSandboxClient;
             use Mailtrap\Helper\ResponseHelper;
+            use Mailtrap\MailtrapSandboxClient;
+
             $config = new Config($_ENV['MAILTRAP_API_KEY']);
-            $sandboxMessages = (new MailtrapSandboxClient($config))->messages((int)$_ENV['MAILTRAP_ACCOUNT_ID'], (int)$_ENV['MAILTRAP_INBOX_ID']);
-            $rawBody = ResponseHelper::toString($sandboxMessages->getRaw(67890));
+            $accountId = $_ENV['MAILTRAP_ACCOUNT_ID'];
+            $inboxId = $_ENV['MAILTRAP_INBOX_ID'];
+
+            $sandboxMessages = (new MailtrapSandboxClient($config))
+                ->messages($accountId, $inboxId);
+
+            $messageId = $_ENV['MAILTRAP_MESSAGE_ID'];
+            $rawBody = ResponseHelper::toString(
+                $sandboxMessages->getRaw($messageId)
+            );
+
             var_dump($rawBody);
         - lang: python
           label: Python
@@ -4007,6 +4058,13 @@ paths:
                 example: '{:errors=>"Inbox is not active or you have insufficient permissions"}'
         '404':
           $ref: '#/components/responses/NOT_FOUND'
+        '409':
+          description: Returns conflict error message. HTML source does not exist.
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: Conflict
       x-codeSamples:
         - lang: javascript
           label: Node.js
@@ -4022,10 +4080,16 @@ paths:
             use Mailtrap\Config;
             use Mailtrap\MailtrapSandboxClient;
             use Mailtrap\Helper\ResponseHelper;
+            
+            $accountId = $_ENV['MAILTRAP_ACCOUNT_ID'];
+            $inboxId = $_ENV['MAILTRAP_INBOX_ID'];
             $config = new Config($_ENV['MAILTRAP_API_KEY']);
-            $sandboxMessages = (new MailtrapSandboxClient($config))->messages((int)$_ENV['MAILTRAP_ACCOUNT_ID'], (int)$_ENV['MAILTRAP_INBOX_ID']);
-            $htmlSource = ResponseHelper::toString($sandboxMessages->getSource(67890));
-            var_dump($htmlSource);
+            
+            $sandboxMessages = (new MailtrapSandboxClient($config))->messages($accountId, $inboxId);
+            
+            $messageId = $_ENV['MAILTRAP_MESSAGE_ID'];
+            $response = $sandboxMessages->getSource($messageId);
+            var_dump(ResponseHelper::toString($response));
         - lang: python
           label: Python
           source: |
@@ -4120,6 +4184,13 @@ paths:
                     example: Inbox is not active or you have insufficient permissions
         '404':
           $ref: '#/components/responses/NOT_FOUND'
+        '409':
+          description: Returns conflict error message. HTML source does not exist.
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: Conflict
       x-codeSamples:
         - lang: javascript
           label: Node.js
@@ -4133,11 +4204,21 @@ paths:
           source: |
             <?php
             use Mailtrap\Config;
-            use Mailtrap\MailtrapSandboxClient;
             use Mailtrap\Helper\ResponseHelper;
+            use Mailtrap\MailtrapSandboxClient;
+
             $config = new Config($_ENV['MAILTRAP_API_KEY']);
-            $sandboxMessages = (new MailtrapSandboxClient($config))->messages((int)$_ENV['MAILTRAP_ACCOUNT_ID'], (int)$_ENV['MAILTRAP_INBOX_ID']);
-            $htmlBody = ResponseHelper::toString($sandboxMessages->getHtml(67890));
+            $accountId = $_ENV['MAILTRAP_ACCOUNT_ID'];
+            $inboxId = $_ENV['MAILTRAP_INBOX_ID'];
+
+            $sandboxMessages = (new MailtrapSandboxClient($config))
+                ->messages($accountId, $inboxId);
+
+            $messageId = $_ENV['MAILTRAP_MESSAGE_ID'];
+            $htmlBody = ResponseHelper::toString(
+                $sandboxMessages->getHtml($messageId)
+            );
+
             var_dump($htmlBody);
         - lang: python
           label: Python
@@ -4257,6 +4338,13 @@ paths:
               example: '{:errors=>"Inbox is not active or you have insufficient permissions"}'
         '404':
           $ref: '#/components/responses/NOT_FOUND'
+        '409':
+          description: Returns conflict error message. .eml body does not exist.
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: Conflict
       x-codeSamples:
         - lang: javascript
           label: Node.js
@@ -4270,11 +4358,21 @@ paths:
           source: |
             <?php
             use Mailtrap\Config;
-            use Mailtrap\MailtrapSandboxClient;
             use Mailtrap\Helper\ResponseHelper;
+            use Mailtrap\MailtrapSandboxClient;
+
             $config = new Config($_ENV['MAILTRAP_API_KEY']);
-            $sandboxMessages = (new MailtrapSandboxClient($config))->messages((int)$_ENV['MAILTRAP_ACCOUNT_ID'], (int)$_ENV['MAILTRAP_INBOX_ID']);
-            $emlContent = ResponseHelper::toString($sandboxMessages->getEml(67890));
+            $accountId = $_ENV['MAILTRAP_ACCOUNT_ID'];
+            $inboxId = $_ENV['MAILTRAP_INBOX_ID'];
+
+            $sandboxMessages = (new MailtrapSandboxClient($config))
+                ->messages($accountId, $inboxId);
+
+            $messageId = $_ENV['MAILTRAP_MESSAGE_ID'];
+            $emlContent = ResponseHelper::toString(
+                $sandboxMessages->getEml($messageId)
+            );
+
             var_dump($emlContent);
         - lang: python
           label: Python
@@ -4366,11 +4464,20 @@ paths:
           source: |
             <?php
             use Mailtrap\Config;
+            use Mailtrap\Helper\ResponseHelper;
             use Mailtrap\MailtrapSandboxClient;
+
             $config = new Config($_ENV['MAILTRAP_API_KEY']);
-            $sandboxMessages = (new MailtrapSandboxClient($config))->messages((int)$_ENV['MAILTRAP_ACCOUNT_ID'], (int)$_ENV['MAILTRAP_INBOX_ID']);
-            $mailHeaders = $sandboxMessages->getMailHeaders(67890);
-            var_dump($mailHeaders);
+            $accountId = $_ENV['MAILTRAP_ACCOUNT_ID'];
+            $inboxId = $_ENV['MAILTRAP_INBOX_ID'];
+
+            $sandboxMessages = (new MailtrapSandboxClient($config))
+                ->messages($accountId, $inboxId);
+
+            $messageId = $_ENV['MAILTRAP_MESSAGE_ID'];
+            $mailHeaders = $sandboxMessages->getMailHeaders($messageId);
+
+            var_dump(ResponseHelper::toArray($mailHeaders));
         - lang: python
           label: Python
           source: |
@@ -4497,10 +4604,20 @@ paths:
           source: |
             <?php
             use Mailtrap\Config;
+            use Mailtrap\Helper\ResponseHelper;
             use Mailtrap\MailtrapSandboxClient;
-            $config = new Config("YOUR_API_KEY");
-            $sandboxAttachments = (new MailtrapSandboxClient($config))->attachments(12345, 67890);
-            $response = $sandboxAttachments->getMessageAttachments(111111);
+
+            $config = new Config($_ENV['MAILTRAP_API_KEY']);
+            $accountId = $_ENV['MAILTRAP_ACCOUNT_ID'];
+            $inboxId = $_ENV['MAILTRAP_INBOX_ID'];
+
+            $sandboxAttachments = (new MailtrapSandboxClient($config))
+                ->attachments($accountId, $inboxId);
+
+            $messageId = $_ENV['MAILTRAP_MESSAGE_ID'];
+            $response = $sandboxAttachments->getMessageAttachments($messageId);
+
+            var_dump(ResponseHelper::toArray($response));
         - lang: python
           label: Python
           source: |
@@ -4607,10 +4724,22 @@ paths:
           source: |
             <?php
             use Mailtrap\Config;
+            use Mailtrap\Helper\ResponseHelper;
             use Mailtrap\MailtrapSandboxClient;
-            $config = new Config("YOUR_API_KEY");
-            $sandboxAttachments = (new MailtrapSandboxClient($config))->attachments(12345, 67890);
-            $response = $sandboxAttachments->getMessageAttachment(111111, 222222);
+
+            $config = new Config($_ENV['MAILTRAP_API_KEY']);
+            $accountId = $_ENV['MAILTRAP_ACCOUNT_ID'];
+            $inboxId = $_ENV['MAILTRAP_INBOX_ID'];
+
+            $sandboxAttachments = (new MailtrapSandboxClient($config))
+                ->attachments($accountId, $inboxId);
+
+            $messageId = $_ENV['MAILTRAP_MESSAGE_ID'];
+            $attachmentId = $_ENV['MAILTRAP_MESSAGE_ATTACHMENT_ID'];
+
+            $response = $sandboxAttachments->getMessageAttachment($messageId, $attachmentId);
+
+            var_dump(ResponseHelper::toArray($response));
         - lang: python
           label: Python
           source: |
