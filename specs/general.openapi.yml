@@ -112,19 +112,16 @@ paths:
         - lang: php
           label: PHP
           source: |
+            <?php
             use Mailtrap\Config;
+            use Mailtrap\Helper\ResponseHelper;
             use Mailtrap\MailtrapGeneralClient;
 
-            $config = new Config('YOUR_API_TOKEN');
-            $client = new MailtrapGeneralClient($config);
+            $config = new Config($_ENV['MAILTRAP_API_KEY']);
+            $generalAccounts = (new MailtrapGeneralClient($config))->accounts();
 
-            $accounts = $client->accounts()->getAll();
-
-            foreach ($accounts as $account) {
-                echo "Account: {$account['name']}\n";
-                echo "ID: {$account['id']}\n";
-                echo "Access Level: {$account['access_levels'][0]}\n";
-            }
+            $response = $generalAccounts->getList();
+            var_dump(ResponseHelper::toArray($response));
         - lang: python
           label: Python
           source: |
@@ -242,10 +239,15 @@ paths:
           source: |
             <?php
             use Mailtrap\Config;
+            use Mailtrap\Helper\ResponseHelper;
             use Mailtrap\MailtrapGeneralClient;
-            $config = new Config("YOUR_API_KEY");
-            $accesses = (new MailtrapGeneralClient($config))->accountAccesses(12345);
-            $response = $accesses->getAll();
+
+            $accountId = $_ENV['MAILTRAP_ACCOUNT_ID'];
+            $config = new Config($_ENV['MAILTRAP_API_KEY']);
+            $generalUsers = (new MailtrapGeneralClient($config))->users($accountId);
+
+            $response = $generalUsers->getList();
+            var_dump(ResponseHelper::toArray($response));
         - lang: python
           label: Python
           source: |
@@ -342,9 +344,14 @@ paths:
             <?php
             use Mailtrap\Config;
             use Mailtrap\MailtrapGeneralClient;
-            $config = new Config("YOUR_API_KEY");
-            $accesses = (new MailtrapGeneralClient($config))->accountAccesses(12345);
-            $accesses->delete($accessId);
+
+            $accountId = $_ENV['MAILTRAP_ACCOUNT_ID'];
+            $accountAccessId = $_ENV['MAILTRAP_ACCOUNT_ACCESS_ID'];
+            $config = new Config($_ENV['MAILTRAP_API_KEY']);
+            $generalUsers = (new MailtrapGeneralClient($config))->users($accountId);
+            
+            $response = $generalUsers->delete($accountAccessId);
+            var_dump($response->getStatusCode());
         - lang: python
           label: Python
           source: |
@@ -424,12 +431,34 @@ paths:
           source: |
             <?php
             use Mailtrap\Config;
+            use Mailtrap\DTO\Request\Permission\CreateOrUpdatePermission;
+            use Mailtrap\DTO\Request\Permission\DestroyPermission;
+            use Mailtrap\DTO\Request\Permission\PermissionInterface;
+            use Mailtrap\DTO\Request\Permission\Permissions;
+            use Mailtrap\Helper\ResponseHelper;
             use Mailtrap\MailtrapGeneralClient;
-            $config = new Config("YOUR_API_KEY");
-            $client = new MailtrapGeneralClient($config);
-            $client->permissions(12345)->bulkUpdate($accessId, ["permissions" => [
-                ["resource_id" => "3281", "resource_type" => "account", "access_level" => "viewer"]
-            ]]);
+
+            $accountId = $_ENV['MAILTRAP_ACCOUNT_ID'];
+            $config = new Config($_ENV['MAILTRAP_API_KEY']);
+            $generalPermissions = (new MailtrapGeneralClient($config))->permissions($accountId);
+
+            $accountAccessId = $_ENV['MAILTRAP_ACCOUNT_ACCESS_ID'];
+
+            // resource IDs
+            $projectResourceId = $_ENV['MAILTRAP_NEW_PROJECT_RESOURCE_ID'];
+            $inboxResourceId = $_ENV['MAILTRAP_INBOX_RESOURCE_ID'];
+            $destroyProjectResourceId = $_ENV['MAILTRAP_OLD_PROJECT_RESOURCE_ID'];
+        
+            $permissions = new Permissions(
+                new CreateOrUpdatePermission($projectResourceId, PermissionInterface::TYPE_PROJECT, 10), // viewer = 10
+                new CreateOrUpdatePermission($inboxResourceId, PermissionInterface::TYPE_INBOX, 100), // admin = 100
+                new DestroyPermission($destroyProjectResourceId, PermissionInterface::TYPE_PROJECT),
+            );
+        
+            $response = $generalPermissions->update($accountAccessId, $permissions);
+        
+            // print the response body (array)
+            var_dump(ResponseHelper::toArray($response));
         - lang: python
           label: Python
           source: |
@@ -554,10 +583,15 @@ paths:
           source: |
             <?php
             use Mailtrap\Config;
+            use Mailtrap\Helper\ResponseHelper;
             use Mailtrap\MailtrapGeneralClient;
-            $config = new Config("YOUR_API_KEY");
-            $permissions = (new MailtrapGeneralClient($config))->permissions(12345);
-            $response = $permissions->getResources();
+
+            $accountId = $_ENV['MAILTRAP_ACCOUNT_ID'];
+            $config = new Config($_ENV['MAILTRAP_API_KEY']);
+            $generalPermissions = (new MailtrapGeneralClient($config))->permissions($accountId);
+
+            $response = $generalPermissions->getResources();
+            var_dump(ResponseHelper::toArray($response));
         - lang: python
           label: Python
           source: |
@@ -661,10 +695,15 @@ paths:
           source: |
             <?php
             use Mailtrap\Config;
+            use Mailtrap\Helper\ResponseHelper;
             use Mailtrap\MailtrapGeneralClient;
-            $config = new Config("YOUR_API_KEY");
-            $billing = (new MailtrapGeneralClient($config))->billing(12345);
-            $response = $billing->getUsage();
+
+            $accountId = $_ENV['MAILTRAP_ACCOUNT_ID'];
+            $config = new Config($_ENV['MAILTRAP_API_KEY']);
+            $billing = (new MailtrapGeneralClient($config))->billing($accountId);
+
+            $response = $billing->getBillingUsage();
+            var_dump(ResponseHelper::toArray($response));
         - lang: python
           label: Python
           source: |
