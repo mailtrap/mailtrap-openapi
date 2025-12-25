@@ -191,7 +191,7 @@ paths:
           source: |
             import io.mailtrap.config.MailtrapConfig;
             import io.mailtrap.factory.MailtrapClientFactory;
-            import io.mailtrap.model.request.projects.CreateUpdateProjectRequest;
+            import io.mailtrap.model.request.projects.ProjectRequest;
 
             var config = new MailtrapConfig.Builder()
                 .token("YOUR_API_TOKEN")
@@ -201,8 +201,8 @@ paths:
                 .createMailtrapClient(config)
                 .testingApi();
 
-            var request = new CreateUpdateProjectRequest(
-                new CreateUpdateProjectRequest.ProjectData("My New Project")
+            var request = new ProjectRequest(
+                new ProjectRequest.ProjectData("My New Project")
             );
 
             var project = client.projects()
@@ -550,7 +550,7 @@ paths:
           source: |
             import io.mailtrap.config.MailtrapConfig;
             import io.mailtrap.factory.MailtrapClientFactory;
-            import io.mailtrap.model.request.projects.CreateUpdateProjectRequest;
+            import io.mailtrap.model.request.projects.ProjectRequest;
 
             var config = new MailtrapConfig.Builder()
                 .token("YOUR_API_KEY")
@@ -560,8 +560,8 @@ paths:
                 .createMailtrapClient(config);
 
             long projectId = 12345L;
-            var request = new CreateUpdateProjectRequest(
-                new CreateUpdateProjectRequest.ProjectData("Updated Project Name")
+            var request = new ProjectRequest(
+                new ProjectRequest.ProjectData("Updated Project Name")
             );
 
             var updatedProject = client.testingApi().projects()
