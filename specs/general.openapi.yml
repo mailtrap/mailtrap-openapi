@@ -218,20 +218,6 @@ paths:
                 print(f"Account: {account.name}")
                 print(f"ID: {account.id}")
                 print(f"Access Level: {account.access_levels[0]}")
-        - lang: ruby
-          label: Ruby
-          source: |
-            require 'mailtrap'
-
-            client = Mailtrap::Client.new(api_key: 'YOUR_API_TOKEN')
-
-            accounts = client.accounts.list
-
-            accounts.each do |account|
-              puts "Account: #{account.name}"
-              puts "ID: #{account.id}"
-              puts "Access Level: #{account.access_levels[0]}"
-            end
         - lang: csharp
           label: .NET
           source: |
@@ -337,12 +323,6 @@ paths:
             accesses = client.general_api.account_accesses.get_all()
             for access in accesses:
                 print(f"User: {access.specifier.email}, Level: {access.permission_level}")
-        - lang: ruby
-          label: Ruby
-          source: |
-            require 'mailtrap'
-            client = Mailtrap::Client.new(api_key: 'YOUR_API_KEY')
-            accesses = Mailtrap::AccountAccessesAPI.new(12345, client).get_all
         - lang: csharp
           label: C#
           source: |
@@ -442,12 +422,6 @@ paths:
             import mailtrap as mt
             client = mt.MailtrapClient(token="YOUR_API_KEY", account_id=YOUR_ACCOUNT_ID)
             client.general_api.account_accesses.delete(access_id)
-        - lang: ruby
-          label: Ruby
-          source: |
-            require 'mailtrap'
-            client = Mailtrap::Client.new(api_key: 'YOUR_API_KEY')
-            Mailtrap::AccountAccessesAPI.new(12345, client).delete(access_id)
         - lang: csharp
           label: C#
           source: |
@@ -552,14 +526,6 @@ paths:
             client = mt.MailtrapClient(token="YOUR_API_KEY", account_id=YOUR_ACCOUNT_ID)
             client.general_api.permissions.bulk_update(access_id, permissions=[
                 {"resource_id": "3281", "resource_type": "account", "access_level": "viewer"}
-            ])
-        - lang: ruby
-          label: Ruby
-          source: |
-            require 'mailtrap'
-            client = Mailtrap::Client.new(api_key: 'YOUR_API_KEY')
-            Mailtrap::PermissionsAPI.new(12345, client).bulk_update(access_id, permissions: [
-              { resource_id: "3281", resource_type: "account", access_level: "viewer" }
             ])
         - lang: csharp
           label: C#
@@ -699,12 +665,6 @@ paths:
             client = mt.MailtrapClient(token="YOUR_API_KEY", account_id=YOUR_ACCOUNT_ID)
             resources = client.general_api.permissions.get_resources()
             print(resources)
-        - lang: ruby
-          label: Ruby
-          source: |
-            require 'mailtrap'
-            client = Mailtrap::Client.new(api_key: 'YOUR_API_KEY')
-            resources = Mailtrap::PermissionsAPI.new(12345, client).get_resources
         - lang: csharp
           label: C#
           source: |
@@ -813,12 +773,6 @@ paths:
             client = mt.MailtrapClient(token="YOUR_API_KEY", account_id=YOUR_ACCOUNT_ID)
             usage = client.general_api.billing.get_usage()
             print(f"Sandbox sent: {usage.testing.usage.sent_messages_count.current}/{usage.testing.usage.sent_messages_count.limit}")
-        - lang: ruby
-          label: Ruby
-          source: |
-            require 'mailtrap'
-            client = Mailtrap::Client.new(api_key: 'YOUR_API_KEY')
-            usage = Mailtrap::BillingAPI.new(12345, client).get_usage
         - lang: csharp
           label: C#
           source: |

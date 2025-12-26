@@ -499,7 +499,7 @@ paths:
           source: |
             require 'mailtrap'
             client = Mailtrap::Client.new(api_key: 'YOUR_API_KEY')
-            contacts = Mailtrap::ContactsAPI.new(12345, client)
+            contacts = Mailtrap::ContactsAPI.new(YOUR_ACCOUNT_ID, client)
             updated = contacts.upsert("contact_id", email: "new@example.com", fields: { first_name: "John" })
         - lang: csharp
           label: C#
@@ -610,7 +610,7 @@ paths:
           source: |
             require 'mailtrap'
             client = Mailtrap::Client.new(api_key: 'YOUR_API_KEY')
-            contacts = Mailtrap::ContactsAPI.new(12345, client)
+            contacts = Mailtrap::ContactsAPI.new(YOUR_ACCOUNT_ID, client)
             contacts.delete("contact_id")
         - lang: csharp
           label: C#
@@ -698,13 +698,6 @@ paths:
             client = mt.MailtrapClient(token="YOUR_API_KEY", account_id=YOUR_ACCOUNT_ID)
             event = client.contacts_api.contacts.create_event("contact_id", name="UserLogin", params={"user_id": 101, "is_active": True})
             print(event)
-        - lang: ruby
-          label: Ruby
-          source: |
-            require 'mailtrap'
-            client = Mailtrap::Client.new(api_key: 'YOUR_API_KEY')
-            contacts = Mailtrap::ContactsAPI.new(12345, client)
-            event = contacts.create_event("contact_id", name: "UserLogin", params: { user_id: 101, is_active: true })
         - lang: csharp
           label: C#
           source: |
@@ -810,13 +803,6 @@ paths:
             client = mt.MailtrapClient(token="YOUR_API_KEY", account_id=YOUR_ACCOUNT_ID)
             export_job = client.contacts_api.exports.create(filters=[{"name": "list_id", "operator": "equal", "value": [1, 2]}])
             print(f"Export started: {export_job.id}")
-        - lang: ruby
-          label: Ruby
-          source: |
-            require 'mailtrap'
-            client = Mailtrap::Client.new(api_key: 'YOUR_API_KEY')
-            exports = Mailtrap::ContactExportsAPI.new(12345, client)
-            export_job = exports.create(filters: [{ name: "list_id", operator: "equal", value: [1, 2] }])
         - lang: csharp
           label: C#
           source: |
@@ -917,13 +903,6 @@ paths:
             client = mt.MailtrapClient(token="YOUR_API_KEY", account_id=YOUR_ACCOUNT_ID)
             export_status = client.contacts_api.exports.get(export_id)
             print(f"Status: {export_status.status}, URL: {export_status.url}")
-        - lang: ruby
-          label: Ruby
-          source: |
-            require 'mailtrap'
-            client = Mailtrap::Client.new(api_key: 'YOUR_API_KEY')
-            exports = Mailtrap::ContactExportsAPI.new(12345, client)
-            export_status = exports.get(export_id)
         - lang: csharp
           label: C#
           source: |
@@ -1040,8 +1019,8 @@ paths:
           source: |
             require 'mailtrap'
             client = Mailtrap::Client.new(api_key: 'YOUR_API_KEY')
-            imports = Mailtrap::ContactImportsAPI.new(12345, client)
-            import_job = imports.create(contacts: [
+            imports = Mailtrap::ContactImportsAPI.new(YOUR_ACCOUNT_ID, client)
+            import_job = imports.create([
               { email: "user1@example.com", fields: { first_name: "John" }, list_ids_included: [1, 2] }
             ])
         - lang: csharp
@@ -1151,7 +1130,7 @@ paths:
           source: |
             require 'mailtrap'
             client = Mailtrap::Client.new(api_key: 'YOUR_API_KEY')
-            imports = Mailtrap::ContactImportsAPI.new(12345, client)
+            imports = Mailtrap::ContactImportsAPI.new(YOUR_ACCOUNT_ID, client)
             import_status = imports.get(import_id)
         - lang: csharp
           label: C#
@@ -1244,8 +1223,8 @@ paths:
           source: |
             require 'mailtrap'
             client = Mailtrap::Client.new(api_key: 'YOUR_API_KEY')
-            lists = Mailtrap::ContactListsAPI.new(12345, client)
-            all_lists = lists.get_all
+            lists = Mailtrap::ContactListsAPI.new(YOUR_ACCOUNT_ID, client)
+            all_lists = lists.list
         - lang: csharp
           label: C#
           source: |
@@ -1328,7 +1307,7 @@ paths:
           source: |
             require 'mailtrap'
             client = Mailtrap::Client.new(api_key: 'YOUR_API_KEY')
-            lists = Mailtrap::ContactListsAPI.new(12345, client)
+            lists = Mailtrap::ContactListsAPI.new(YOUR_ACCOUNT_ID, client)
             new_list = lists.create(name: "Customers")
         - lang: csharp
           label: C#
@@ -1419,7 +1398,7 @@ paths:
           source: |
             require 'mailtrap'
             client = Mailtrap::Client.new(api_key: 'YOUR_API_KEY')
-            lists = Mailtrap::ContactListsAPI.new(12345, client)
+            lists = Mailtrap::ContactListsAPI.new(YOUR_ACCOUNT_ID, client)
             list = lists.get(list_id)
         - lang: csharp
           label: C#
@@ -1494,7 +1473,7 @@ paths:
           source: |
             require 'mailtrap'
             client = Mailtrap::Client.new(api_key: 'YOUR_API_KEY')
-            lists = Mailtrap::ContactListsAPI.new(12345, client)
+            lists = Mailtrap::ContactListsAPI.new(YOUR_ACCOUNT_ID, client)
             lists.update(list_id, name: "Former Customers")
         - lang: csharp
           label: C#
@@ -1582,7 +1561,7 @@ paths:
           source: |
             require 'mailtrap'
             client = Mailtrap::Client.new(api_key: 'YOUR_API_KEY')
-            lists = Mailtrap::ContactListsAPI.new(12345, client)
+            lists = Mailtrap::ContactListsAPI.new(YOUR_ACCOUNT_ID, client)
             lists.delete(list_id)
         - lang: csharp
           label: C#
@@ -1659,8 +1638,8 @@ paths:
           source: |
             require 'mailtrap'
             client = Mailtrap::Client.new(api_key: 'YOUR_API_KEY')
-            fields = Mailtrap::ContactFieldsAPI.new(12345, client)
-            all_fields = fields.get_all
+            fields = Mailtrap::ContactFieldsAPI.new(YOUR_ACCOUNT_ID, client)
+            all_fields = fields.list
         - lang: csharp
           label: C#
           source: |
@@ -1748,7 +1727,7 @@ paths:
           source: |
             require 'mailtrap'
             client = Mailtrap::Client.new(api_key: 'YOUR_API_KEY')
-            fields = Mailtrap::ContactFieldsAPI.new(12345, client)
+            fields = Mailtrap::ContactFieldsAPI.new(YOUR_ACCOUNT_ID, client)
             new_field = fields.create(name: "Company", data_type: "text", merge_tag: "company")
         - lang: csharp
           label: C#
@@ -1872,7 +1851,7 @@ paths:
           source: |
             require 'mailtrap'
             client = Mailtrap::Client.new(api_key: 'YOUR_API_KEY')
-            fields = Mailtrap::ContactFieldsAPI.new(12345, client)
+            fields = Mailtrap::ContactFieldsAPI.new(YOUR_ACCOUNT_ID, client)
             field = fields.get(field_id)
         - lang: csharp
           label: C#
@@ -1950,7 +1929,7 @@ paths:
           source: |
             require 'mailtrap'
             client = Mailtrap::Client.new(api_key: 'YOUR_API_KEY')
-            fields = Mailtrap::ContactFieldsAPI.new(12345, client)
+            fields = Mailtrap::ContactFieldsAPI.new(YOUR_ACCOUNT_ID, client)
             fields.update(field_id, name: "Updated Name", merge_tag: "updated_name")
         - lang: csharp
           label: C#
@@ -2061,7 +2040,7 @@ paths:
           source: |
             require 'mailtrap'
             client = Mailtrap::Client.new(api_key: 'YOUR_API_KEY')
-            fields = Mailtrap::ContactFieldsAPI.new(12345, client)
+            fields = Mailtrap::ContactFieldsAPI.new(YOUR_ACCOUNT_ID, client)
             fields.delete(field_id)
         - lang: csharp
           label: C#

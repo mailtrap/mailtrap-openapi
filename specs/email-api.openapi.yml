@@ -107,19 +107,6 @@ paths:
             domain = client.sending_domains_api.sending_domains.create(params)
 
             print(f"Created domain: {domain}")
-        - lang: ruby
-          label: Ruby
-          source: |
-            require 'mailtrap'
-
-            client = Mailtrap::Client.new(api_key: 'YOUR_API_KEY')
-            sending_domains = Mailtrap::SendingDomainsAPI.new(
-              YOUR_ACCOUNT_ID,
-              client
-            )
-
-            domain = sending_domains.create(domain_name: 'example.com')
-            puts domain
         - lang: csharp
           label: .NET
           source: |
@@ -253,21 +240,6 @@ paths:
 
             for domain in domains:
                 print(f"Domain: {domain.domain_name}, Verified: {domain.dns_verified}")
-        - lang: ruby
-          label: Ruby
-          source: |
-            require 'mailtrap'
-
-            client = Mailtrap::Client.new(api_key: 'YOUR_API_KEY')
-            sending_domains = Mailtrap::SendingDomainsAPI.new(
-              YOUR_ACCOUNT_ID,
-              client
-            )
-
-            domains = sending_domains.list
-            domains.each do |domain|
-              puts "Domain: #{domain.domain_name}"
-            end
         - lang: csharp
           label: .NET
           source: |
@@ -372,21 +344,6 @@ paths:
 
             print(f"Domain: {domain.domain_name}")
             print(f"DNS Verified: {domain.dns_verified}")
-        - lang: ruby
-          label: Ruby
-          source: |
-            require 'mailtrap'
-
-            client = Mailtrap::Client.new(api_key: 'YOUR_API_KEY')
-            sending_domains = Mailtrap::SendingDomainsAPI.new(
-              YOUR_ACCOUNT_ID,
-              client
-            )
-
-            domain_id = 12345
-            domain = sending_domains.get(domain_id)
-
-            puts "Domain: #{domain.domain_name}"
         - lang: csharp
           label: .NET
           source: |
@@ -487,21 +444,6 @@ paths:
             client.sending_domains_api.sending_domains.delete(domain_id)
 
             print("Domain deleted successfully")
-        - lang: ruby
-          label: Ruby
-          source: |
-            require 'mailtrap'
-
-            client = Mailtrap::Client.new(api_key: 'YOUR_API_KEY')
-            sending_domains = Mailtrap::SendingDomainsAPI.new(
-              YOUR_ACCOUNT_ID,
-              client
-            )
-
-            domain_id = 12345
-            sending_domains.delete(domain_id)
-
-            puts "Domain deleted successfully"
         - lang: csharp
           label: .NET
           source: |
@@ -614,24 +556,6 @@ paths:
             )
 
             print("Setup instructions sent")
-        - lang: ruby
-          label: Ruby
-          source: |
-            require 'mailtrap'
-
-            client = Mailtrap::Client.new(api_key: 'YOUR_API_KEY')
-            sending_domains = Mailtrap::SendingDomainsAPI.new(
-              YOUR_ACCOUNT_ID,
-              client
-            )
-
-            domain_id = 12345
-            sending_domains.send_setup_instructions(
-              domain_id,
-              'devops@example.com'
-            )
-
-            puts "Setup instructions sent"
         - lang: csharp
           label: .NET
           source: |
@@ -1045,8 +969,8 @@ paths:
           source: |
             require 'mailtrap'
             client = Mailtrap::Client.new(api_key: 'YOUR_API_KEY')
-            templates = Mailtrap::EmailTemplatesAPI.new(12345, client)
-            all_templates = templates.get_all
+            templates = Mailtrap::EmailTemplatesAPI.new(YOUR_ACCOUNT_ID, client)
+            all_templates = templates.list
         - lang: csharp
           label: .NET
           source: |
@@ -1150,7 +1074,7 @@ paths:
           source: |
             require 'mailtrap'
             client = Mailtrap::Client.new(api_key: 'YOUR_API_TOKEN')
-            templates = Mailtrap::EmailTemplatesAPI.new(account_id, client)
+            templates = Mailtrap::EmailTemplatesAPI.new(YOUR_ACCOUNT_ID, client)
             template = templates.create(
               name: 'Welcome Email',
               subject: 'Welcome to {{company_name}}!',
@@ -1242,6 +1166,17 @@ paths:
             const client = new MailtrapClient({ token: "YOUR_API_KEY", accountId: YOUR_ACCOUNT_ID });
             const template = await client.templates.get(templateId);
             console.log(`Template: ${template.name} (UUID: ${template.uuid})`);
+        - lang: ruby
+          label: Ruby
+          source: |
+            require 'mailtrap'
+
+            client = Mailtrap::Client.new(api_key: 'YOUR_API_KEY')
+            templates = Mailtrap::EmailTemplatesAPI.new(
+              YOUR_ACCOUNT_ID,
+              client
+            )
+            template = templates.get(template_id)
         - lang: php
           label: PHP
           source: |
@@ -1290,6 +1225,17 @@ paths:
             const { MailtrapClient } = require("mailtrap");
             const client = new MailtrapClient({ token: "YOUR_API_KEY", accountId: YOUR_ACCOUNT_ID });
             const template = await client.templates.update(templateId, { name: "Updated Template", subject: "New Subject" });
+        - lang: ruby
+          label: Ruby
+          source: |
+            require 'mailtrap'
+
+            client = Mailtrap::Client.new(api_key: 'YOUR_API_KEY')
+            templates = Mailtrap::EmailTemplatesAPI.new(
+              YOUR_ACCOUNT_ID,
+              client
+            )
+            templates.update(EMAIL_TEMPLATE_ID, name: 'Welcome Updated')
         - lang: php
           label: PHP
           source: |
@@ -1362,6 +1308,17 @@ paths:
             const { MailtrapClient } = require("mailtrap");
             const client = new MailtrapClient({ token: "YOUR_API_KEY", accountId: YOUR_ACCOUNT_ID });
             await client.templates.delete(templateId);
+        - lang: ruby
+          label: Ruby
+          source: |
+            require 'mailtrap'
+
+            client = Mailtrap::Client.new(api_key: 'YOUR_API_KEY')
+            templates = Mailtrap::EmailTemplatesAPI.new(
+              YOUR_ACCOUNT_ID,
+              client
+            )
+            templates.delete(EMAIL_TEMPLATE_ID)
         - lang: php
           label: PHP
           source: |

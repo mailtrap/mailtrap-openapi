@@ -166,10 +166,13 @@ paths:
             require 'mailtrap'
 
             client = Mailtrap::Client.new(api_key: 'YOUR_API_TOKEN')
-
-            project = client.sandbox.projects.create(
-              account_id: account_id,
-              name: 'My New Project'
+            projects = Mailtrap::ProjectsAPI.new(
+              YOUR_ACCOUNT_ID,
+              client
+            )
+            
+            project = projects.create(
+              name: 'Example Project'
             )
 
             puts project
@@ -284,10 +287,14 @@ paths:
             require 'mailtrap'
 
             client = Mailtrap::Client.new(api_key: 'YOUR_API_TOKEN')
+            projects = Mailtrap::ProjectsAPI.new(
+              YOUR_ACCOUNT_ID,
+              client
+            )
 
-            projects = client.sandbox.projects.list(account_id: account_id)
+            all_projects = projects.list
 
-            projects.each do |project|
+            all_projects.each do |project|
               puts "Project: #{project.name}, ID: #{project.id}"
             end
         - lang: csharp
@@ -809,21 +816,6 @@ paths:
 
             print(f"Inbox created: {inbox.name}")
             print(f"SMTP credentials - User: {inbox.username}")
-        - lang: ruby
-          label: Ruby
-          source: |
-            require 'mailtrap'
-
-            client = Mailtrap::Client.new(api_key: 'YOUR_API_TOKEN')
-
-            inbox = client.sandbox.inboxes.create(
-              account_id: account_id,
-              project_id: project_id,
-              name: 'My Test Inbox'
-            )
-
-            puts "Inbox created: #{inbox.name}"
-            puts "SMTP credentials - User: #{inbox.username}"
         - lang: csharp
           label: .NET
           source: |
@@ -939,21 +931,6 @@ paths:
             inbox_attributes = inboxes_api.get_by_id(inbox_id)
 
             print(inbox_attributes)
-        - lang: ruby
-          label: Ruby
-          source: |
-            require 'mailtrap'
-
-            client = Mailtrap::Client.new(api_key: 'YOUR_API_KEY')
-            inboxes = Mailtrap::InboxesAPI.new(
-              YOUR_ACCOUNT_ID,
-              client
-            )
-
-            inbox_id = 12345
-            inbox_attributes = inboxes.get_inbox_attributes(inbox_id)
-
-            puts inbox_attributes
         - lang: csharp
           label: .NET
           source: |
@@ -1052,21 +1029,6 @@ paths:
             result = inboxes_api.delete(inbox_id)
 
             print(result)
-        - lang: ruby
-          label: Ruby
-          source: |
-            require 'mailtrap'
-
-            client = Mailtrap::Client.new(api_key: 'YOUR_API_KEY')
-            inboxes = Mailtrap::InboxesAPI.new(
-              YOUR_ACCOUNT_ID,
-              client
-            )
-
-            inbox_id = 12345
-            result = inboxes.delete(inbox_id)
-
-            puts result
         - lang: csharp
           label: .NET
           source: |
@@ -1194,25 +1156,6 @@ paths:
             )
 
             print(updated_inbox)
-        - lang: ruby
-          label: Ruby
-          source: |
-            require 'mailtrap'
-
-            client = Mailtrap::Client.new(api_key: 'YOUR_API_KEY')
-            inboxes = Mailtrap::InboxesAPI.new(
-              YOUR_ACCOUNT_ID,
-              client
-            )
-
-            inbox_id = 12345
-            updated_inbox = inboxes.update(
-              inbox_id,
-              name: 'Updated Inbox Name',
-              email_username: 'new-username'
-            )
-
-            puts updated_inbox
         - lang: csharp
           label: .NET
           source: |
@@ -1336,21 +1279,6 @@ paths:
             result = inboxes_api.clean(inbox_id)
 
             print(result)
-        - lang: ruby
-          label: Ruby
-          source: |
-            require 'mailtrap'
-
-            client = Mailtrap::Client.new(api_key: 'YOUR_API_KEY')
-            inboxes = Mailtrap::InboxesAPI.new(
-              YOUR_ACCOUNT_ID,
-              client
-            )
-
-            inbox_id = 12345
-            result = inboxes.clean(inbox_id)
-
-            puts result
         - lang: csharp
           label: .NET
           source: |
@@ -1455,21 +1383,6 @@ paths:
             result = inboxes_api.mark_as_read(inbox_id)
 
             print(result)
-        - lang: ruby
-          label: Ruby
-          source: |
-            require 'mailtrap'
-
-            client = Mailtrap::Client.new(api_key: 'YOUR_API_KEY')
-            inboxes = Mailtrap::InboxesAPI.new(
-              YOUR_ACCOUNT_ID,
-              client
-            )
-
-            inbox_id = 12345
-            result = inboxes.mark_as_read(inbox_id)
-
-            puts result
         - lang: csharp
           label: .NET
           source: |
@@ -1574,21 +1487,6 @@ paths:
             result = inboxes_api.reset_credentials(inbox_id)
 
             print(result)
-        - lang: ruby
-          label: Ruby
-          source: |
-            require 'mailtrap'
-
-            client = Mailtrap::Client.new(api_key: 'YOUR_API_KEY')
-            inboxes = Mailtrap::InboxesAPI.new(
-              YOUR_ACCOUNT_ID,
-              client
-            )
-
-            inbox_id = 12345
-            result = inboxes.reset_credentials(inbox_id)
-
-            puts result
         - lang: csharp
           label: .NET
           source: |
@@ -1693,21 +1591,6 @@ paths:
             result = inboxes_api.enable_email_address(inbox_id)
 
             print(result)
-        - lang: ruby
-          label: Ruby
-          source: |
-            require 'mailtrap'
-
-            client = Mailtrap::Client.new(api_key: 'YOUR_API_KEY')
-            inboxes = Mailtrap::InboxesAPI.new(
-              YOUR_ACCOUNT_ID,
-              client
-            )
-
-            inbox_id = 12345
-            result = inboxes.enable_email_address(inbox_id)
-
-            puts result
         - lang: csharp
           label: .NET
           source: |
@@ -1812,21 +1695,6 @@ paths:
             result = inboxes_api.reset_email_username(inbox_id)
 
             print(result)
-        - lang: ruby
-          label: Ruby
-          source: |
-            require 'mailtrap'
-
-            client = Mailtrap::Client.new(api_key: 'YOUR_API_KEY')
-            inboxes = Mailtrap::InboxesAPI.new(
-              YOUR_ACCOUNT_ID,
-              client
-            )
-
-            inbox_id = 12345
-            result = inboxes.reset_email_username(inbox_id)
-
-            puts result
         - lang: csharp
           label: .NET
           source: |
@@ -1925,20 +1793,6 @@ paths:
             inboxes = inboxes_api.get_list()
 
             print(inboxes)
-        - lang: ruby
-          label: Ruby
-          source: |
-            require 'mailtrap'
-
-            client = Mailtrap::Client.new(api_key: 'YOUR_API_KEY')
-            inboxes = Mailtrap::InboxesAPI.new(
-              YOUR_ACCOUNT_ID,
-              client
-            )
-
-            inboxes_list = inboxes.get_list
-
-            puts inboxes_list
         - lang: csharp
           label: .NET
           source: |
@@ -2055,7 +1909,7 @@ paths:
           source: |
             require 'mailtrap'
 
-            client = Mailtrap::Client.new(api_key: 'YOUR_API_TOKEN')
+            client = Mailtrap::Client.new(api_key: 'YOUR_API_TOKEN', sandbox: true, inbox_id: TEST_INBOX_ID)
 
             mail = Mailtrap::Mail.new(
               from: { email: 'test@example.com', name: 'Test Sender' },
@@ -2065,7 +1919,7 @@ paths:
               html: '<p>This is a <b>test email</b> for sandbox.</p>'
             )
 
-            client.sandbox.send(mail, inbox_id: TEST_INBOX_ID)
+            client.send(mail)
         - lang: csharp
           label: .NET
           source: |
@@ -2501,22 +2355,6 @@ paths:
             message = messages_api.show_message(inbox_id=inbox_id, message_id=message_id)
 
             print(message)
-        - lang: ruby
-          label: Ruby
-          source: |
-            require 'mailtrap'
-
-            client = Mailtrap::Client.new(api_key: 'YOUR_API_KEY')
-            messages = Mailtrap::MessagesAPI.new(
-              YOUR_ACCOUNT_ID,
-              YOUR_INBOX_ID,
-              client
-            )
-
-            message_id = 67890
-            message = messages.show_message(message_id)
-
-            puts message
         - lang: csharp
           label: .NET
           source: |
@@ -2739,22 +2577,6 @@ paths:
             )
 
             print(updated_message)
-        - lang: ruby
-          label: Ruby
-          source: |
-            require 'mailtrap'
-
-            client = Mailtrap::Client.new(api_key: 'YOUR_API_KEY')
-            messages = Mailtrap::MessagesAPI.new(
-              YOUR_ACCOUNT_ID,
-              YOUR_INBOX_ID,
-              client
-            )
-
-            message_id = 67890
-            updated_message = messages.update(message_id, is_read: true)
-
-            puts updated_message
         - lang: csharp
           label: .NET
           source: |
@@ -2953,22 +2775,6 @@ paths:
             result = messages_api.delete(inbox_id=inbox_id, message_id=message_id)
 
             print(result)
-        - lang: ruby
-          label: Ruby
-          source: |
-            require 'mailtrap'
-
-            client = Mailtrap::Client.new(api_key: 'YOUR_API_KEY')
-            messages = Mailtrap::MessagesAPI.new(
-              YOUR_ACCOUNT_ID,
-              YOUR_INBOX_ID,
-              client
-            )
-
-            message_id = 67890
-            result = messages.delete(message_id)
-
-            puts result
         - lang: csharp
           label: .NET
           source: |
@@ -3175,23 +2981,6 @@ paths:
                 print(f"From: {message.from_email}")
                 print(f"Subject: {message.subject}")
                 print(f"Received: {message.created_at}")
-        - lang: ruby
-          label: Ruby
-          source: |
-            require 'mailtrap'
-
-            client = Mailtrap::Client.new(api_key: 'YOUR_API_TOKEN')
-
-            messages = client.sandbox.messages.list(
-              account_id: account_id,
-              inbox_id: inbox_id
-            )
-
-            messages.each do |message|
-              puts "From: #{message.from_email}"
-              puts "Subject: #{message.subject}"
-              puts "Received: #{message.created_at}"
-            end
         - lang: csharp
           label: .NET
           source: |
@@ -3364,22 +3153,6 @@ paths:
             )
 
             print(result)
-        - lang: ruby
-          label: Ruby
-          source: |
-            require 'mailtrap'
-
-            client = Mailtrap::Client.new(api_key: 'YOUR_API_KEY')
-            messages = Mailtrap::MessagesAPI.new(
-              YOUR_ACCOUNT_ID,
-              YOUR_INBOX_ID,
-              client
-            )
-
-            message_id = 67890
-            result = messages.forward(message_id, email: 'recipient@example.com')
-
-            puts result
         - lang: csharp
           label: .NET
           source: |
@@ -3534,16 +3307,6 @@ paths:
             client = mt.MailtrapClient(token="YOUR_API_KEY", account_id="YOUR_ACCOUNT_ID")
             spam_report = client.testing_api.messages.get_spam_report(inbox_id=12345, message_id=67890)
             print(spam_report)
-        - lang: ruby
-          label: Ruby
-          source: |
-            require 'mailtrap'
-
-            client = Mailtrap::Client.new(api_key: 'YOUR_API_KEY')
-            messages = Mailtrap::MessagesAPI.new(YOUR_ACCOUNT_ID, YOUR_INBOX_ID, client)
-
-            spam_report = messages.get_spam_report(67890)
-            puts spam_report
         - lang: csharp
           label: .NET
           source: |
@@ -3702,16 +3465,6 @@ paths:
             client = mt.MailtrapClient(token="YOUR_API_KEY", account_id="YOUR_ACCOUNT_ID")
             html_analysis = client.testing_api.messages.get_html_analysis(inbox_id=12345, message_id=67890)
             print(html_analysis)
-        - lang: ruby
-          label: Ruby
-          source: |
-            require 'mailtrap'
-
-            client = Mailtrap::Client.new(api_key: 'YOUR_API_KEY')
-            messages = Mailtrap::MessagesAPI.new(YOUR_ACCOUNT_ID, YOUR_INBOX_ID, client)
-
-            html_analysis = messages.get_html_analysis(67890)
-            puts html_analysis
         - lang: csharp
           label: .NET
           source: |
@@ -3818,14 +3571,6 @@ paths:
             client = mt.MailtrapClient(token="YOUR_API_KEY", account_id="YOUR_ACCOUNT_ID")
             text_body = client.testing_api.messages.get_text_message(inbox_id=12345, message_id=67890)
             print(text_body)
-        - lang: ruby
-          label: Ruby
-          source: |
-            require 'mailtrap'
-            client = Mailtrap::Client.new(api_key: 'YOUR_API_KEY')
-            messages = Mailtrap::MessagesAPI.new(YOUR_ACCOUNT_ID, YOUR_INBOX_ID, client)
-            text_body = messages.get_text_message(67890)
-            puts text_body
         - lang: csharp
           label: .NET
           source: |
@@ -3976,14 +3721,6 @@ paths:
             client = mt.MailtrapClient(token="YOUR_API_KEY", account_id="YOUR_ACCOUNT_ID")
             raw_body = client.testing_api.messages.get_raw_message(inbox_id=12345, message_id=67890)
             print(raw_body)
-        - lang: ruby
-          label: Ruby
-          source: |
-            require 'mailtrap'
-            client = Mailtrap::Client.new(api_key: 'YOUR_API_KEY')
-            messages = Mailtrap::MessagesAPI.new(YOUR_ACCOUNT_ID, YOUR_INBOX_ID, client)
-            raw_body = messages.get_raw_message(67890)
-            puts raw_body
         - lang: csharp
           label: .NET
           source: |
@@ -4109,14 +3846,6 @@ paths:
             client = mt.MailtrapClient(token="YOUR_API_KEY", account_id="YOUR_ACCOUNT_ID")
             html_source = client.testing_api.messages.get_html_source(inbox_id=12345, message_id=67890)
             print(html_source)
-        - lang: ruby
-          label: Ruby
-          source: |
-            require 'mailtrap'
-            client = Mailtrap::Client.new(api_key: 'YOUR_API_KEY')
-            messages = Mailtrap::MessagesAPI.new(YOUR_ACCOUNT_ID, YOUR_INBOX_ID, client)
-            html_source = messages.get_html_source(67890)
-            puts html_source
         - lang: csharp
           label: .NET
           source: |
@@ -4244,14 +3973,6 @@ paths:
             client = mt.MailtrapClient(token="YOUR_API_KEY", account_id="YOUR_ACCOUNT_ID")
             html_body = client.testing_api.messages.get_html_message(inbox_id=12345, message_id=67890)
             print(html_body)
-        - lang: ruby
-          label: Ruby
-          source: |
-            require 'mailtrap'
-            client = Mailtrap::Client.new(api_key: 'YOUR_API_KEY')
-            messages = Mailtrap::MessagesAPI.new(YOUR_ACCOUNT_ID, YOUR_INBOX_ID, client)
-            html_body = messages.get_html_message(67890)
-            puts html_body
         - lang: csharp
           label: .NET
           source: |
@@ -4402,14 +4123,6 @@ paths:
             client = mt.MailtrapClient(token="YOUR_API_KEY", account_id="YOUR_ACCOUNT_ID")
             eml_content = client.testing_api.messages.get_message_as_eml(inbox_id=12345, message_id=67890)
             print(eml_content)
-        - lang: ruby
-          label: Ruby
-          source: |
-            require 'mailtrap'
-            client = Mailtrap::Client.new(api_key: 'YOUR_API_KEY')
-            messages = Mailtrap::MessagesAPI.new(YOUR_ACCOUNT_ID, YOUR_INBOX_ID, client)
-            eml_content = messages.get_message_as_eml(67890)
-            puts eml_content
         - lang: csharp
           label: .NET
           source: |
@@ -4511,14 +4224,6 @@ paths:
             client = mt.MailtrapClient(token="YOUR_API_KEY", account_id="YOUR_ACCOUNT_ID")
             mail_headers = client.testing_api.messages.get_mail_headers(inbox_id=12345, message_id=67890)
             print(mail_headers)
-        - lang: ruby
-          label: Ruby
-          source: |
-            require 'mailtrap'
-            client = Mailtrap::Client.new(api_key: 'YOUR_API_KEY')
-            messages = Mailtrap::MessagesAPI.new(YOUR_ACCOUNT_ID, YOUR_INBOX_ID, client)
-            mail_headers = messages.get_mail_headers(67890)
-            puts mail_headers
         - lang: csharp
           label: .NET
           source: |
