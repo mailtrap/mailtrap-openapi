@@ -150,7 +150,7 @@ paths:
 
             client = mt.MailtrapClient(
                 token="YOUR_API_TOKEN",
-                account_id=ACCOUNT_ID
+                account_id="YOUR_ACCOUNT_ID"
             )
 
             contact = client.contacts_api.contacts.create(
@@ -347,7 +347,7 @@ paths:
 
             client = mt.MailtrapClient(
                 token="YOUR_API_TOKEN",
-                account_id=ACCOUNT_ID
+                account_id="YOUR_ACCOUNT_ID"
             )
 
             # Get by contact ID
@@ -703,8 +703,14 @@ paths:
           label: Python
           source: |
             import mailtrap as mt
-            client = mt.MailtrapClient(token="YOUR_API_KEY", account_id=YOUR_ACCOUNT_ID)
-            event = client.contacts_api.contacts.create_event("contact_id", name="UserLogin", params={"user_id": 101, "is_active": True})
+            client = mt.MailtrapClient(token="YOUR_API_KEY", account_id="YOUR_ACCOUNT_ID")
+            event = client.contacts_api.contact_events.create(
+                contact_identifier="contact_id", 
+                contact_event_params=mt.ContactEventParams(
+                    name="UserLogin",
+                    params={"user_id": 101, "is_active": True}
+                )
+            )
             print(event)
         - lang: csharp
           label: C#
@@ -811,8 +817,12 @@ paths:
           label: Python
           source: |
             import mailtrap as mt
-            client = mt.MailtrapClient(token="YOUR_API_KEY", account_id=YOUR_ACCOUNT_ID)
-            export_job = client.contacts_api.exports.create(filters=[{"name": "list_id", "operator": "equal", "value": [1, 2]}])
+            client = mt.MailtrapClient(token="YOUR_API_KEY", account_id="YOUR_ACCOUNT_ID")
+            export_job = client.contacts_api.contact_exports.create(
+                filters=[
+                    mt.ContactExportFilter(name="list_id", operator="equal", value=[1, 2])
+                ]
+            )
             print(f"Export started: {export_job.id}")
         - lang: csharp
           label: C#
@@ -914,8 +924,11 @@ paths:
           label: Python
           source: |
             import mailtrap as mt
-            client = mt.MailtrapClient(token="YOUR_API_KEY", account_id=YOUR_ACCOUNT_ID)
-            export_status = client.contacts_api.exports.get(export_id)
+            client = mt.MailtrapClient(token="YOUR_API_KEY", account_id="YOUR_ACCOUNT_ID")
+
+            export_id = 12345
+
+            export_status = client.contacts_api.contact_exports.get_by_id(export_id)
             print(f"Status: {export_status.status}, URL: {export_status.url}")
         - lang: csharp
           label: C#
@@ -1023,11 +1036,13 @@ paths:
           label: Python
           source: |
             import mailtrap as mt
-            client = mt.MailtrapClient(token="YOUR_API_KEY", account_id=YOUR_ACCOUNT_ID)
-            import_job = client.contacts_api.imports.create(contacts=[
-                {"email": "user1@example.com", "fields": {"first_name": "John"}, "list_ids_included": [1, 2]},
-                {"email": "user2@example.com", "fields": {"first_name": "Jane"}, "list_ids_included": [1]}
-            ])
+            client = mt.MailtrapClient(token="YOUR_API_KEY", account_id="YOUR_ACCOUNT_ID")
+            import_job = client.contacts_api.contact_imports.import_contacts(
+                contacts=[
+                    mt.ImportContactParams(email="user1@example.com", fields={"first_name": "John"}, list_ids_included=[1, 2]),
+                    mt.ImportContactParams(email="user2@example.com", fields={"first_name": "Jane"}, list_ids_included=[1])
+                ]
+            )
             print(f"Import started: {import_job.id}")
         - lang: ruby
           label: Ruby
@@ -1140,8 +1155,11 @@ paths:
           label: Python
           source: |
             import mailtrap as mt
-            client = mt.MailtrapClient(token="YOUR_API_KEY", account_id=YOUR_ACCOUNT_ID)
-            import_status = client.contacts_api.imports.get(import_id)
+            client = mt.MailtrapClient(token="YOUR_API_KEY", account_id="YOUR_ACCOUNT_ID"`)
+
+            import_id = 12345
+
+            import_status = client.contacts_api.contact_imports.get_by_id(import_id)
             print(f"Status: {import_status.status}")
         - lang: ruby
           label: Ruby
@@ -1233,10 +1251,10 @@ paths:
           label: Python
           source: |
             import mailtrap as mt
-            client = mt.MailtrapClient(token="YOUR_API_KEY", account_id=YOUR_ACCOUNT_ID)
-            lists = client.contacts_api.lists.get_all()
-            for lst in lists:
-                print(f"{lst.id}: {lst.name}")
+            client = mt.MailtrapClient(token="YOUR_API_KEY", account_id="YOUR_ACCOUNT_ID")
+            contact_lists = client.contacts_api.contact_lists.get_list()
+            for contact_list in contact_lists:
+                print(f"{contact_list.id}: {contact_list.name}")
         - lang: ruby
           label: Ruby
           source: |
@@ -1319,9 +1337,9 @@ paths:
           label: Python
           source: |
             import mailtrap as mt
-            client = mt.MailtrapClient(token="YOUR_API_KEY", account_id=YOUR_ACCOUNT_ID)
-            list = client.contacts_api.lists.create(name="Customers")
-            print(f"Created list: {list.id}")
+            client = mt.MailtrapClient(token="YOUR_API_KEY", account_id="YOUR_ACCOUNT_ID")
+            contact_list = client.contacts_api.contact_lists.create(mt.ContactListParams(name="Customers"))
+            print(f"Created list: {contact_list.id}")
         - lang: ruby
           label: Ruby
           source: |
@@ -1411,9 +1429,10 @@ paths:
           label: Python
           source: |
             import mailtrap as mt
-            client = mt.MailtrapClient(token="YOUR_API_KEY", account_id=YOUR_ACCOUNT_ID)
-            list = client.contacts_api.lists.get(list_id)
-            print(f"List: {list.name}")
+            client = mt.MailtrapClient(token="YOUR_API_KEY", account_id="YOUR_ACCOUNT_ID")
+            list_id = 12345
+            contact_list = client.contacts_api.contact_lists.get_by_id(list_id)
+            print(f"List: {contact_list.name}")
         - lang: ruby
           label: Ruby
           source: |
@@ -1488,8 +1507,15 @@ paths:
           label: Python
           source: |
             import mailtrap as mt
-            client = mt.MailtrapClient(token="YOUR_API_KEY", account_id=YOUR_ACCOUNT_ID)
-            list = client.contacts_api.lists.update(list_id, name="Former Customers")
+
+            client = mt.MailtrapClient(token="YOUR_API_KEY", account_id="YOUR_ACCOUNT_ID")
+
+            list_id = 12345
+            contact_list = client.contacts_api.contact_lists.update(
+                list_id, 
+                mt.ContactListParams(name="Former Customers")
+            )
+            print(f"Updated list: {contact_list.name}")
         - lang: ruby
           label: Ruby
           source: |
@@ -1577,8 +1603,11 @@ paths:
           label: Python
           source: |
             import mailtrap as mt
-            client = mt.MailtrapClient(token="YOUR_API_KEY", account_id=YOUR_ACCOUNT_ID)
-            client.contacts_api.lists.delete(list_id)
+
+            client = mt.MailtrapClient(token="YOUR_API_KEY", account_id="YOUR_ACCOUNT_ID")
+
+            list_id = 12345
+            client.contacts_api.contact_lists.delete(list_id)
         - lang: ruby
           label: Ruby
           source: |
@@ -1653,8 +1682,8 @@ paths:
           label: Python
           source: |
             import mailtrap as mt
-            client = mt.MailtrapClient(token="YOUR_API_KEY", account_id=YOUR_ACCOUNT_ID)
-            fields = client.contacts_api.fields.get_all()
+            client = mt.MailtrapClient(token="YOUR_API_KEY", account_id="YOUR_ACCOUNT_ID")
+            fields = client.contacts_api.contact_fields.get_list()
             for field in fields:
                 print(f"{field.name}: {field.data_type}")
         - lang: ruby
@@ -1744,8 +1773,10 @@ paths:
           label: Python
           source: |
             import mailtrap as mt
-            client = mt.MailtrapClient(token="YOUR_API_KEY", account_id=YOUR_ACCOUNT_ID)
-            field = client.contacts_api.fields.create(name="Company", data_type="text", merge_tag="company")
+            client = mt.MailtrapClient(token="YOUR_API_KEY", account_id="YOUR_ACCOUNT_ID")
+            field = client.contacts_api.contact_fields.create(
+                mt.CreateContactFieldParams(name="Company", data_type="text", merge_tag="company")
+            )
             print(f"Field created: {field.id}")
         - lang: ruby
           label: Ruby
@@ -1872,8 +1903,10 @@ paths:
           label: Python
           source: |
             import mailtrap as mt
-            client = mt.MailtrapClient(token="YOUR_API_KEY", account_id=YOUR_ACCOUNT_ID)
-            field = client.contacts_api.fields.get(field_id)
+            client = mt.MailtrapClient(token="YOUR_API_KEY", account_id="YOUR_ACCOUNT_ID")
+
+            field_id = 12345
+            field = client.contacts_api.contact_fields.get_by_id(field_id)
             print(f"Field: {field.name} ({field.data_type})")
         - lang: ruby
           label: Ruby
@@ -1952,8 +1985,13 @@ paths:
           label: Python
           source: |
             import mailtrap as mt
-            client = mt.MailtrapClient(token="YOUR_API_KEY", account_id=YOUR_ACCOUNT_ID)
-            field = client.contacts_api.fields.update(field_id, name="Updated Name", merge_tag="updated_name")
+            client = mt.MailtrapClient(token="YOUR_API_KEY", account_id="YOUR_ACCOUNT_ID")
+
+            field_id = 12345
+            field = client.contacts_api.contact_fields.update(
+                field_id, 
+                mt.UpdateContactFieldParams(name="Updated Name", merge_tag="updated_name")
+            )
         - lang: ruby
           label: Ruby
           source: |
@@ -2065,8 +2103,10 @@ paths:
           label: Python
           source: |
             import mailtrap as mt
-            client = mt.MailtrapClient(token="YOUR_API_KEY", account_id=YOUR_ACCOUNT_ID)
-            client.contacts_api.fields.delete(field_id)
+            client = mt.MailtrapClient(token="YOUR_API_KEY", account_id="YOUR_ACCOUNT_ID")
+
+            field_id = 12345
+            client.contacts_api.contact_fields.delete(field_id)
         - lang: ruby
           label: Ruby
           source: |

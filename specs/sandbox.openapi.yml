@@ -152,7 +152,7 @@ paths:
 
             client = mt.MailtrapClient(
                 token="YOUR_API_TOKEN",
-                account_id=ACCOUNT_ID
+                account_id="YOUR_ACCOUNT_ID"
             )
 
             project = client.testing_api.projects.create(
@@ -276,7 +276,7 @@ paths:
 
             client = mt.MailtrapClient(
                 token="YOUR_API_TOKEN",
-                account_id=ACCOUNT_ID
+                account_id="YOUR_ACCOUNT_ID"
             )
 
             projects = client.testing_api.projects.get_list()
@@ -397,7 +397,7 @@ paths:
 
             client = mt.MailtrapClient(
                 token="YOUR_API_KEY",
-                account_id=YOUR_ACCOUNT_ID
+                account_id="YOUR_ACCOUNT_ID"
             )
 
             # Get project by ID
@@ -507,7 +507,7 @@ paths:
 
             client = mt.MailtrapClient(
                 token="YOUR_API_KEY",
-                account_id=YOUR_ACCOUNT_ID
+                account_id="YOUR_ACCOUNT_ID"
             )
 
             # Update project
@@ -654,7 +654,7 @@ paths:
 
             client = mt.MailtrapClient(
                 token="YOUR_API_KEY",
-                account_id=YOUR_ACCOUNT_ID
+                account_id="YOUR_ACCOUNT_ID"
             )
 
             # Delete project
@@ -809,7 +809,7 @@ paths:
 
             client = mt.MailtrapClient(
                 token="YOUR_API_TOKEN",
-                account_id=ACCOUNT_ID
+                account_id="YOUR_ACCOUNT_ID"
             )
 
             inbox = client.testing_api.inboxes.create(
@@ -1896,10 +1896,12 @@ paths:
           source: |
             import mailtrap as mt
 
+            inbox_id = 123456
+
             client = mt.MailtrapClient(
                 token="YOUR_API_TOKEN",
                 sandbox=True,
-                inbox_id=TEST_INBOX_ID
+                inbox_id=inbox_id
             )
 
             mail = mt.Mail(
@@ -2116,12 +2118,12 @@ paths:
             import mailtrap as mt
 
             API_TOKEN = "YOUR_API_KEY"
-            INBOX_ID = 12345
+            inbox_id = 12345
 
             client = mt.MailtrapClient(
                 token=API_TOKEN,
                 sandbox=True,
-                inbox_id=INBOX_ID
+                inbox_id=inbox_id
             )
 
             batch_mail = mt.BatchSendEmailParams(
@@ -2993,7 +2995,7 @@ paths:
 
             client = mt.MailtrapClient(
                 token="YOUR_API_TOKEN",
-                account_id=ACCOUNT_ID
+                account_id="YOUR_ACCOUNT_ID"
             )
 
             messages = client.testing_api.messages.get_list(

@@ -212,7 +212,7 @@ paths:
 
             client = mt.MailtrapClient(token="YOUR_API_TOKEN")
 
-            accounts = client.general_api.accounts.get_all()
+            accounts = client.general_api.accounts.get_list()
 
             for account in accounts:
                 print(f"Account: {account.name}")
@@ -319,8 +319,11 @@ paths:
           label: Python
           source: |
             import mailtrap as mt
-            client = mt.MailtrapClient(token="YOUR_API_KEY", account_id=YOUR_ACCOUNT_ID)
-            accesses = client.general_api.account_accesses.get_all()
+
+            account_id = "YOUR_ACCOUNT_ID"
+
+            client = mt.MailtrapClient(token="YOUR_API_KEY")
+            accesses = client.general_api.account_accesses.get_list(account_id)
             for access in accesses:
                 print(f"User: {access.specifier.email}, Level: {access.permission_level}")
         - lang: csharp
@@ -421,8 +424,12 @@ paths:
           label: Python
           source: |
             import mailtrap as mt
-            client = mt.MailtrapClient(token="YOUR_API_KEY", account_id=YOUR_ACCOUNT_ID)
-            client.general_api.account_accesses.delete(access_id)
+
+            account_id = "YOUR_ACCOUNT_ID"
+            access_id = "ACCESS_ID"
+
+            client = mt.MailtrapClient(token="YOUR_API_KEY")
+            client.general_api.account_accesses.delete(account_id, access_id)
         - lang: csharp
           label: C#
           source: |
@@ -525,10 +532,27 @@ paths:
           label: Python
           source: |
             import mailtrap as mt
-            client = mt.MailtrapClient(token="YOUR_API_KEY", account_id=YOUR_ACCOUNT_ID)
-            client.general_api.permissions.bulk_update(access_id, permissions=[
-                {"resource_id": "3281", "resource_type": "account", "access_level": "viewer"}
-            ])
+
+            access_id = "ACCESS_ID"
+            account_access_id = "ACCOUNT_ACCESS_ID"
+
+            client = mt.MailtrapClient(token="YOUR_API_KEY")
+            client.general_api.permissions.bulk_permissions_update(
+                access_id,
+                account_access_id,
+                permissions=[
+                    mt.PermissionResourceParams(
+                        resource_id="3281", resource_type="account", access_level="viewer"
+                    )
+                ]
+            )
+        - lang: csharp
+          label: C#
+          source: |
+            using Mailtrap;
+            var client = new MailtrapClient("YOUR_API_KEY");
+            var permissions = new[] { new Permission { ResourceId = "3281", ResourceType = "account", AccessLevel = "viewer" } };
+            await client.Account(accountId).Permissions(accessId).BulkUpdate(permissions);
         - lang: java
           label: Java
           source: |
@@ -657,8 +681,11 @@ paths:
           label: Python
           source: |
             import mailtrap as mt
-            client = mt.MailtrapClient(token="YOUR_API_KEY", account_id=YOUR_ACCOUNT_ID)
-            resources = client.general_api.permissions.get_resources()
+
+            account_id = "YOUR_ACCOUNT_ID"
+
+            client = mt.MailtrapClient(token="YOUR_API_KEY")
+            resources = client.general_api.permissions.get_resources(access_id)
             print(resources)
         - lang: csharp
           label: C#
@@ -766,8 +793,11 @@ paths:
           label: Python
           source: |
             import mailtrap as mt
-            client = mt.MailtrapClient(token="YOUR_API_KEY", account_id=YOUR_ACCOUNT_ID)
-            usage = client.general_api.billing.get_usage()
+
+            account_id = "YOUR_ACCOUNT_ID"
+  
+            client = mt.MailtrapClient(token="YOUR_API_KEY")
+            usage = client.general_api.billing.get_current_billing_usage(account_id)
             print(f"Sandbox sent: {usage.testing.usage.sent_messages_count.current}/{usage.testing.usage.sent_messages_count.limit}")
         - lang: csharp
           label: C#

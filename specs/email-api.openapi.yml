@@ -100,7 +100,7 @@ paths:
 
             client = mt.MailtrapClient(
                 token="YOUR_API_KEY",
-                account_id=YOUR_ACCOUNT_ID
+                account_id="YOUR_ACCOUNT_ID"
             )
 
             params = mt.CreateSendingDomainParams(domain_name="example.com")
@@ -233,7 +233,7 @@ paths:
 
             client = mt.MailtrapClient(
                 token="YOUR_API_KEY",
-                account_id=YOUR_ACCOUNT_ID
+                account_id="YOUR_ACCOUNT_ID"
             )
 
             domains = client.sending_domains_api.sending_domains.get_list()
@@ -336,7 +336,7 @@ paths:
 
             client = mt.MailtrapClient(
                 token="YOUR_API_KEY",
-                account_id=YOUR_ACCOUNT_ID
+                account_id="YOUR_ACCOUNT_ID"
             )
 
             domain_id = 12345
@@ -437,7 +437,7 @@ paths:
 
             client = mt.MailtrapClient(
                 token="YOUR_API_KEY",
-                account_id=YOUR_ACCOUNT_ID
+                account_id="YOUR_ACCOUNT_ID"
             )
 
             domain_id = 12345
@@ -546,7 +546,7 @@ paths:
 
             client = mt.MailtrapClient(
                 token="YOUR_API_KEY",
-                account_id=YOUR_ACCOUNT_ID
+                account_id="YOUR_ACCOUNT_ID"
             )
 
             domain_id = 12345
@@ -697,7 +697,7 @@ paths:
 
             client = mt.MailtrapClient(
                 token="YOUR_API_KEY",
-                account_id=YOUR_ACCOUNT_ID
+                account_id="YOUR_ACCOUNT_ID"
             )
 
             # Get all suppressions
@@ -852,7 +852,7 @@ paths:
 
             client = mt.MailtrapClient(
                 token="YOUR_API_KEY",
-                account_id=YOUR_ACCOUNT_ID
+                account_id="YOUR_ACCOUNT_ID"
             )
 
             suppression_id = "abc123-def456"
@@ -960,7 +960,7 @@ paths:
           label: Python
           source: |
             import mailtrap as mt
-            client = mt.MailtrapClient(token="YOUR_API_KEY", account_id=YOUR_ACCOUNT_ID)
+            client = mt.MailtrapClient(token="YOUR_API_KEY", account_id="YOUR_ACCOUNT_ID")
             templates = client.email_templates_api.templates.get_list()
             for tpl in templates:
                 print(f"{tpl.name}: {tpl.uuid}")
@@ -1059,7 +1059,7 @@ paths:
           label: Python
           source: |
             import mailtrap as mt
-            client = mt.MailtrapClient(token="YOUR_API_TOKEN", account_id=YOUR_ACCOUNT_ID)
+            client = mt.MailtrapClient(token="YOUR_API_TOKEN", account_id="YOUR_ACCOUNT_ID")
             template = client.email_templates_api.templates.create(
                 mt.CreateEmailTemplateParams(
                     name="Welcome Email",
@@ -1194,6 +1194,16 @@ paths:
             $templateId = $_ENV['MAILTRAP_TEMPLATE_ID'];
             $response = $emailTemplates->getEmailTemplate($templateId);
             var_dump(ResponseHelper::toArray($response));
+        - lang: python
+          label: Python
+          source: |
+            import mailtrap as mt
+
+            client = mt.MailtrapClient(token="YOUR_API_TOKEN", account_id="YOUR_ACCOUNT_ID")
+
+            template_id = 12345
+            template = client.email_templates_api.templates.get_by_id(template_id)
+            print(f"Template: {template.name} (ID: {template.id})")
         - lang: shell
           label: cURL
           source: |
@@ -1263,6 +1273,24 @@ paths:
                 )
             );
             var_dump(ResponseHelper::toArray($response));
+        - lang: python
+          label: Python
+          source: |
+            import mailtrap as mt
+
+            email_template_id = "TEMPLATE_ID"
+
+            client = mt.MailtrapClient(token="YOUR_API_TOKEN", account_id="YOUR_ACCOUNT_ID")
+            template = client.email_templates_api.templates.update(
+                email_template_id,
+                mt.UpdateEmailTemplateParams(
+                    name="Edited Welcome Email",
+                    subject="Edited Welcome to {{company_name}}!",
+                    category="onboarding",
+                    body_html="<h1>Edited Welcome {{user_name}}!</h1>",
+                    body_text="Edited Welcome {{user_name}}!"
+                )
+            )
         - lang: shell
           label: cURL
           source: |
@@ -1335,6 +1363,15 @@ paths:
             $templateId = $_ENV['MAILTRAP_TEMPLATE_ID'];
             $response = $emailTemplates->deleteEmailTemplate($templateId);
             var_dump($response->getStatusCode());
+        - lang: python
+          label: Python
+          source: |
+            import mailtrap as mt
+
+            email_template_id = "TEMPLATE_ID"
+
+            client = mt.MailtrapClient(token="YOUR_API_TOKEN", account_id="YOUR_ACCOUNT_ID")
+            deleted_template = client.email_templates_api.templates.delete(email_template_id)
         - lang: shell
           label: cURL
           source: |
