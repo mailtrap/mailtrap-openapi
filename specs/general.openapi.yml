@@ -223,9 +223,9 @@ paths:
           source: |
             using Mailtrap;
 
-            var client = new MailtrapClient("YOUR_API_TOKEN");
+            var client = new MailtrapClient("YOUR_API_KEY");
 
-            var accounts = await client.Accounts.GetAll();
+            var accounts = await client.Accounts().GetAll();
 
             foreach (var account in accounts)
             {
@@ -327,8 +327,9 @@ paths:
           label: C#
           source: |
             using Mailtrap;
-            var client = new MailtrapClient("YOUR_API_KEY");
-            var accesses = await client.Account(accountId).AccountAccesses().GetAll();
+            using var mailtrapFactory = new MailtrapClientFactory("YOUR_API_KEY");
+            var client = mailtrapFactory.CreateClient();
+            var accesses = await client.Account(YOUR_ACCOUNT_ID).Accesses().Fetch();
         - lang: java
           label: Java
           source: |
@@ -426,8 +427,9 @@ paths:
           label: C#
           source: |
             using Mailtrap;
-            var client = new MailtrapClient("YOUR_API_KEY");
-            await client.Account(accountId).AccountAccess(accessId).Delete();
+            using var mailtrapFactory = new MailtrapClientFactory("YOUR_API_KEY");
+            var client = mailtrapFactory.CreateClient();
+            await client.Account(YOUR_ACCOUNT_ID).Access(accessId).Delete();
         - lang: java
           label: Java
           source: |
@@ -527,13 +529,6 @@ paths:
             client.general_api.permissions.bulk_update(access_id, permissions=[
                 {"resource_id": "3281", "resource_type": "account", "access_level": "viewer"}
             ])
-        - lang: csharp
-          label: C#
-          source: |
-            using Mailtrap;
-            var client = new MailtrapClient("YOUR_API_KEY");
-            var permissions = new[] { new Permission { ResourceId = "3281", ResourceType = "account", AccessLevel = "viewer" } };
-            await client.Account(accountId).Permissions(accessId).BulkUpdate(permissions);
         - lang: java
           label: Java
           source: |
@@ -669,8 +664,9 @@ paths:
           label: C#
           source: |
             using Mailtrap;
-            var client = new MailtrapClient("YOUR_API_KEY");
-            var resources = await client.Account(accountId).Permissions().GetResources();
+            using var mailtrapFactory = new MailtrapClientFactory("YOUR_API_KEY");
+            var client = mailtrapFactory.CreateClient();
+            var resources = await client.Account(YOUR_ACCOUNT_ID).Permissions().GetAll();
         - lang: java
           label: Java
           source: |
@@ -777,8 +773,9 @@ paths:
           label: C#
           source: |
             using Mailtrap;
-            var client = new MailtrapClient("YOUR_API_KEY");
-            var usage = await client.Account(accountId).Billing().GetUsage();
+            using var mailtrapFactory = new MailtrapClientFactory("YOUR_API_KEY");
+            var client = mailtrapFactory.CreateClient();
+            var usage = await client.Account(YOUR_ACCOUNT_ID).Billing().GetUsage();
         - lang: java
           label: Java
           source: |

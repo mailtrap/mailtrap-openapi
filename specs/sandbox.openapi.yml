@@ -120,7 +120,7 @@ paths:
             import { MailtrapClient } from "mailtrap";
 
             const client = new MailtrapClient({
-              token: "YOUR_API_TOKEN",
+              token: "YOUR_API_KEY",
               accountId: ACCOUNT_ID
             });
 
@@ -180,11 +180,13 @@ paths:
           label: .NET
           source: |
             using Mailtrap;
+            using Mailtrap.Projects.Requests;
 
-            var client = new MailtrapClient("YOUR_API_TOKEN");
+            using var mailtrapFactory = new MailtrapClientFactory("YOUR_API_KEY");
+            var client = mailtrapFactory.CreateClient();
 
             var project = await client
-                .Account(accountId)
+                .Account(YOUR_ACCOUNT_ID)
                 .Projects()
                 .Create(new CreateProjectRequest("My New Project"));
 
@@ -302,10 +304,11 @@ paths:
           source: |
             using Mailtrap;
 
-            var client = new MailtrapClient("YOUR_API_TOKEN");
+            using var mailtrapFactory = new MailtrapClientFactory("YOUR_API_KEY");
+            var client = mailtrapFactory.CreateClient();
 
             var projects = await client
-                .Account(accountId)
+                .Account(YOUR_ACCOUNT_ID)
                 .Projects()
                 .GetAll();
 
@@ -423,13 +426,13 @@ paths:
           source: |
             using Mailtrap;
 
-            var client = new MailtrapClient("YOUR_API_KEY");
-            var accountResource = client.Account(accountId);
-
+            using var mailtrapFactory = new MailtrapClientFactory("YOUR_API_KEY");
+            var client = mailtrapFactory.CreateClient();
             var projectId = 12345;
-            var projectResource = accountResource.Project(projectId);
-
-            var project = await projectResource.GetDetails();
+            var project = await client
+                .Account(YOUR_ACCOUNT_ID)
+                .Project(projectId)
+                .GetDetails();
 
             Console.WriteLine($"Project: {project.Name}");
         - lang: java
@@ -540,14 +543,14 @@ paths:
             using Mailtrap;
             using Mailtrap.Projects.Requests;
 
-            var client = new MailtrapClient("YOUR_API_KEY");
-            var accountResource = client.Account(accountId);
-
+            using var mailtrapFactory = new MailtrapClientFactory("YOUR_API_KEY");
+            var client = mailtrapFactory.CreateClient();
             var projectId = 12345;
-            var projectResource = accountResource.Project(projectId);
-
             var updateRequest = new UpdateProjectRequest("Updated Project Name");
-            var updatedProject = await projectResource.Update(updateRequest);
+            var updatedProject = await client
+                .Account(YOUR_ACCOUNT_ID)
+                .Project(projectId)
+                .Update(updateRequest);
 
             Console.WriteLine($"Project updated: {updatedProject.Name}");
         - lang: java
@@ -680,13 +683,13 @@ paths:
           source: |
             using Mailtrap;
 
-            var client = new MailtrapClient("YOUR_API_KEY");
-            var accountResource = client.Account(accountId);
-
+            using var mailtrapFactory = new MailtrapClientFactory("YOUR_API_KEY");
+            var client = mailtrapFactory.CreateClient();
             var projectId = 12345;
-            var projectResource = accountResource.Project(projectId);
-
-            var deletedProject = await projectResource.Delete();
+            var deletedProject = await client
+                .Account(YOUR_ACCOUNT_ID)
+                .Project(projectId)
+                .Delete();
 
             Console.WriteLine($"Project deleted: {deletedProject.Id}");
         - lang: java
@@ -820,17 +823,19 @@ paths:
           label: .NET
           source: |
             using Mailtrap;
+            using Mailtrap.Inboxes.Requests;
 
-            var client = new MailtrapClient("YOUR_API_TOKEN");
+            using var mailtrapFactory = new MailtrapClientFactory("YOUR_API_KEY");
+            var client = mailtrapFactory.CreateClient();
 
+            var projectId = 12345;
             var inbox = await client
-                .Account(accountId)
-                .Project(projectId)
+                .Account(YOUR_ACCOUNT_ID)
                 .Inboxes()
-                .Create(new CreateInboxRequest("My Test Inbox"));
+                .Create(new CreateInboxRequest(projectId, "My Test Inbox"));
 
             Console.WriteLine($"Inbox created: {inbox.Name}");
-            Console.WriteLine($"SMTP credentials - User: {inbox.Username}");
+            Console.WriteLine($"SMTP credentials - User: {inbox.UserName}");
         - lang: java
           label: Java
           source: |
@@ -936,15 +941,15 @@ paths:
           source: |
             using Mailtrap;
 
-            var client = new MailtrapClient("YOUR_API_KEY");
-            var accountResource = client.Account(accountId);
-
+            using var mailtrapFactory = new MailtrapClientFactory("YOUR_API_KEY");
+            var client = mailtrapFactory.CreateClient();
             var inboxId = 12345;
-            var inboxResource = accountResource.Inbox(inboxId);
+            var inbox = await client
+                .Account(YOUR_ACCOUNT_ID)
+                .Inbox(inboxId)
+                .GetDetails();
 
-            var inboxDetails = await inboxResource.GetDetails();
-
-            Console.WriteLine(inboxDetails);
+            Console.WriteLine(inbox);
         - lang: java
           label: Java
           source: |
@@ -1034,13 +1039,13 @@ paths:
           source: |
             using Mailtrap;
 
-            var client = new MailtrapClient("YOUR_API_KEY");
-            var accountResource = client.Account(accountId);
-
+            using var mailtrapFactory = new MailtrapClientFactory("YOUR_API_KEY");
+            var client = mailtrapFactory.CreateClient();
             var inboxId = 12345;
-            var inboxResource = accountResource.Inbox(inboxId);
-
-            var deletedInbox = await inboxResource.Delete();
+            var deletedInbox = await client
+                .Account(YOUR_ACCOUNT_ID)
+                .Inbox(inboxId)
+                .Delete();
 
             Console.WriteLine(deletedInbox);
         - lang: java
@@ -1162,19 +1167,19 @@ paths:
             using Mailtrap;
             using Mailtrap.Inboxes.Requests;
 
-            var client = new MailtrapClient("YOUR_API_KEY");
-            var accountResource = client.Account(accountId);
-
+            using var mailtrapFactory = new MailtrapClientFactory("YOUR_API_KEY");
+            var client = mailtrapFactory.CreateClient();
             var inboxId = 12345;
-            var inboxResource = accountResource.Inbox(inboxId);
-
             var updateRequest = new UpdateInboxRequest
             {
                 Name = "Updated Inbox Name",
                 EmailUsername = "new-username"
             };
 
-            var updatedInbox = await inboxResource.Update(updateRequest);
+            var updatedInbox = await client
+                .Account(YOUR_ACCOUNT_ID)
+                .Inbox(inboxId)
+                .Update(updateRequest);
 
             Console.WriteLine(updatedInbox);
         - lang: java
@@ -1284,13 +1289,13 @@ paths:
           source: |
             using Mailtrap;
 
-            var client = new MailtrapClient("YOUR_API_KEY");
-            var accountResource = client.Account(accountId);
-
+            using var mailtrapFactory = new MailtrapClientFactory("YOUR_API_KEY");
+            var client = mailtrapFactory.CreateClient();
             var inboxId = 12345;
-            var inboxResource = accountResource.Inbox(inboxId);
-
-            var cleanedInbox = await inboxResource.Clean();
+            var cleanedInbox = await client
+                .Account(YOUR_ACCOUNT_ID)
+                .Inbox(inboxId)
+                .Clean();
 
             Console.WriteLine(cleanedInbox);
         - lang: java
@@ -1388,13 +1393,13 @@ paths:
           source: |
             using Mailtrap;
 
-            var client = new MailtrapClient("YOUR_API_KEY");
-            var accountResource = client.Account(accountId);
-
+            using var mailtrapFactory = new MailtrapClientFactory("YOUR_API_KEY");
+            var client = mailtrapFactory.CreateClient();
             var inboxId = 12345;
-            var inboxResource = accountResource.Inbox(inboxId);
-
-            var markedInbox = await inboxResource.MarkAsRead();
+            var markedInbox = await client
+                .Account(YOUR_ACCOUNT_ID)
+                .Inbox(inboxId)
+                .MarkAsRead();
 
             Console.WriteLine(markedInbox);
         - lang: java
@@ -1492,13 +1497,13 @@ paths:
           source: |
             using Mailtrap;
 
-            var client = new MailtrapClient("YOUR_API_KEY");
-            var accountResource = client.Account(accountId);
-
+            using var mailtrapFactory = new MailtrapClientFactory("YOUR_API_KEY");
+            var client = mailtrapFactory.CreateClient();
             var inboxId = 12345;
-            var inboxResource = accountResource.Inbox(inboxId);
-
-            var updatedInbox = await inboxResource.ResetCredentials();
+            var updatedInbox = await client
+                .Account(YOUR_ACCOUNT_ID)
+                .Inbox(inboxId)
+                .ResetCredentials();
 
             Console.WriteLine(updatedInbox);
         - lang: java
@@ -1596,13 +1601,13 @@ paths:
           source: |
             using Mailtrap;
 
-            var client = new MailtrapClient("YOUR_API_KEY");
-            var accountResource = client.Account(accountId);
-
+            using var mailtrapFactory = new MailtrapClientFactory("YOUR_API_KEY");
+            var client = mailtrapFactory.CreateClient();
             var inboxId = 12345;
-            var inboxResource = accountResource.Inbox(inboxId);
-
-            var updatedInbox = await inboxResource.ToggleEmailAddress();
+            var updatedInbox = await client
+                .Account(YOUR_ACCOUNT_ID)
+                .Inbox(inboxId)
+                .ToggleEmailAddress();
 
             Console.WriteLine(updatedInbox);
         - lang: java
@@ -1700,13 +1705,14 @@ paths:
           source: |
             using Mailtrap;
 
-            var client = new MailtrapClient("YOUR_API_KEY");
-            var accountResource = client.Account(accountId);
+            using var mailtrapFactory = new MailtrapClientFactory("YOUR_API_KEY");
+            var client = mailtrapFactory.CreateClient();
 
             var inboxId = 12345;
-            var inboxResource = accountResource.Inbox(inboxId);
-
-            var updatedInbox = await inboxResource.ResetEmailAddress();
+            var updatedInbox = await client
+                .Account(YOUR_ACCOUNT_ID)
+                .Inbox(inboxId)
+                .ResetEmailAddress();
 
             Console.WriteLine(updatedInbox);
         - lang: java
@@ -1798,11 +1804,12 @@ paths:
           source: |
             using Mailtrap;
 
-            var client = new MailtrapClient("YOUR_API_KEY");
-            var accountResource = client.Account(accountId);
-
-            var inboxesResource = accountResource.Inboxes();
-            var inboxes = await inboxesResource.GetAll();
+            using var mailtrapFactory = new MailtrapClientFactory("YOUR_API_KEY");
+            var client = mailtrapFactory.CreateClient();
+            var inboxes = await client
+                .Account(YOUR_ACCOUNT_ID)
+                .Inboxes()
+                .GetAll();
 
             Console.WriteLine(inboxes);
         - lang: java
@@ -1924,21 +1931,31 @@ paths:
           label: .NET
           source: |
             using Mailtrap;
+            using Mailtrap.Configuration;
+            using Mailtrap.Emails.Requests;
 
-            var client = new MailtrapClient("YOUR_API_TOKEN");
-
-            var email = new Email
+            var options = new MailtrapClientOptions
             {
-                From = new Address("test@example.com", "Test Sender"),
-                To = new[] { new Address("user@example.com", "Test User") },
-                Subject = "Test Email",
-                Text = "This is a test email for sandbox.",
-                Html = "<p>This is a <b>test email</b> for sandbox.</p>"
+                ApiToken = "YOUR_API_KEY",
+                InboxId = TEST_INBOX_ID // Sandbox inbox ID
             };
+            using var mailtrapFactory = new MailtrapClientFactory(options);
+            var client = mailtrapFactory.CreateClient();
 
-            await client.Sandbox
-                .Inbox(TEST_INBOX_ID)
-                .Emails()
+            var email = SendEmailRequest.Create()
+                .From("test@example.com", "Test Sender")
+                .To("user@example.com", "Test User")
+                .Subject("Test Email")
+                .Text("This is a test email for sandbox.")
+                .Html("<p>This is a <b>test email</b> for sandbox.</p>");
+
+            await client
+                .Email()
+                .Send(email);
+
+            // Or using test email client directly
+            await client
+                .Test(TEST_INBOX_ID)
                 .Send(email);
         - lang: java
           label: Java
@@ -2156,7 +2173,13 @@ paths:
             using Mailtrap.Emails.Requests;
             using Mailtrap.Emails.Models;
 
-            var client = new MailtrapClient("YOUR_API_KEY");
+            var options = new MailtrapClientOptions
+            {
+                ApiToken = "YOUR_API_KEY",
+                InboxId = TEST_INBOX_ID // Specify Sandbox inbox ID to send test emails
+            };
+            using var mailtrapFactory = new MailtrapClientFactory(options);
+            var client = mailtrapFactory.CreateClient();
 
             var request = BatchEmailRequest
                 .Create()
@@ -2171,9 +2194,15 @@ paths:
                         .To("recipient2@example.com")
                 );
 
-            var response = await client.Sandbox
-                .Inbox(TEST_INBOX_ID)
+            var response = await client
                 .BatchEmail()
+                .Send(request);
+
+            Console.WriteLine(response);
+
+            // Or using test email client directly
+            response = await client
+                .BatchTest(TEST_INBOX_ID)
                 .Send(request);
 
             Console.WriteLine(response);
@@ -2360,17 +2389,15 @@ paths:
           source: |
             using Mailtrap;
 
-            var client = new MailtrapClient("YOUR_API_KEY");
-
-            var accountId = 12345;
+            using var mailtrapFactory = new MailtrapClientFactory("YOUR_API_KEY");
+            var client = mailtrapFactory.CreateClient();
             var inboxId = 54321;
             var messageId = 67890;
-
-            var messageResource = client.Account(accountId)
+            var message = await client
+                .Account(YOUR_ACCOUNT_ID)
                 .Inbox(inboxId)
-                .Message(messageId);
-
-            var message = await messageResource.GetDetails();
+                .Message(messageId)
+                .GetDetails();
 
             Console.WriteLine(message);
         - lang: java
@@ -2583,18 +2610,16 @@ paths:
             using Mailtrap;
             using Mailtrap.TestingMessages.Requests;
 
-            var client = new MailtrapClient("YOUR_API_KEY");
-
-            var accountId = 12345;
+            using var mailtrapFactory = new MailtrapClientFactory("YOUR_API_KEY");
+            var client = mailtrapFactory.CreateClient();
             var inboxId = 54321;
             var messageId = 67890;
-
-            var messageResource = client.Account(accountId)
-                .Inbox(inboxId)
-                .Message(messageId);
-
             var updateRequest = new UpdateTestingMessageRequest(true);
-            var updatedMessage = await messageResource.Update(updateRequest);
+            var updatedMessage = await client
+                .Account(YOUR_ACCOUNT_ID)
+                .Inbox(inboxId)
+                .Message(messageId)
+                .Update(updateRequest);
 
             Console.WriteLine(updatedMessage);
         - lang: java
@@ -2780,17 +2805,15 @@ paths:
           source: |
             using Mailtrap;
 
-            var client = new MailtrapClient("YOUR_API_KEY");
-
-            var accountId = 12345;
+            using var mailtrapFactory = new MailtrapClientFactory("YOUR_API_KEY");
+            var client = mailtrapFactory.CreateClient();
             var inboxId = 54321;
             var messageId = 67890;
-
-            var messageResource = client.Account(accountId)
-                .Inbox(inboxId)
-                .Message(messageId);
-
-            var deletedMessage = await messageResource.Delete();
+            var deletedMessage = await client
+              .Account(YOUR_ACCOUNT_ID)
+              .Inbox(inboxId)
+              .Message(messageId)
+              .Delete()
 
             Console.WriteLine(deletedMessage);
         - lang: java
@@ -2986,13 +3009,14 @@ paths:
           source: |
             using Mailtrap;
 
-            var client = new MailtrapClient("YOUR_API_TOKEN");
-
+            using var mailtrapFactory = new MailtrapClientFactory("YOUR_API_KEY");
+            var client = mailtrapFactory.CreateClient();
+            var inboxId = 54321;
             var messages = await client
-                .Account(accountId)
+                .Account(YOUR_ACCOUNT_ID)
                 .Inbox(inboxId)
                 .Messages()
-                .GetAll();
+                .Fetch();
 
             foreach (var message in messages)
             {
@@ -3007,7 +3031,7 @@ paths:
             import io.mailtrap.factory.MailtrapClientFactory;
 
             var config = new MailtrapConfig.Builder()
-                .token("YOUR_API_TOKEN")
+                .token("YOUR_API_KEY")
                 .build();
 
             var client = MailtrapClientFactory
@@ -3159,18 +3183,16 @@ paths:
             using Mailtrap;
             using Mailtrap.TestingMessages.Requests;
 
-            var client = new MailtrapClient("YOUR_API_KEY");
-
-            var accountId = 12345;
+            using var mailtrapFactory = new MailtrapClientFactory("YOUR_API_KEY");
+            var client = mailtrapFactory.CreateClient();
             var inboxId = 54321;
             var messageId = 67890;
-
-            var messageResource = client.Account(accountId)
-                .Inbox(inboxId)
-                .Message(messageId);
-
             var forwardRequest = new ForwardTestingMessageRequest("recipient@example.com");
-            var forwardedMessage = await messageResource.Forward(forwardRequest);
+            var forwardedMessage = await client
+                .Account(YOUR_ACCOUNT_ID)
+                .Inbox(inboxId)
+                .Message(messageId)
+                .Forward(forwardRequest);
 
             Console.WriteLine(forwardedMessage);
         - lang: java
@@ -3312,10 +3334,16 @@ paths:
           source: |
             using Mailtrap;
 
-            var client = new MailtrapClient("YOUR_API_KEY");
-            var messageResource = client.Account(12345).Inbox(54321).Message(67890);
+            using var mailtrapFactory = new MailtrapClientFactory("YOUR_API_KEY");
+            var client = mailtrapFactory.CreateClient();
+            var inboxId = 54321;
+            var messageId = 67890;
+            var spamReport = await client
+                .Account(YOUR_ACCOUNT_ID)
+                .Inbox(inboxId)
+                .Message(messageId)
+                .GetSpamReport();
 
-            var spamReport = await messageResource.GetSpamReport();
             Console.WriteLine(spamReport);
         - lang: java
           label: Java
@@ -3470,10 +3498,16 @@ paths:
           source: |
             using Mailtrap;
 
-            var client = new MailtrapClient("YOUR_API_KEY");
-            var messageResource = client.Account(12345).Inbox(54321).Message(67890);
+            using var mailtrapFactory = new MailtrapClientFactory("YOUR_API_KEY");
+            var client = mailtrapFactory.CreateClient();
+            var inboxId = 54321;
+            var messageId = 67890;
+            var htmlReport = await client
+                .Account(YOUR_ACCOUNT_ID)
+                .Inbox(inboxId)
+                .Message(messageId)
+                .GetHtmlAnalysisReport();
 
-            var htmlReport = await messageResource.GetHtmlAnalysisReport();
             Console.WriteLine(htmlReport);
         - lang: java
           label: Java
@@ -3575,9 +3609,15 @@ paths:
           label: .NET
           source: |
             using Mailtrap;
-            var client = new MailtrapClient("YOUR_API_KEY");
-            var messageResource = client.Account(12345).Inbox(54321).Message(67890);
-            string textBody = await messageResource.GetTextBody();
+            using var mailtrapFactory = new MailtrapClientFactory("YOUR_API_KEY");
+            var client = mailtrapFactory.CreateClient();
+            var inboxId = 54321;
+            var messageId = 67890;
+            var textBody = await client
+                .Account(YOUR_ACCOUNT_ID)
+                .Inbox(inboxId)
+                .Message(messageId)
+                .GetTextBody();
             Console.WriteLine(textBody);
         - lang: java
           label: Java
@@ -3725,9 +3765,15 @@ paths:
           label: .NET
           source: |
             using Mailtrap;
-            var client = new MailtrapClient("YOUR_API_KEY");
-            var messageResource = client.Account(12345).Inbox(54321).Message(67890);
-            string rawBody = await messageResource.AsRaw();
+            using var mailtrapFactory = new MailtrapClientFactory("YOUR_API_KEY");
+            var client = mailtrapFactory.CreateClient();
+            var inboxId = 54321;
+            var messageId = 67890;
+            var rawBody = await client
+                .Account(YOUR_ACCOUNT_ID)
+                .Inbox(inboxId)
+                .Message(messageId)
+                .AsRaw();
             Console.WriteLine(rawBody);
         - lang: java
           label: Java
@@ -3850,9 +3896,15 @@ paths:
           label: .NET
           source: |
             using Mailtrap;
-            var client = new MailtrapClient("YOUR_API_KEY");
-            var messageResource = client.Account(12345).Inbox(54321).Message(67890);
-            string htmlSource = await messageResource.GetHtmlSource();
+            using var mailtrapFactory = new MailtrapClientFactory("YOUR_API_KEY");
+            var client = mailtrapFactory.CreateClient();
+            var inboxId = 54321;
+            var messageId = 67890;
+            var htmlSource = await client
+                .Account(YOUR_ACCOUNT_ID)
+                .Inbox(inboxId)
+                .Message(messageId)
+                .GetHtmlSource();
             Console.WriteLine(htmlSource);
         - lang: java
           label: Java
@@ -3977,9 +4029,15 @@ paths:
           label: .NET
           source: |
             using Mailtrap;
-            var client = new MailtrapClient("YOUR_API_KEY");
-            var messageResource = client.Account(12345).Inbox(54321).Message(67890);
-            string htmlBody = await messageResource.GetHtmlBody();
+            using var mailtrapFactory = new MailtrapClientFactory("YOUR_API_KEY");
+            var client = mailtrapFactory.CreateClient();
+            var inboxId = 54321;
+            var messageId = 67890;
+            var htmlBody = await client
+                .Account(YOUR_ACCOUNT_ID)
+                .Inbox(inboxId)
+                .Message(messageId)
+                .GetHtmlBody();
             Console.WriteLine(htmlBody);
         - lang: java
           label: Java
@@ -4127,9 +4185,15 @@ paths:
           label: .NET
           source: |
             using Mailtrap;
-            var client = new MailtrapClient("YOUR_API_KEY");
-            var messageResource = client.Account(12345).Inbox(54321).Message(67890);
-            string emlContent = await messageResource.AsEml();
+            using var mailtrapFactory = new MailtrapClientFactory("YOUR_API_KEY");
+            var client = mailtrapFactory.CreateClient();
+            var inboxId = 54321;
+            var messageId = 67890;
+            var emlContent = await client
+                .Account(YOUR_ACCOUNT_ID)
+                .Inbox(inboxId)
+                .Message(messageId)
+                .AsEml();
             Console.WriteLine(emlContent);
         - lang: java
           label: Java
@@ -4228,9 +4292,15 @@ paths:
           label: .NET
           source: |
             using Mailtrap;
-            var client = new MailtrapClient("YOUR_API_KEY");
-            var messageResource = client.Account(12345).Inbox(54321).Message(67890);
-            var mailHeaders = await messageResource.GetHeaders();
+            using var mailtrapFactory = new MailtrapClientFactory("YOUR_API_KEY");
+            var client = mailtrapFactory.CreateClient();
+            var inboxId = 54321;
+            var messageId = 67890;
+            var mailHeaders = await client
+                .Account(YOUR_ACCOUNT_ID)
+                .Inbox(inboxId)
+                .Message(messageId)
+                .GetHeaders();
             Console.WriteLine(mailHeaders.Headers);
         - lang: java
           label: Java
@@ -4365,9 +4435,16 @@ paths:
           source: |
             using Mailtrap;
             using Mailtrap.Attachments;
-            var mailtrapClient = new MailtrapClient("YOUR_API_KEY");
-            var attachmentsResource = mailtrapClient.Account(12345).Inbox(67890).Message(111111).Attachments();
-            var attachments = await attachmentsResource.Fetch();
+            using var mailtrapFactory = new MailtrapClientFactory("YOUR_API_KEY");
+            var client = mailtrapFactory.CreateClient();
+            var inboxId = 54321;
+            var messageId = 67890;
+            var attachments = await client
+                .Account(YOUR_ACCOUNT_ID)
+                .Inbox(inboxId)
+                .Message(messageId)
+                .Attachments()
+                .Fetch();
         - lang: java
           label: Java
           source: |
@@ -4493,9 +4570,17 @@ paths:
           source: |
             using Mailtrap;
             using Mailtrap.Attachments;
-            var mailtrapClient = new MailtrapClient("YOUR_API_KEY");
-            var attachmentResource = mailtrapClient.Account(12345).Inbox(67890).Message(111111).Attachment(222222);
-            var attachment = await attachmentResource.GetDetails();
+            using var mailtrapFactory = new MailtrapClientFactory("YOUR_API_KEY");
+            var client = mailtrapFactory.CreateClient();
+            var inboxId = 54321;
+            var messageId = 67890;
+            var attachmentId = 222222;
+            var attachment = await client
+                .Account(YOUR_ACCOUNT_ID)
+                .Inbox(inboxId)
+                .Message(messageId)
+                .Attachment(attachmentId)
+                .GetDetails();
         - lang: java
           label: Java
           source: |

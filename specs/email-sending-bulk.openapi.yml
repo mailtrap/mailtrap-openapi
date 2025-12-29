@@ -146,27 +146,28 @@ paths:
           label: .NET
           source: |
             using Mailtrap;
+            using Mailtrap.Configuration;
+            using Mailtrap.Emails.Requests;
 
             // Initialize client for bulk sending
-            var client = new MailtrapClient(
-                "YOUR_API_KEY",
-                new MailtrapOptions { IsBulk = true }
-            );
-
-            var email = new Email
+            var config = new MailtrapClientOptions
             {
-                From = new Address("marketing@example.com"),
-                To = new[]
-                {
-                    new Address("subscriber1@example.com"),
-                    new Address("subscriber2@example.com")
-                },
-                Subject = "Monthly Newsletter",
-                Html = "<h1>Our Latest Updates</h1>",
-                Category = "newsletter"
+                ApiToken = "YOUR_API_KEY",
+                UseBulkApi = true
             };
 
-            await client.Send(email);
+            using var mailtrapFactory = new MailtrapClientFactory(config);
+            var client = mailtrapFactory.CreateClient();
+
+            var email = SendEmailRequest.Create()
+                .From("marketing@example.com")
+                .To("subscriber1@example.com")
+                .To("subscriber2@example.com")
+                .Subject("Monthly Newsletter")
+                .Html("<h1>Our Latest Updates</h1>")
+                .Category("newsletter");
+
+            await client.Email().Send(email);
         - lang: java
           label: Java
           source: |

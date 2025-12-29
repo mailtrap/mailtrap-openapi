@@ -174,34 +174,28 @@ paths:
           label: .NET
           source: |
             using Mailtrap;
+            using Mailtrap.Configuration;
+            using Mailtrap.Emails.Requests;
 
-            var client = new MailtrapClient(
-                "YOUR_API_KEY"
-                // Add new MailtrapOptions { IsBulk = true } for Bulk Stream
-            );
-
-            var batchRequest = new BatchSendRequest
+            var config = new MailtrapClientOptions
             {
-                Base = new BatchBase
-                {
-                    From = new Address("sender@example.com"),
-                    Subject = "Monthly Newsletter",
-                    Text = "Check out our latest updates!"
-                },
-                Requests = new[]
-                {
-                    new BatchRequest
-                    {
-                        To = new[] { new Address("user1@example.com") }
-                    },
-                    new BatchRequest
-                    {
-                        To = new[] { new Address("user2@example.com") }
-                    }
-                }
+                ApiToken = "YOUR_API_KEY"
+                // Add UseBulkApi = true for Bulk Stream
             };
 
-            await client.BatchSend(batchRequest);
+            using var mailtrapFactory = new MailtrapClientFactory(config);
+            var client = mailtrapFactory.CreateClient();
+
+            var batchRequest = BatchEmailRequest.Create()
+                .Base(b => b
+                    .From("sender@example.com")
+                    .Subject("Monthly Newsletter")
+                    .Text("Check out our latest updates!"))
+                .Requests(r => r
+                    .To("user1@example.com"))
+                .Requests(r => r
+                    .To("user2@example.com"));
+            await client.BatchEmail().Send(batchRequest);
         - lang: java
           label: Java
           source: |

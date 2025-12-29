@@ -213,27 +213,51 @@ webhooks:
         - lang: csharp
           label: 'C#'
           source: |
+            using System.Text.Json;
+            using System.Text.Json.Serialization;
+            using Microsoft.AspNetCore.Mvc;
             // ASP.NET Core controller
             [ApiController]
             [Route("[controller]")]
             public class WebhookController : ControllerBase
             {
+                public record WebhookPayload(
+                    [property: JsonPropertyName("events")]
+                    List<JsonElement> Events
+                );
                 [HttpPost]
                 public IActionResult Handle([FromBody] WebhookPayload payload)
                 {
                     foreach (var evt in payload.Events)
                     {
-                        switch (evt.Event)
+                        if (!evt.TryGetProperty("event", out var eventProp))
+                            continue;
+
+                        var type = eventProp.GetString();
+                        if (string.IsNullOrEmpty(type))
+                            continue;
+
+                        switch (type)
                         {
                             case "delivery":
-                                Console.WriteLine($"Delivered to {evt.Email}");
+                                if (evt.TryGetProperty("email", out var emailProp))
+                                    Console.WriteLine($"Delivered to {emailProp.GetString()}");
                                 break;
                             case "bounce":
-                                Console.WriteLine($"Bounced: {evt.Response}");
+                                if (evt.TryGetProperty("response", out var respProp))
+                                    Console.WriteLine($"Bounced: {respProp.GetString()}");
+                                break;
+                            case "open":
+                                if (evt.TryGetProperty("email", out var emailOpenProp))
+                                    Console.WriteLine($"Opened: {emailOpenProp.GetString()}");
+                                break;
+                            case "click":
+                                if (evt.TryGetProperty("url", out var urlProp))
+                                    Console.WriteLine($"Clicked: {urlProp.GetString()}");
                                 break;
                         }
                     }
-                    return Ok();
+                    return Ok("OK");
                 }
             }
         - lang: java

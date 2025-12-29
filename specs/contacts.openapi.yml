@@ -189,17 +189,24 @@ paths:
           label: .NET
           source: |
             using Mailtrap;
+            using Mailtrap.Contacts.Requests;
 
-            var client = new MailtrapClient("YOUR_API_TOKEN");
+            using var mailtrapFactory = new MailtrapClientFactory("YOUR_API_KEY");
+            var client = mailtrapFactory.CreateClient();
 
-            var request = new CreateContactRequest("john.smith@example.com");
-            request.Fields.Add("first_name", "John");
-            request.Fields.Add("last_name", "Smith");
-            request.Fields.Add("company", "Example Inc");
-            request.ListIds.AddRange(new[] { 1, 2, 3 });
+            var request = new CreateContactRequest("john.smith@example.com")
+            {
+                ListIds = { 1, 2, 3 },
+                Fields =
+                {
+                    { "first_name", "John" },
+                    { "last_name", "Smith" },
+                    { "company", "Example Inc" }
+                }
+            };
 
             var response = await client
-                .Account(accountId)
+                .Account(YOUR_ACCOUNT_ID)
                 .Contacts()
                 .Create(request);
 
@@ -375,20 +382,20 @@ paths:
           label: .NET
           source: |
             using Mailtrap;
-            using System.Web;
 
-            var client = new MailtrapClient("YOUR_API_TOKEN");
+            using var mailtrapFactory = new MailtrapClientFactory("YOUR_API_KEY");
+            var client = mailtrapFactory.CreateClient();
 
             // Get by contact ID
             var contact = await client
-                .Account(accountId)
+                .Account(YOUR_ACCOUNT_ID)
                 .Contact(contactId)
                 .GetDetails();
 
-            // Or get by email (URL encoded)
+            // Or get by email
             var contactByEmail = await client
-                .Account(accountId)
-                .Contact(HttpUtility.UrlEncode("john.smith@example.com"))
+                .Account(YOUR_ACCOUNT_ID)
+                .Contact("john.smith@example.com")
                 .GetDetails();
 
             Console.WriteLine($"Contact: {contact.Contact.Email}");
@@ -505,12 +512,13 @@ paths:
           label: C#
           source: |
             using Mailtrap;
-            using Mailtrap.Contacts;
-            var mailtrapClient = new MailtrapClient("YOUR_API_KEY");
-            var contactResource = mailtrapClient.Account(12345).Contact("contact_id");
+            using Mailtrap.Contacts.Requests;
+            using var mailtrapFactory = new MailtrapClientFactory("YOUR_API_KEY");
+            var client = mailtrapFactory.CreateClient();
+            var contact = client.Account(YOUR_ACCOUNT_ID).Contact("contact_id");
             var request = new UpdateContactRequest("new@example.com");
             request.Fields.Add("first_name", "John");
-            var response = await contactResource.Update(request);
+            var response = await contact.Update(request);
         - lang: java
           label: Java
           source: |
@@ -616,10 +624,10 @@ paths:
           label: C#
           source: |
             using Mailtrap;
-            using Mailtrap.Contacts;
-            var mailtrapClient = new MailtrapClient("YOUR_API_KEY");
-            var contactResource = mailtrapClient.Account(12345).Contact("contact_id");
-            await contactResource.Delete();
+            using var mailtrapFactory = new MailtrapClientFactory("YOUR_API_KEY");
+            var client = mailtrapFactory.CreateClient();
+            var contact = client.Account(YOUR_ACCOUNT_ID).Contact("contact_id");
+            await contact.Delete();
         - lang: java
           label: Java
           source: |
@@ -702,9 +710,12 @@ paths:
           label: C#
           source: |
             using Mailtrap;
-            var client = new MailtrapClient("YOUR_API_KEY");
-            var eventParams = new Dictionary<string, object> { { "user_id", 101 }, { "is_active", true } };
-            var response = await client.Account(accountId).Contact("contact_id").CreateEvent("UserLogin", eventParams);
+            using Mailtrap.ContactEvents.Requests;
+            using var mailtrapFactory = new MailtrapClientFactory("YOUR_API_KEY");
+            var client = mailtrapFactory.CreateClient();
+            var eventParams = new Dictionary<string, object?> { { "user_id", 101 }, { "is_active", true } };
+            var eventRequest = new CreateContactEventRequest("UserLogin", eventParams);
+            var response = await client.Account(YOUR_ACCOUNT_ID).Contacts().Events("contact_id").Create(eventRequest);
         - lang: java
           label: Java
           source: |
@@ -807,9 +818,12 @@ paths:
           label: C#
           source: |
             using Mailtrap;
-            var client = new MailtrapClient("YOUR_API_KEY");
-            var filters = new List<ExportFilter> { new ExportFilter { Name = "list_id", Operator = "equal", Value = new[] { 1, 2 } } };
-            var response = await client.Account(accountId).ContactExports().Create(filters);
+            using Mailtrap.ContactExports.Models;
+            using Mailtrap.ContactExports.Requests;
+            using var mailtrapFactory = new MailtrapClientFactory("YOUR_API_KEY");
+            var client = mailtrapFactory.CreateClient();
+            var request = new CreateContactExportRequest(new[] { new ContactExportListIdFilter(1, 2) });
+            var response = await client.Account(YOUR_ACCOUNT_ID).Contacts().Exports().Create(request);
         - lang: java
           label: Java
           source: |
@@ -907,8 +921,9 @@ paths:
           label: C#
           source: |
             using Mailtrap;
-            var client = new MailtrapClient("YOUR_API_KEY");
-            var response = await client.Account(accountId).ContactExport(exportId).GetStatus();
+            using var mailtrapFactory = new MailtrapClientFactory("YOUR_API_KEY");
+            var client = mailtrapFactory.CreateClient();
+            var response = await client.Account(YOUR_ACCOUNT_ID).Contacts().Export(exportId).GetDetails();
         - lang: java
           label: Java
           source: |
@@ -1027,9 +1042,12 @@ paths:
           label: C#
           source: |
             using Mailtrap;
-            var client = new MailtrapClient("YOUR_API_KEY");
-            var contacts = new[] { new ImportContact { Email = "user1@example.com", Fields = new { first_name = "John" } } };
-            var response = await client.Account(accountId).ContactImports().Create(contacts);
+            using Mailtrap.ContactImports.Requests;
+            using Mailtrap.Contacts.Requests;
+            using var mailtrapFactory = new MailtrapClientFactory("YOUR_API_KEY");
+            var client = mailtrapFactory.CreateClient();
+            var contacts = new[] { new ContactImportRequest("user1@example.com") { Fields = { { "first_name", "John" } } } };
+            var response = await client.Account(YOUR_ACCOUNT_ID).Contacts().Imports().Create(new CreateContactImportRequest(contacts));
         - lang: java
           label: Java
           source: |
@@ -1136,8 +1154,9 @@ paths:
           label: C#
           source: |
             using Mailtrap;
-            var client = new MailtrapClient("YOUR_API_KEY");
-            var response = await client.Account(accountId).ContactImport(importId).GetStatus();
+            using var mailtrapFactory = new MailtrapClientFactory("YOUR_API_KEY");
+            var client = mailtrapFactory.CreateClient();
+            var response = await client.Account(YOUR_ACCOUNT_ID).Contacts().Import(importId).GetDetails();
         - lang: java
           label: Java
           source: |
@@ -1229,8 +1248,9 @@ paths:
           label: C#
           source: |
             using Mailtrap;
-            var client = new MailtrapClient("YOUR_API_KEY");
-            var lists = await client.Account(accountId).ContactLists().GetAll();
+            using var mailtrapFactory = new MailtrapClientFactory("YOUR_API_KEY");
+            var client = mailtrapFactory.CreateClient();
+            var lists = await client.Account(YOUR_ACCOUNT_ID).Contacts().Lists().GetAll();
         - lang: java
           label: Java
           source: |
@@ -1313,8 +1333,9 @@ paths:
           label: C#
           source: |
             using Mailtrap;
-            var client = new MailtrapClient("YOUR_API_KEY");
-            var list = await client.Account(accountId).ContactLists().Create("Customers");
+            using var mailtrapFactory = new MailtrapClientFactory("YOUR_API_KEY");
+            var client = mailtrapFactory.CreateClient();
+            var lists = await client.Account(YOUR_ACCOUNT_ID).Contacts().Lists().Create(new() { Name = "My new contact list" });
         - lang: java
           label: Java
           source: |
@@ -1404,8 +1425,9 @@ paths:
           label: C#
           source: |
             using Mailtrap;
-            var client = new MailtrapClient("YOUR_API_KEY");
-            var list = await client.Account(accountId).ContactList(listId).GetDetails();
+            using var mailtrapFactory = new MailtrapClientFactory("YOUR_API_KEY");
+            var client = mailtrapFactory.CreateClient();
+            var list = await client.Account(YOUR_ACCOUNT_ID).Contacts().List(listId).GetDetails();
         - lang: java
           label: Java
           source: |
@@ -1479,8 +1501,9 @@ paths:
           label: C#
           source: |
             using Mailtrap;
-            var client = new MailtrapClient("YOUR_API_KEY");
-            await client.Account(accountId).ContactList(listId).Update("Former Customers");
+            using var mailtrapFactory = new MailtrapClientFactory("YOUR_API_KEY");
+            var client = mailtrapFactory.CreateClient();
+            await client.Account(YOUR_ACCOUNT_ID).Contacts().List(listId).Update(new() { Name = "Former Customers" });
         - lang: java
           label: Java
           source: |
@@ -1567,8 +1590,9 @@ paths:
           label: C#
           source: |
             using Mailtrap;
-            var client = new MailtrapClient("YOUR_API_KEY");
-            await client.Account(accountId).ContactList(listId).Delete();
+            using var mailtrapFactory = new MailtrapClientFactory("YOUR_API_KEY");
+            var client = mailtrapFactory.CreateClient();
+            await client.Account(YOUR_ACCOUNT_ID).Contacts().List(listId).Delete();
         - lang: java
           label: Java
           source: |
@@ -1644,8 +1668,9 @@ paths:
           label: C#
           source: |
             using Mailtrap;
-            var client = new MailtrapClient("YOUR_API_KEY");
-            var fields = await client.Account(accountId).ContactFields().GetAll();
+            using var mailtrapFactory = new MailtrapClientFactory("YOUR_API_KEY");
+            var client = mailtrapFactory.CreateClient();
+            var fields = await client.Account(YOUR_ACCOUNT_ID).Contacts().Fields().GetAll();
         - lang: java
           label: Java
           source: |
@@ -1733,8 +1758,12 @@ paths:
           label: C#
           source: |
             using Mailtrap;
-            var client = new MailtrapClient("YOUR_API_KEY");
-            var field = await client.Account(accountId).ContactFields().Create("Company", "text", "company");
+            using Mailtrap.ContactFields.Models;
+            using Mailtrap.ContactFields.Requests;
+            using var mailtrapFactory = new MailtrapClientFactory("YOUR_API_KEY");
+            var client = mailtrapFactory.CreateClient();
+            var request = new CreateContactFieldRequest("Company", "company", ContactFieldDataType.Text);
+            var field = await client.Account(YOUR_ACCOUNT_ID).Contacts().Fields().Create(request);
         - lang: java
           label: Java
           source: |
@@ -1857,8 +1886,9 @@ paths:
           label: C#
           source: |
             using Mailtrap;
-            var client = new MailtrapClient("YOUR_API_KEY");
-            var field = await client.Account(accountId).ContactField(fieldId).GetDetails();
+            using var mailtrapFactory = new MailtrapClientFactory("YOUR_API_KEY");
+            var client = mailtrapFactory.CreateClient();
+            var field = await client.Account(YOUR_ACCOUNT_ID).Contacts().Field(fieldId).GetDetails();
         - lang: java
           label: Java
           source: |
@@ -1935,8 +1965,10 @@ paths:
           label: C#
           source: |
             using Mailtrap;
-            var client = new MailtrapClient("YOUR_API_KEY");
-            await client.Account(accountId).ContactField(fieldId).Update("Updated Name", "updated_name");
+            using Mailtrap.ContactFields.Requests;
+            using var mailtrapFactory = new MailtrapClientFactory("YOUR_API_KEY");
+            var client = mailtrapFactory.CreateClient();
+            await client.Account(YOUR_ACCOUNT_ID).Contacts().Field(fieldId).Update(new UpdateContactFieldRequest("Updated Name", "updated_name"));
         - lang: java
           label: Java
           source: |
@@ -2046,8 +2078,9 @@ paths:
           label: C#
           source: |
             using Mailtrap;
-            var client = new MailtrapClient("YOUR_API_KEY");
-            await client.Account(accountId).ContactField(fieldId).Delete();
+            using var mailtrapFactory = new MailtrapClientFactory("YOUR_API_KEY");
+            var client = mailtrapFactory.CreateClient();
+            await client.Account(YOUR_ACCOUNT_ID).Contacts().Field(fieldId).Delete();
         - lang: java
           label: Java
           source: |
