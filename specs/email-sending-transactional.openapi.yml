@@ -128,19 +128,19 @@ paths:
           label: .NET
           source: |
             using Mailtrap;
+            using Mailtrap.Emails.Requests;
 
-            var client = new MailtrapClient("YOUR_API_KEY");
+            using var mailtrapFactory = new MailtrapClientFactory("YOUR_API_KEY");
+            var client = mailtrapFactory.CreateClient();
 
-            var email = new Email
-            {
-                From = new Address { Email = "sender@example.com" },
-                To = new[] { new Address { Email = "recipient@example.com" } },
-                Subject = "Hello from Mailtrap",
-                Text = "Welcome to Mailtrap!",
-                Html = "<h1>Welcome to Mailtrap!</h1>"
-            };
+            var email = SendEmailRequest.Create()
+                .From("sender@example.com")
+                .To("recipient@example.com")
+                .Subject("Hello from Mailtrap")
+                .Text("Welcome to Mailtrap!")
+                .Html("<h1>Welcome to Mailtrap!</h1>");
 
-            await client.SendAsync(email);
+            await client.Email().Send(email);
         - lang: java
           label: Java
           source: |
