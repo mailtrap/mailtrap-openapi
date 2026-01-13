@@ -212,9 +212,8 @@ paths:
             });
 
             async function getDomains() {
-              const domains = await client.sendingDomains.getList();
-
-              console.log("Sending domains:", domains);
+              const response = await client.sendingDomains.getList();
+              const domains = response.data;
             }
 
             getDomains();
@@ -967,7 +966,7 @@ paths:
             const client = new MailtrapClient({ token: "YOUR_API_KEY", accountId: YOUR_ACCOUNT_ID });
             
             async function getTemplates() {
-              const templates = await client.templates.getAll();
+              const templates = await client.templates.getList();
             }
 
             getTemplates();
