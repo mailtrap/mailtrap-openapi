@@ -124,11 +124,13 @@ paths:
               accountId: ACCOUNT_ID
             });
 
-            const project = await client.testing.projects.create({
-              name: 'My New Project'
-            });
+            async function createProject() {
+              const project = await client.testing.projects.create({
+                name: 'My New Project'
+              });
+            }
 
-            console.log(project);
+            createProject();
         - lang: php
           label: PHP
           source: |
@@ -248,11 +250,11 @@ paths:
               accountId: ACCOUNT_ID
             });
 
-            const projects = await client.testing.projects.getList();
+            async function getProjects() {
+              const projects = await client.testing.projects.getList();
+            }
 
-            projects.forEach(project => {
-              console.log(`Project: ${project.name}, ID: ${project.id}`);
-            });
+            getProjects();
         - lang: php
           label: PHP
           source: |
@@ -369,10 +371,12 @@ paths:
               accountId: YOUR_ACCOUNT_ID
             });
 
-            const projectId = 12345;
-            const project = await client.testing.projects.get(projectId);
+            async function getProject() {
+              const projectId = 12345;
+              const project = await client.testing.projects.get(projectId);
+            }
 
-            console.log("Project:", project);
+            getProject();
         - lang: php
           label: PHP
           source: |
@@ -474,11 +478,15 @@ paths:
               accountId: YOUR_ACCOUNT_ID
             });
 
-            const projectId = 12345;
-            const updatedProject = await client.testing.projects.update(
-              projectId,
-              "Updated Project Name"
-            );
+            async function updateProject() {
+              const projectId = 12345;
+              const updatedProject = await client.testing.projects.update(
+                projectId,
+                "Updated Project Name"
+              );
+            }
+
+            updateProject();
 
             console.log("Project updated:", updatedProject);
         - lang: php
@@ -627,10 +635,12 @@ paths:
               accountId: YOUR_ACCOUNT_ID
             });
 
-            const projectId = 12345;
-            const result = await client.testing.projects.delete(projectId);
+            async function deleteProject() {
+              const projectId = 12345;
+              const result = await client.testing.projects.delete(projectId);
+            }
 
-            console.log("Project deleted:", result);
+            deleteProject();
         - lang: php
           label: PHP
           source: |
@@ -778,10 +788,14 @@ paths:
               accountId: ACCOUNT_ID
             });
 
-            const inbox = await client.testing.inboxes.create(
-              projectId,
-              'My Test Inbox'
-            );
+            async function createInbox() {
+              const inbox = await client.testing.inboxes.create(
+                projectId,
+                'My Test Inbox'
+              );
+            }
+
+            createInbox();
 
             console.log(`Inbox created: ${inbox.name}`);
             console.log(`SMTP credentials - User: ${inbox.username}`);
@@ -900,10 +914,12 @@ paths:
 
             const client = new MailtrapClient({ token: TOKEN, accountId: ACCOUNT_ID });
 
-            const inboxId = 12345;
-            const inboxAttributes = await client.testing.inboxes.getInboxAttributes(inboxId);
+            async function getInboxAttributes() {
+              const inboxId = 12345;
+              const inboxAttributes = await client.testing.inboxes.getInboxAttributes(inboxId);
+            }
 
-            console.log(inboxAttributes);
+            getInboxAttributes();
         - lang: php
           label: PHP
           source: |
@@ -999,10 +1015,12 @@ paths:
 
             const client = new MailtrapClient({ token: TOKEN, accountId: ACCOUNT_ID });
 
-            const inboxId = 12345;
-            const result = await client.testing.inboxes.delete(inboxId);
+            async function deleteInbox() {
+              const inboxId = 12345;
+              const result = await client.testing.inboxes.delete(inboxId);
+            }
 
-            console.log(result);
+            deleteInbox();
         - lang: php
           label: PHP
           source: |
@@ -1114,11 +1132,15 @@ paths:
 
             const client = new MailtrapClient({ token: TOKEN, accountId: ACCOUNT_ID });
 
-            const inboxId = 12345;
-            const updatedInbox = await client.testing.inboxes.updateInbox(
-              inboxId,
-              { name: 'Updated Inbox Name', emailUsername: 'new-username' }
-            );
+            async function updateInbox() {
+              const inboxId = 12345;
+              const updatedInbox = await client.testing.inboxes.updateInbox(
+                inboxId,
+                { name: 'Updated Inbox Name', emailUsername: 'new-username' }
+              );
+            }
+
+            updateInbox();
 
             console.log(updatedInbox);
         - lang: php
@@ -1247,10 +1269,12 @@ paths:
 
             const client = new MailtrapClient({ token: TOKEN, accountId: ACCOUNT_ID });
 
-            const inboxId = 12345;
-            const result = await client.testing.inboxes.clean(inboxId);
+            async function cleanInbox() {
+              const inboxId = 12345;
+              const result = await client.testing.inboxes.clean(inboxId);
+            }
 
-            console.log(result);
+            cleanInbox();
         - lang: php
           label: PHP
           source: |
@@ -1351,10 +1375,12 @@ paths:
 
             const client = new MailtrapClient({ token: TOKEN, accountId: ACCOUNT_ID });
 
-            const inboxId = 12345;
-            const result = await client.testing.inboxes.markAsRead(inboxId);
+            async function markAsRead() {
+              const inboxId = 12345;
+              const result = await client.testing.inboxes.markAsRead(inboxId);
+            }
 
-            console.log(result);
+            markAsRead();
         - lang: php
           label: PHP
           source: |
@@ -1455,10 +1481,12 @@ paths:
 
             const client = new MailtrapClient({ token: TOKEN, accountId: ACCOUNT_ID });
 
-            const inboxId = 12345;
-            const result = await client.testing.inboxes.resetCredentials(inboxId);
+            async function resetCredentials() {
+              const inboxId = 12345;
+              const result = await client.testing.inboxes.resetCredentials(inboxId);
+            }
 
-            console.log(result);
+            resetCredentials();
         - lang: php
           label: PHP
           source: |
@@ -1559,10 +1587,12 @@ paths:
 
             const client = new MailtrapClient({ token: TOKEN, accountId: ACCOUNT_ID });
 
-            const inboxId = 12345;
-            const result = await client.testing.inboxes.enableEmailAddress(inboxId);
+            async function enableEmailAddress() {
+              const inboxId = 12345;
+              const result = await client.testing.inboxes.enableEmailAddress(inboxId);
+            }
 
-            console.log(result);
+            enableEmailAddress();
         - lang: php
           label: PHP
           source: |
@@ -1663,10 +1693,12 @@ paths:
 
             const client = new MailtrapClient({ token: TOKEN, accountId: ACCOUNT_ID });
 
-            const inboxId = 12345;
-            const result = await client.testing.inboxes.resetEmailAddress(inboxId);
+            async function resetEmailAddress() {
+              const inboxId = 12345;
+              const result = await client.testing.inboxes.resetEmailAddress(inboxId);
+            }
 
-            console.log(result);
+            resetEmailAddress();
         - lang: php
           label: PHP
           source: |
@@ -1766,9 +1798,11 @@ paths:
 
             const client = new MailtrapClient({ token: TOKEN, accountId: ACCOUNT_ID });
 
-            const inboxes = await client.testing.inboxes.getList();
+            async function getInboxes() {
+              const inboxes = await client.testing.inboxes.getList();
+            }
 
-            console.log(inboxes);
+            getInboxes();
         - lang: php
           label: PHP
           source: |
@@ -1859,13 +1893,17 @@ paths:
               sandbox: true
             });
 
-            await client.send({
-              from: { email: "test@example.com", name: "Test Sender" },
-              to: [{ email: "user@example.com", name: "Test User" }],
-              subject: "Test Email",
-              text: "This is a test email for sandbox.",
-              html: "<p>This is a <b>test email</b> for sandbox.</p>"
-            });
+            async function sendTestEmail() {
+              await client.send({
+                from: { email: "test@example.com", name: "Test Sender" },
+                to: [{ email: "user@example.com", name: "Test User" }],
+                subject: "Test Email",
+                text: "This is a test email for sandbox.",
+                html: "<p>This is a <b>test email</b> for sandbox.</p>"
+              });
+            }
+
+            sendTestEmail();
         - lang: php
           label: PHP
           source: |
@@ -2347,9 +2385,13 @@ paths:
             const inboxId = 12345;
             const messageId = 67890;
 
-            const message = await client.testing.messages.showEmailMessage(inboxId, messageId);
+            async function showMessage() {
+              const inboxId = 12345;
+              const messageId = 67890;
+              const message = await client.testing.messages.showEmailMessage(inboxId, messageId);
+            }
 
-            console.log(message);
+            showMessage();
         - lang: php
           label: PHP
           source: |
@@ -2559,11 +2601,17 @@ paths:
             const inboxId = 12345;
             const messageId = 67890;
 
-            const updatedMessage = await client.testing.messages.updateMessage(
-              inboxId,
-              messageId,
-              { isRead: true }
-            );
+            async function updateMessage() {
+              const inboxId = 12345;
+              const messageId = 67890;
+              const updatedMessage = await client.testing.messages.updateMessage(
+                inboxId,
+                messageId,
+                { isRead: true }
+              );
+            }
+
+            updateMessage();
 
             console.log(updatedMessage);
         - lang: php
@@ -2764,9 +2812,13 @@ paths:
             const inboxId = 12345;
             const messageId = 67890;
 
-            const result = await client.testing.messages.deleteMessage(inboxId, messageId);
+            async function deleteMessage() {
+              const inboxId = 12345;
+              const messageId = 67890;
+              const result = await client.testing.messages.deleteMessage(inboxId, messageId);
+            }
 
-            console.log(result);
+            deleteMessage();
         - lang: php
           label: PHP
           source: |
@@ -2964,13 +3016,11 @@ paths:
               accountId: ACCOUNT_ID
             });
 
-            const messages = await client.testing.messages.getList(inboxId);
+            async function getMessages() {
+              const messages = await client.testing.messages.getList(inboxId);
+            }
 
-            messages.forEach(message => {
-              console.log(`From: ${message.from_email}`);
-              console.log(`Subject: ${message.subject}`);
-              console.log(`Received: ${message.created_at}`);
-            });
+            getMessages();
         - lang: php
           label: PHP
           source: |
@@ -3133,11 +3183,17 @@ paths:
             const inboxId = 12345;
             const messageId = 67890;
 
-            const result = await client.testing.messages.forward(
-              inboxId,
-              messageId,
-              'recipient@example.com'
-            );
+            async function forwardMessage() {
+              const inboxId = 12345;
+              const messageId = 67890;
+              const result = await client.testing.messages.forward(
+                inboxId,
+                messageId,
+                'recipient@example.com'
+              );
+            }
+
+            forwardMessage();
 
             console.log(result);
         - lang: php
@@ -3303,8 +3359,11 @@ paths:
 
             const client = new MailtrapClient({ token: "YOUR_API_KEY", accountId: "YOUR_ACCOUNT_ID" });
 
-            const spamReport = await client.testing.messages.getSpamScore(12345, 67890);
-            console.log(spamReport);
+            async function getSpamScore() {
+              const spamReport = await client.testing.messages.getSpamScore(12345, 67890);
+            }
+
+            getSpamScore();
         - lang: php
           label: PHP
           source: |
@@ -3467,8 +3526,11 @@ paths:
 
             const client = new MailtrapClient({ token: "YOUR_API_KEY", accountId: "YOUR_ACCOUNT_ID" });
 
-            const htmlAnalysis = await client.testing.messages.getHtmlAnalysis(12345, 67890);
-            console.log(htmlAnalysis);
+            async function getHtmlAnalysis() {
+              const htmlAnalysis = await client.testing.messages.getHtmlAnalysis(12345, 67890);
+            }
+
+            getHtmlAnalysis();
         - lang: php
           label: PHP
           source: |
@@ -3578,8 +3640,12 @@ paths:
           source: |
             const { MailtrapClient } = require("mailtrap");
             const client = new MailtrapClient({ token: "YOUR_API_KEY", accountId: "YOUR_ACCOUNT_ID" });
-            const textBody = await client.testing.messages.getTextMessage(12345, 67890);
-            console.log(textBody);
+
+            async function getTextMessage() {
+              const textBody = await client.testing.messages.getTextMessage(12345, 67890);
+            }
+
+            getTextMessage();
         - lang: php
           label: PHP
           source: |
@@ -3734,8 +3800,12 @@ paths:
           source: |
             const { MailtrapClient } = require("mailtrap");
             const client = new MailtrapClient({ token: "YOUR_API_KEY", accountId: "YOUR_ACCOUNT_ID" });
-            const rawBody = await client.testing.messages.getRawMessage(12345, 67890);
-            console.log(rawBody);
+
+            async function getRawMessage() {
+              const rawBody = await client.testing.messages.getRawMessage(12345, 67890);
+            }
+
+            getRawMessage();
         - lang: php
           label: PHP
           source: |
@@ -3869,8 +3939,12 @@ paths:
           source: |
             const { MailtrapClient } = require("mailtrap");
             const client = new MailtrapClient({ token: "YOUR_API_KEY", accountId: "YOUR_ACCOUNT_ID" });
-            const htmlSource = await client.testing.messages.getMessageHtmlSource(12345, 67890);
-            console.log(htmlSource);
+
+            async function getHtmlSource() {
+              const htmlSource = await client.testing.messages.getMessageHtmlSource(12345, 67890);
+            }
+
+            getHtmlSource();
         - lang: php
           label: PHP
           source: |
@@ -3998,7 +4072,12 @@ paths:
           source: |
             const { MailtrapClient } = require("mailtrap");
             const client = new MailtrapClient({ token: "YOUR_API_KEY", accountId: "YOUR_ACCOUNT_ID" });
-            const htmlBody = await client.testing.messages.getHtmlMessage(12345, 67890);
+
+            async function getHtmlMessage() {
+              const htmlBody = await client.testing.messages.getHtmlMessage(12345, 67890);
+            }
+
+            getHtmlMessage();
             console.log(htmlBody);
         - lang: php
           label: PHP
@@ -4154,8 +4233,12 @@ paths:
           source: |
             const { MailtrapClient } = require("mailtrap");
             const client = new MailtrapClient({ token: "YOUR_API_KEY", accountId: "YOUR_ACCOUNT_ID" });
-            const emlContent = await client.testing.messages.getMessageAsEml(12345, 67890);
-            console.log(emlContent);
+
+            async function getMessageAsEml() {
+              const emlContent = await client.testing.messages.getMessageAsEml(12345, 67890);
+            }
+
+            getMessageAsEml();
         - lang: php
           label: PHP
           source: |
@@ -4263,8 +4346,12 @@ paths:
           source: |
             const { MailtrapClient } = require("mailtrap");
             const client = new MailtrapClient({ token: "YOUR_API_KEY", accountId: "YOUR_ACCOUNT_ID" });
-            const mailHeaders = await client.testing.messages.getMailHeaders(12345, 67890);
-            console.log(mailHeaders);
+
+            async function getMailHeaders() {
+              const mailHeaders = await client.testing.messages.getMailHeaders(12345, 67890);
+            }
+
+            getMailHeaders();
         - lang: php
           label: PHP
           source: |
@@ -4407,7 +4494,12 @@ paths:
           source: |
             const { MailtrapClient } = require("mailtrap");
             const client = new MailtrapClient({ token: "YOUR_API_KEY", accountId: "YOUR_ACCOUNT_ID" });
-            const attachments = await client.testing.attachments.getList(67890, 12345);
+            
+            async function getAttachments() {
+              const attachments = await client.testing.attachments.getList(67890, 12345);
+            }
+
+            getAttachments();
         - lang: php
           label: PHP
           source: |
@@ -4540,7 +4632,12 @@ paths:
           source: |
             const { MailtrapClient } = require("mailtrap");
             const client = new MailtrapClient({ token: "YOUR_API_KEY", accountId: "YOUR_ACCOUNT_ID" });
-            const attachment = await client.testing.attachments.get(12345, 67890, 222222);
+
+            async function getAttachment() {
+              const attachment = await client.testing.attachments.get(12345, 67890, 222222);
+            }
+
+            getAttachment();
         - lang: php
           label: PHP
           source: |
