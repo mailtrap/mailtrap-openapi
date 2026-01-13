@@ -186,7 +186,7 @@ paths:
             });
 
             async function listAccounts() {
-              const accounts = await client.accounts.list();
+              const accounts = await client.general.accounts.getAllAccounts();
             }
 
             listAccounts();
@@ -299,7 +299,7 @@ paths:
             const client = new MailtrapClient({ token: "YOUR_API_KEY", accountId: YOUR_ACCOUNT_ID });
 
             async function listAccesses() {
-              const accesses = await client.accountAccesses.list();
+              const accesses = await client.general.accountAccesses.listAccountAccesses();
             }
 
             listAccesses();
@@ -409,7 +409,7 @@ paths:
             const client = new MailtrapClient({ token: "YOUR_API_KEY", accountId: YOUR_ACCOUNT_ID });
 
             async function deleteAccess() {
-              await client.accountAccesses.delete(accessId);
+              await client.general.accountAccesses.removeAccountAccess(accessId);
             }
 
             deleteAccess();
@@ -501,9 +501,9 @@ paths:
             const client = new MailtrapClient({ token: "YOUR_API_KEY", accountId: YOUR_ACCOUNT_ID });
 
             async function bulkUpdatePermissions() {
-              await client.permissions.bulkUpdate(accessId, {
-                permissions: [{ resource_id: "3281", resource_type: "account", access_level: "viewer" }]
-              });
+              await client.general.permissions.bulkPermissionsUpdate(accessId, [
+                { resourceId: "3281", resourceType: "account", accessLevel: "viewer" }
+              ]);
             }
 
             bulkUpdatePermissions();
@@ -675,7 +675,7 @@ paths:
             const client = new MailtrapClient({ token: "YOUR_API_KEY", accountId: YOUR_ACCOUNT_ID });
 
             async function getResources() {
-              const resources = await client.permissions.getResources();
+              const resources = await client.general.permissions.getResources();
             }
 
             getResources();
@@ -791,7 +791,7 @@ paths:
             const client = new MailtrapClient({ token: "YOUR_API_KEY", accountId: YOUR_ACCOUNT_ID });
 
             async function getUsage() {
-              const usage = await client.billing.getUsage();
+              const usage = await client.general.billing.getCurrentBillingCycleUsage();
             }
 
             getUsage();
