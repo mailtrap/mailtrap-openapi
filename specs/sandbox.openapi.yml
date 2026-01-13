@@ -3017,7 +3017,7 @@ paths:
             });
 
             async function getMessages() {
-              const messages = await client.testing.messages.getList(inboxId);
+              const messages = await client.testing.messages.get(inboxId);
             }
 
             getMessages();
