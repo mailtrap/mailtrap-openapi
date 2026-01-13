@@ -60,16 +60,20 @@ paths:
               token: process.env.MAILTRAP_API_KEY
             });
 
-            await client.send({
-              from: {
-                email: "sender@example.com",
-                name: "Sender Name"
-              },
-              to: [{ email: "recipient@example.com" }],
-              subject: "Hello from Mailtrap",
-              text: "Welcome to Mailtrap!",
-              html: "<h1>Welcome to Mailtrap!</h1>"
-            });
+            async function sendEmail() {
+              await client.send({
+                from: {
+                  email: "sender@example.com",
+                  name: "Sender Name"
+                },
+                to: [{ email: "recipient@example.com" }],
+                subject: "Hello from Mailtrap",
+                text: "Welcome to Mailtrap!",
+                html: "<h1>Welcome to Mailtrap!</h1>"
+              });
+            }
+
+            sendEmail();
         - lang: php
           label: PHP
           source: |
@@ -475,6 +479,10 @@ components:
         application/json:
           schema:
             $ref: '#/components/schemas/SendEmailErrorResponse'
+          example:
+            success: false
+            errors:
+              - "'from' address is invalid"
 
     Unauthorized:
       description: Unauthorized. Check your API credentials.
@@ -482,6 +490,10 @@ components:
         application/json:
           schema:
             $ref: '#/components/schemas/SendEmailErrorResponse'
+          example:
+            success: false
+            errors:
+              - "Unauthorized"
 
     Forbidden:
       description: Forbidden. Verify domain or check permissions.
