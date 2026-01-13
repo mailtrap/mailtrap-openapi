@@ -55,22 +55,25 @@ paths:
           source: |
             import { MailtrapClient } from "mailtrap";
 
-            // Initialize client for bulk sending
             const client = new MailtrapClient({
               token: process.env.MAILTRAP_API_KEY,
               bulk: true
             });
 
-            await client.send({
-              from: { email: "marketing@example.com" },
-              to: [
-                { email: "subscriber1@example.com" },
-                { email: "subscriber2@example.com" }
-              ],
-              subject: "Monthly Newsletter",
-              html: "<h1>Our Latest Updates</h1>",
-              category: "newsletter"
-            });
+            async function sendEmail() {
+              await client.send({
+                from: { email: "marketing@example.com" },
+                to: [
+                  { email: "subscriber1@example.com" },
+                  { email: "subscriber2@example.com" }
+                ],
+                subject: "Monthly Newsletter",
+                html: "<h1>Our Latest Updates</h1>",
+                category: "newsletter"
+              });
+            }
+
+            sendEmail();
         - lang: php
           label: PHP
           source: |
@@ -149,7 +152,6 @@ paths:
             using Mailtrap.Configuration;
             using Mailtrap.Emails.Requests;
 
-            // Initialize client for bulk sending
             var config = new MailtrapClientOptions
             {
                 ApiToken = "YOUR_API_KEY",
@@ -503,6 +505,10 @@ components:
         application/json:
           schema:
             $ref: '#/components/schemas/SendEmailErrorResponse'
+          example:
+            success: false
+            errors:
+              - "'from' address is invalid"
 
     Unauthorized:
       description: Unauthorized. Check your API credentials.
@@ -510,6 +516,10 @@ components:
         application/json:
           schema:
             $ref: '#/components/schemas/SendEmailErrorResponse'
+          example:
+            success: false
+            errors:
+              - "Unauthorized"
 
     Forbidden:
       description: Forbidden. Verify domain or check permissions.
