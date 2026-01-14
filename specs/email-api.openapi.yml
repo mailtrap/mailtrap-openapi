@@ -72,11 +72,15 @@ paths:
               accountId: YOUR_ACCOUNT_ID
             });
 
-            const domain = await client.sendingDomains.create({
-              domain_name: "example.com"
-            });
+            async function createDomain() {
+              const domain = await client.sendingDomains.create({
+                domain_name: "example.com"
+              });
 
-            console.log("Created domain:", domain);
+              console.log("Created domain:", domain);
+            }
+
+            createDomain();
         - lang: php
           label: PHP
           source: |
@@ -207,9 +211,12 @@ paths:
               accountId: YOUR_ACCOUNT_ID
             });
 
-            const domains = await client.sendingDomains.getList();
+            async function getDomains() {
+              const response = await client.sendingDomains.getList();
+              const domains = response.data;
+            }
 
-            console.log("Sending domains:", domains);
+            getDomains();
         - lang: php
           label: PHP
           source: |
@@ -308,10 +315,14 @@ paths:
               accountId: YOUR_ACCOUNT_ID
             });
 
-            const domainId = 12345;
-            const domain = await client.sendingDomains.get(domainId);
+            async function getDomain() {
+              const domainId = 12345;
+              const domain = await client.sendingDomains.get(domainId);
 
-            console.log("Domain details:", domain);
+              console.log("Domain details:", domain);
+            }
+
+            getDomain();
         - lang: php
           label: PHP
           source: |
@@ -410,10 +421,14 @@ paths:
               accountId: YOUR_ACCOUNT_ID
             });
 
-            const domainId = 12345;
-            await client.sendingDomains.delete(domainId);
+            async function deleteDomain() {
+              const domainId = 12345;
+              await client.sendingDomains.delete(domainId);
 
-            console.log("Domain deleted successfully");
+              console.log("Domain deleted successfully");
+            }
+
+            deleteDomain();
         - lang: php
           label: PHP
           source: |
@@ -511,13 +526,17 @@ paths:
               accountId: YOUR_ACCOUNT_ID
             });
 
-            const domainId = 12345;
-            await client.sendingDomains.sendSetupInstructions(
-              domainId,
-              "devops@example.com"
-            );
+            async function sendInstructions() {
+              const domainId = 12345;
+              await client.sendingDomains.sendSetupInstructions(
+                domainId,
+                "devops@example.com"
+              );
 
-            console.log("Setup instructions sent");
+              console.log("Setup instructions sent");
+            }
+
+            sendInstructions();
         - lang: php
           label: PHP
           source: |
@@ -659,15 +678,19 @@ paths:
               accountId: YOUR_ACCOUNT_ID
             });
 
-            // Get all suppressions
-            const suppressions = await client.suppressions.getList();
+            async function getSuppressions() {
+              // Get all suppressions
+              const suppressions = await client.suppressions.getList();
 
-            // Or search for specific email
-            const filtered = await client.suppressions.getList({
-              email: "suppressed@example.com"
-            });
+              // Or search for specific email
+              const filtered = await client.suppressions.getList({
+                email: "suppressed@example.com"
+              });
 
-            console.log("Suppressions:", suppressions);
+              console.log("Suppressions:", suppressions);
+            }
+
+            getSuppressions();
         - lang: php
           label: PHP
           source: |
@@ -825,10 +848,14 @@ paths:
               accountId: YOUR_ACCOUNT_ID
             });
 
-            const suppressionId = "abc123-def456";
-            const result = await client.suppressions.delete(suppressionId);
+            async function deleteSuppression() {
+              const suppressionId = "abc123-def456";
+              const result = await client.suppressions.delete(suppressionId);
 
-            console.log("Suppression removed:", result);
+              console.log("Suppression removed:", result);
+            }
+
+            deleteSuppression();
         - lang: php
           label: PHP
           source: |
@@ -937,8 +964,12 @@ paths:
           source: |
             const { MailtrapClient } = require("mailtrap");
             const client = new MailtrapClient({ token: "YOUR_API_KEY", accountId: YOUR_ACCOUNT_ID });
-            const templates = await client.templates.getAll();
-            templates.forEach(tpl => console.log(`${tpl.name}: ${tpl.uuid}`));
+            
+            async function getTemplates() {
+              const templates = await client.templates.getList();
+            }
+
+            getTemplates();
         - lang: php
           label: PHP
           source: |
@@ -1022,14 +1053,19 @@ paths:
           source: |
             import { MailtrapClient } from "mailtrap";
             const client = new MailtrapClient({ token: "YOUR_API_TOKEN" });
-            const template = await client.templates.create({
-              name: "Welcome Email",
-              subject: "Welcome to {{company_name}}!",
-              category: "onboarding",
-              body_html: "<h1>Welcome {{user_name}}!</h1>",
-              body_text: "Welcome {{user_name}}!"
-            });
-            console.log(`Template created: ${template.uuid}`);
+            
+            async function createTemplate() {
+              const template = await client.templates.create({
+                name: "Welcome Email",
+                subject: "Welcome to {{company_name}}!",
+                category: "onboarding",
+                body_html: "<h1>Welcome {{user_name}}!</h1>",
+                body_text: "Welcome {{user_name}}!"
+              });
+              console.log(`Template created: ${template.uuid}`);
+            }
+
+            createTemplate();
         - lang: php
           label: PHP
           source: |
@@ -1164,8 +1200,13 @@ paths:
           source: |
             const { MailtrapClient } = require("mailtrap");
             const client = new MailtrapClient({ token: "YOUR_API_KEY", accountId: YOUR_ACCOUNT_ID });
-            const template = await client.templates.get(templateId);
-            console.log(`Template: ${template.name} (UUID: ${template.uuid})`);
+            
+            async function getTemplate() {
+              const template = await client.templates.get(templateId);
+              console.log(`Template: ${template.name} (UUID: ${template.uuid})`);
+            }
+
+            getTemplate();
         - lang: ruby
           label: Ruby
           source: |
@@ -1234,7 +1275,12 @@ paths:
           source: |
             const { MailtrapClient } = require("mailtrap");
             const client = new MailtrapClient({ token: "YOUR_API_KEY", accountId: YOUR_ACCOUNT_ID });
-            const template = await client.templates.update(templateId, { name: "Updated Template", subject: "New Subject" });
+            
+            async function updateTemplate() {
+              const template = await client.templates.update(templateId, { name: "Updated Template", subject: "New Subject" });
+            }
+
+            updateTemplate();
         - lang: ruby
           label: Ruby
           source: |
@@ -1335,7 +1381,12 @@ paths:
           source: |
             const { MailtrapClient } = require("mailtrap");
             const client = new MailtrapClient({ token: "YOUR_API_KEY", accountId: YOUR_ACCOUNT_ID });
-            await client.templates.delete(templateId);
+            
+            async function deleteTemplate() {
+              await client.templates.delete(templateId);
+            }
+
+            deleteTemplate();
         - lang: ruby
           label: Ruby
           source: |
@@ -1902,19 +1953,27 @@ components:
       title: BadRequestResponse
       type: object
       properties:
+        success:
+          type: boolean
+          example: false
         errors:
-          type: string
-          description: Error message
-          example: Invalid request parameters
+          type: array
+          items:
+            type: string
+            example: "Invalid request parameters"
 
     RateLimitExceededResponse:
       title: RateLimitExceededResponse
       type: object
       properties:
+        success:
+          type: boolean
+          example: false
         errors:
-          type: string
-          description: Error message
-          example: Rate limit exceeded
+          type: array
+          items:
+            type: string
+            example: "Rate limit exceeded"
 
     ErrorResponse:
       type: object
@@ -1935,6 +1994,10 @@ components:
         application/json:
           schema:
             $ref: '#/components/schemas/ErrorResponse'
+          example:
+            success: false
+            errors:
+              - "Unauthorized"
 
     Forbidden:
       description: Forbidden. Verify domain or check permissions.
@@ -1942,6 +2005,10 @@ components:
         application/json:
           schema:
             $ref: '#/components/schemas/ErrorResponse'
+          example:
+            success: false
+            errors:
+              - "Forbidden"
 
     NotFound:
       description: Resource not found
@@ -1967,6 +2034,10 @@ components:
         application/json:
           schema:
             $ref: '#/components/schemas/BadRequest'
+          example:
+            success: false
+            errors:
+              - "Invalid request parameters"
 
     LIMIT_EXCEEDED:
       description: Rate limit exceeded for the current account.
@@ -1974,6 +2045,10 @@ components:
         application/json:
           schema:
             $ref: '#/components/schemas/RateLimitExceededResponse'
+          example:
+            success: false
+            errors:
+              - "Rate limit exceeded"
 
     SendingDomainResponse:
       description: Sending domain details

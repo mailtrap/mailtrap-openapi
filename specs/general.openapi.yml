@@ -185,13 +185,11 @@ paths:
               token: "YOUR_API_TOKEN"
             });
 
-            const accounts = await client.accounts.list();
+            async function listAccounts() {
+              const accounts = await client.general.accounts.getAllAccounts();
+            }
 
-            accounts.forEach(account => {
-              console.log(`Account: ${account.name}`);
-              console.log(`ID: ${account.id}`);
-              console.log(`Access Level: ${account.access_levels[0]}`);
-            });
+            listAccounts();
         - lang: php
           label: PHP
           source: |
@@ -299,8 +297,12 @@ paths:
           source: |
             const { MailtrapClient } = require("mailtrap");
             const client = new MailtrapClient({ token: "YOUR_API_KEY", accountId: YOUR_ACCOUNT_ID });
-            const accesses = await client.accountAccesses.list();
-            accesses.forEach(access => console.log(`User: ${access.specifier.email}, Level: ${access.permission_level}`));
+
+            async function listAccesses() {
+              const accesses = await client.general.accountAccesses.listAccountAccesses();
+            }
+
+            listAccesses();
         - lang: php
           label: PHP
           source: |
@@ -405,7 +407,12 @@ paths:
           source: |
             const { MailtrapClient } = require("mailtrap");
             const client = new MailtrapClient({ token: "YOUR_API_KEY", accountId: YOUR_ACCOUNT_ID });
-            await client.accountAccesses.delete(accessId);
+
+            async function deleteAccess() {
+              await client.general.accountAccesses.removeAccountAccess(accessId);
+            }
+
+            deleteAccess();
         - lang: php
           label: PHP
           source: |
@@ -492,9 +499,14 @@ paths:
           source: |
             const { MailtrapClient } = require("mailtrap");
             const client = new MailtrapClient({ token: "YOUR_API_KEY", accountId: YOUR_ACCOUNT_ID });
-            await client.permissions.bulkUpdate(accessId, {
-              permissions: [{ resource_id: "3281", resource_type: "account", access_level: "viewer" }]
-            });
+
+            async function bulkUpdatePermissions() {
+              await client.general.permissions.bulkPermissionsUpdate(accessId, [
+                { resourceId: "3281", resourceType: "account", accessLevel: "viewer" }
+              ]);
+            }
+
+            bulkUpdatePermissions();
         - lang: php
           label: PHP
           source: |
@@ -661,8 +673,12 @@ paths:
           source: |
             const { MailtrapClient } = require("mailtrap");
             const client = new MailtrapClient({ token: "YOUR_API_KEY", accountId: YOUR_ACCOUNT_ID });
-            const resources = await client.permissions.getResources();
-            console.log(resources);
+
+            async function getResources() {
+              const resources = await client.general.permissions.getResources();
+            }
+
+            getResources();
         - lang: php
           label: PHP
           source: |
@@ -773,8 +789,12 @@ paths:
           source: |
             const { MailtrapClient } = require("mailtrap");
             const client = new MailtrapClient({ token: "YOUR_API_KEY", accountId: YOUR_ACCOUNT_ID });
-            const usage = await client.billing.getUsage();
-            console.log(`Sandbox sent: ${usage.testing.usage.sent_messages_count.current}/${usage.testing.usage.sent_messages_count.limit}`);
+
+            async function getUsage() {
+              const usage = await client.general.billing.getCurrentBillingCycleUsage();
+            }
+
+            getUsage();
         - lang: php
           label: PHP
           source: |

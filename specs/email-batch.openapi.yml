@@ -66,29 +66,28 @@ paths:
               // Add bulk: true for Bulk Stream
             });
 
-            const response = await client.batchSend({
-              base: {
-                from: { email: "sender@example.com" },
-                subject: "Important Update",
-                text: "Hello {{name}}, we have news for you."
-              },
-              requests: [
-                {
-                  to: [{ email: "user1@example.com" }],
-                  custom_variables: { name: "Alice" }
+            async function sendBatch() {
+              const response = await client.batchSend({
+                base: {
+                  from: { email: "sender@example.com" },
+                  subject: "Important Update",
+                  text: "Hello {{name}}, we have news for you."
                 },
-                {
-                  to: [{ email: "user2@example.com" }],
-                  custom_variables: { name: "Bob" }
-                }
-              ]
-            });
+                requests: [
+                  {
+                    to: [{ email: "user1@example.com" }],
+                    custom_variables: { name: "Alice" }
+                  },
+                  {
+                    to: [{ email: "user2@example.com" }],
+                    custom_variables: { name: "Bob" }
+                  }
+                ]
+              });
 
-            response.responses.forEach((result, index) => {
-              if (result.success) {
-                console.log(`Email ${index + 1} sent`);
-              }
-            });
+            }
+
+            sendBatch();
         - lang: php
           label: PHP
           source: |
@@ -532,6 +531,10 @@ components:
         application/json:
           schema:
             $ref: '#/components/schemas/SendEmailErrorResponse'
+          example:
+            success: false
+            errors:
+              - "'from' address is invalid"
 
     Unauthorized:
       description: Unauthorized. Check your API credentials.
@@ -539,6 +542,10 @@ components:
         application/json:
           schema:
             $ref: '#/components/schemas/SendEmailErrorResponse'
+          example:
+            success: false
+            errors:
+              - "Unauthorized"
 
     InternalError:
       description: Internal server error. Retry later or contact support.
