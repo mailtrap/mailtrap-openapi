@@ -792,6 +792,7 @@ paths:
             });
 
             async function createInbox() {
+              const projectId = 12345;
               const inbox = await client.testing.inboxes.create(
                 projectId,
                 'My Test Inbox'
@@ -2396,9 +2397,6 @@ paths:
             const ACCOUNT_ID = "YOUR_ACCOUNT_ID";
 
             const client = new MailtrapClient({ token: TOKEN, accountId: ACCOUNT_ID });
-
-            const inboxId = 12345;
-            const messageId = 67890;
 
             async function showMessage() {
               const inboxId = 12345;
