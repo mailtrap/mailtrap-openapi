@@ -663,7 +663,7 @@ paths:
       description: |
         List and search suppressed email addresses. Returns up to 1000 suppressions per request.
 
-        Suppressed emails will not receive any emails from your account.
+        Suppressed addresses will not receive any emails from your account.
       operationId: getSuppressions
       tags:
         - suppressions
@@ -822,13 +822,31 @@ paths:
             type: string
             format: email
             example: suppressed@example.com
+        - description: Search emails suppressed after this timestamp
+          name: start_time
+          in: query
+          schema:
+            type: string
+            format: date-time
+            example: '2025-01-01T00:00:00Z'
+        - description: Search emails suppressed after this timestamp
+          name: end_time
+          in: query
+          schema:
+            type: string
+            format: date-time
+            example: '2025-12-31T23:59:59Z'
       responses:
         '200':
           $ref: '#/components/responses/GetSuppressionsResponse'
+        '400':
+          $ref: '#/components/responses/BAD_REQUEST'
         '401':
           $ref: '#/components/responses/Unauthorized'
         '403':
           $ref: '#/components/responses/Forbidden'
+        '429':
+          $ref: '#/components/responses/LIMIT_EXCEEDED'
 
   /api/accounts/{account_id}/suppressions/{suppression_id}:
     delete:
