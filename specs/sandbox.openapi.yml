@@ -374,6 +374,8 @@ paths:
             async function getProject() {
               const projectId = 12345;
               const project = await client.testing.projects.get(projectId);
+
+              console.log("Project:", project);
             }
 
             getProject();
@@ -484,11 +486,10 @@ paths:
                 projectId,
                 "Updated Project Name"
               );
+              console.log("Project updated:", updatedProject);
             }
 
             updateProject();
-
-            console.log("Project updated:", updatedProject);
         - lang: php
           label: PHP
           source: |
@@ -638,6 +639,8 @@ paths:
             async function deleteProject() {
               const projectId = 12345;
               const result = await client.testing.projects.delete(projectId);
+
+              console.log("Project deleted:", result);
             }
 
             deleteProject();
@@ -783,22 +786,26 @@ paths:
           source: |
             import { MailtrapClient } from "mailtrap";
 
+            const TOKEN = "YOUR_API_TOKEN";
+            const ACCOUNT_ID = "YOUR_ACCOUNT_ID";
+
             const client = new MailtrapClient({
-              token: "YOUR_API_TOKEN",
+              token: TOKEN,
               accountId: ACCOUNT_ID
             });
 
             async function createInbox() {
+              const projectId = 12345;
               const inbox = await client.testing.inboxes.create(
                 projectId,
                 'My Test Inbox'
               );
+
+              console.log(`Inbox created: ${inbox.name}`);
+              console.log(`SMTP credentials - User: ${inbox.username}`);
             }
 
             createInbox();
-
-            console.log(`Inbox created: ${inbox.name}`);
-            console.log(`SMTP credentials - User: ${inbox.username}`);
         - lang: php
           label: PHP
           source: |
@@ -917,6 +924,8 @@ paths:
             async function getInboxAttributes() {
               const inboxId = 12345;
               const inboxAttributes = await client.testing.inboxes.getInboxAttributes(inboxId);
+
+              console.log(inboxAttributes);
             }
 
             getInboxAttributes();
@@ -1018,6 +1027,8 @@ paths:
             async function deleteInbox() {
               const inboxId = 12345;
               const result = await client.testing.inboxes.delete(inboxId);
+              
+              console.log(result);
             }
 
             deleteInbox();
@@ -1138,11 +1149,10 @@ paths:
                 inboxId,
                 { name: 'Updated Inbox Name', emailUsername: 'new-username' }
               );
+              console.log(updatedInbox);
             }
 
             updateInbox();
-
-            console.log(updatedInbox);
         - lang: php
           label: PHP
           source: |
@@ -1272,6 +1282,8 @@ paths:
             async function cleanInbox() {
               const inboxId = 12345;
               const result = await client.testing.inboxes.clean(inboxId);
+
+              console.log(result);
             }
 
             cleanInbox();
@@ -1378,6 +1390,8 @@ paths:
             async function markAsRead() {
               const inboxId = 12345;
               const result = await client.testing.inboxes.markAsRead(inboxId);
+
+              console.log(result);
             }
 
             markAsRead();
@@ -1484,6 +1498,8 @@ paths:
             async function resetCredentials() {
               const inboxId = 12345;
               const result = await client.testing.inboxes.resetCredentials(inboxId);
+
+              console.log(result);
             }
 
             resetCredentials();
@@ -1590,6 +1606,8 @@ paths:
             async function enableEmailAddress() {
               const inboxId = 12345;
               const result = await client.testing.inboxes.enableEmailAddress(inboxId);
+
+              console.log(result);
             }
 
             enableEmailAddress();
@@ -1696,6 +1714,8 @@ paths:
             async function resetEmailAddress() {
               const inboxId = 12345;
               const result = await client.testing.inboxes.resetEmailAddress(inboxId);
+
+              console.log(result);
             }
 
             resetEmailAddress();
@@ -2382,13 +2402,12 @@ paths:
 
             const client = new MailtrapClient({ token: TOKEN, accountId: ACCOUNT_ID });
 
-            const inboxId = 12345;
-            const messageId = 67890;
-
             async function showMessage() {
               const inboxId = 12345;
               const messageId = 67890;
               const message = await client.testing.messages.showEmailMessage(inboxId, messageId);
+
+              console.log(message);
             }
 
             showMessage();
@@ -2609,11 +2628,11 @@ paths:
                 messageId,
                 { isRead: true }
               );
+
+              console.log(updatedMessage);
             }
 
             updateMessage();
-
-            console.log(updatedMessage);
         - lang: php
           label: PHP
           source: |
@@ -2816,6 +2835,8 @@ paths:
               const inboxId = 12345;
               const messageId = 67890;
               const result = await client.testing.messages.deleteMessage(inboxId, messageId);
+
+              console.log(result);
             }
 
             deleteMessage();
@@ -3017,7 +3038,10 @@ paths:
             });
 
             async function getMessages() {
+              const inboxId = 12345;
               const messages = await client.testing.messages.get(inboxId);
+
+              console.log(messages);
             }
 
             getMessages();
@@ -3191,11 +3215,11 @@ paths:
                 messageId,
                 'recipient@example.com'
               );
+
+              console.log(result);
             }
 
             forwardMessage();
-
-            console.log(result);
         - lang: php
           label: PHP
           source: |
@@ -3361,6 +3385,8 @@ paths:
 
             async function getSpamScore() {
               const spamReport = await client.testing.messages.getSpamScore(12345, 67890);
+
+              console.log(spamReport);
             }
 
             getSpamScore();
@@ -3528,6 +3554,8 @@ paths:
 
             async function getHtmlAnalysis() {
               const htmlAnalysis = await client.testing.messages.getHtmlAnalysis(12345, 67890);
+
+              console.log(htmlAnalysis);
             }
 
             getHtmlAnalysis();
@@ -3643,6 +3671,8 @@ paths:
 
             async function getTextMessage() {
               const textBody = await client.testing.messages.getTextMessage(12345, 67890);
+
+              console.log(textBody);
             }
 
             getTextMessage();
@@ -3803,6 +3833,8 @@ paths:
 
             async function getRawMessage() {
               const rawBody = await client.testing.messages.getRawMessage(12345, 67890);
+
+              console.log(rawBody);
             }
 
             getRawMessage();
@@ -3942,6 +3974,8 @@ paths:
 
             async function getHtmlSource() {
               const htmlSource = await client.testing.messages.getMessageHtmlSource(12345, 67890);
+
+              console.log(htmlSource);
             }
 
             getHtmlSource();
@@ -4073,12 +4107,15 @@ paths:
             const { MailtrapClient } = require("mailtrap");
             const client = new MailtrapClient({ token: "YOUR_API_KEY", accountId: "YOUR_ACCOUNT_ID" });
 
+            const ACCOUNT_ID = "YOUR_ACCOUNT_ID";
+
             async function getHtmlMessage() {
-              const htmlBody = await client.testing.messages.getHtmlMessage(12345, 67890);
+              const htmlBody = await client.testing.messages.getHtmlMessage(ACCOUNT_ID, 12345, 67890);
+
+              console.log(htmlBody);
             }
 
             getHtmlMessage();
-            console.log(htmlBody);
         - lang: php
           label: PHP
           source: |
@@ -4236,6 +4273,8 @@ paths:
 
             async function getMessageAsEml() {
               const emlContent = await client.testing.messages.getMessageAsEml(12345, 67890);
+
+              console.log(emlContent);
             }
 
             getMessageAsEml();
@@ -4349,6 +4388,8 @@ paths:
 
             async function getMailHeaders() {
               const mailHeaders = await client.testing.messages.getMailHeaders(12345, 67890);
+
+              console.log(mailHeaders);
             }
 
             getMailHeaders();
@@ -4497,6 +4538,8 @@ paths:
             
             async function getAttachments() {
               const attachments = await client.testing.attachments.getList(67890, 12345);
+
+              console.log(attachments);
             }
 
             getAttachments();
@@ -4635,6 +4678,8 @@ paths:
 
             async function getAttachment() {
               const attachment = await client.testing.attachments.get(12345, 67890, 222222);
+
+              console.log(attachment);
             }
 
             getAttachment();

@@ -214,6 +214,8 @@ paths:
             async function getDomains() {
               const response = await client.sendingDomains.getList();
               const domains = response.data;
+
+              console.log("Sending domains:", domains);
             }
 
             getDomains();
@@ -967,6 +969,8 @@ paths:
             
             async function getTemplates() {
               const templates = await client.templates.getList();
+
+              console.log("Templates:", templates);
             }
 
             getTemplates();
@@ -1202,7 +1206,9 @@ paths:
             const client = new MailtrapClient({ token: "YOUR_API_KEY", accountId: YOUR_ACCOUNT_ID });
             
             async function getTemplate() {
+              const templateId = 12345;
               const template = await client.templates.get(templateId);
+
               console.log(`Template: ${template.name} (UUID: ${template.uuid})`);
             }
 
@@ -1277,7 +1283,10 @@ paths:
             const client = new MailtrapClient({ token: "YOUR_API_KEY", accountId: YOUR_ACCOUNT_ID });
             
             async function updateTemplate() {
+              const templateId = 12345;
               const template = await client.templates.update(templateId, { name: "Updated Template", subject: "New Subject" });
+
+              console.log(`Template updated: ${template.name} (UUID: ${template.uuid})`);
             }
 
             updateTemplate();
@@ -1383,7 +1392,10 @@ paths:
             const client = new MailtrapClient({ token: "YOUR_API_KEY", accountId: YOUR_ACCOUNT_ID });
             
             async function deleteTemplate() {
+              const templateId = 12345;
               await client.templates.delete(templateId);
+
+              console.log("Template deleted successfully");
             }
 
             deleteTemplate();
