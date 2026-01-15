@@ -85,6 +85,7 @@ paths:
                 ]
               });
 
+              console.log("Batch sent:", response);
             }
 
             sendBatch();
