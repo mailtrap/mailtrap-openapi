@@ -374,7 +374,7 @@ paths:
             async function getProject() {
               const projectId = 12345;
               const project = await client.testing.projects.get(projectId);
-              
+
               console.log("Project:", project);
             }
 
@@ -639,6 +639,7 @@ paths:
             async function deleteProject() {
               const projectId = 12345;
               const result = await client.testing.projects.delete(projectId);
+
               console.log("Project deleted:", result);
             }
 
@@ -918,6 +919,7 @@ paths:
             async function getInboxAttributes() {
               const inboxId = 12345;
               const inboxAttributes = await client.testing.inboxes.getInboxAttributes(inboxId);
+
               console.log(inboxAttributes);
             }
 
@@ -1020,6 +1022,7 @@ paths:
             async function deleteInbox() {
               const inboxId = 12345;
               const result = await client.testing.inboxes.delete(inboxId);
+              
               console.log(result);
             }
 
@@ -1274,6 +1277,7 @@ paths:
             async function cleanInbox() {
               const inboxId = 12345;
               const result = await client.testing.inboxes.clean(inboxId);
+
               console.log(result);
             }
 
@@ -1381,6 +1385,7 @@ paths:
             async function markAsRead() {
               const inboxId = 12345;
               const result = await client.testing.inboxes.markAsRead(inboxId);
+
               console.log(result);
             }
 
@@ -1488,6 +1493,7 @@ paths:
             async function resetCredentials() {
               const inboxId = 12345;
               const result = await client.testing.inboxes.resetCredentials(inboxId);
+
               console.log(result);
             }
 
@@ -1595,6 +1601,7 @@ paths:
             async function enableEmailAddress() {
               const inboxId = 12345;
               const result = await client.testing.inboxes.enableEmailAddress(inboxId);
+
               console.log(result);
             }
 
@@ -1702,6 +1709,7 @@ paths:
             async function resetEmailAddress() {
               const inboxId = 12345;
               const result = await client.testing.inboxes.resetEmailAddress(inboxId);
+
               console.log(result);
             }
 
@@ -2396,6 +2404,7 @@ paths:
               const inboxId = 12345;
               const messageId = 67890;
               const message = await client.testing.messages.showEmailMessage(inboxId, messageId);
+
               console.log(message);
             }
 
@@ -2617,6 +2626,7 @@ paths:
                 messageId,
                 { isRead: true }
               );
+
               console.log(updatedMessage);
             }
 
@@ -2823,6 +2833,7 @@ paths:
               const inboxId = 12345;
               const messageId = 67890;
               const result = await client.testing.messages.deleteMessage(inboxId, messageId);
+
               console.log(result);
             }
 
@@ -3027,6 +3038,7 @@ paths:
             async function getMessages() {
               const inboxId = 12345;
               const messages = await client.testing.messages.get(inboxId);
+
               console.log(messages);
             }
 
@@ -3201,6 +3213,7 @@ paths:
                 messageId,
                 'recipient@example.com'
               );
+
               console.log(result);
             }
 
@@ -3370,6 +3383,7 @@ paths:
 
             async function getSpamScore() {
               const spamReport = await client.testing.messages.getSpamScore(12345, 67890);
+
               console.log(spamReport);
             }
 
@@ -3538,6 +3552,7 @@ paths:
 
             async function getHtmlAnalysis() {
               const htmlAnalysis = await client.testing.messages.getHtmlAnalysis(12345, 67890);
+
               console.log(htmlAnalysis);
             }
 
@@ -3654,6 +3669,7 @@ paths:
 
             async function getTextMessage() {
               const textBody = await client.testing.messages.getTextMessage(12345, 67890);
+
               console.log(textBody);
             }
 
@@ -3815,6 +3831,7 @@ paths:
 
             async function getRawMessage() {
               const rawBody = await client.testing.messages.getRawMessage(12345, 67890);
+
               console.log(rawBody);
             }
 
@@ -3955,6 +3972,7 @@ paths:
 
             async function getHtmlSource() {
               const htmlSource = await client.testing.messages.getMessageHtmlSource(12345, 67890);
+
               console.log(htmlSource);
             }
 
@@ -4089,6 +4107,7 @@ paths:
 
             async function getHtmlMessage() {
               const htmlBody = await client.testing.messages.getHtmlMessage(12345, 67890);
+
               console.log(htmlBody);
             }
 
@@ -4250,6 +4269,7 @@ paths:
 
             async function getMessageAsEml() {
               const emlContent = await client.testing.messages.getMessageAsEml(12345, 67890);
+
               console.log(emlContent);
             }
 
@@ -4364,6 +4384,7 @@ paths:
 
             async function getMailHeaders() {
               const mailHeaders = await client.testing.messages.getMailHeaders(12345, 67890);
+
               console.log(mailHeaders);
             }
 
@@ -4513,6 +4534,7 @@ paths:
             
             async function getAttachments() {
               const attachments = await client.testing.attachments.getList(67890, 12345);
+
               console.log(attachments);
             }
 
@@ -4652,6 +4674,7 @@ paths:
 
             async function getAttachment() {
               const attachment = await client.testing.attachments.get(12345, 67890, 222222);
+
               console.log(attachment);
             }
 
