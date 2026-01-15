@@ -786,8 +786,11 @@ paths:
           source: |
             import { MailtrapClient } from "mailtrap";
 
+            const TOKEN = "YOUR_API_TOKEN";
+            const ACCOUNT_ID = "YOUR_ACCOUNT_ID";
+
             const client = new MailtrapClient({
-              token: "YOUR_API_TOKEN",
+              token: TOKEN,
               accountId: ACCOUNT_ID
             });
 
@@ -797,6 +800,7 @@ paths:
                 projectId,
                 'My Test Inbox'
               );
+
               console.log(`Inbox created: ${inbox.name}`);
               console.log(`SMTP credentials - User: ${inbox.username}`);
             }
@@ -4103,8 +4107,10 @@ paths:
             const { MailtrapClient } = require("mailtrap");
             const client = new MailtrapClient({ token: "YOUR_API_KEY", accountId: "YOUR_ACCOUNT_ID" });
 
+            const ACCOUNT_ID = "YOUR_ACCOUNT_ID";
+
             async function getHtmlMessage() {
-              const htmlBody = await client.testing.messages.getHtmlMessage(12345, 67890);
+              const htmlBody = await client.testing.messages.getHtmlMessage(ACCOUNT_ID, 12345, 67890);
 
               console.log(htmlBody);
             }
