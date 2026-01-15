@@ -307,6 +307,8 @@ components:
 
     EmailText:
       type: object
+      required:
+        - text
       properties:
         text:
           type: string
@@ -315,6 +317,8 @@ components:
 
     EmailHtml:
       type: object
+      required:
+        - html
       properties:
         html:
           type: string
@@ -384,6 +388,8 @@ components:
 
     TemplateUuid:
       type: object
+      required:
+        - template_uuid
       properties:
         template_uuid:
           type: string
@@ -403,7 +409,6 @@ components:
 
     EmailWithText:
       title: Text Only
-      description: Send email with plain text content only
       allOf:
         - $ref: '#/components/schemas/EmailSender'
         - $ref: '#/components/schemas/EmailRecipients'
@@ -414,14 +419,9 @@ components:
         - $ref: '#/components/schemas/EmailSendingHeaders'
         - $ref: '#/components/schemas/EmailCustomVariables'
         - $ref: '#/components/schemas/EmailCategory'
-      required:
-        - from
-        - subject
-        - text
 
     EmailWithHtml:
       title: HTML Only
-      description: Send email with HTML content only
       allOf:
         - $ref: '#/components/schemas/EmailSender'
         - $ref: '#/components/schemas/EmailRecipients'
@@ -432,14 +432,9 @@ components:
         - $ref: '#/components/schemas/EmailSendingHeaders'
         - $ref: '#/components/schemas/EmailCustomVariables'
         - $ref: '#/components/schemas/EmailCategory'
-      required:
-        - from
-        - subject
-        - html
 
     EmailWithTextAndHtml:
       title: Text and HTML
-      description: Send email with both plain text and HTML content
       allOf:
         - $ref: '#/components/schemas/EmailSender'
         - $ref: '#/components/schemas/EmailRecipients'
@@ -451,15 +446,9 @@ components:
         - $ref: '#/components/schemas/EmailSendingHeaders'
         - $ref: '#/components/schemas/EmailCustomVariables'
         - $ref: '#/components/schemas/EmailCategory'
-      required:
-        - from
-        - subject
-        - text
-        - html
 
     EmailFromTemplate:
       title: From Template
-      description: Send email using a pre-defined template with variables
       allOf:
         - $ref: '#/components/schemas/EmailSender'
         - $ref: '#/components/schemas/EmailRecipients'
@@ -469,9 +458,6 @@ components:
         - $ref: '#/components/schemas/EmailAttachments'
         - $ref: '#/components/schemas/EmailSendingHeaders'
         - $ref: '#/components/schemas/EmailCustomVariables'
-      required:
-        - from
-        - template_uuid
 
     SentResponse:
       type: object
