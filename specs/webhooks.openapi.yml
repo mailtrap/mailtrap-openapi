@@ -73,7 +73,7 @@ info:
 
 tags:
   - name: json-handler
-    x-page-title: JSON Handler
+    x-page-title: Receive events (JSON format)
     x-page-icon: brackets-curly
     x-page-description: Handle webhook events in JSON format
     description: |
@@ -82,7 +82,7 @@ tags:
       Set **Payload format: JSON** in your webhook settings.
 
   - name: jsonlines-handler
-    x-page-title: JSON Lines Handler
+    x-page-title: Receive events (JSON Lines format)
     x-page-icon: list
     x-page-description: Handle webhook events in JSON Lines format
     description: |

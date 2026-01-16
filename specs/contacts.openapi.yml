@@ -2172,16 +2172,6 @@ components:
       scheme: bearer
       bearerFormat: JWT
   schemas:
-    Contact:
-      $ref: '#/components/schemas/Contact_2'
-    ContactUpdateRequest:
-      $ref: '#/components/schemas/ContactUpdateRequest_2'
-    ContactUpdateResponse:
-      $ref: '#/components/schemas/ContactUpdateResponse_2'
-    ContactCreateRequest:
-      $ref: '#/components/schemas/ContactCreateRequest_2'
-    ContactList:
-      $ref: '#/components/schemas/ContactList_2'
     Contact_2:
       type: object
       properties:

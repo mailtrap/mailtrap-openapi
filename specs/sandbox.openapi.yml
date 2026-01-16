@@ -4746,8 +4746,6 @@ paths:
       - $ref: '#/components/parameters/attachment_id'
 components:
   schemas:
-    Inbox:
-      $ref: '#/components/schemas/TestingInbox'
     InboxMessageWithoutBlacklistsReportInfo:
       title: Message without blacklists report
       type: object
@@ -4930,22 +4928,18 @@ components:
           can_destroy: true
           can_leave: false
     EmailWithText:
-      title: EmailWithText
+      title: Text Only
       allOf:
-        - $ref: '#/components/schemas/EmailSender'
+        - $ref: '#/components/schemas/EmailSenderRequired'
         - $ref: '#/components/schemas/EmailRecipients'
         - $ref: '#/components/schemas/EmailReplyTo'
         - $ref: '#/components/schemas/EmailAttachments'
         - $ref: '#/components/schemas/EmailSendingHeaders'
         - $ref: '#/components/schemas/EmailCustomVariables'
-        - $ref: '#/components/schemas/EmailSubject'
-        - $ref: '#/components/schemas/EmailText'
+        - $ref: '#/components/schemas/EmailSubjectRequired'
+        - $ref: '#/components/schemas/EmailTextRequired'
         - $ref: '#/components/schemas/EmailHtml'
         - $ref: '#/components/schemas/EmailCategory'
-      required:
-        - from
-        - subject
-        - text
       example:
         to:
           - email: john_doe@example.com
@@ -4976,22 +4970,18 @@ components:
         text: Congratulations on your order no. 1234
         category: API Test
     EmailWithHtml:
-      title: EmailWithHtml
+      title: HTML Only
       allOf:
-        - $ref: '#/components/schemas/EmailSender'
+        - $ref: '#/components/schemas/EmailSenderRequired'
         - $ref: '#/components/schemas/EmailRecipients'
         - $ref: '#/components/schemas/EmailReplyTo'
         - $ref: '#/components/schemas/EmailAttachments'
         - $ref: '#/components/schemas/EmailSendingHeaders'
         - $ref: '#/components/schemas/EmailCustomVariables'
-        - $ref: '#/components/schemas/EmailSubject'
+        - $ref: '#/components/schemas/EmailSubjectRequired'
         - $ref: '#/components/schemas/EmailText'
-        - $ref: '#/components/schemas/EmailHtml'
+        - $ref: '#/components/schemas/EmailHtmlRequired'
         - $ref: '#/components/schemas/EmailCategory'
-      required:
-        - from
-        - subject
-        - html
       example:
         to:
           - email: john_doe@example.com
@@ -5022,23 +5012,18 @@ components:
         html: <p>Congratulations on your order no. <strong>1234</strong>.</p>
         category: API Test
     EmailWithTextAndHtml:
-      title: EmailWithTextAndHtml
+      title: Text and HTML
       allOf:
-        - $ref: '#/components/schemas/EmailSender'
+        - $ref: '#/components/schemas/EmailSenderRequired'
         - $ref: '#/components/schemas/EmailRecipients'
         - $ref: '#/components/schemas/EmailReplyTo'
         - $ref: '#/components/schemas/EmailAttachments'
         - $ref: '#/components/schemas/EmailSendingHeaders'
         - $ref: '#/components/schemas/EmailCustomVariables'
-        - $ref: '#/components/schemas/EmailSubject'
-        - $ref: '#/components/schemas/EmailText'
-        - $ref: '#/components/schemas/EmailHtml'
+        - $ref: '#/components/schemas/EmailSubjectRequired'
+        - $ref: '#/components/schemas/EmailTextRequired'
+        - $ref: '#/components/schemas/EmailHtmlRequired'
         - $ref: '#/components/schemas/EmailCategory'
-      required:
-        - from
-        - subject
-        - text
-        - html
       example:
         to:
           - email: john_doe@example.com
@@ -5070,7 +5055,16 @@ components:
         text: Congratulations on your order no. 1234
         category: API Test
     EmailFromTemplate:
-      title: EmailFromTemplate
+      title: From Template
+      allOf:
+        - $ref: '#/components/schemas/EmailSenderRequired'
+        - $ref: '#/components/schemas/EmailRecipients'
+        - $ref: '#/components/schemas/EmailReplyTo'
+        - $ref: '#/components/schemas/EmailAttachments'
+        - $ref: '#/components/schemas/EmailSendingHeaders'
+        - $ref: '#/components/schemas/EmailCustomVariables'
+        - $ref: '#/components/schemas/TemplateUuidRequired'
+        - $ref: '#/components/schemas/TemplateVariables'
       example:
         to:
           - email: john_doe@example.com
@@ -5101,18 +5095,6 @@ components:
         template_variables:
           user.name: Jon Snow
           user.email: jon.snow@got.com
-      allOf:
-        - $ref: '#/components/schemas/EmailSender'
-        - $ref: '#/components/schemas/EmailRecipients'
-        - $ref: '#/components/schemas/EmailReplyTo'
-        - $ref: '#/components/schemas/EmailAttachments'
-        - $ref: '#/components/schemas/EmailSendingHeaders'
-        - $ref: '#/components/schemas/EmailCustomVariables'
-        - $ref: '#/components/schemas/TemplateUuid'
-        - $ref: '#/components/schemas/TemplateVariables'
-      required:
-        - from
-        - template_uuid
     BatchEmail:
       title: BatchEmail
       type: object
@@ -5229,7 +5211,6 @@ components:
           items:
             type: string
     EmailAttachments:
-      title: EmailAttachments
       type: object
       properties:
         attachments:
@@ -5263,14 +5244,12 @@ components:
               - content
               - filename
     EmailCategory:
-      title: EmailCategory
       type: object
       properties:
         category:
           type: string
           maxLength: 255
     EmailCustomVariables:
-      title: EmailCustomVariables
       type: object
       properties:
         custom_variables:
@@ -5279,15 +5258,23 @@ components:
           additionalProperties:
             type: string
     EmailHtml:
-      title: EmailHtml
       type: object
       properties:
         html:
           type: string
           description: HTML version of the body of the email. Can be used along with `text` to create a fallback for non-html clients. Required in the absence of `text`.
           minLength: 1
+
+    EmailHtmlRequired:
+      type: object
+      required:
+        - html
+      properties:
+        html:
+          type: string
+          description: HTML version of the body of the email. Can be used along with `text` to create a fallback for non-html clients. Required in the absence of `text`.
+          minLength: 1
     EmailRecipients:
-      title: EmailRecipients
       type: object
       properties:
         to:
@@ -5307,19 +5294,23 @@ components:
           items:
             $ref: '#/components/schemas/Address'
     EmailReplyTo:
-      title: EmailReplyTo
       type: object
       properties:
         reply_to:
           $ref: '#/components/schemas/Address'
     EmailSender:
-      title: EmailSender
       type: object
       properties:
         from:
           $ref: '#/components/schemas/Address'
+    EmailSenderRequired:
+      type: object
+      required:
+        - from
+      properties:
+        from:
+          $ref: '#/components/schemas/Address'
     EmailSendingHeaders:
-      title: EmailSendingHeaders
       type: object
       properties:
         headers:
@@ -5328,16 +5319,35 @@ components:
           additionalProperties:
             type: string
     EmailSubject:
-      title: EmailSubject
       type: object
       properties:
         subject:
           type: string
           description: The global or 'message level' subject of your email. This may be overridden by subject lines set in personalizations.
           minLength: 1
-    EmailText:
-      title: EmailText
+
+    EmailSubjectRequired:
       type: object
+      required:
+        - subject
+      properties:
+        subject:
+          type: string
+          description: The global or 'message level' subject of your email. This may be overridden by subject lines set in personalizations.
+          minLength: 1
+
+    EmailText:
+      type: object
+      properties:
+        text:
+          type: string
+          description: Text version of the body of the email. Can be used along with `html` to create a fallback for non-html clients. Required in the absence of `html`.
+          minLength: 1
+
+    EmailTextRequired:
+      type: object
+      required:
+        - text
       properties:
         text:
           type: string
@@ -5384,6 +5394,20 @@ components:
             example: 0c7fd939-02cf-11ed-88c2-0a58a9feac02
     TemplateUuid:
       type: object
+      properties:
+        template_uuid:
+          type: string
+          minLength: 1
+          format: uuid
+          description: |-
+            UUID of email template.
+            Subject, text and html will be generated from template using optional template_variables.
+            If template_uuid is provided then subject, text and html params are forbidden.
+
+    TemplateUuidRequired:
+      type: object
+      required:
+        - template_uuid
       properties:
         template_uuid:
           type: string
