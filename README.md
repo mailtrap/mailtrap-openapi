@@ -12,7 +12,6 @@ The specifications are located in the `specs/` directory:
 |------|------|----------|
 | Email Sending (Transactional) | `specs/email-sending-transactional.openapi.yml` | `https://send.api.mailtrap.io` |
 | Email Sending (Bulk) | `specs/email-sending-bulk.openapi.yml` | `https://bulk.api.mailtrap.io` |
-| Email Batch | `specs/email-batch.openapi.yml` | `https://send.api.mailtrap.io` |
 | Contacts | `specs/contacts.openapi.yml` | `https://mailtrap.io` |
 | Sandbox | `specs/sandbox.openapi.yml` | `https://mailtrap.io` |
 | General | `specs/general.openapi.yml` | `https://mailtrap.io` |
