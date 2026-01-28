@@ -40,7 +40,6 @@ mailtrap-openapi/
 | `contacts.openapi.yml` | Contact management API | `https://mailtrap.io` |
 | `sandbox.openapi.yml` | Email Sandbox/testing API | `https://mailtrap.io` |
 | `general.openapi.yml` | Account, users, permissions, billing | `https://mailtrap.io` |
-| `webhooks.openapi.yml` | Webhook event handlers | Your endpoint (incoming) |
 | `email-api.openapi.yml` | Combined email API reference | Varies by operation |
 
 ### Base URL Rules
@@ -86,7 +85,6 @@ A mapping file `helpscout_to_gitbook_redirects.csv` is available locally (not co
 | Sending Domain Setup | `https://docs.mailtrap.io/email-api-smtp/setup/sending-domain` |
 | Bulk Stream | `https://docs.mailtrap.io/email-api-smtp/setup/bulk-stream` |
 | Email Templates | `https://docs.mailtrap.io/email-marketing/campaigns/email-templates` |
-| Webhooks | `https://docs.mailtrap.io/email-api-smtp/advanced/webhooks` |
 | Email Logs | `https://docs.mailtrap.io/email-api-smtp/analytics/logs` |
 | Email Sandbox | `https://docs.mailtrap.io/getting-started/email-sandbox` |
 | API Tokens | `https://docs.mailtrap.io/email-sandbox/setup/api-tokens` |
