@@ -51,6 +51,18 @@ paths:
       tags:
         - send-email
       x-codeSamples:
+        - lang: shell
+          label: 'cURL'
+          source: |
+            curl -X POST https://send.api.mailtrap.io/api/send \
+              -H 'Authorization: Bearer YOUR_API_KEY' \
+              -H 'Content-Type: application/json' \
+              -d '{
+                "from": {"email": "sender@example.com"},
+                "to": [{"email": "recipient@example.com"}],
+                "subject": "Hello from Mailtrap",
+                "text": "Welcome to Mailtrap!"
+              }'
         - lang: javascript
           label: Node.js
           source: |
@@ -169,18 +181,6 @@ paths:
                 .build();
 
             client.sendingApi().emails().send(mail);
-        - lang: shell
-          label: 'cURL'
-          source: |
-            curl -X POST https://send.api.mailtrap.io/api/send \
-              -H 'Authorization: Bearer YOUR_API_KEY' \
-              -H 'Content-Type: application/json' \
-              -d '{
-                "from": {"email": "sender@example.com"},
-                "to": [{"email": "recipient@example.com"}],
-                "subject": "Hello from Mailtrap",
-                "text": "Welcome to Mailtrap!"
-              }'
       requestBody:
         required: true
         content:
@@ -225,6 +225,23 @@ paths:
       tags:
         - send-email
       x-codeSamples:
+        - lang: shell
+          label: 'cURL'
+          source: |
+            curl -X POST https://send.api.mailtrap.io/api/batch \
+              -H 'Authorization: Bearer YOUR_API_KEY' \
+              -H 'Content-Type: application/json' \
+              -d '{
+                "base": {
+                  "from": {"email": "sender@example.com"},
+                  "subject": "Monthly Newsletter"
+                },
+                "requests": [
+                  {"to": [{"email": "user1@example.com"}]},
+                  {"to": [{"email": "user2@example.com"}]},
+                  {"to": [{"email": "user3@example.com"}]}
+                ]
+              }'
         - lang: javascript
           label: Node.js
           source: |
@@ -398,23 +415,6 @@ paths:
                 .build();
 
             client.sendingApi().emails().batchSend(batchMail);
-        - lang: shell
-          label: 'cURL'
-          source: |
-            curl -X POST https://send.api.mailtrap.io/api/batch \
-              -H 'Authorization: Bearer YOUR_API_KEY' \
-              -H 'Content-Type: application/json' \
-              -d '{
-                "base": {
-                  "from": {"email": "sender@example.com"},
-                  "subject": "Monthly Newsletter"
-                },
-                "requests": [
-                  {"to": [{"email": "user1@example.com"}]},
-                  {"to": [{"email": "user2@example.com"}]},
-                  {"to": [{"email": "user3@example.com"}]}
-                ]
-              }'
       requestBody:
         required: true
         content:
