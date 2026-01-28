@@ -236,6 +236,235 @@ paths:
           $ref: '#/components/responses/Forbidden'
         '500':
           $ref: '#/components/responses/InternalError'
+  /api/batch:
+    post:
+      summary: Batch send emails
+      description: |
+        Send up to 500 marketing emails in a single API call. Each email can have unique recipients and content while sharing base properties.
+
+        **Limits:**
+        - Maximum 500 messages per call
+        - Maximum 50 MB total payload size (including attachments)
+
+        **Note:** The endpoint returns HTTP 200 even if individual messages fail. Check the `responses` array for individual message status.
+      operationId: batchSendEmail
+      tags:
+        - send-email
+      x-codeSamples:
+        - lang: javascript
+          label: Node.js
+          source: |
+            import { MailtrapClient } from "mailtrap";
+
+            const client = new MailtrapClient({
+              token: process.env.MAILTRAP_API_KEY,
+              bulk: true
+            });
+
+            async function sendBatch() {
+              const response = await client.batchSend({
+                base: {
+                  from: { email: "sender@example.com" },
+                  subject: "Important Update",
+                  text: "Hello {{name}}, we have news for you."
+                },
+                requests: [
+                  {
+                    to: [{ email: "user1@example.com" }],
+                    custom_variables: { name: "Alice" }
+                  },
+                  {
+                    to: [{ email: "user2@example.com" }],
+                    custom_variables: { name: "Bob" }
+                  }
+                ]
+              });
+
+              console.log("Batch sent:", response);
+            }
+
+            sendBatch();
+        - lang: php
+          label: PHP
+          source: |
+            <?php
+            use Mailtrap\Helper\ResponseHelper;
+            use Mailtrap\MailtrapClient;
+            use Mailtrap\Mime\MailtrapEmail;
+            use Symfony\Component\Mime\Address;
+
+            $mailtrap = MailtrapClient::initSendingEmails(
+                apiKey: $_ENV['MAILTRAP_API_KEY'],
+                isBulk: true
+            );
+
+            $baseEmail = (new MailtrapEmail())
+                ->from(new Address('sender@example.com', 'Sender'))
+                ->subject('Monthly Newsletter')
+                ->text('Check out our latest updates!');
+
+            $recipients = [
+                (new MailtrapEmail())->to(new Address('user1@example.com', 'User 1')),
+                (new MailtrapEmail())->to(new Address('user2@example.com', 'User 2'))
+            ];
+
+            $response = $mailtrap->batchSend($recipients, $baseEmail);
+
+            var_dump(ResponseHelper::toArray($response));
+        - lang: python
+          label: Python
+          source: |
+            import mailtrap as mt
+
+            client = mt.MailtrapClient(
+                token="YOUR_API_KEY",
+                bulk=True
+            )
+
+            batch_mail = mt.BatchSendEmailParams(
+                base=mt.BatchMail(
+                    sender=mt.Address(email="sender@example.com"),
+                    subject="Monthly Newsletter",
+                    text="Check out our latest updates!"
+                ),
+                requests=[
+                    mt.BatchEmailRequest(
+                        to=[mt.Address(email="user1@example.com")]
+                    ),
+                    mt.BatchEmailRequest(
+                        to=[mt.Address(email="user2@example.com")]
+                    )
+                ]
+            )
+
+            response = client.batch_send(batch_mail)
+        - lang: ruby
+          label: Ruby
+          source: |
+            require 'mailtrap'
+
+            client = Mailtrap::Client.new(
+              api_key: 'YOUR_API_KEY',
+              bulk: true
+            )
+
+            batch_base = Mailtrap::Mail.batch_base_from_content(
+              from: { email: 'sender@example.com' },
+              subject: 'Monthly Newsletter',
+              text: 'Check out our latest updates!'
+            )
+
+            client.send_batch(
+              batch_base,
+              [
+                Mailtrap::Mail.from_content(
+                  to: [{ email: 'user1@example.com' }]
+                ),
+                Mailtrap::Mail.from_content(
+                  to: [{ email: 'user2@example.com' }]
+                )
+              ]
+            )
+        - lang: csharp
+          label: .NET
+          source: |
+            using Mailtrap;
+            using Mailtrap.Configuration;
+            using Mailtrap.Emails.Requests;
+
+            var config = new MailtrapClientOptions
+            {
+                ApiToken = "YOUR_API_KEY",
+                UseBulkApi = true
+            };
+
+            using var mailtrapFactory = new MailtrapClientFactory(config);
+            var client = mailtrapFactory.CreateClient();
+
+            var batchRequest = BatchEmailRequest.Create()
+                .Base(b => b
+                    .From("sender@example.com")
+                    .Subject("Monthly Newsletter")
+                    .Text("Check out our latest updates!"))
+                .Requests(r => r
+                    .To("user1@example.com"))
+                .Requests(r => r
+                    .To("user2@example.com"));
+            await client.BatchEmail().Send(batchRequest);
+        - lang: java
+          label: Java
+          source: |
+            import io.mailtrap.config.MailtrapConfig;
+            import io.mailtrap.factory.MailtrapClientFactory;
+            import io.mailtrap.model.request.emails.Address;
+            import io.mailtrap.model.request.emails.BatchEmailBase;
+            import io.mailtrap.model.request.emails.MailtrapBatchMail;
+            import io.mailtrap.model.request.emails.MailtrapMail;
+            import java.util.List;
+
+            var config = new MailtrapConfig.Builder()
+                .token("YOUR_API_KEY")
+                .build();
+
+            var client = MailtrapClientFactory.createMailtrapClient(config);
+
+            var base = BatchEmailBase.builder()
+                .from(new Address("sender@example.com"))
+                .subject("Monthly Newsletter")
+                .text("Check out our latest updates!")
+                .build();
+
+            var requests = List.of(
+                MailtrapMail.builder()
+                    .to(List.of(new Address("user1@example.com")))
+                    .build(),
+                MailtrapMail.builder()
+                    .to(List.of(new Address("user2@example.com")))
+                    .build()
+            );
+
+            var batchMail = MailtrapBatchMail.builder()
+                .base(base)
+                .requests(requests)
+                .build();
+
+            client.bulkSendingApi().emails().batchSend(batchMail);
+        - lang: shell
+          label: 'cURL'
+          source: |
+            curl -X POST https://bulk.api.mailtrap.io/api/batch \
+              -H 'Authorization: Bearer YOUR_API_KEY' \
+              -H 'Content-Type: application/json' \
+              -d '{
+                "base": {
+                  "from": {"email": "sender@example.com"},
+                  "subject": "Monthly Newsletter"
+                },
+                "requests": [
+                  {"to": [{"email": "user1@example.com"}]},
+                  {"to": [{"email": "user2@example.com"}]},
+                  {"to": [{"email": "user3@example.com"}]}
+                ]
+              }'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BatchEmail'
+      responses:
+        '200':
+          description: Batch processed. Check individual responses for delivery status.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BatchSentResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/InternalError'
 
 components:
   securitySchemes:
@@ -263,6 +492,12 @@ components:
           example: John Doe
 
     EmailSender:
+      type: object
+      properties:
+        from:
+          $ref: '#/components/schemas/Address'
+
+    EmailSenderRequired:
       type: object
       required:
         - from
@@ -297,6 +532,14 @@ components:
 
     EmailSubject:
       type: object
+      properties:
+        subject:
+          type: string
+          minLength: 1
+          example: Monthly Newsletter
+
+    EmailSubjectRequired:
+      type: object
       required:
         - subject
       properties:
@@ -307,6 +550,14 @@ components:
 
     EmailText:
       type: object
+      properties:
+        text:
+          type: string
+          minLength: 1
+          example: Check out our latest updates!
+
+    EmailTextRequired:
+      type: object
       required:
         - text
       properties:
@@ -316,6 +567,14 @@ components:
           example: Check out our latest updates!
 
     EmailHtml:
+      type: object
+      properties:
+        html:
+          type: string
+          minLength: 1
+          example: <h1>Our Latest Updates</h1>
+
+    EmailHtmlRequired:
       type: object
       required:
         - html
@@ -388,6 +647,15 @@ components:
 
     TemplateUuid:
       type: object
+      properties:
+        template_uuid:
+          type: string
+          format: uuid
+          description: Email template UUID
+          example: b81aabcd-1a1e-41cf-91b6-eca0254b3d96
+
+    TemplateUuidRequired:
+      type: object
       required:
         - template_uuid
       properties:
@@ -410,11 +678,11 @@ components:
     EmailWithText:
       title: Text Only
       allOf:
-        - $ref: '#/components/schemas/EmailSender'
+        - $ref: '#/components/schemas/EmailSenderRequired'
         - $ref: '#/components/schemas/EmailRecipients'
         - $ref: '#/components/schemas/EmailReplyTo'
-        - $ref: '#/components/schemas/EmailSubject'
-        - $ref: '#/components/schemas/EmailText'
+        - $ref: '#/components/schemas/EmailSubjectRequired'
+        - $ref: '#/components/schemas/EmailTextRequired'
         - $ref: '#/components/schemas/EmailAttachments'
         - $ref: '#/components/schemas/EmailSendingHeaders'
         - $ref: '#/components/schemas/EmailCustomVariables'
@@ -423,11 +691,11 @@ components:
     EmailWithHtml:
       title: HTML Only
       allOf:
-        - $ref: '#/components/schemas/EmailSender'
+        - $ref: '#/components/schemas/EmailSenderRequired'
         - $ref: '#/components/schemas/EmailRecipients'
         - $ref: '#/components/schemas/EmailReplyTo'
-        - $ref: '#/components/schemas/EmailSubject'
-        - $ref: '#/components/schemas/EmailHtml'
+        - $ref: '#/components/schemas/EmailSubjectRequired'
+        - $ref: '#/components/schemas/EmailHtmlRequired'
         - $ref: '#/components/schemas/EmailAttachments'
         - $ref: '#/components/schemas/EmailSendingHeaders'
         - $ref: '#/components/schemas/EmailCustomVariables'
@@ -436,12 +704,12 @@ components:
     EmailWithTextAndHtml:
       title: Text and HTML
       allOf:
-        - $ref: '#/components/schemas/EmailSender'
+        - $ref: '#/components/schemas/EmailSenderRequired'
         - $ref: '#/components/schemas/EmailRecipients'
         - $ref: '#/components/schemas/EmailReplyTo'
-        - $ref: '#/components/schemas/EmailSubject'
-        - $ref: '#/components/schemas/EmailText'
-        - $ref: '#/components/schemas/EmailHtml'
+        - $ref: '#/components/schemas/EmailSubjectRequired'
+        - $ref: '#/components/schemas/EmailTextRequired'
+        - $ref: '#/components/schemas/EmailHtmlRequired'
         - $ref: '#/components/schemas/EmailAttachments'
         - $ref: '#/components/schemas/EmailSendingHeaders'
         - $ref: '#/components/schemas/EmailCustomVariables'
@@ -450,10 +718,10 @@ components:
     EmailFromTemplate:
       title: From Template
       allOf:
-        - $ref: '#/components/schemas/EmailSender'
+        - $ref: '#/components/schemas/EmailSenderRequired'
         - $ref: '#/components/schemas/EmailRecipients'
         - $ref: '#/components/schemas/EmailReplyTo'
-        - $ref: '#/components/schemas/TemplateUuid'
+        - $ref: '#/components/schemas/TemplateUuidRequired'
         - $ref: '#/components/schemas/TemplateVariables'
         - $ref: '#/components/schemas/EmailAttachments'
         - $ref: '#/components/schemas/EmailSendingHeaders'
@@ -483,6 +751,77 @@ components:
           items:
             type: string
             example: Invalid sender email address
+
+    BatchEmail:
+      title: Batch Email Request
+      description: Send multiple emails in a single API call (up to 500)
+      type: object
+      required:
+        - requests
+      properties:
+        base:
+          description: Base properties shared by all emails
+          allOf:
+            - $ref: '#/components/schemas/EmailSender'
+            - $ref: '#/components/schemas/EmailReplyTo'
+            - $ref: '#/components/schemas/EmailSubject'
+            - $ref: '#/components/schemas/EmailText'
+            - $ref: '#/components/schemas/EmailHtml'
+            - $ref: '#/components/schemas/EmailAttachments'
+            - $ref: '#/components/schemas/EmailSendingHeaders'
+            - $ref: '#/components/schemas/EmailCategory'
+            - $ref: '#/components/schemas/EmailCustomVariables'
+            - $ref: '#/components/schemas/TemplateUuid'
+            - $ref: '#/components/schemas/TemplateVariables'
+        requests:
+          type: array
+          description: Individual email configurations (max 500)
+          maxItems: 500
+          items:
+            allOf:
+              - $ref: '#/components/schemas/EmailSender'
+              - $ref: '#/components/schemas/EmailRecipients'
+              - $ref: '#/components/schemas/EmailReplyTo'
+              - $ref: '#/components/schemas/EmailSubject'
+              - $ref: '#/components/schemas/EmailText'
+              - $ref: '#/components/schemas/EmailHtml'
+              - $ref: '#/components/schemas/EmailAttachments'
+              - $ref: '#/components/schemas/EmailSendingHeaders'
+              - $ref: '#/components/schemas/EmailCategory'
+              - $ref: '#/components/schemas/EmailCustomVariables'
+              - $ref: '#/components/schemas/TemplateUuid'
+              - $ref: '#/components/schemas/TemplateVariables'
+      
+    BatchSentResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          description: Overall request success
+          example: true
+        responses:
+          type: array
+          description: Individual message results
+          items:
+            type: object
+            properties:
+              success:
+                type: boolean
+                example: true
+              message_ids:
+                type: array
+                items:
+                  type: string
+                  example: 0c7fd939-02cf-11ed-88c2-0a58a9feac02
+              errors:
+                type: array
+                items:
+                  type: string
+        errors:
+          type: array
+          description: General errors
+          items:
+            type: string
 
   responses:
     BadRequest:
