@@ -62,6 +62,17 @@ paths:
       tags:
         - domains
       x-codeSamples:
+        - lang: shell
+          label: 'cURL'
+          source: |
+            curl -X POST https://mailtrap.io/api/accounts/{account_id}/sending_domains \
+              -H 'Authorization: Bearer YOUR_API_KEY' \
+              -H 'Content-Type: application/json' \
+              -d '{
+                "sending_domain": {
+                  "domain_name": "example.com"
+                }
+              }'
         - lang: javascript
           label: Node.js
           source: |
@@ -149,17 +160,6 @@ paths:
                 .create(YOUR_ACCOUNT_ID, request);
 
             System.out.println(domain);
-        - lang: shell
-          label: 'cURL'
-          source: |
-            curl -X POST https://mailtrap.io/api/accounts/{account_id}/sending_domains \
-              -H 'Authorization: Bearer YOUR_API_KEY' \
-              -H 'Content-Type: application/json' \
-              -d '{
-                "sending_domain": {
-                  "domain_name": "example.com"
-                }
-              }'
       parameters:
         - $ref: '#/components/parameters/account_id'
       requestBody:
@@ -201,6 +201,11 @@ paths:
       tags:
         - domains
       x-codeSamples:
+        - lang: shell
+          label: 'cURL'
+          source: |
+            curl -X GET https://mailtrap.io/api/accounts/{account_id}/sending_domains \
+              -H 'Authorization: Bearer YOUR_API_KEY'
         - lang: javascript
           label: Node.js
           source: |
@@ -284,11 +289,6 @@ paths:
             domains.forEach(domain ->
                 System.out.println("Domain: " + domain.getDomainName())
             );
-        - lang: shell
-          label: 'cURL'
-          source: |
-            curl -X GET https://mailtrap.io/api/accounts/{account_id}/sending_domains \
-              -H 'Authorization: Bearer YOUR_API_KEY'
       parameters:
         - $ref: '#/components/parameters/account_id'
       responses:
@@ -307,6 +307,11 @@ paths:
       tags:
         - domains
       x-codeSamples:
+        - lang: shell
+          label: 'cURL'
+          source: |
+            curl -X GET https://mailtrap.io/api/accounts/{account_id}/sending_domains/{sending_domain_id} \
+              -H 'Authorization: Bearer YOUR_API_KEY'
         - lang: javascript
           label: Node.js
           source: |
@@ -388,11 +393,6 @@ paths:
                 .getSendingDomain(YOUR_ACCOUNT_ID, domainId);
 
             System.out.println("Domain: " + domain.getDomainName());
-        - lang: shell
-          label: 'cURL'
-          source: |
-            curl -X GET https://mailtrap.io/api/accounts/{account_id}/sending_domains/{sending_domain_id} \
-              -H 'Authorization: Bearer YOUR_API_KEY'
       parameters:
         - $ref: '#/components/parameters/account_id'
         - $ref: '#/components/parameters/sending_domain_id'
@@ -413,6 +413,11 @@ paths:
       tags:
         - domains
       x-codeSamples:
+        - lang: shell
+          label: 'cURL'
+          source: |
+            curl -X DELETE https://mailtrap.io/api/accounts/{account_id}/sending_domains/{sending_domain_id} \
+              -H 'Authorization: Bearer YOUR_API_KEY'
         - lang: javascript
           label: Node.js
           source: |
@@ -492,11 +497,6 @@ paths:
                 .deleteSendingDomain(YOUR_ACCOUNT_ID, domainId);
 
             System.out.println("Domain deleted successfully");
-        - lang: shell
-          label: 'cURL'
-          source: |
-            curl -X DELETE https://mailtrap.io/api/accounts/{account_id}/sending_domains/{sending_domain_id} \
-              -H 'Authorization: Bearer YOUR_API_KEY'
       parameters:
         - $ref: '#/components/parameters/account_id'
         - $ref: '#/components/parameters/sending_domain_id'
@@ -518,6 +518,15 @@ paths:
       tags:
         - domains
       x-codeSamples:
+        - lang: shell
+          label: 'cURL'
+          source: |
+            curl -X POST https://mailtrap.io/api/accounts/{account_id}/sending_domains/{sending_domain_id}/send_setup_instructions \
+              -H 'Authorization: Bearer YOUR_API_KEY' \
+              -H 'Content-Type: application/json' \
+              -d '{
+                "email": "devops@example.com"
+              }'
         - lang: javascript
           label: Node.js
           source: |
@@ -620,15 +629,6 @@ paths:
                 );
 
             System.out.println("Setup instructions sent");
-        - lang: shell
-          label: 'cURL'
-          source: |
-            curl -X POST https://mailtrap.io/api/accounts/{account_id}/sending_domains/{sending_domain_id}/send_setup_instructions \
-              -H 'Authorization: Bearer YOUR_API_KEY' \
-              -H 'Content-Type: application/json' \
-              -d '{
-                "email": "devops@example.com"
-              }'
       parameters:
         - $ref: '#/components/parameters/account_id'
         - $ref: '#/components/parameters/sending_domain_id'
@@ -670,6 +670,16 @@ paths:
       tags:
         - suppressions
       x-codeSamples:
+        - lang: shell
+          label: 'cURL'
+          source: |
+            # Get all suppressions
+            curl -X GET https://mailtrap.io/api/accounts/{account_id}/suppressions \
+              -H 'Authorization: Bearer YOUR_API_KEY'
+
+            # Search for specific email
+            curl -X GET 'https://mailtrap.io/api/accounts/{account_id}/suppressions?email=suppressed@example.com' \
+              -H 'Authorization: Bearer YOUR_API_KEY'
         - lang: javascript
           label: Node.js
           source: |
@@ -805,16 +815,6 @@ paths:
             filtered.forEach(filteredSuppression ->
                 System.out.println("Email: " + filteredSuppression.getEmail())
             );
-        - lang: shell
-          label: 'cURL'
-          source: |
-            # Get all suppressions
-            curl -X GET https://mailtrap.io/api/accounts/{account_id}/suppressions \
-              -H 'Authorization: Bearer YOUR_API_KEY'
-
-            # Search for specific email
-            curl -X GET 'https://mailtrap.io/api/accounts/{account_id}/suppressions?email=suppressed@example.com' \
-              -H 'Authorization: Bearer YOUR_API_KEY'
       parameters:
         - $ref: '#/components/parameters/account_id'
         - name: email
@@ -858,6 +858,11 @@ paths:
       tags:
         - suppressions
       x-codeSamples:
+        - lang: shell
+          label: 'cURL'
+          source: |
+            curl -X DELETE https://mailtrap.io/api/accounts/{account_id}/suppressions/{suppression_id} \
+              -H 'Authorization: Bearer YOUR_API_KEY'
         - lang: javascript
           label: Node.js
           source: |
@@ -953,11 +958,6 @@ paths:
                 .deleteSuppression(YOUR_ACCOUNT_ID, suppressionId);
 
             System.out.println("Suppression removed: " + result.getEmail());
-        - lang: shell
-          label: 'cURL'
-          source: |
-            curl -X DELETE https://mailtrap.io/api/accounts/{account_id}/suppressions/{suppression_id} \
-              -H 'Authorization: Bearer YOUR_API_KEY'
       parameters:
         - $ref: '#/components/parameters/account_id'
         - $ref: '#/components/parameters/suppression_id'
@@ -979,6 +979,11 @@ paths:
       tags:
         - templates
       x-codeSamples:
+        - lang: shell
+          label: 'cURL'
+          source: |
+            curl -X GET "https://mailtrap.io/api/accounts/{account_id}/email_templates" \
+              -H "Api-Token: YOUR_API_KEY"
         - lang: javascript
           label: Node.js
           source: |
@@ -1045,11 +1050,6 @@ paths:
             var client = MailtrapClientFactory.createMailtrapClient(config);
             
             var response = client.emailTemplatesApi().emailTemplates().getAllTemplates(accountId);
-        - lang: shell
-          label: cURL
-          source: |
-            curl -X GET "https://mailtrap.io/api/accounts/{account_id}/email_templates" \
-              -H "Api-Token: YOUR_API_KEY"
       responses:
         '200':
           description: OK.
@@ -1070,6 +1070,21 @@ paths:
       tags:
         - templates
       x-codeSamples:
+        - lang: shell
+          label: 'cURL'
+          source: |
+            curl -X POST "https://mailtrap.io/api/accounts/{account_id}/email_templates" \
+              -H "Api-Token: YOUR_API_KEY" \
+              -H "Content-Type: application/json" \
+              -d '{
+                "email_template": {
+                  "name": "Welcome Email",
+                  "subject": "Welcome to {{company_name}}!",
+                  "category": "onboarding",
+                  "body_html": "<h1>Welcome {{user_name}}!</h1>",
+                  "body_text": "Welcome {{user_name}}!"
+                }
+              }'
         - lang: javascript
           label: Node.js
           source: |
@@ -1173,21 +1188,6 @@ paths:
             "Welcome {{user_name}}!", "<h1>Welcome {{user_name}}!</h1>")
             );
             var template = client.emailTemplatesApi().emailTemplates().createEmailTemplate(accountId, request);
-        - lang: shell
-          label: cURL
-          source: |
-            curl -X POST "https://mailtrap.io/api/accounts/{account_id}/email_templates" \
-              -H "Api-Token: YOUR_API_KEY" \
-              -H "Content-Type: application/json" \
-              -d '{
-                "email_template": {
-                  "name": "Welcome Email",
-                  "subject": "Welcome to {{company_name}}!",
-                  "category": "onboarding",
-                  "body_html": "<h1>Welcome {{user_name}}!</h1>",
-                  "body_text": "Welcome {{user_name}}!"
-                }
-              }'
       requestBody:
         content:
           application/json:
@@ -1217,6 +1217,11 @@ paths:
       tags:
         - templates
       x-codeSamples:
+        - lang: shell
+          label: 'cURL'
+          source: |
+            curl -X GET "https://mailtrap.io/api/accounts/{account_id}/email_templates/{email_template_id}" \
+              -H "Api-Token: YOUR_API_KEY"
         - lang: javascript
           label: Node.js
           source: |
@@ -1231,17 +1236,6 @@ paths:
             }
 
             getTemplate();
-        - lang: ruby
-          label: Ruby
-          source: |
-            require 'mailtrap'
-
-            client = Mailtrap::Client.new(api_key: 'YOUR_API_KEY')
-            templates = Mailtrap::EmailTemplatesAPI.new(
-              YOUR_ACCOUNT_ID,
-              client
-            )
-            template = templates.get(template_id)
         - lang: php
           label: PHP
           source: |
@@ -1269,11 +1263,17 @@ paths:
             template_id = 12345
             template = client.email_templates_api.templates.get_by_id(template_id)
             print(f"Template: {template.name} (ID: {template.id})")
-        - lang: shell
-          label: cURL
+        - lang: ruby
+          label: Ruby
           source: |
-            curl -X GET "https://mailtrap.io/api/accounts/{account_id}/email_templates/{email_template_id}" \
-              -H "Api-Token: YOUR_API_KEY"
+            require 'mailtrap'
+
+            client = Mailtrap::Client.new(api_key: 'YOUR_API_KEY')
+            templates = Mailtrap::EmailTemplatesAPI.new(
+              YOUR_ACCOUNT_ID,
+              client
+            )
+            template = templates.get(template_id)
       responses:
         '200':
           description: Returns attributes of the email template.
@@ -1294,6 +1294,18 @@ paths:
       tags:
         - templates
       x-codeSamples:
+        - lang: shell
+          label: 'cURL'
+          source: |
+            curl -X PATCH "https://mailtrap.io/api/accounts/{account_id}/email_templates/{email_template_id}" \
+              -H "Api-Token: YOUR_API_KEY" \
+              -H "Content-Type: application/json" \
+              -d '{
+                "email_template": {
+                  "name": "Updated Template",
+                  "subject": "New Subject"
+                }
+              }'
         - lang: javascript
           label: Node.js
           source: |
@@ -1308,17 +1320,6 @@ paths:
             }
 
             updateTemplate();
-        - lang: ruby
-          label: Ruby
-          source: |
-            require 'mailtrap'
-
-            client = Mailtrap::Client.new(api_key: 'YOUR_API_KEY')
-            templates = Mailtrap::EmailTemplatesAPI.new(
-              YOUR_ACCOUNT_ID,
-              client
-            )
-            templates.update(EMAIL_TEMPLATE_ID, name: 'Welcome Updated')
         - lang: php
           label: PHP
           source: |
@@ -1364,18 +1365,17 @@ paths:
                     body_text="Edited Welcome {{user_name}}!"
                 )
             )
-        - lang: shell
-          label: cURL
+        - lang: ruby
+          label: Ruby
           source: |
-            curl -X PATCH "https://mailtrap.io/api/accounts/{account_id}/email_templates/{email_template_id}" \
-              -H "Api-Token: YOUR_API_KEY" \
-              -H "Content-Type: application/json" \
-              -d '{
-                "email_template": {
-                  "name": "Updated Template",
-                  "subject": "New Subject"
-                }
-              }'
+            require 'mailtrap'
+
+            client = Mailtrap::Client.new(api_key: 'YOUR_API_KEY')
+            templates = Mailtrap::EmailTemplatesAPI.new(
+              YOUR_ACCOUNT_ID,
+              client
+            )
+            templates.update(EMAIL_TEMPLATE_ID, name: 'Welcome Updated')
       requestBody:
         content:
           application/json:
@@ -1403,6 +1403,11 @@ paths:
       tags:
         - templates
       x-codeSamples:
+        - lang: shell
+          label: 'cURL'
+          source: |
+            curl -X DELETE "https://mailtrap.io/api/accounts/{account_id}/email_templates/{email_template_id}" \
+              -H "Api-Token: YOUR_API_KEY"
         - lang: javascript
           label: Node.js
           source: |
@@ -1417,17 +1422,6 @@ paths:
             }
 
             deleteTemplate();
-        - lang: ruby
-          label: Ruby
-          source: |
-            require 'mailtrap'
-
-            client = Mailtrap::Client.new(api_key: 'YOUR_API_KEY')
-            templates = Mailtrap::EmailTemplatesAPI.new(
-              YOUR_ACCOUNT_ID,
-              client
-            )
-            templates.delete(EMAIL_TEMPLATE_ID)
         - lang: php
           label: PHP
           source: |
@@ -1455,11 +1449,17 @@ paths:
             deleted_template = client.email_templates_api.templates.delete(
               template_id=email_template_id
             )
-        - lang: shell
-          label: cURL
+        - lang: ruby
+          label: Ruby
           source: |
-            curl -X DELETE "https://mailtrap.io/api/accounts/{account_id}/email_templates/{email_template_id}" \
-              -H "Api-Token: YOUR_API_KEY"
+            require 'mailtrap'
+
+            client = Mailtrap::Client.new(api_key: 'YOUR_API_KEY')
+            templates = Mailtrap::EmailTemplatesAPI.new(
+              YOUR_ACCOUNT_ID,
+              client
+            )
+            templates.delete(EMAIL_TEMPLATE_ID)
       responses:
         '204':
           description: No Content
@@ -1480,6 +1480,12 @@ paths:
       description: Get account sending stats. Use filters to get specific stats.
       tags:
         - stats
+      x-codeSamples:
+        - lang: shell
+          label: 'cURL'
+          source: |
+            curl -X GET 'https://mailtrap.io/api/accounts/{account_id}/stats?start_date=2025-01-01&end_date=2025-12-31' \
+              -H 'Authorization: Bearer YOUR_API_KEY'
       parameters:
         - $ref: '#/components/parameters/account_id'
         - $ref: '#/components/parameters/StartDateQueryFilter'
@@ -1510,6 +1516,12 @@ paths:
       description: Get account sending stats by domains. Use filters to get specific stats.
       tags:
         - stats
+      x-codeSamples:
+        - lang: shell
+          label: 'cURL'
+          source: |
+            curl -X GET 'https://mailtrap.io/api/accounts/{account_id}/stats/domains?start_date=2025-01-01&end_date=2025-12-31' \
+              -H 'Authorization: Bearer YOUR_API_KEY'
       parameters:
         - $ref: '#/components/parameters/account_id'
         - $ref: '#/components/parameters/StartDateQueryFilter'
@@ -1551,6 +1563,12 @@ paths:
       description: Get account sending stats by categories. Use filters to get specific stats.
       tags:
         - stats
+      x-codeSamples:
+        - lang: shell
+          label: 'cURL'
+          source: |
+            curl -X GET 'https://mailtrap.io/api/accounts/{account_id}/stats/categories?start_date=2025-01-01&end_date=2025-12-31' \
+              -H 'Authorization: Bearer YOUR_API_KEY'
       parameters:
         - $ref: '#/components/parameters/account_id'
         - $ref: '#/components/parameters/StartDateQueryFilter'
@@ -1591,6 +1609,12 @@ paths:
       description: Get account sending stats by email service providers. Use filters to get specific stats.
       tags:
         - stats
+      x-codeSamples:
+        - lang: shell
+          label: 'cURL'
+          source: |
+            curl -X GET 'https://mailtrap.io/api/accounts/{account_id}/stats/email_service_providers?start_date=2025-01-01&end_date=2025-12-31' \
+              -H 'Authorization: Bearer YOUR_API_KEY'
       parameters:
         - $ref: '#/components/parameters/account_id'
         - $ref: '#/components/parameters/StartDateQueryFilter'
@@ -1631,6 +1655,12 @@ paths:
       description: Get account sending stats by date. Use filters to get specific stats.
       tags:
         - stats
+      x-codeSamples:
+        - lang: shell
+          label: 'cURL'
+          source: |
+            curl -X GET 'https://mailtrap.io/api/accounts/{account_id}/stats/date?start_date=2025-01-01&end_date=2025-12-31' \
+              -H 'Authorization: Bearer YOUR_API_KEY'
       parameters:
         - $ref: '#/components/parameters/account_id'
         - $ref: '#/components/parameters/StartDateQueryFilter'
