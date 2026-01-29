@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   description: API for Mailtrap.io Sandbox functionality
-  version: 2.0-oas3
+  version: 2.0.0
   title: Sandbox API
   contact:
     name: Mailtrap

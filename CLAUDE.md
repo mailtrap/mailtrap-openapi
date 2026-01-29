@@ -18,9 +18,9 @@ mailtrap-openapi/
 │   ├── email-api.openapi.yml
 │   ├── email-sending-bulk.openapi.yml
 │   ├── email-sending-transactional.openapi.yml
-│   ├── email-templates.openapi.yml
 │   ├── general.openapi.yml
-│   └── sandbox.openapi.yml
+│   ├── sandbox.openapi.yml
+│   └── templates.openapi.yml
 ├── .claude/
 │   └── skills/
 │       └── gitbook-assistant/    # GitBook formatting skill
@@ -38,6 +38,7 @@ mailtrap-openapi/
 | `contacts.openapi.yml` | Contact management API | `https://mailtrap.io` |
 | `sandbox.openapi.yml` | Email Sandbox/testing API | `https://mailtrap.io` |
 | `general.openapi.yml` | Account, users, permissions, billing | `https://mailtrap.io` |
+| `templates.openapi.yml` | Email templates API | `https://mailtrap.io` |
 | `email-api.openapi.yml` | Combined email API reference | Varies by operation |
 
 ### Base URL Rules

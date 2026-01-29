@@ -15,6 +15,7 @@ The specifications are located in the `specs/` directory:
 | Contacts | `specs/contacts.openapi.yml` | `https://mailtrap.io` |
 | Sandbox | `specs/sandbox.openapi.yml` | `https://mailtrap.io` |
 | General | `specs/general.openapi.yml` | `https://mailtrap.io` |
+| Templates | `specs/templates.openapi.yml` | `https://mailtrap.io` |
 | Email API | `specs/email-api.openapi.yml` | Varies by operation |
 
 ## Usage

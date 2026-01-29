@@ -79,6 +79,17 @@
         kind: openapi
         spec: contacts
   ```
+* ```yaml
+  props:
+    models: false
+    downloadLink: false
+  type: builtin:openapi
+  dependencies:
+    spec:
+      ref:
+        kind: openapi
+        spec: templates
+  ```
 
 ## Account Management
 
