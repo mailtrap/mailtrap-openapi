@@ -15,7 +15,7 @@ This is the official **Mailtrap OpenAPI Specifications** repository. It contains
 mailtrap-openapi/
 ├── specs/                    # OpenAPI specification files
 │   ├── contacts.openapi.yml
-│   ├── email-api.openapi.yml
+│   ├── email-sending.openapi.yml
 │   ├── email-sending-bulk.openapi.yml
 │   ├── email-sending-transactional.openapi.yml
 │   ├── account-management.openapi.yml
@@ -36,7 +36,7 @@ mailtrap-openapi/
 |-----------|-------------|----------|
 | `account-management.openapi.yml` | Account, users, permissions, billing | `https://mailtrap.io` |
 | `contacts.openapi.yml` | Contact management | `https://mailtrap.io` |
-| `email-api.openapi.yml` | Combined email API reference | Varies by operation |
+| `email-sending.openapi.yml` | Combined email API reference | Varies by operation |
 | `email-sending-bulk.openapi.yml` | Bulk/marketing email sending | `https://bulk.api.mailtrap.io` |
 | `email-sending-transactional.openapi.yml` | Transactional email sending | `https://send.api.mailtrap.io` |
 | `sandbox-sending.openapi.yml` | Sandbox send & batch email | `https://sandbox.api.mailtrap.io` |
