@@ -1,8 +1,8 @@
 openapi: 3.1.0
 info:
-  description: API for Mailtrap.io Contacts functionality
+  description: Manage email contacts and lists
   version: 2.0.0
-  title: Contacts API
+  title: Contacts
   contact:
     name: Mailtrap
     url: 'https://docs.mailtrap.io'
@@ -17,78 +17,42 @@ servers:
   - description: Mailtrap API
     url: 'https://mailtrap.io'
 tags:
-  - name: contacts-api
-    x-page-title: Contacts API
+  - name: contacts
+    x-page-title: Contacts
     x-page-description: Manage email contacts and lists
-    description: |
-      ## Contacts API
-
-      Build and manage your email contact database with powerful segmentation and field management capabilities.
-
-      {% hint style="info" %}
-      **Key Features**: Contact management, list segmentation, custom fields, bulk import/export, GDPR compliance
-      {% endhint %}
-
-      ### Getting Started
-
-      {% tabs %}
-      {% tab title="Contacts" %}
-      **Contact Management:**
-      - Create and update contacts
-      - Store custom field data
-      - Track subscription status
-      - Manage contact preferences
-      {% endtab %}
-
-      {% tab title="Lists" %}
-      **List Segmentation:**
-      - Create targeted contact lists
-      - Dynamic segmentation rules
-      - List membership management
-      - Bulk operations
-      {% endtab %}
-
-      {% tab title="Import/Export" %}
-      **Data Operations:**
-      - CSV bulk import
-      - Contact export for analysis
-      - Field mapping
-      - Duplicate handling
-      {% endtab %}
-      {% endtabs %}
 
   - name: Contacts
-    x-parent: contacts-api
+    x-parent: contacts
     x-page-title: Contacts
     x-page-description: Manage individual contacts
     description: Manage contacts
 
   - name: Contact Lists
-    x-parent: contacts-api
+    x-parent: contacts
     x-page-title: Contact Lists
     x-page-description: Organize contacts into lists
     description: Manage contact lists
 
   - name: Contact Fields
-    x-parent: contacts-api
-    x-page-title: Custom Fields
+    x-parent: contacts
+    x-page-title: Contact Fields
     x-page-description: Define custom contact fields
     description: Manage contact fields
 
-  - name: Contact Imports
-    x-parent: contacts-api
+  - name: Bulk Import
+    x-parent: contacts
     x-page-title: Bulk Import
     x-page-description: Import contacts from CSV
     description: Manage contact import jobs
 
-  - name: Contact Exports
-    x-parent: contacts-api
-    x-page-title: Export Data
+  - name: Export Contacts
+    x-parent: contacts
+    x-page-title: Export Contacts
     x-page-description: Export contact data
     description: Manage contact exports
 
   - name: Contact Events
-    x-parent: contacts-api
+    x-parent: contacts
     x-page-title: Contact Events
     x-page-description: Track contact interactions
     description: Manage contact events
@@ -817,7 +781,7 @@ paths:
       operationId: createContactExport
       summary: Create Contact Export
       tags:
-        - Contact Exports
+        - Export Contacts
       x-codeSamples:
         - lang: shell
           label: 'cURL'
@@ -937,7 +901,7 @@ paths:
       operationId: getContactExport
       summary: Get Contact Export
       tags:
-        - Contact Exports
+        - Export Contacts
       x-codeSamples:
         - lang: shell
           label: 'cURL'
@@ -1035,7 +999,7 @@ paths:
       operationId: importContacts
       summary: Import contacts
       tags:
-        - Contact Imports
+        - Bulk Import
       x-codeSamples:
         - lang: shell
           label: 'cURL'
@@ -1180,7 +1144,7 @@ paths:
       operationId: getContactImport
       summary: Get Contact Import
       tags:
-        - Contact Imports
+        - Bulk Import
       x-codeSamples:
         - lang: shell
           label: 'cURL'
