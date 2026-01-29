@@ -18,7 +18,7 @@ mailtrap-openapi/
 │   ├── email-api.openapi.yml
 │   ├── email-sending-bulk.openapi.yml
 │   ├── email-sending-transactional.openapi.yml
-│   ├── general.openapi.yml
+│   ├── account-management.openapi.yml
 │   ├── sandbox.openapi.yml
 │   └── templates.openapi.yml
 ├── .claude/
@@ -37,7 +37,7 @@ mailtrap-openapi/
 | `email-sending-bulk.openapi.yml` | Bulk/marketing email sending | `https://bulk.api.mailtrap.io` |
 | `contacts.openapi.yml` | Contact management API | `https://mailtrap.io` |
 | `sandbox.openapi.yml` | Email Sandbox/testing API | `https://mailtrap.io` |
-| `general.openapi.yml` | Account, users, permissions, billing | `https://mailtrap.io` |
+| `account-management.openapi.yml` | Account, users, permissions, billing | `https://mailtrap.io` |
 | `templates.openapi.yml` | Email templates API | `https://mailtrap.io` |
 | `email-api.openapi.yml` | Combined email API reference | Varies by operation |
 

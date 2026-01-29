@@ -93,7 +93,7 @@
 
 ## Account Management
 
-* [General API](general/overview.md)
+* [Account Management API](account-management/overview.md)
 * ```yaml
   props:
     models: false
@@ -103,5 +103,5 @@
     spec:
       ref:
         kind: openapi
-        spec: general
+        spec: account-management
   ```
