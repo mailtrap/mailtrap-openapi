@@ -20,6 +20,7 @@ mailtrap-openapi/
 │   ├── email-sending-transactional.openapi.yml
 │   ├── account-management.openapi.yml
 │   ├── sandbox.openapi.yml
+│   ├── sandbox-sending.openapi.yml
 │   └── templates.openapi.yml
 ├── .claude/
 │   └── skills/
@@ -33,13 +34,14 @@ mailtrap-openapi/
 
 | Spec File | Description | Base URL |
 |-----------|-------------|----------|
-| `email-sending-transactional.openapi.yml` | Transactional email sending | `https://send.api.mailtrap.io` |
-| `email-sending-bulk.openapi.yml` | Bulk/marketing email sending | `https://bulk.api.mailtrap.io` |
-| `contacts.openapi.yml` | Contact management API | `https://mailtrap.io` |
-| `sandbox.openapi.yml` | Email Sandbox/testing API | `https://mailtrap.io` |
 | `account-management.openapi.yml` | Account, users, permissions, billing | `https://mailtrap.io` |
-| `templates.openapi.yml` | Email templates API | `https://mailtrap.io` |
+| `contacts.openapi.yml` | Contact management | `https://mailtrap.io` |
 | `email-api.openapi.yml` | Combined email API reference | Varies by operation |
+| `email-sending-bulk.openapi.yml` | Bulk/marketing email sending | `https://bulk.api.mailtrap.io` |
+| `email-sending-transactional.openapi.yml` | Transactional email sending | `https://send.api.mailtrap.io` |
+| `sandbox-sending.openapi.yml` | Sandbox send & batch email | `https://sandbox.api.mailtrap.io` |
+| `sandbox.openapi.yml` | Email Sandbox/testing | `https://mailtrap.io` |
+| `templates.openapi.yml` | Email templates | `https://mailtrap.io` |
 
 ### Base URL Rules
 
