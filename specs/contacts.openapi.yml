@@ -101,6 +101,17 @@ paths:
       tags:
         - Contacts
       x-codeSamples:
+        - lang: shell
+          label: 'cURL'
+          source: |
+            curl -X POST https://mailtrap.io/api/accounts/{account_id}/contacts \
+              -H 'Authorization: Bearer YOUR_API_TOKEN' \
+              -H 'Content-Type: application/json' \
+              -d '{
+                "email": "john.smith@example.com",
+                "fields": {"first_name": "John", "last_name": "Smith", "company": "Example Inc"},
+                "list_ids": [1, 2, 3]
+              }'
         - lang: javascript
           label: Node.js
           source: |
@@ -302,6 +313,11 @@ paths:
       tags:
         - Contacts
       x-codeSamples:
+        - lang: shell
+          label: 'cURL'
+          source: |
+            curl -X GET https://mailtrap.io/api/accounts/{account_id}/contacts/{contact_identifier} \
+              -H 'Authorization: Bearer YOUR_API_TOKEN'
         - lang: javascript
           label: Node.js
           source: |
@@ -450,6 +466,13 @@ paths:
       description: Update contact using UUID or email (URL encoded)
       operationId: updateContact
       x-codeSamples:
+        - lang: shell
+          label: 'cURL'
+          source: |
+            curl -X PATCH https://mailtrap.io/api/accounts/{account_id}/contacts/{contact_identifier} \
+              -H 'Authorization: Bearer YOUR_API_TOKEN' \
+              -H 'Content-Type: application/json' \
+              -d '{"email": "new@example.com", "fields": {"first_name": "John"}}'
         - lang: javascript
           label: Node.js
           source: |
@@ -583,6 +606,11 @@ paths:
       description: Delete contact using UUID or email (URL encoded)
       operationId: deleteContact
       x-codeSamples:
+        - lang: shell
+          label: 'cURL'
+          source: |
+            curl -X DELETE https://mailtrap.io/api/accounts/{account_id}/contacts/{contact_identifier} \
+              -H 'Authorization: Bearer YOUR_API_TOKEN'
         - lang: javascript
           label: Node.js
           source: |
@@ -665,6 +693,13 @@ paths:
       tags:
         - Contact Events
       x-codeSamples:
+        - lang: shell
+          label: 'cURL'
+          source: |
+            curl -X POST https://mailtrap.io/api/accounts/{account_id}/contacts/{contact_identifier}/events \
+              -H 'Authorization: Bearer YOUR_API_TOKEN' \
+              -H 'Content-Type: application/json' \
+              -d '{"name": "UserLogin", "params": {"user_id": 101, "is_active": true}}'
         - lang: javascript
           label: Node.js
           source: |
@@ -784,6 +819,13 @@ paths:
       tags:
         - Contact Exports
       x-codeSamples:
+        - lang: shell
+          label: 'cURL'
+          source: |
+            curl -X POST https://mailtrap.io/api/accounts/{account_id}/contacts/exports \
+              -H 'Authorization: Bearer YOUR_API_TOKEN' \
+              -H 'Content-Type: application/json' \
+              -d '{"filters": [{"name": "list_id", "operator": "equal", "value": [1, 2]}]}'
         - lang: javascript
           label: Node.js
           source: |
@@ -897,6 +939,11 @@ paths:
       tags:
         - Contact Exports
       x-codeSamples:
+        - lang: shell
+          label: 'cURL'
+          source: |
+            curl -X GET https://mailtrap.io/api/accounts/{account_id}/contacts/exports/{export_id} \
+              -H 'Authorization: Bearer YOUR_API_TOKEN'
         - lang: javascript
           label: Node.js
           source: |
@@ -990,6 +1037,13 @@ paths:
       tags:
         - Contact Imports
       x-codeSamples:
+        - lang: shell
+          label: 'cURL'
+          source: |
+            curl -X POST https://mailtrap.io/api/accounts/{account_id}/contacts/imports \
+              -H 'Authorization: Bearer YOUR_API_TOKEN' \
+              -H 'Content-Type: application/json' \
+              -d '{"contacts": [{"email": "user1@example.com", "fields": {"first_name": "John"}, "list_ids_included": [1, 2]}]}'
         - lang: javascript
           label: Node.js
           source: |
@@ -1128,6 +1182,11 @@ paths:
       tags:
         - Contact Imports
       x-codeSamples:
+        - lang: shell
+          label: 'cURL'
+          source: |
+            curl -X GET https://mailtrap.io/api/accounts/{account_id}/contacts/imports/{import_id} \
+              -H 'Authorization: Bearer YOUR_API_TOKEN'
         - lang: javascript
           label: Node.js
           source: |
@@ -1222,6 +1281,11 @@ paths:
       tags:
         - Contact Lists
       x-codeSamples:
+        - lang: shell
+          label: 'cURL'
+          source: |
+            curl -X GET https://mailtrap.io/api/accounts/{account_id}/contacts/lists \
+              -H 'Authorization: Bearer YOUR_API_TOKEN'
         - lang: javascript
           label: Node.js
           source: |
@@ -1308,6 +1372,13 @@ paths:
       tags:
         - Contact Lists
       x-codeSamples:
+        - lang: shell
+          label: 'cURL'
+          source: |
+            curl -X POST https://mailtrap.io/api/accounts/{account_id}/contacts/lists \
+              -H 'Authorization: Bearer YOUR_API_TOKEN' \
+              -H 'Content-Type: application/json' \
+              -d '{"name": "Customers"}'
         - lang: javascript
           label: Node.js
           source: |
@@ -1403,6 +1474,11 @@ paths:
       tags:
         - Contact Lists
       x-codeSamples:
+        - lang: shell
+          label: 'cURL'
+          source: |
+            curl -X GET https://mailtrap.io/api/accounts/{account_id}/contacts/lists/{list_id} \
+              -H 'Authorization: Bearer YOUR_API_TOKEN'
         - lang: javascript
           label: Node.js
           source: |
@@ -1482,6 +1558,13 @@ paths:
       tags:
         - Contact Lists
       x-codeSamples:
+        - lang: shell
+          label: 'cURL'
+          source: |
+            curl -X PATCH https://mailtrap.io/api/accounts/{account_id}/contacts/lists/{list_id} \
+              -H 'Authorization: Bearer YOUR_API_TOKEN' \
+              -H 'Content-Type: application/json' \
+              -d '{"name": "Former Customers"}'
         - lang: javascript
           label: Node.js
           source: |
@@ -1579,6 +1662,11 @@ paths:
       tags:
         - Contact Lists
       x-codeSamples:
+        - lang: shell
+          label: 'cURL'
+          source: |
+            curl -X DELETE https://mailtrap.io/api/accounts/{account_id}/contacts/lists/{list_id} \
+              -H 'Authorization: Bearer YOUR_API_TOKEN'
         - lang: javascript
           label: Node.js
           source: |
@@ -1657,6 +1745,11 @@ paths:
       tags:
         - Contact Fields
       x-codeSamples:
+        - lang: shell
+          label: 'cURL'
+          source: |
+            curl -X GET https://mailtrap.io/api/accounts/{account_id}/contacts/fields \
+              -H 'Authorization: Bearer YOUR_API_TOKEN'
         - lang: javascript
           label: Node.js
           source: |
@@ -1748,6 +1841,13 @@ paths:
       tags:
         - Contact Fields
       x-codeSamples:
+        - lang: shell
+          label: 'cURL'
+          source: |
+            curl -X POST https://mailtrap.io/api/accounts/{account_id}/contacts/fields \
+              -H 'Authorization: Bearer YOUR_API_TOKEN' \
+              -H 'Content-Type: application/json' \
+              -d '{"name": "Company", "data_type": "text", "merge_tag": "company"}'
         - lang: javascript
           label: Node.js
           source: |
@@ -1877,6 +1977,11 @@ paths:
       tags:
         - Contact Fields
       x-codeSamples:
+        - lang: shell
+          label: 'cURL'
+          source: |
+            curl -X GET https://mailtrap.io/api/accounts/{account_id}/contacts/fields/{field_id} \
+              -H 'Authorization: Bearer YOUR_API_TOKEN'
         - lang: javascript
           label: Node.js
           source: |
@@ -1960,6 +2065,13 @@ paths:
       tags:
         - Contact Fields
       x-codeSamples:
+        - lang: shell
+          label: 'cURL'
+          source: |
+            curl -X PATCH https://mailtrap.io/api/accounts/{account_id}/contacts/fields/{field_id} \
+              -H 'Authorization: Bearer YOUR_API_TOKEN' \
+              -H 'Content-Type: application/json' \
+              -d '{"name": "Updated Name", "merge_tag": "updated_name"}'
         - lang: javascript
           label: Node.js
           source: |
@@ -2079,6 +2191,11 @@ paths:
       tags:
         - Contact Fields
       x-codeSamples:
+        - lang: shell
+          label: 'cURL'
+          source: |
+            curl -X DELETE https://mailtrap.io/api/accounts/{account_id}/contacts/fields/{field_id} \
+              -H 'Authorization: Bearer YOUR_API_TOKEN'
         - lang: javascript
           label: Node.js
           source: |

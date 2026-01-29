@@ -98,6 +98,12 @@ paths:
       description: Get a list of sub accounts for the specified organization. You must have sub account management permissions for this organization.
       tags:
         - Organizations
+      x-codeSamples:
+        - lang: shell
+          label: 'cURL'
+          source: |
+            curl -X GET https://mailtrap.io/api/organizations/{organization_id}/sub_accounts \
+              -H 'Authorization: Bearer YOUR_API_TOKEN'
       responses:
         '200':
           description: Returns the list of sub accounts belonging to the organization.
@@ -122,6 +128,18 @@ paths:
       description: Create a new sub account under the specified organization. You must have sub account management permissions for this organization.
       tags:
         - Organizations
+      x-codeSamples:
+        - lang: shell
+          label: 'cURL'
+          source: |
+            curl -X POST https://mailtrap.io/api/organizations/{organization_id}/sub_accounts \
+              -H 'Authorization: Bearer YOUR_API_TOKEN' \
+              -H 'Content-Type: application/json' \
+              -d '{
+                "account": {
+                  "name": "New Team Account"
+                }
+              }'
       requestBody:
         required: true
         content:
@@ -176,6 +194,11 @@ paths:
       tags:
         - Accounts
       x-codeSamples:
+        - lang: shell
+          label: 'cURL'
+          source: |
+            curl -X GET https://mailtrap.io/api/accounts \
+              -H 'Authorization: Bearer YOUR_API_TOKEN'
         - lang: javascript
           label: Node.js
           source: |
@@ -292,6 +315,11 @@ paths:
       tags:
         - Account Accesses
       x-codeSamples:
+        - lang: shell
+          label: 'cURL'
+          source: |
+            curl -X GET https://mailtrap.io/api/accounts/{account_id}/account_accesses \
+              -H 'Authorization: Bearer YOUR_API_TOKEN'
         - lang: javascript
           label: Node.js
           source: |
@@ -402,6 +430,11 @@ paths:
       tags:
         - Account Accesses
       x-codeSamples:
+        - lang: shell
+          label: 'cURL'
+          source: |
+            curl -X DELETE https://mailtrap.io/api/accounts/{account_id}/account_accesses/{account_access_id} \
+              -H 'Authorization: Bearer YOUR_API_TOKEN'
         - lang: javascript
           label: Node.js
           source: |
@@ -494,6 +527,17 @@ paths:
       tags:
         - Permissions
       x-codeSamples:
+        - lang: shell
+          label: 'cURL'
+          source: |
+            curl -X PUT https://mailtrap.io/api/accounts/{account_id}/account_accesses/{account_access_id}/permissions/bulk \
+              -H 'Authorization: Bearer YOUR_API_TOKEN' \
+              -H 'Content-Type: application/json' \
+              -d '{
+                "permissions": [
+                  {"resource_id": "3281", "resource_type": "account", "access_level": "viewer"}
+                ]
+              }'
         - lang: javascript
           label: Node.js
           source: |
@@ -668,6 +712,11 @@ paths:
       tags:
         - Permissions
       x-codeSamples:
+        - lang: shell
+          label: 'cURL'
+          source: |
+            curl -X GET https://mailtrap.io/api/accounts/{account_id}/permissions/resources \
+              -H 'Authorization: Bearer YOUR_API_TOKEN'
         - lang: javascript
           label: Node.js
           source: |
@@ -784,6 +833,11 @@ paths:
       tags:
         - Billing
       x-codeSamples:
+        - lang: shell
+          label: 'cURL'
+          source: |
+            curl -X GET https://mailtrap.io/api/accounts/{account_id}/billing/usage \
+              -H 'Authorization: Bearer YOUR_API_TOKEN'
         - lang: javascript
           label: Node.js
           source: |

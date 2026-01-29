@@ -114,6 +114,17 @@ paths:
           $ref: '#/components/responses/PERMISSION_DENIED'
       operationId: createProject
       x-codeSamples:
+        - lang: shell
+          label: 'cURL'
+          source: |
+            curl -X POST https://mailtrap.io/api/accounts/{account_id}/projects \
+              -H 'Authorization: Bearer YOUR_API_KEY' \
+              -H 'Content-Type: application/json' \
+              -d '{
+                "project": {
+                  "name": "My New Project"
+                }
+              }'
         - lang: javascript
           label: Node.js
           source: |
@@ -215,17 +226,6 @@ paths:
                 .createProject(accountId, request);
 
             System.out.println(project);
-        - lang: shell
-          label: 'cURL'
-          source: |
-            curl -X POST https://mailtrap.io/api/accounts/{account_id}/projects \
-              -H 'Authorization: Bearer YOUR_API_KEY' \
-              -H 'Content-Type: application/json' \
-              -d '{
-                "project": {
-                  "name": "My New Project"
-                }
-              }'
     get:
       summary: Get a list of projects
       description: List projects and their inboxes to which the API token has access.
@@ -240,6 +240,11 @@ paths:
           $ref: '#/components/responses/PERMISSION_DENIED'
       operationId: getProjects
       x-codeSamples:
+        - lang: shell
+          label: 'cURL'
+          source: |
+            curl -X GET https://mailtrap.io/api/accounts/{account_id}/projects \
+              -H 'Authorization: Bearer YOUR_API_KEY'
         - lang: javascript
           label: Node.js
           source: |
@@ -337,11 +342,6 @@ paths:
                 System.out.println("Project: " + project.getName() +
                                    ", ID: " + project.getId());
             }
-        - lang: shell
-          label: 'cURL'
-          source: |
-            curl -X GET https://mailtrap.io/api/accounts/{account_id}/projects \
-              -H 'Authorization: Bearer YOUR_API_KEY'
     parameters:
       - $ref: '#/components/parameters/account_id'
   '/api/accounts/{account_id}/projects/{project_id}':
@@ -361,6 +361,11 @@ paths:
           $ref: '#/components/responses/NOT_FOUND'
       operationId: getProject
       x-codeSamples:
+        - lang: shell
+          label: 'cURL'
+          source: |
+            curl -X GET https://mailtrap.io/api/accounts/{account_id}/projects/{project_id} \
+              -H 'Authorization: Bearer YOUR_API_KEY'
         - lang: javascript
           label: Node.js
           source: |
@@ -459,17 +464,23 @@ paths:
                 .getProject(accountId, projectId);
 
             System.out.println("Project: " + project.getName());
-        - lang: shell
-          label: 'cURL'
-          source: |
-            curl -X GET https://mailtrap.io/api/accounts/{account_id}/projects/{project_id} \
-              -H 'Authorization: Bearer YOUR_API_KEY'
     patch:
       summary: Update project
       description: Update project name. The project name is min 2 characters and max 100 characters long.
       tags:
         - Projects
       x-codeSamples:
+        - lang: shell
+          label: 'cURL'
+          source: |
+            curl -X PATCH https://mailtrap.io/api/accounts/{account_id}/projects/{project_id} \
+              -H 'Authorization: Bearer YOUR_API_KEY' \
+              -H 'Content-Type: application/json' \
+              -d '{
+                "project": {
+                  "name": "Updated Project Name"
+                }
+              }'
         - lang: javascript
           label: Node.js
           source: |
@@ -585,17 +596,6 @@ paths:
                 .updateProject(accountId, projectId, request);
 
             System.out.println("Project updated: " + updatedProject.getName());
-        - lang: shell
-          label: 'cURL'
-          source: |
-            curl -X PATCH https://mailtrap.io/api/accounts/{account_id}/projects/{project_id} \
-              -H 'Authorization: Bearer YOUR_API_KEY' \
-              -H 'Content-Type: application/json' \
-              -d '{
-                "project": {
-                  "name": "Updated Project Name"
-                }
-              }'
       requestBody:
         content:
           application/json:
@@ -626,6 +626,11 @@ paths:
       tags:
         - Projects
       x-codeSamples:
+        - lang: shell
+          label: 'cURL'
+          source: |
+            curl -X DELETE https://mailtrap.io/api/accounts/{account_id}/projects/{project_id} \
+              -H 'Authorization: Bearer YOUR_API_KEY'
         - lang: javascript
           label: Node.js
           source: |
@@ -723,11 +728,6 @@ paths:
                 .deleteProject(accountId, projectId);
 
             System.out.println("Project deleted: " + deletedProject.getId());
-        - lang: shell
-          label: 'cURL'
-          source: |
-            curl -X DELETE https://mailtrap.io/api/accounts/{account_id}/projects/{project_id} \
-              -H 'Authorization: Bearer YOUR_API_KEY'
       responses:
         '200':
           description: Returns id of the deleted project.
@@ -781,6 +781,17 @@ paths:
           $ref: '#/components/responses/NOT_FOUND'
       operationId: createInbox
       x-codeSamples:
+        - lang: shell
+          label: 'cURL'
+          source: |
+            curl -X POST https://mailtrap.io/api/accounts/{account_id}/projects/{project_id}/inboxes \
+              -H 'Authorization: Bearer YOUR_API_KEY' \
+              -H 'Content-Type: application/json' \
+              -d '{
+                "inbox": {
+                  "name": "My Test Inbox"
+                }
+              }'
         - lang: javascript
           label: Node.js
           source: |
@@ -881,17 +892,6 @@ paths:
 
             System.out.println("Inbox created: " + inbox.getName());
             System.out.println("SMTP credentials - User: " + inbox.getUsername());
-        - lang: shell
-          label: 'cURL'
-          source: |
-            curl -X POST https://mailtrap.io/api/accounts/{account_id}/projects/{project_id}/inboxes \
-              -H 'Authorization: Bearer YOUR_API_KEY' \
-              -H 'Content-Type: application/json' \
-              -d '{
-                "inbox": {
-                  "name": "My Test Inbox"
-                }
-              }'
     parameters:
       - $ref: '#/components/parameters/account_id'
       - $ref: '#/components/parameters/project_id'
@@ -911,6 +911,11 @@ paths:
         '404':
           $ref: '#/components/responses/NOT_FOUND'
       x-codeSamples:
+        - lang: shell
+          label: 'cURL'
+          source: |
+            curl -X GET https://mailtrap.io/api/accounts/{account_id}/inboxes/{inbox_id} \
+              -H 'Authorization: Bearer YOUR_API_KEY'
         - lang: javascript
           label: Node.js
           source: |
@@ -993,11 +998,6 @@ paths:
                 .getInboxAttributes(accountId, inboxId);
 
             System.out.println(inboxAttributes);
-        - lang: shell
-          label: 'cURL'
-          source: |
-            curl -X GET https://mailtrap.io/api/accounts/{account_id}/inboxes/{inbox_id} \
-              -H 'Authorization: Bearer YOUR_API_KEY'
       operationId: getInboxAttributes
     delete:
       summary: Delete an inbox
@@ -1014,6 +1014,11 @@ paths:
         '404':
           $ref: '#/components/responses/NOT_FOUND'
       x-codeSamples:
+        - lang: shell
+          label: 'cURL'
+          source: |
+            curl -X DELETE https://mailtrap.io/api/accounts/{account_id}/inboxes/{inbox_id} \
+              -H 'Authorization: Bearer YOUR_API_KEY'
         - lang: javascript
           label: Node.js
           source: |
@@ -1095,11 +1100,6 @@ paths:
                 .deleteInbox(ACCOUNT_ID, inboxId);
 
             System.out.println(deletedInbox);
-        - lang: shell
-          label: 'cURL'
-          source: |
-            curl -X DELETE https://mailtrap.io/api/accounts/{account_id}/inboxes/{inbox_id} \
-              -H 'Authorization: Bearer YOUR_API_KEY'
       operationId: deleteInbox
     patch:
       summary: Update an inbox
@@ -1133,6 +1133,18 @@ paths:
         '404':
           $ref: '#/components/responses/NOT_FOUND'
       x-codeSamples:
+        - lang: shell
+          label: 'cURL'
+          source: |
+            curl -X PATCH https://mailtrap.io/api/accounts/{account_id}/inboxes/{inbox_id} \
+              -H 'Authorization: Bearer YOUR_API_KEY' \
+              -H 'Content-Type: application/json' \
+              -d '{
+                "inbox": {
+                  "name": "Updated Inbox Name",
+                  "email_username": "new-username"
+                }
+              }'
         - lang: javascript
           label: Node.js
           source: |
@@ -1237,18 +1249,6 @@ paths:
                 .updateInbox(accountId, inboxId, updateRequest);
 
             System.out.println(updatedInbox);
-        - lang: shell
-          label: 'cURL'
-          source: |
-            curl -X PATCH https://mailtrap.io/api/accounts/{account_id}/inboxes/{inbox_id} \
-              -H 'Authorization: Bearer YOUR_API_KEY' \
-              -H 'Content-Type: application/json' \
-              -d '{
-                "inbox": {
-                  "name": "Updated Inbox Name",
-                  "email_username": "new-username"
-                }
-              }'
       operationId: updateInbox
     parameters:
       - $ref: '#/components/parameters/account_id'
@@ -1269,6 +1269,11 @@ paths:
         '404':
           $ref: '#/components/responses/NOT_FOUND'
       x-codeSamples:
+        - lang: shell
+          label: 'cURL'
+          source: |
+            curl -X PATCH https://mailtrap.io/api/accounts/{account_id}/inboxes/{inbox_id}/clean \
+              -H 'Authorization: Bearer YOUR_API_KEY'
         - lang: javascript
           label: Node.js
           source: |
@@ -1352,11 +1357,6 @@ paths:
                 .cleanInbox(accountId, inboxId);
 
             System.out.println(cleanedInbox);
-        - lang: shell
-          label: 'cURL'
-          source: |
-            curl -X PATCH https://mailtrap.io/api/accounts/{account_id}/inboxes/{inbox_id}/clean \
-              -H 'Authorization: Bearer YOUR_API_KEY'
       operationId: cleanInbox
     parameters:
       - $ref: '#/components/parameters/account_id'
@@ -1377,6 +1377,11 @@ paths:
         '404':
           $ref: '#/components/responses/NOT_FOUND'
       x-codeSamples:
+        - lang: shell
+          label: 'cURL'
+          source: |
+            curl -X PATCH https://mailtrap.io/api/accounts/{account_id}/inboxes/{inbox_id}/all_read \
+              -H 'Authorization: Bearer YOUR_API_KEY'
         - lang: javascript
           label: Node.js
           source: |
@@ -1460,11 +1465,6 @@ paths:
                 .markAsRead(accountId, inboxId);
 
             System.out.println(markedInbox);
-        - lang: shell
-          label: 'cURL'
-          source: |
-            curl -X PATCH https://mailtrap.io/api/accounts/{account_id}/inboxes/{inbox_id}/all_read \
-              -H 'Authorization: Bearer YOUR_API_KEY'
       operationId: markAsReadInbox
     parameters:
       - $ref: '#/components/parameters/account_id'
@@ -1485,6 +1485,11 @@ paths:
         '404':
           $ref: '#/components/responses/NOT_FOUND'
       x-codeSamples:
+        - lang: shell
+          label: 'cURL'
+          source: |
+            curl -X PATCH https://mailtrap.io/api/accounts/{account_id}/inboxes/{inbox_id}/reset_credentials \
+              -H 'Authorization: Bearer YOUR_API_KEY'
         - lang: javascript
           label: Node.js
           source: |
@@ -1568,11 +1573,6 @@ paths:
                 .resetCredentials(accountId, inboxId);
 
             System.out.println(updatedInbox);
-        - lang: shell
-          label: 'cURL'
-          source: |
-            curl -X PATCH https://mailtrap.io/api/accounts/{account_id}/inboxes/{inbox_id}/reset_credentials \
-              -H 'Authorization: Bearer YOUR_API_KEY'
       operationId: resetInboxCredentials
     parameters:
       - $ref: '#/components/parameters/account_id'
@@ -1593,6 +1593,11 @@ paths:
         '404':
           $ref: '#/components/responses/NOT_FOUND'
       x-codeSamples:
+        - lang: shell
+          label: 'cURL'
+          source: |
+            curl -X PATCH https://mailtrap.io/api/accounts/{account_id}/inboxes/{inbox_id}/toggle_email_username \
+              -H 'Authorization: Bearer YOUR_API_KEY'
         - lang: javascript
           label: Node.js
           source: |
@@ -1676,11 +1681,6 @@ paths:
                 .enableEmailAddress(accountId, inboxId);
 
             System.out.println(updatedInbox);
-        - lang: shell
-          label: 'cURL'
-          source: |
-            curl -X PATCH https://mailtrap.io/api/accounts/{account_id}/inboxes/{inbox_id}/toggle_email_username \
-              -H 'Authorization: Bearer YOUR_API_KEY'
       operationId: enableInboxEmailAddresses
     parameters:
       - $ref: '#/components/parameters/account_id'
@@ -1701,6 +1701,11 @@ paths:
         '404':
           $ref: '#/components/responses/NOT_FOUND'
       x-codeSamples:
+        - lang: shell
+          label: 'cURL'
+          source: |
+            curl -X PATCH https://mailtrap.io/api/accounts/{account_id}/inboxes/{inbox_id}/reset_email_username \
+              -H 'Authorization: Bearer YOUR_API_KEY'
         - lang: javascript
           label: Node.js
           source: |
@@ -1785,11 +1790,6 @@ paths:
                 .resetEmailAddresses(accountId, inboxId);
 
             System.out.println(updatedInbox);
-        - lang: shell
-          label: 'cURL'
-          source: |
-            curl -X PATCH https://mailtrap.io/api/accounts/{account_id}/inboxes/{inbox_id}/reset_email_username \
-              -H 'Authorization: Bearer YOUR_API_KEY'
       operationId: resetEmailUserNamePerInbox
     parameters:
       - $ref: '#/components/parameters/account_id'
@@ -1808,6 +1808,11 @@ paths:
         '403':
           $ref: '#/components/responses/PERMISSION_DENIED'
       x-codeSamples:
+        - lang: shell
+          label: 'cURL'
+          source: |
+            curl -X GET https://mailtrap.io/api/accounts/{account_id}/inboxes \
+              -H 'Authorization: Bearer YOUR_API_KEY'
         - lang: javascript
           label: Node.js
           source: |
@@ -1883,11 +1888,6 @@ paths:
                 .getInboxes(accountId);
 
             System.out.println(inboxes);
-        - lang: shell
-          label: 'cURL'
-          source: |
-            curl -X GET https://mailtrap.io/api/accounts/{account_id}/inboxes \
-              -H 'Authorization: Bearer YOUR_API_KEY'
       operationId: getInboxes
     parameters:
       - $ref: '#/components/parameters/account_id'
@@ -1902,6 +1902,18 @@ paths:
       tags:
         - Test Emails
       x-codeSamples:
+        - lang: shell
+          label: 'cURL'
+          source: |
+            curl -X POST https://sandbox.api.mailtrap.io/api/send/{inbox_id} \
+              -H 'Authorization: Bearer YOUR_API_KEY' \
+              -H 'Content-Type: application/json' \
+              -d '{
+                "from": {"email": "sender@example.com"},
+                "to": [{"email": "recipient@example.com"}],
+                "subject": "Test Email",
+                "text": "This is a test email sent to sandbox"
+              }'
         - lang: javascript
           label: Node.js
           source: |
@@ -2043,18 +2055,6 @@ paths:
                 .build();
 
             client.testingApi().emails().send(mail, config.getInboxId());
-        - lang: shell
-          label: 'cURL'
-          source: |
-            curl -X POST https://sandbox.api.mailtrap.io/api/send/{inbox_id} \
-              -H 'Authorization: Bearer YOUR_API_KEY' \
-              -H 'Content-Type: application/json' \
-              -d '{
-                "from": {"email": "sender@example.com"},
-                "to": [{"email": "recipient@example.com"}],
-                "subject": "Test Email",
-                "text": "This is a test email sent to sandbox"
-              }'
       requestBody:
         content:
           application/json:
@@ -2109,6 +2109,16 @@ paths:
       tags:
         - Test Emails
       x-codeSamples:
+        - lang: shell
+          label: 'cURL'
+          source: |
+            curl -X POST https://sandbox.api.mailtrap.io/api/batch/{inbox_id} \
+              -H 'Authorization: Bearer YOUR_API_KEY' \
+              -H 'Content-Type: application/json' \
+              -d '{
+                "base": {"from": {"email": "sender@example.com"}, "subject": "Batch Email"},
+                "requests": [{"to": [{"email": "recipient1@example.com"}]}, {"to": [{"email": "recipient2@example.com"}]}]
+              }'
         - lang: javascript
           label: Node.js
           source: |
@@ -2392,6 +2402,11 @@ paths:
         '404':
           $ref: '#/components/responses/NOT_FOUND'
       x-codeSamples:
+        - lang: shell
+          label: 'cURL'
+          source: |
+            curl -X GET https://mailtrap.io/api/accounts/{account_id}/inboxes/{inbox_id}/messages/{message_id} \
+              -H 'Authorization: Bearer YOUR_API_KEY'
         - lang: javascript
           label: Node.js
           source: |
@@ -2607,6 +2622,13 @@ paths:
         '404':
           $ref: '#/components/responses/NOT_FOUND'
       x-codeSamples:
+        - lang: shell
+          label: 'cURL'
+          source: |
+            curl -X PATCH https://mailtrap.io/api/accounts/{account_id}/inboxes/{inbox_id}/messages/{message_id} \
+              -H 'Authorization: Bearer YOUR_API_KEY' \
+              -H 'Content-Type: application/json' \
+              -d '{"message": {"is_read": "true"}}'
         - lang: javascript
           label: Node.js
           source: |
@@ -2818,6 +2840,11 @@ paths:
         '404':
           $ref: '#/components/responses/NOT_FOUND'
       x-codeSamples:
+        - lang: shell
+          label: 'cURL'
+          source: |
+            curl -X DELETE https://mailtrap.io/api/accounts/{account_id}/inboxes/{inbox_id}/messages/{message_id} \
+              -H 'Authorization: Bearer YOUR_API_KEY'
         - lang: javascript
           label: Node.js
           source: |
@@ -3027,6 +3054,11 @@ paths:
                     example: Inbox is not active or you have insufficient permissions
       operationId: getInboxEmailMessage
       x-codeSamples:
+        - lang: shell
+          label: 'cURL'
+          source: |
+            curl -X GET https://mailtrap.io/api/accounts/{account_id}/inboxes/{inbox_id}/messages \
+              -H 'Authorization: Bearer YOUR_API_KEY'
         - lang: javascript
           label: Node.js
           source: |
@@ -3123,11 +3155,6 @@ paths:
                 System.out.println("Subject: " + message.getSubject());
                 System.out.println("Received: " + message.getCreatedAt());
             }
-        - lang: shell
-          label: 'cURL'
-          source: |
-            curl -X GET https://mailtrap.io/api/accounts/{account_id}/inboxes/{inbox_id}/messages \
-              -H 'Authorization: Bearer YOUR_API_KEY'
       parameters:
         - schema:
             type: string
@@ -3194,6 +3221,13 @@ paths:
         '404':
           $ref: '#/components/responses/NOT_FOUND'
       x-codeSamples:
+        - lang: shell
+          label: 'cURL'
+          source: |
+            curl -X POST https://mailtrap.io/api/accounts/{account_id}/inboxes/{inbox_id}/messages/{message_id}/forward \
+              -H 'Authorization: Bearer YOUR_API_KEY' \
+              -H 'Content-Type: application/json' \
+              -d '{"email": "recipient@example.com"}'
         - lang: javascript
           label: Node.js
           source: |
@@ -3376,6 +3410,11 @@ paths:
         '404':
           $ref: '#/components/responses/NOT_FOUND'
       x-codeSamples:
+        - lang: shell
+          label: 'cURL'
+          source: |
+            curl -X GET https://mailtrap.io/api/accounts/{account_id}/inboxes/{inbox_id}/messages/{message_id}/spam_report \
+              -H 'Authorization: Bearer YOUR_API_KEY'
         - lang: javascript
           label: Node.js
           source: |
@@ -3545,6 +3584,11 @@ paths:
         '404':
           $ref: '#/components/responses/NOT_FOUND'
       x-codeSamples:
+        - lang: shell
+          label: 'cURL'
+          source: |
+            curl -X GET https://mailtrap.io/api/accounts/{account_id}/inboxes/{inbox_id}/messages/{message_id}/analyze \
+              -H 'Authorization: Bearer YOUR_API_KEY'
         - lang: javascript
           label: Node.js
           source: |
@@ -3663,6 +3707,11 @@ paths:
                 type: string
                 example: Conflict
       x-codeSamples:
+        - lang: shell
+          label: 'cURL'
+          source: |
+            curl -X GET https://mailtrap.io/api/accounts/{account_id}/inboxes/{inbox_id}/messages/{message_id}/body.txt \
+              -H 'Authorization: Bearer YOUR_API_KEY'
         - lang: javascript
           label: Node.js
           source: |
@@ -3825,6 +3874,11 @@ paths:
                 type: string
                 example: Conflict
       x-codeSamples:
+        - lang: shell
+          label: 'cURL'
+          source: |
+            curl -X GET https://mailtrap.io/api/accounts/{account_id}/inboxes/{inbox_id}/messages/{message_id}/body.raw \
+              -H 'Authorization: Bearer YOUR_API_KEY'
         - lang: javascript
           label: Node.js
           source: |
@@ -3966,6 +4020,11 @@ paths:
                 type: string
                 example: Conflict
       x-codeSamples:
+        - lang: shell
+          label: 'cURL'
+          source: |
+            curl -X GET https://mailtrap.io/api/accounts/{account_id}/inboxes/{inbox_id}/messages/{message_id}/body.htmlsource \
+              -H 'Authorization: Bearer YOUR_API_KEY'
         - lang: javascript
           label: Node.js
           source: |
@@ -4101,6 +4160,11 @@ paths:
                 type: string
                 example: Conflict
       x-codeSamples:
+        - lang: shell
+          label: 'cURL'
+          source: |
+            curl -X GET https://mailtrap.io/api/accounts/{account_id}/inboxes/{inbox_id}/messages/{message_id}/body.html \
+              -H 'Authorization: Bearer YOUR_API_KEY'
         - lang: javascript
           label: Node.js
           source: |
@@ -4265,6 +4329,11 @@ paths:
                 type: string
                 example: Conflict
       x-codeSamples:
+        - lang: shell
+          label: 'cURL'
+          source: |
+            curl -X GET https://mailtrap.io/api/accounts/{account_id}/inboxes/{inbox_id}/messages/{message_id}/body.eml \
+              -H 'Authorization: Bearer YOUR_API_KEY'
         - lang: javascript
           label: Node.js
           source: |
@@ -4380,6 +4449,11 @@ paths:
         '404':
           $ref: '#/components/responses/NOT_FOUND'
       x-codeSamples:
+        - lang: shell
+          label: 'cURL'
+          source: |
+            curl -X GET https://mailtrap.io/api/accounts/{account_id}/inboxes/{inbox_id}/messages/{message_id}/mail_headers \
+              -H 'Authorization: Bearer YOUR_API_KEY'
         - lang: javascript
           label: Node.js
           source: |
@@ -4530,6 +4604,11 @@ paths:
           $ref: '#/components/responses/NOT_FOUND'
       operationId: getInboxMessageAttachments
       x-codeSamples:
+        - lang: shell
+          label: 'cURL'
+          source: |
+            curl -X GET https://mailtrap.io/api/accounts/{account_id}/inboxes/{inbox_id}/messages/{message_id}/attachments \
+              -H 'Authorization: Bearer YOUR_API_KEY'
         - lang: javascript
           label: Node.js
           source: |
@@ -4670,6 +4749,11 @@ paths:
           $ref: '#/components/responses/NOT_FOUND'
       operationId: getInboxMessageAttachment
       x-codeSamples:
+        - lang: shell
+          label: 'cURL'
+          source: |
+            curl -X GET https://mailtrap.io/api/accounts/{account_id}/inboxes/{inbox_id}/messages/{message_id}/attachments/{attachment_id} \
+              -H 'Authorization: Bearer YOUR_API_KEY'
         - lang: javascript
           label: Node.js
           source: |

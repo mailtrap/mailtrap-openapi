@@ -138,13 +138,13 @@ description: |
 ### SDK Priority Order
 
 Include code samples in this order:
-1. Node.js (JavaScript)
-2. PHP
-3. Python
-4. Ruby
-5. .NET (C#)
-6. Java
-7. cURL (shell)
+1. cURL (shell)
+2. Node.js (JavaScript)
+3. PHP
+4. Python
+5. Ruby
+6. .NET (C#)
+7. Java
 
 ### Code Sample Format
 
@@ -171,7 +171,6 @@ x-codeSamples:
 ### Code Sample Guidelines
 
 - **Use official Mailtrap SDKs** for language-specific examples
-- **GitBook auto-generates cURL and HTTP** examples - don't hardcode these unless necessary
 - **If SDK doesn't support a method**, either let GitBook generate the example or add a comment noting SDK limitations
 - **Use environment variables** for API keys (e.g., `process.env.MAILTRAP_API_KEY`)
 - **Use Context7 MCP** to query SDK capabilities when unsure
