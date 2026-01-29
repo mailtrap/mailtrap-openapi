@@ -970,13 +970,6 @@ components:
       type: http
       scheme: bearer
       bearerFormat: JWT
-  responses:
-    UNAUTHENTICATED:
-      description: Returns unauthorized error message. Check your credentials.
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/UnauthenticatedResponse'
   parameters:
     account_id:
       description: Unique account ID

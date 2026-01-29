@@ -14,7 +14,7 @@ security:
   - HeaderAuth: []
   - BearerAuth: []
 servers:
-  - description: Mailtrap Sandbox API
+  - description: Mailtrap API
     url: 'https://mailtrap.io'
 tags:
   - name: Accounts

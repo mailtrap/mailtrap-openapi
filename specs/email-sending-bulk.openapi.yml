@@ -1,6 +1,6 @@
 openapi: 3.1.0
 info:
-  title: Send Email - Bulk
+  title: Bulk
   version: 2.0.0
   description: |
     Send marketing emails and newsletters through the bulk stream optimized for high-volume sending.
@@ -24,8 +24,7 @@ security:
 
 tags:
   - name: send-email
-    x-page-title: Send Email - Bulk
-    x-page-icon: envelopes-bulk
+    x-page-title: Bulk
     x-page-description: Send marketing and bulk emails
     description: |
       Send marketing emails and newsletters through the bulk stream optimized for high-volume sending.
