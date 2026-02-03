@@ -952,14 +952,6 @@ components:
         template_variables:
           type: object
           description: 'Optional template variables that will be used to generate actual subject, text and html from email template'
-    UnauthenticatedResponse:
-      title: UnauthenticatedResponse
-      type: object
-      properties:
-        error:
-          type: string
-          description: Error message
-          example: Incorrect API token
   securitySchemes:
     HeaderAuth:
       type: apiKey
@@ -971,16 +963,6 @@ components:
       scheme: bearer
       bearerFormat: JWT
   parameters:
-    account_id:
-      description: Unique account ID
-      name: account_id
-      in: path
-      required: true
-      schema:
-        type: integer
-        format: int64
-        minimum: 1
-        example: 3229
     inbox_id:
       description: Unique inbox ID
       name: inbox_id
