@@ -1,9 +1,9 @@
 openapi: 3.1.0
 info:
-  title: Email API
+  title: Email Sending
   version: 2.0.0
   description: |
-    Manage sending domains, suppressions, and email templates for your Mailtrap account.
+    Manage sending domains and suppressions for your Mailtrap account.
   contact:
     name: Mailtrap Support
     url: 'https://docs.mailtrap.io'
@@ -34,12 +34,6 @@ tags:
     x-page-description: Manage suppressed email addresses
     description: |
       Control which email addresses should not receive emails from your account.
-
-  - name: templates
-    x-page-title: Templates
-    x-page-description: Manage email templates
-    description: |
-      Create and manage reusable email templates with dynamic content.
 
   - name: stats
     x-page-title: Stats
@@ -971,508 +965,6 @@ paths:
         '404':
           $ref: '#/components/responses/NotFound'
 
-  /api/accounts/{account_id}/email_templates:
-    get:
-      description: Get all email templates existing in your account
-      operationId: emailTemplates
-      summary: Get all Email Templates
-      tags:
-        - templates
-      x-codeSamples:
-        - lang: shell
-          label: 'cURL'
-          source: |
-            curl -X GET "https://mailtrap.io/api/accounts/{account_id}/email_templates" \
-              -H "Api-Token: YOUR_API_KEY"
-        - lang: javascript
-          label: Node.js
-          source: |
-            const { MailtrapClient } = require("mailtrap");
-            const client = new MailtrapClient({ token: "YOUR_API_KEY", accountId: YOUR_ACCOUNT_ID });
-            
-            async function getTemplates() {
-              const templates = await client.templates.getList();
-
-              console.log("Templates:", templates);
-            }
-
-            getTemplates();
-        - lang: php
-          label: PHP
-          source: |
-            <?php
-
-            use Mailtrap\Config;
-            use Mailtrap\Helper\ResponseHelper;
-            use Mailtrap\MailtrapGeneralClient;
-
-            $config = new Config($_ENV['MAILTRAP_API_KEY']);
-            $accountId = $_ENV['MAILTRAP_ACCOUNT_ID'];
-
-            $emailTemplates = (new MailtrapGeneralClient($config))
-                ->emailTemplates($accountId);
-
-            $response = $emailTemplates->getAllEmailTemplates();
-            var_dump(ResponseHelper::toArray($response));
-        - lang: python
-          label: Python
-          source: |
-            import mailtrap as mt
-            client = mt.MailtrapClient(token="YOUR_API_KEY", account_id="YOUR_ACCOUNT_ID")
-            templates = client.email_templates_api.templates.get_list()
-            for tpl in templates:
-                print(f"{tpl.name}: {tpl.uuid}")
-        - lang: ruby
-          label: Ruby
-          source: |
-            require 'mailtrap'
-            client = Mailtrap::Client.new(api_key: 'YOUR_API_KEY')
-            templates = Mailtrap::EmailTemplatesAPI.new(YOUR_ACCOUNT_ID, client)
-            all_templates = templates.list
-        - lang: csharp
-          label: .NET
-          source: |
-            using Mailtrap;
-            using var mailtrapFactory = new MailtrapClientFactory("YOUR_API_KEY");
-            var client = mailtrapFactory.CreateClient();
-            var templates = await client.Account(YOUR_ACCOUNT_ID).EmailTemplates().GetAll();
-            foreach (var template in templates)
-            {
-                Console.WriteLine($"Template: {template.Name}, ID: {template.Uuid}");
-            }
-        - lang: java
-          label: Java
-          source: |
-            import io.mailtrap.config.MailtrapConfig;
-            import io.mailtrap.factory.MailtrapClientFactory;
-            
-            var config = new MailtrapConfig.Builder().token("YOUR_API_KEY").build();
-            var client = MailtrapClientFactory.createMailtrapClient(config);
-            
-            var response = client.emailTemplatesApi().emailTemplates().getAllTemplates(accountId);
-      responses:
-        '200':
-          description: OK.
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/EmailTemplateResponse'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '403':
-          $ref: '#/components/responses/Forbidden'
-    post:
-      description: Create a new email template
-      operationId: createEmailTemplate
-      summary: Create Email Template
-      tags:
-        - templates
-      x-codeSamples:
-        - lang: shell
-          label: 'cURL'
-          source: |
-            curl -X POST "https://mailtrap.io/api/accounts/{account_id}/email_templates" \
-              -H "Api-Token: YOUR_API_KEY" \
-              -H "Content-Type: application/json" \
-              -d '{
-                "email_template": {
-                  "name": "Welcome Email",
-                  "subject": "Welcome to {{company_name}}!",
-                  "category": "onboarding",
-                  "body_html": "<h1>Welcome {{user_name}}!</h1>",
-                  "body_text": "Welcome {{user_name}}!"
-                }
-              }'
-        - lang: javascript
-          label: Node.js
-          source: |
-            import { MailtrapClient } from "mailtrap";
-            const client = new MailtrapClient({ token: "YOUR_API_TOKEN" });
-            
-            async function createTemplate() {
-              const template = await client.templates.create({
-                name: "Welcome Email",
-                subject: "Welcome to {{company_name}}!",
-                category: "onboarding",
-                body_html: "<h1>Welcome {{user_name}}!</h1>",
-                body_text: "Welcome {{user_name}}!"
-              });
-              console.log(`Template created: ${template.uuid}`);
-            }
-
-            createTemplate();
-        - lang: php
-          label: PHP
-          source: |
-            <?php
-            use Mailtrap\Config;
-            use Mailtrap\DTO\Request\EmailTemplate;
-            use Mailtrap\Helper\ResponseHelper;
-            use Mailtrap\MailtrapGeneralClient;
-
-            $config = new Config($_ENV['MAILTRAP_API_KEY']);
-            $accountId = $_ENV['MAILTRAP_ACCOUNT_ID'];
-
-            $emailTemplates = (new MailtrapGeneralClient($config))
-                ->emailTemplates($accountId);
-
-            $response = $emailTemplates->createEmailTemplate(
-                EmailTemplate::init(
-                    'Welcome Email',
-                    'Welcome to {{company_name}}!',
-                    'onboarding',
-                    'Welcome {{user_name}}!',
-                    '<h1>Welcome {{user_name}}!</h1>'
-                )
-            );
-            var_dump(ResponseHelper::toArray($response));
-        - lang: python
-          label: Python
-          source: |
-            import mailtrap as mt
-            client = mt.MailtrapClient(token="YOUR_API_TOKEN", account_id="YOUR_ACCOUNT_ID")
-            template = client.email_templates_api.templates.create(
-                mt.CreateEmailTemplateParams(
-                    name="Welcome Email",
-                    subject="Welcome to {{company_name}}!",
-                    category="onboarding",
-                    body_html="<h1>Welcome {{user_name}}!</h1>",
-                    body_text="Welcome {{user_name}}!"
-                )
-            )
-        - lang: ruby
-          label: Ruby
-          source: |
-            require 'mailtrap'
-            client = Mailtrap::Client.new(api_key: 'YOUR_API_TOKEN')
-            templates = Mailtrap::EmailTemplatesAPI.new(YOUR_ACCOUNT_ID, client)
-            template = templates.create(
-              name: 'Welcome Email',
-              subject: 'Welcome to {{company_name}}!',
-              category: 'onboarding',
-              body_html: '<h1>Welcome {{user_name}}!</h1>',
-              body_text: 'Welcome {{user_name}}!'
-            )
-        - lang: csharp
-          label: .NET
-          source: |
-            using Mailtrap;
-            using Mailtrap.EmailTemplates.Requests;
-
-            using var mailtrapFactory = new MailtrapClientFactory("YOUR_API_KEY");
-            var client = mailtrapFactory.CreateClient();
-
-            var request = new CreateEmailTemplateRequest(
-                "Welcome Email", // Name
-                "onboarding", // Category
-                "Welcome to {{company_name}}!") // Subject
-            {
-                BodyHtml = "<h1>Welcome {{user_name}}!</h1>",
-                BodyText = "Welcome {{user_name}}!"
-            };
-            var template = await client.Account(YOUR_ACCOUNT_ID).EmailTemplates().Create(request);
-        - lang: java
-          label: Java
-          source: |
-            import io.mailtrap.config.MailtrapConfig;
-            import io.mailtrap.factory.MailtrapClientFactory;
-            
-            var config = new MailtrapConfig.Builder().token("YOUR_API_TOKEN").build();
-            var client = MailtrapClientFactory.createMailtrapClient(config);
-            
-            var request = new CreateEmailTemplateRequest(
-            new EmailTemplate(
-            "Welcome Email", "onboarding", "Welcome to {{company_name}}!",
-            "Welcome {{user_name}}!", "<h1>Welcome {{user_name}}!</h1>")
-            );
-            var template = client.emailTemplatesApi().emailTemplates().createEmailTemplate(accountId, request);
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/EmailTemplateRequest'
-      responses:
-        '201':
-          description: Email template created successfully.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/EmailTemplateResponse'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '403':
-          $ref: '#/components/responses/Forbidden'
-        '422':
-          $ref: '#/components/responses/UnprocessableEntity'
-    parameters:
-      - $ref: '#/components/parameters/account_id'
-
-  /api/accounts/{account_id}/email_templates/{email_template_id}:
-    get:
-      description: Get an email template by ID
-      operationId: getEmailTemplate
-      summary: Get Email Template
-      tags:
-        - templates
-      x-codeSamples:
-        - lang: shell
-          label: 'cURL'
-          source: |
-            curl -X GET "https://mailtrap.io/api/accounts/{account_id}/email_templates/{email_template_id}" \
-              -H "Api-Token: YOUR_API_KEY"
-        - lang: javascript
-          label: Node.js
-          source: |
-            const { MailtrapClient } = require("mailtrap");
-            const client = new MailtrapClient({ token: "YOUR_API_KEY", accountId: YOUR_ACCOUNT_ID });
-            
-            async function getTemplate() {
-              const templateId = 12345;
-              const template = await client.templates.get(templateId);
-
-              console.log(`Template: ${template.name} (UUID: ${template.uuid})`);
-            }
-
-            getTemplate();
-        - lang: php
-          label: PHP
-          source: |
-            <?php
-            use Mailtrap\Config;
-            use Mailtrap\Helper\ResponseHelper;
-            use Mailtrap\MailtrapGeneralClient;
-
-            $config = new Config($_ENV['MAILTRAP_API_KEY']);
-            $accountId = $_ENV['MAILTRAP_ACCOUNT_ID'];
-
-            $emailTemplates = (new MailtrapGeneralClient($config))
-                ->emailTemplates($accountId);
-
-            $templateId = $_ENV['MAILTRAP_TEMPLATE_ID'];
-            $response = $emailTemplates->getEmailTemplate($templateId);
-            var_dump(ResponseHelper::toArray($response));
-        - lang: python
-          label: Python
-          source: |
-            import mailtrap as mt
-
-            client = mt.MailtrapClient(token="YOUR_API_TOKEN", account_id="YOUR_ACCOUNT_ID")
-
-            template_id = 12345
-            template = client.email_templates_api.templates.get_by_id(template_id)
-            print(f"Template: {template.name} (ID: {template.id})")
-        - lang: ruby
-          label: Ruby
-          source: |
-            require 'mailtrap'
-
-            client = Mailtrap::Client.new(api_key: 'YOUR_API_KEY')
-            templates = Mailtrap::EmailTemplatesAPI.new(
-              YOUR_ACCOUNT_ID,
-              client
-            )
-            template = templates.get(template_id)
-      responses:
-        '200':
-          description: Returns attributes of the email template.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/EmailTemplateResponse'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '403':
-          $ref: '#/components/responses/Forbidden'
-        '404':
-          $ref: '#/components/responses/NotFound'
-    patch:
-      description: Update an email template
-      operationId: updateEmailTemplate
-      summary: Update Email Template
-      tags:
-        - templates
-      x-codeSamples:
-        - lang: shell
-          label: 'cURL'
-          source: |
-            curl -X PATCH "https://mailtrap.io/api/accounts/{account_id}/email_templates/{email_template_id}" \
-              -H "Api-Token: YOUR_API_KEY" \
-              -H "Content-Type: application/json" \
-              -d '{
-                "email_template": {
-                  "name": "Updated Template",
-                  "subject": "New Subject"
-                }
-              }'
-        - lang: javascript
-          label: Node.js
-          source: |
-            const { MailtrapClient } = require("mailtrap");
-            const client = new MailtrapClient({ token: "YOUR_API_KEY", accountId: YOUR_ACCOUNT_ID });
-            
-            async function updateTemplate() {
-              const templateId = 12345;
-              const template = await client.templates.update(templateId, { name: "Updated Template", subject: "New Subject" });
-
-              console.log(`Template updated: ${template.name} (UUID: ${template.uuid})`);
-            }
-
-            updateTemplate();
-        - lang: php
-          label: PHP
-          source: |
-            <?php
-            use Mailtrap\Config;
-            use Mailtrap\DTO\Request\EmailTemplate;
-            use Mailtrap\Helper\ResponseHelper;
-            use Mailtrap\MailtrapGeneralClient;
-
-            $config = new Config($_ENV['MAILTRAP_API_KEY']);
-            $accountId = $_ENV['MAILTRAP_ACCOUNT_ID'];
-
-            $emailTemplates = (new MailtrapGeneralClient($config))
-                ->emailTemplates($accountId);
-
-            $templateId = $_ENV['MAILTRAP_TEMPLATE_ID'];
-            $response = $emailTemplates->updateEmailTemplate(
-                $templateId,
-                EmailTemplate::init(
-                    'Updated Welcome Email',
-                    'Updated Subject',
-                    'Transactional',
-                    'Updated Text Body',
-                    '<div>Updated HTML Body</div>'
-                )
-            );
-            var_dump(ResponseHelper::toArray($response));
-        - lang: python
-          label: Python
-          source: |
-            import mailtrap as mt
-
-            email_template_id = "YOUR_TEMPLATE_ID"
-
-            client = mt.MailtrapClient(token="YOUR_API_TOKEN", account_id="YOUR_ACCOUNT_ID")
-            template = client.email_templates_api.templates.update(
-                template_id=email_template_id,
-                template_params=mt.UpdateEmailTemplateParams(
-                    name="Edited Welcome Email",
-                    subject="Edited Welcome to {{company_name}}!",
-                    category="onboarding",
-                    body_html="<h1>Edited Welcome {{user_name}}!</h1>",
-                    body_text="Edited Welcome {{user_name}}!"
-                )
-            )
-        - lang: ruby
-          label: Ruby
-          source: |
-            require 'mailtrap'
-
-            client = Mailtrap::Client.new(api_key: 'YOUR_API_KEY')
-            templates = Mailtrap::EmailTemplatesAPI.new(
-              YOUR_ACCOUNT_ID,
-              client
-            )
-            templates.update(EMAIL_TEMPLATE_ID, name: 'Welcome Updated')
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/EmailTemplateRequest'
-      responses:
-        '200':
-          description: Email template updated successfully.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/EmailTemplateResponse'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '403':
-          $ref: '#/components/responses/Forbidden'
-        '404':
-          $ref: '#/components/responses/NotFound'
-        '422':
-          $ref: '#/components/responses/UnprocessableEntity'
-    delete:
-      description: Delete an email template
-      operationId: deleteEmailTemplate
-      summary: Delete Email Template
-      tags:
-        - templates
-      x-codeSamples:
-        - lang: shell
-          label: 'cURL'
-          source: |
-            curl -X DELETE "https://mailtrap.io/api/accounts/{account_id}/email_templates/{email_template_id}" \
-              -H "Api-Token: YOUR_API_KEY"
-        - lang: javascript
-          label: Node.js
-          source: |
-            const { MailtrapClient } = require("mailtrap");
-            const client = new MailtrapClient({ token: "YOUR_API_KEY", accountId: YOUR_ACCOUNT_ID });
-            
-            async function deleteTemplate() {
-              const templateId = 12345;
-              await client.templates.delete(templateId);
-
-              console.log("Template deleted successfully");
-            }
-
-            deleteTemplate();
-        - lang: php
-          label: PHP
-          source: |
-            <?php
-            use Mailtrap\Config;
-            use Mailtrap\MailtrapGeneralClient;
-
-            $config = new Config($_ENV['MAILTRAP_API_KEY']);
-            $accountId = $_ENV['MAILTRAP_ACCOUNT_ID'];
-
-            $emailTemplates = (new MailtrapGeneralClient($config))
-                ->emailTemplates($accountId);
-
-            $templateId = $_ENV['MAILTRAP_TEMPLATE_ID'];
-            $response = $emailTemplates->deleteEmailTemplate($templateId);
-            var_dump($response->getStatusCode());
-        - lang: python
-          label: Python
-          source: |
-            import mailtrap as mt
-
-            email_template_id = "YOUR_TEMPLATE_ID"
-
-            client = mt.MailtrapClient(token="YOUR_API_TOKEN", account_id="YOUR_ACCOUNT_ID")
-            deleted_template = client.email_templates_api.templates.delete(
-              template_id=email_template_id
-            )
-        - lang: ruby
-          label: Ruby
-          source: |
-            require 'mailtrap'
-
-            client = Mailtrap::Client.new(api_key: 'YOUR_API_KEY')
-            templates = Mailtrap::EmailTemplatesAPI.new(
-              YOUR_ACCOUNT_ID,
-              client
-            )
-            templates.delete(EMAIL_TEMPLATE_ID)
-      responses:
-        '204':
-          description: No Content
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '403':
-          $ref: '#/components/responses/Forbidden'
-        '404':
-          $ref: '#/components/responses/NotFound'
-    parameters:
-      - $ref: '#/components/parameters/account_id'
-      - $ref: '#/components/parameters/email_template_id'
-
   '/api/accounts/{account_id}/stats':
     get:
       operationId: getAccountSendingStats
@@ -1737,15 +1229,6 @@ components:
         type: integer
         example: 1
 
-    email_template_id:
-      name: email_template_id
-      in: path
-      required: true
-      description: Email template ID
-      schema:
-        type: integer
-        example: 1
-
     StartDateQueryFilter:
       name: start_date
       description: Start date for which to include the results.
@@ -1846,23 +1329,133 @@ components:
       properties:
         id:
           type: integer
-          example: 1
         domain_name:
           type: string
-          example: example.com
-        dns_verified:
+        demo:
           type: boolean
-          example: true
         compliance_status:
           type: string
-          enum: [pending, verified, failed]
-          example: verified
-        created_at:
-          type: string
-          format: date-time
-        updated_at:
-          type: string
-          format: date-time
+          enum:
+            - initial
+            - unverified_dns
+            - demo
+            - missing_company_info
+            - pending
+            - under_review
+            - non_compliant
+            - suspended
+            - compliant
+        dns_verified:
+          type: boolean
+        dns_verified_at:
+          type:
+            - string
+            - 'null'
+          example: '2024-12-26T09:40:44.161Z'
+        dns_records:
+          type: array
+          items:
+            type: object
+            properties:
+              key:
+                type: string
+              domain:
+                type: string
+              name:
+                type: string
+              status:
+                type: string
+                enum:
+                  - pass
+                  - fail
+                  - unchecked
+                  - missing
+                  - softfail
+                  - network_error
+              type:
+                type: string
+              value:
+                type: string
+        open_tracking_enabled:
+          type: boolean
+        click_tracking_enabled:
+          type: boolean
+        auto_unsubscribe_link_enabled:
+          type: boolean
+        custom_domain_tracking_enabled:
+          type: boolean
+        health_alerts_enabled:
+          type: boolean
+        critical_alerts_enabled:
+          type: boolean
+        alert_recipient_email:
+          type:
+            - string
+            - 'null'
+        permissions:
+          type: object
+          properties:
+            can_read:
+              type: boolean
+            can_update:
+              type: boolean
+            can_destroy:
+              type: boolean
+      example:
+        id: 435
+        domain_name: mailtrap.io
+        demo: false
+        compliance_status: compliant
+        dns_verified: true
+        dns_verified_at: '2024-12-26T09:40:44.161Z'
+        dns_records:
+          - key: verification
+            domain: ve6wza2rbpe60x7z.mailtrap.io
+            type: CNAME
+            value: smtp.mailtrap.live
+            status: pass
+            name: ve6wza2rbpe60x7z
+          - key: spf
+            domain: mailtrap.io
+            type: TXT
+            value: 'v=spf1 include:_spf.smtp.mailtrap.live ~all'
+            status: pass
+            name: ''
+          - key: dkim1
+            domain: rwmt1._domainkey.mailtrap.io
+            type: CNAME
+            value: rwmt1.dkim.smtp.mailtrap.live
+            status: pass
+            name: rwmt1._domainkey
+          - key: dkim2
+            domain: rwmt2._domainkey.mailtrap.io
+            type: CNAME
+            value: rwmt2.dkim.smtp.mailtrap.live
+            status: pass
+            name: rwmt2._domainkey
+          - key: dmarc
+            domain: _dmarc.mailtrap.io
+            type: TXT
+            value: 'v=DMARC1; p=none; rua=mailto:dmarc@smtp.mailtrap.live; ruf=mailto:dmarc@smtp.mailtrap.live; rf=afrf; pct=100'
+            status: pass
+            name: _dmarc
+          - key: link_verification
+            domain: mt-link.mailtrap.io
+            type: CNAME
+            value: t.mailtrap.live
+            status: pass
+            name: mt-link
+        open_tracking_enabled: true
+        click_tracking_enabled: true
+        auto_unsubscribe_link_enabled: true
+        custom_domain_tracking_enabled: true
+        health_alerts_enabled: true
+        critical_alerts_enabled: true
+        alert_recipient_email: john.doe@mailtrap.io
+        permissions:
+          can_read: true
+          can_update: true
+          can_destroy: true
 
     Suppression:
       type: object
@@ -1891,83 +1484,6 @@ components:
             type: array
             items:
               type: string
-
-    EmailTemplateRequest:
-      title: EmailTemplateRequest
-      type: object
-      required:
-        - email_template
-      properties:
-        email_template:
-          type: object
-          required:
-            - name
-            - subject
-            - category
-          properties:
-            name:
-              type: string
-              maxLength: 255
-            category:
-              type: string
-              maxLength: 255
-            subject:
-              type: string
-              maxLength: 255
-            body_text:
-              type: string
-              maxLength: 10000000
-            body_html:
-              type: string
-              maxLength: 10000000
-      example:
-        email_template:
-          name: My Email Template
-          subject: Promotional Email
-          category: Promotional
-          body_html: <div>Template Body</div>
-          body_text: Template Body
-
-    EmailTemplateResponse:
-      title: EmailTemplateResponse
-      type: object
-      properties:
-        id:
-          type: integer
-        uuid:
-          type: string
-          format: uuid
-        name:
-          type: string
-          maxLength: 255
-        category:
-          type: string
-          maxLength: 255
-        subject:
-          type: string
-          maxLength: 255
-        body_text:
-          type: string
-          maxLength: 10000000
-        body_html:
-          type: string
-          maxLength: 10000000
-        created_at:
-          type: string
-          format: date-time
-        updated_at:
-          type: string
-          format: date-time
-      example:
-        id: 26730
-        uuid: 018dd5e3-f6d2-7c00-8f9b-e5c3f2d8a132
-        name: My Email Template
-        subject: Promotional Email
-        category: Promotional
-        body_html: <div>Template Body</div>
-        body_text: Template Body
-        created_at: '2021-01-01T00:00:00Z'
-        updated_at: '2021-01-01T00:00:00Z'
 
     SendingStats:
       title: SendingStats
@@ -2122,9 +1638,12 @@ components:
       content:
         application/json:
           schema:
-            type: array
-            items:
-              $ref: '#/components/schemas/SendingDomain'
+            type: object
+            properties:
+              data:
+                type: array
+                items:
+                  $ref: '#/components/schemas/SendingDomain'
 
     GetSuppressionsResponse:
       description: List of suppressions

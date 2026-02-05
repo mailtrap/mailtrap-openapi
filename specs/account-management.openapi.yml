@@ -1,8 +1,8 @@
 openapi: 3.1.0
 info:
-  description: API for Mailtrap.io General functionality
-  version: 2.0-oas3
-  title: General
+  description: Account management and administration
+  version: 2.0.0
+  title: Account Management
   contact:
     name: Mailtrap
     url: 'https://docs.mailtrap.io'
@@ -14,183 +14,39 @@ security:
   - HeaderAuth: []
   - BearerAuth: []
 servers:
-  - description: Mailtrap Sandbox API
+  - description: Mailtrap API
     url: 'https://mailtrap.io'
 tags:
-  - name: general-api
-    x-page-title: General API
-    x-page-description: Account management and administration
-    description: |
-      ## General API
-
-      Manage accounts, users, permissions, and billing for your Mailtrap organization.
-
-      {% hint style="info" %}
-      **Key Features**: Account management, user permissions, billing info, access controls
-      {% endhint %}
-
-      ### Getting Started
-
-      {% tabs %}
-      {% tab title="Accounts" %}
-      **Account Management:**
-      - List all accounts
-      - Get account details
-      - Manage account settings
-      {% endtab %}
-
-      {% tab title="Users & Permissions" %}
-      **Access Control:**
-      - Add/remove users
-      - Set permission levels
-      - Manage invitations
-      - Control resource access
-      {% endtab %}
-
-      {% tab title="Billing" %}
-      **Billing Information:**
-      - View billing details
-      - Check usage limits
-      - Manage subscriptions
-      {% endtab %}
-      {% endtabs %}
-
   - name: Accounts
-    x-parent: general-api
     x-page-title: Accounts
-    x-page-description: Manage accounts
-    description: Accounts API
+    description: |
+      The Account ID is required when working with Account Management endpoints.
+  
+      To find your Account ID, you can either:
+      - Use the endpoint below to list your accounts, or
+      - Find it in the UI under [Account Settings](https://mailtrap.io/account-management)
 
   - name: Account Accesses
-    x-parent: general-api
     x-page-title: Access Control
-    x-page-description: Manage user access
-    description: Account Accesses
 
   - name: Account Users
-    x-parent: general-api
     x-page-title: Users
-    x-page-description: Manage account users
-    description: Account Users API
 
   - name: Permissions
-    x-parent: general-api
     x-page-title: Permissions
-    x-page-description: Manage permissions
-    description: Interactions with permission
 
   - name: Billing
-    x-parent: general-api
     x-page-title: Billing
-    x-page-description: Billing information
-    description: Account Billing
 
   - name: Organizations
-    x-parent: general-api
     x-page-title: Organizations
-    x-page-description: Organization Sub Accounts management
-    description: Create and manage organization sub accounts
 paths:
-  '/api/organizations/{organization_id}/sub_accounts':
-    get:
-      operationId: getOrganizationSubAccounts
-      summary: Get organization sub accounts
-      description: Get a list of sub accounts for the specified organization. You must have sub account management permissions for this organization.
-      tags:
-        - Organizations
-      x-codeSamples:
-        - lang: shell
-          label: 'cURL'
-          source: |
-            curl -X GET https://mailtrap.io/api/organizations/{organization_id}/sub_accounts \
-              -H 'Authorization: Bearer YOUR_API_TOKEN'
-      responses:
-        '200':
-          description: Returns the list of sub accounts belonging to the organization.
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/SubAccount'
-              example:
-                - id: 12345
-                  name: Development Team Account
-                - id: 12346
-                  name: QA Team Account
-        '401':
-          $ref: '#/components/responses/UNAUTHENTICATED'
-        '403':
-          $ref: '#/components/responses/PERMISSION_DENIED'
-    post:
-      operationId: createOrganizationSubAccount
-      summary: Create organization sub account
-      description: Create a new sub account under the specified organization. You must have sub account management permissions for this organization.
-      tags:
-        - Organizations
-      x-codeSamples:
-        - lang: shell
-          label: 'cURL'
-          source: |
-            curl -X POST https://mailtrap.io/api/organizations/{organization_id}/sub_accounts \
-              -H 'Authorization: Bearer YOUR_API_TOKEN' \
-              -H 'Content-Type: application/json' \
-              -d '{
-                "account": {
-                  "name": "New Team Account"
-                }
-              }'
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              required:
-                - account
-              properties:
-                account:
-                  type: object
-                  required:
-                    - name
-                  properties:
-                    name:
-                      type: string
-                      description: Name of the sub account to create
-                      example: New Team Account
-      responses:
-        '200':
-          description: Sub account created successfully.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/SubAccount'
-              example:
-                id: 12347
-                name: New Team Account
-        '400':
-          description: Bad request - invalid parameters.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        '401':
-          $ref: '#/components/responses/UNAUTHENTICATED'
-        '403':
-          $ref: '#/components/responses/PERMISSION_DENIED'
-        '422':
-          description: Unprocessable entity - validation errors.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/UnprocessableEntity'
-    parameters:
-      - $ref: '#/components/parameters/organization_id'
   /api/accounts:
     get:
       operationId: getAllAccounts
-      summary: Get all accounts
-      description: Get a list of your Mailtrap accounts.
+      summary: List account(s) you have access to
+      description: |
+        This endpoint returns account details for the authenticated user. If you are using [Organizations and Sub-Accounts](https://docs.mailtrap.io/account-and-organization/management/organization-and-sub-accounts) and the API token was created at the organization level, the response will include all accounts within the organization.
       tags:
         - Accounts
       x-codeSamples:
@@ -977,6 +833,101 @@ paths:
           $ref: '#/components/responses/PERMISSION_DENIED'
     parameters:
       - $ref: '#/components/parameters/account_id'
+  '/api/organizations/{organization_id}/sub_accounts':
+    get:
+      operationId: getOrganizationSubAccounts
+      summary: Get organization sub accounts
+      description: Get a list of sub accounts for the specified organization. You must have sub account management permissions for this organization.
+      tags:
+        - Organizations
+      x-codeSamples:
+        - lang: shell
+          label: 'cURL'
+          source: |
+            curl -X GET https://mailtrap.io/api/organizations/{organization_id}/sub_accounts \
+              -H 'Authorization: Bearer YOUR_API_TOKEN'
+      responses:
+        '200':
+          description: Returns the list of sub accounts belonging to the organization.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/SubAccount'
+              example:
+                - id: 12345
+                  name: Development Team Account
+                - id: 12346
+                  name: QA Team Account
+        '401':
+          $ref: '#/components/responses/UNAUTHENTICATED'
+        '403':
+          $ref: '#/components/responses/PERMISSION_DENIED'
+    post:
+      operationId: createOrganizationSubAccount
+      summary: Create organization sub account
+      description: Create a new sub account under the specified organization. You must have sub account management permissions for this organization.
+      tags:
+        - Organizations
+      x-codeSamples:
+        - lang: shell
+          label: 'cURL'
+          source: |
+            curl -X POST https://mailtrap.io/api/organizations/{organization_id}/sub_accounts \
+              -H 'Authorization: Bearer YOUR_API_TOKEN' \
+              -H 'Content-Type: application/json' \
+              -d '{
+                "account": {
+                  "name": "New Team Account"
+                }
+              }'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - account
+              properties:
+                account:
+                  type: object
+                  required:
+                    - name
+                  properties:
+                    name:
+                      type: string
+                      description: Name of the sub account to create
+                      example: New Team Account
+      responses:
+        '200':
+          description: Sub account created successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SubAccount'
+              example:
+                id: 12347
+                name: New Team Account
+        '400':
+          description: Bad request - invalid parameters.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          $ref: '#/components/responses/UNAUTHENTICATED'
+        '403':
+          $ref: '#/components/responses/PERMISSION_DENIED'
+        '422':
+          description: Unprocessable entity - validation errors.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnprocessableEntity'
+    parameters:
+      - $ref: '#/components/parameters/organization_id'
 components:
   schemas:
     SubAccount:

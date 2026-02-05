@@ -1,8 +1,8 @@
 openapi: 3.1.0
 info:
-  description: API for Mailtrap.io Sandbox functionality
-  version: 2.0-oas3
-  title: Sandbox API
+  description: Test email sending in a safe environment
+  version: 2.0.0
+  title: Email Sandbox
   contact:
     name: Mailtrap
     url: 'https://docs.mailtrap.io'
@@ -14,77 +14,145 @@ security:
   - HeaderAuth: []
   - BearerAuth: []
 servers:
-  - description: Mailtrap Sandbox API
+  - description: Mailtrap API
     url: 'https://mailtrap.io'
 tags:
-  - name: sandbox-api
-    x-page-title: Email Sandbox API
-    x-page-description: Test email sending in a safe environment
-    description: |
-      ## Email Sandbox API
-
-      Test email functionality without sending to real recipients. Perfect for development, staging, and QA environments.
-
-      {% hint style="info" %}
-      **Key Features**: Email capture, content inspection, spam scoring, attachment handling, team collaboration
-      {% endhint %}
-
-      ### Getting Started
-
-      {% tabs %}
-      {% tab title="Projects" %}
-      **Organize Your Tests:**
-      - Create projects for different environments
-      - Group inboxes by application or feature
-      - Share with team members for collaboration
-      {% endtab %}
-
-      {% tab title="Inboxes" %}
-      **Test Email Capture:**
-      - Create multiple test inboxes
-      - Unique SMTP credentials per inbox
-      - API access for automation
-      {% endtab %}
-
-      {% tab title="Messages" %}
-      **Email Inspection:**
-      - View HTML/text content
-      - Check headers and attachments
-      - Analyze spam scores
-      - Forward for manual review
-      {% endtab %}
-      {% endtabs %}
-
   - name: Projects
-    x-parent: sandbox-api
     x-page-title: Projects
     x-page-description: Organize test environments
     description: Interactions with projects
 
-  - name: Inboxes
-    x-parent: sandbox-api
-    x-page-title: Inboxes
+  - name: Sandboxes (Inboxes)
+    x-page-title: Sandboxes (Inboxes)
     x-page-description: Manage test inboxes
-    description: Interactions with inboxes
+    description: |
+      Manage Sandboxes (Inboxes) for email testing. Capture and inspect emails without delivering them to real recipients. This is ideal for development, staging, and QA environments.
+
+      ### Get your Sandbox ID
+
+      To use the Sandbox API, you need a Sandbox (Inbox) ID. You can get it in one of the following ways.
+      
+      #### Option 1: From the inbox URL
+      
+      1. Open your Sandbox in Mailtrap.
+      2. Copy the ID from the inbox URL.
+      
+      Example:
+        - URL: https://mailtrap.io/inboxes/2564102/messages
+        - Sandbox ID: 2564102
+      
+      #### Option 2: Via the API
+      
+      Use the `Get a list of inboxes` endpoint to retrieve all Sandboxes in your account.
 
   - name: Messages
-    x-parent: sandbox-api
     x-page-title: Messages
     x-page-description: Inspect captured emails
     description: Interactions with messages
 
   - name: Attachments
-    x-parent: sandbox-api
     x-page-title: Attachments
     x-page-description: Handle email attachments
     description: Interactions with attachments
 
-  - name: Test Emails
-    x-parent: sandbox-api
-    x-page-title: Send Test Emails
-    x-page-description: Send emails to sandbox
-    description: Test Emails
 paths:
+  '/api/accounts/{account_id}/inboxes':
+    get:
+      summary: Get a list of inboxes
+      description: Get a list of inboxes.
+      tags:
+        - Sandboxes (Inboxes)
+      responses:
+        '200':
+          $ref: '#/components/responses/InboxesResponse'
+        '401':
+          $ref: '#/components/responses/UNAUTHENTICATED'
+        '403':
+          $ref: '#/components/responses/PERMISSION_DENIED'
+      x-codeSamples:
+        - lang: shell
+          label: 'cURL'
+          source: |
+            curl -X GET https://mailtrap.io/api/accounts/{account_id}/inboxes \
+              -H 'Authorization: Bearer YOUR_API_KEY'
+        - lang: javascript
+          label: Node.js
+          source: |
+            const { MailtrapClient } = require("mailtrap");
+
+            const TOKEN = "YOUR_API_KEY";
+            const ACCOUNT_ID = "YOUR_ACCOUNT_ID";
+
+            const client = new MailtrapClient({ token: TOKEN, accountId: ACCOUNT_ID });
+
+            async function getInboxes() {
+              const inboxes = await client.testing.inboxes.getList();
+            }
+
+            getInboxes();
+        - lang: php
+          label: PHP
+          source: |
+            <?php
+            use Mailtrap\Config;
+            use Mailtrap\Helper\ResponseHelper;
+            use Mailtrap\MailtrapSandboxClient;
+
+            $config = new Config($_ENV['MAILTRAP_API_KEY']);
+            $accountId = $_ENV['MAILTRAP_ACCOUNT_ID'];
+
+            $sandboxInboxes = (new MailtrapSandboxClient($config))
+                ->inboxes($accountId);
+
+            $response = $sandboxInboxes->getList();
+            var_dump(ResponseHelper::toArray($response));
+        - lang: python
+          label: Python
+          source: |
+            import mailtrap as mt
+
+            API_TOKEN = "YOUR_API_KEY"
+            ACCOUNT_ID = "YOUR_ACCOUNT_ID"
+
+            client = mt.MailtrapClient(token=API_TOKEN, account_id=ACCOUNT_ID)
+            inboxes_api = client.testing_api.inboxes
+
+            inboxes = inboxes_api.get_list()
+
+            print(inboxes)
+        - lang: csharp
+          label: .NET
+          source: |
+            using Mailtrap;
+
+            using var mailtrapFactory = new MailtrapClientFactory("YOUR_API_KEY");
+            var client = mailtrapFactory.CreateClient();
+            var inboxes = await client
+                .Account(YOUR_ACCOUNT_ID)
+                .Inboxes()
+                .GetAll();
+
+            Console.WriteLine(inboxes);
+        - lang: java
+          label: Java
+          source: |
+            import io.mailtrap.config.MailtrapConfig;
+            import io.mailtrap.factory.MailtrapClientFactory;
+
+            var config = new MailtrapConfig.Builder()
+                .token("YOUR_API_KEY")
+                .build();
+
+            var client = MailtrapClientFactory
+                .createMailtrapClient(config);
+
+            var inboxes = client.testingApi().inboxes()
+                .getInboxes(accountId);
+
+            System.out.println(inboxes);
+      operationId: getInboxes
+    parameters:
+      - $ref: '#/components/parameters/account_id'
   '/api/accounts/{account_id}/projects':
     post:
       summary: Create project
@@ -755,7 +823,7 @@ paths:
       summary: Create an inbox
       description: Create an inbox in a project.
       tags:
-        - Inboxes
+        - Sandboxes (Inboxes)
       requestBody:
         content:
           application/json:
@@ -900,7 +968,7 @@ paths:
       summary: Get inbox attributes
       description: Get inbox attributes by inbox id. See the list of attributes in the example
       tags:
-        - Inboxes
+        - Sandboxes (Inboxes)
       responses:
         '200':
           $ref: '#/components/responses/InboxResponse'
@@ -1003,7 +1071,7 @@ paths:
       summary: Delete an inbox
       description: Delete an inbox with all its emails.
       tags:
-        - Inboxes
+        - Sandboxes (Inboxes)
       responses:
         '200':
           $ref: '#/components/responses/InboxResponse'
@@ -1105,7 +1173,7 @@ paths:
       summary: Update an inbox
       description: 'Update inbox name, inbox email username.'
       tags:
-        - Inboxes
+        - Sandboxes (Inboxes)
       requestBody:
         content:
           application/json:
@@ -1258,7 +1326,7 @@ paths:
       summary: Clean inbox
       description: Delete all messages (emails) from inbox.
       tags:
-        - Inboxes
+        - Sandboxes (Inboxes)
       responses:
         '200':
           $ref: '#/components/responses/InboxResponse'
@@ -1366,7 +1434,7 @@ paths:
       summary: Mark as read
       description: Mark all messages in the inbox as read.
       tags:
-        - Inboxes
+        - Sandboxes (Inboxes)
       responses:
         '200':
           $ref: '#/components/responses/InboxResponse'
@@ -1474,7 +1542,7 @@ paths:
       summary: Reset credentials
       description: Reset SMTP credentials of the inbox.
       tags:
-        - Inboxes
+        - Sandboxes (Inboxes)
       responses:
         '200':
           $ref: '#/components/responses/InboxResponse'
@@ -1582,7 +1650,7 @@ paths:
       summary: Enable email address
       description: Turn the email address of the inbox on/off.
       tags:
-        - Inboxes
+        - Sandboxes (Inboxes)
       responses:
         '200':
           $ref: '#/components/responses/InboxResponse'
@@ -1690,7 +1758,7 @@ paths:
       summary: Reset email address
       description: Reset username of email address per inbox.
       tags:
-        - Inboxes
+        - Sandboxes (Inboxes)
       responses:
         '200':
           $ref: '#/components/responses/InboxResponse'
@@ -1793,557 +1861,6 @@ paths:
       operationId: resetEmailUserNamePerInbox
     parameters:
       - $ref: '#/components/parameters/account_id'
-      - $ref: '#/components/parameters/inbox_id'
-  '/api/accounts/{account_id}/inboxes':
-    get:
-      summary: Get a list of inboxes
-      description: Get a list of inboxes.
-      tags:
-        - Inboxes
-      responses:
-        '200':
-          $ref: '#/components/responses/InboxesResponse'
-        '401':
-          $ref: '#/components/responses/UNAUTHENTICATED'
-        '403':
-          $ref: '#/components/responses/PERMISSION_DENIED'
-      x-codeSamples:
-        - lang: shell
-          label: 'cURL'
-          source: |
-            curl -X GET https://mailtrap.io/api/accounts/{account_id}/inboxes \
-              -H 'Authorization: Bearer YOUR_API_KEY'
-        - lang: javascript
-          label: Node.js
-          source: |
-            const { MailtrapClient } = require("mailtrap");
-
-            const TOKEN = "YOUR_API_KEY";
-            const ACCOUNT_ID = "YOUR_ACCOUNT_ID";
-
-            const client = new MailtrapClient({ token: TOKEN, accountId: ACCOUNT_ID });
-
-            async function getInboxes() {
-              const inboxes = await client.testing.inboxes.getList();
-            }
-
-            getInboxes();
-        - lang: php
-          label: PHP
-          source: |
-            <?php
-            use Mailtrap\Config;
-            use Mailtrap\Helper\ResponseHelper;
-            use Mailtrap\MailtrapSandboxClient;
-
-            $config = new Config($_ENV['MAILTRAP_API_KEY']);
-            $accountId = $_ENV['MAILTRAP_ACCOUNT_ID'];
-
-            $sandboxInboxes = (new MailtrapSandboxClient($config))
-                ->inboxes($accountId);
-
-            $response = $sandboxInboxes->getList();
-            var_dump(ResponseHelper::toArray($response));
-        - lang: python
-          label: Python
-          source: |
-            import mailtrap as mt
-
-            API_TOKEN = "YOUR_API_KEY"
-            ACCOUNT_ID = "YOUR_ACCOUNT_ID"
-
-            client = mt.MailtrapClient(token=API_TOKEN, account_id=ACCOUNT_ID)
-            inboxes_api = client.testing_api.inboxes
-
-            inboxes = inboxes_api.get_list()
-
-            print(inboxes)
-        - lang: csharp
-          label: .NET
-          source: |
-            using Mailtrap;
-
-            using var mailtrapFactory = new MailtrapClientFactory("YOUR_API_KEY");
-            var client = mailtrapFactory.CreateClient();
-            var inboxes = await client
-                .Account(YOUR_ACCOUNT_ID)
-                .Inboxes()
-                .GetAll();
-
-            Console.WriteLine(inboxes);
-        - lang: java
-          label: Java
-          source: |
-            import io.mailtrap.config.MailtrapConfig;
-            import io.mailtrap.factory.MailtrapClientFactory;
-
-            var config = new MailtrapConfig.Builder()
-                .token("YOUR_API_KEY")
-                .build();
-
-            var client = MailtrapClientFactory
-                .createMailtrapClient(config);
-
-            var inboxes = client.testingApi().inboxes()
-                .getInboxes(accountId);
-
-            System.out.println(inboxes);
-      operationId: getInboxes
-    parameters:
-      - $ref: '#/components/parameters/account_id'
-  '/api/send/{inbox_id}':
-    servers:
-      - description: Mailtrap Sandbox API mail server
-        url: 'https://sandbox.api.mailtrap.io'
-    post:
-      description: Send email message to the specified inbox.
-      operationId: sendEmail
-      summary: Send email (including templates)
-      tags:
-        - Test Emails
-      x-codeSamples:
-        - lang: shell
-          label: 'cURL'
-          source: |
-            curl -X POST https://sandbox.api.mailtrap.io/api/send/{inbox_id} \
-              -H 'Authorization: Bearer YOUR_API_KEY' \
-              -H 'Content-Type: application/json' \
-              -d '{
-                "from": {"email": "sender@example.com"},
-                "to": [{"email": "recipient@example.com"}],
-                "subject": "Test Email",
-                "text": "This is a test email sent to sandbox"
-              }'
-        - lang: javascript
-          label: Node.js
-          source: |
-            import { MailtrapClient } from "mailtrap";
-
-            const client = new MailtrapClient({
-              token: "YOUR_API_TOKEN",
-              testInboxId: TEST_INBOX_ID,
-              sandbox: true
-            });
-
-            async function sendTestEmail() {
-              await client.send({
-                from: { email: "test@example.com", name: "Test Sender" },
-                to: [{ email: "user@example.com", name: "Test User" }],
-                subject: "Test Email",
-                text: "This is a test email for sandbox.",
-                html: "<p>This is a <b>test email</b> for sandbox.</p>"
-              });
-            }
-
-            sendTestEmail();
-        - lang: php
-          label: PHP
-          source: |
-            <?php
-            use Mailtrap\Helper\ResponseHelper;
-            use Mailtrap\MailtrapClient;
-            use Mailtrap\Mime\MailtrapEmail;
-            use Symfony\Component\Mime\Address;
-
-            $mailtrap = MailtrapClient::initSendingEmails(
-                apiKey: $_ENV['MAILTRAP_API_KEY'],
-                isSandbox: true,
-                inboxId: $_ENV['MAILTRAP_INBOX_ID']
-            );
-
-            $email = (new MailtrapEmail())
-                ->from(new Address('test@example.com', 'Test Sender'))
-                ->to(new Address('user@example.com', 'Test User'))
-                ->subject('Test Email')
-                ->text('This is a test email for sandbox.')
-                ->html('<p>This is a <b>test email</b> for sandbox.</p>');
-
-            $response = $mailtrap->send($email);
-
-            var_dump(ResponseHelper::toArray($response));
-        - lang: python
-          label: Python
-          source: |
-            import mailtrap as mt
-
-            inbox_id = 123456
-
-            client = mt.MailtrapClient(
-                token="YOUR_API_TOKEN",
-                sandbox=True,
-                inbox_id=inbox_id
-            )
-
-            mail = mt.Mail(
-                sender=mt.Address(email="test@example.com", name="Test Sender"),
-                to=[mt.Address(email="user@example.com", name="Test User")],
-                subject="Test Email",
-                text="This is a test email for sandbox.",
-                html="<p>This is a <b>test email</b> for sandbox.</p>"
-            )
-
-            client.send(mail)
-        - lang: ruby
-          label: Ruby
-          source: |
-            require 'mailtrap'
-
-            client = Mailtrap::Client.new(api_key: 'YOUR_API_TOKEN', sandbox: true, inbox_id: TEST_INBOX_ID)
-
-            mail = Mailtrap::Mail.new(
-              from: { email: 'test@example.com', name: 'Test Sender' },
-              to: [{ email: 'user@example.com', name: 'Test User' }],
-              subject: 'Test Email',
-              text: 'This is a test email for sandbox.',
-              html: '<p>This is a <b>test email</b> for sandbox.</p>'
-            )
-
-            client.send(mail)
-        - lang: csharp
-          label: .NET
-          source: |
-            using Mailtrap;
-            using Mailtrap.Configuration;
-            using Mailtrap.Emails.Requests;
-
-            var options = new MailtrapClientOptions
-            {
-                ApiToken = "YOUR_API_KEY",
-                InboxId = TEST_INBOX_ID // Sandbox inbox ID
-            };
-            using var mailtrapFactory = new MailtrapClientFactory(options);
-            var client = mailtrapFactory.CreateClient();
-
-            var email = SendEmailRequest.Create()
-                .From("test@example.com", "Test Sender")
-                .To("user@example.com", "Test User")
-                .Subject("Test Email")
-                .Text("This is a test email for sandbox.")
-                .Html("<p>This is a <b>test email</b> for sandbox.</p>");
-
-            await client
-                .Email()
-                .Send(email);
-
-            // Or using test email client directly
-            await client
-                .Test(TEST_INBOX_ID)
-                .Send(email);
-        - lang: java
-          label: Java
-          source: |
-            import io.mailtrap.config.MailtrapConfig;
-            import io.mailtrap.factory.MailtrapClientFactory;
-            import io.mailtrap.model.request.emails.Address;
-            import io.mailtrap.model.request.emails.MailtrapMail;
-            import java.util.List;
-
-            var config = new MailtrapConfig.Builder()
-                .token("YOUR_API_TOKEN")
-                .inboxId(TEST_INBOX_ID)
-                .build();
-
-            var client = MailtrapClientFactory
-                .createMailtrapClient(config);
-
-            var mail = MailtrapMail.builder()
-                .from(new Address("Test Sender", "test@example.com"))
-                .to(List.of(new Address("Test User", "user@example.com")))
-                .subject("Test Email")
-                .text("This is a test email for sandbox.")
-                .html("<p>This is a <b>test email</b> for sandbox.</p>")
-                .build();
-
-            client.testingApi().emails().send(mail, config.getInboxId());
-      requestBody:
-        content:
-          application/json:
-            schema:
-              oneOf:
-                - $ref: '#/components/schemas/EmailWithText'
-                - $ref: '#/components/schemas/EmailWithHtml'
-                - $ref: '#/components/schemas/EmailWithTextAndHtml'
-                - $ref: '#/components/schemas/EmailFromTemplate'
-      responses:
-        '200':
-          description: Success. Message has been delivered.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/SentResponse'
-        '400':
-          description: Bad request. Fix errors listed in response before retrying.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/SendEmailErrorResponse'
-        '401':
-          description: Unauthorized. Make sure you are sending correct credentials with the request before retrying.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/SendEmailErrorResponse'
-        '429':
-          description: Billing plan limit exhausted or inbox rate limit exceeded (see the response for details).
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/SendEmailErrorResponse'
-        '500':
-          description: Internal error. Mail was not delivered. Retry later or contact support.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/SendEmailErrorResponse'
-    parameters:
-      - $ref: '#/components/parameters/inbox_id'
-  '/api/batch/{inbox_id}':
-    servers:
-      - description: Mailtrap Sandbox API mail server
-        url: 'https://sandbox.api.mailtrap.io'
-    post:
-      description: |
-        Batch send email (text, html, text&html, templates). Please note that the endpoint will return a 200-level http status, even when sending for individual messages may fail. Users of this endpoint should check the success and errors for each message in the response (the results are ordered the same as the original messages - `requests`). Please note that the endpoint accepts up to 500 messages per API call, and up to 50 MB payload size, including attachments.
-      operationId: batchSendEmail
-      summary: Batch send email (including templates)
-      tags:
-        - Test Emails
-      x-codeSamples:
-        - lang: shell
-          label: 'cURL'
-          source: |
-            curl -X POST https://sandbox.api.mailtrap.io/api/batch/{inbox_id} \
-              -H 'Authorization: Bearer YOUR_API_KEY' \
-              -H 'Content-Type: application/json' \
-              -d '{
-                "base": {"from": {"email": "sender@example.com"}, "subject": "Batch Email"},
-                "requests": [{"to": [{"email": "recipient1@example.com"}]}, {"to": [{"email": "recipient2@example.com"}]}]
-              }'
-        - lang: javascript
-          label: Node.js
-          source: |
-            const { MailtrapClient } = require("mailtrap");
-
-            const TOKEN = "YOUR_API_KEY";
-            const TEST_INBOX_ID = 12345;
-
-            const client = new MailtrapClient({
-              token: TOKEN,
-              sandbox: true,
-              testInboxId: TEST_INBOX_ID
-            });
-
-            client.batchSend({
-              base: {
-                from: { name: "Test Sender", email: "sender@example.com" },
-                subject: "Batch Email",
-                text: "Batch email content"
-              },
-              requests: [
-                {
-                  to: [{ email: "recipient1@example.com" }],
-                  custom_variables: { user_id: 1 }
-                },
-                {
-                  to: [{ email: "recipient2@example.com" }],
-                  custom_variables: { user_id: 2 }
-                }
-              ]
-            })
-              .then(console.log)
-              .catch(console.error);
-        - lang: php
-          label: PHP
-          source: |
-            <?php
-            use Mailtrap\Helper\ResponseHelper;
-            use Mailtrap\MailtrapClient;
-            use Mailtrap\Mime\MailtrapEmail;
-            use Symfony\Component\Mime\Address;
-
-            $mailtrap = MailtrapClient::initSendingEmails(
-                apiKey: $_ENV['MAILTRAP_API_KEY'],
-                isSandbox: true,
-                inboxId: $_ENV['MAILTRAP_INBOX_ID']
-            );
-
-            $baseEmail = (new MailtrapEmail())
-                ->from(new Address('sender@example.com', 'Test Sender'))
-                ->subject('Batch Email')
-                ->text('Batch email content');
-
-            $recipientEmails = [
-                (new MailtrapEmail())->to(new Address('recipient1@example.com', 'Recipient 1')),
-                (new MailtrapEmail())->to(new Address('recipient2@example.com', 'Recipient 2')),
-            ];
-
-            $response = $mailtrap->batchSend($recipientEmails, $baseEmail);
-
-            var_dump(ResponseHelper::toArray($response));
-        - lang: python
-          label: Python
-          source: |
-            import mailtrap as mt
-
-            API_TOKEN = "YOUR_API_KEY"
-            inbox_id = 12345
-
-            client = mt.MailtrapClient(
-                token=API_TOKEN,
-                sandbox=True,
-                inbox_id=inbox_id
-            )
-
-            batch_mail = mt.BatchSendEmailParams(
-                base=mt.BatchMail(
-                    sender=mt.Address(email="sender@example.com", name="Test Sender"),
-                    subject="Batch Email",
-                    text="Batch email content",
-                ),
-                requests=[
-                    mt.BatchEmailRequest(
-                        to=[mt.Address(email="recipient1@example.com")],
-                    ),
-                    mt.BatchEmailRequest(
-                        to=[mt.Address(email="recipient2@example.com")],
-                    ),
-                ],
-            )
-
-            result = client.batch_send(batch_mail)
-            print(result)
-        - lang: ruby
-          label: Ruby
-          source: |
-            require 'mailtrap'
-
-            client = Mailtrap::Client.new(
-              api_key: 'YOUR_API_KEY',
-              sandbox: true,
-              inbox_id: 12345
-            )
-
-            base_mail = {
-              from: { email: 'sender@example.com', name: 'Test Sender' },
-              subject: 'Batch Email',
-              text: 'Batch email content'
-            }
-
-            requests = [
-              { to: [{ email: 'recipient1@example.com' }] },
-              { to: [{ email: 'recipient2@example.com' }] }
-            ]
-
-            result = client.batch_send(base: base_mail, requests: requests)
-            puts result
-        - lang: csharp
-          label: .NET
-          source: |
-            using Mailtrap;
-            using Mailtrap.Emails.Requests;
-            using Mailtrap.Emails.Models;
-
-            var options = new MailtrapClientOptions
-            {
-                ApiToken = "YOUR_API_KEY",
-                InboxId = TEST_INBOX_ID // Specify Sandbox inbox ID to send test emails
-            };
-            using var mailtrapFactory = new MailtrapClientFactory(options);
-            var client = mailtrapFactory.CreateClient();
-
-            var request = BatchEmailRequest
-                .Create()
-                .Base(b => b
-                    .From("sender@example.com", "Test Sender")
-                    .Subject("Batch Email")
-                    .Text("Batch email content"))
-                .Requests(
-                    SendEmailRequest.Create()
-                        .To("recipient1@example.com"),
-                    SendEmailRequest.Create()
-                        .To("recipient2@example.com")
-                );
-
-            var response = await client
-                .BatchEmail()
-                .Send(request);
-
-            Console.WriteLine(response);
-
-            // Or using test email client directly
-            response = await client
-                .BatchTest(TEST_INBOX_ID)
-                .Send(request);
-
-            Console.WriteLine(response);
-        - lang: java
-          label: Java
-          source: |
-            import io.mailtrap.config.MailtrapConfig;
-            import io.mailtrap.factory.MailtrapClientFactory;
-            import io.mailtrap.model.request.emails.Address;
-            import io.mailtrap.model.request.emails.MailtrapBatchMail;
-            import io.mailtrap.model.request.emails.BatchEmailBase;
-            import io.mailtrap.model.request.emails.MailtrapMail;
-            import java.util.List;
-
-            var config = new MailtrapConfig.Builder()
-                .token("YOUR_API_KEY")
-                .inboxId(12345L)
-                .build();
-
-            var client = MailtrapClientFactory.createMailtrapClient(config);
-
-            var mail = MailtrapMail.builder()
-                .from(new Address("Test Sender", "sender@example.com"))
-                .to(List.of(new Address("Recipient", "recipient@example.com")))
-                .subject("Batch Email")
-                .text("Batch email content")
-                .build();
-
-            var batchMail = MailtrapBatchMail.builder()
-                .base(BatchEmailBase.builder()
-                    .from(new Address("Test Sender", "sender@example.com"))
-                    .subject("Batch Email")
-                    .build())
-                .requests(List.of(mail))
-                .build();
-
-            var response = client.testingApi().emails()
-                .batchSend(batchMail, config.getInboxId());
-
-            System.out.println(response);
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/BatchEmail'
-      responses:
-        '200':
-          description: Success. Check individual `responses` if messages have been delivered.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/BatchSentResponse'
-        '400':
-          description: Bad request. Fix errors listed in response before retrying.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/SendEmailErrorResponse'
-        '401':
-          description: Unauthorized. Make sure you are sending correct credentials with the request before retrying.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/SendEmailErrorResponse'
-        '500':
-          description: Internal error. Messages were not delivered. Retry later or contact support.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/SendEmailErrorResponse'
-    parameters:
       - $ref: '#/components/parameters/inbox_id'
   '/api/accounts/{account_id}/inboxes/{inbox_id}/messages/{message_id}':
     get:
@@ -5011,432 +4528,6 @@ components:
           can_update: true
           can_destroy: true
           can_leave: false
-    EmailWithText:
-      title: Text Only
-      allOf:
-        - $ref: '#/components/schemas/EmailSenderRequired'
-        - $ref: '#/components/schemas/EmailRecipients'
-        - $ref: '#/components/schemas/EmailReplyTo'
-        - $ref: '#/components/schemas/EmailAttachments'
-        - $ref: '#/components/schemas/EmailSendingHeaders'
-        - $ref: '#/components/schemas/EmailCustomVariables'
-        - $ref: '#/components/schemas/EmailSubjectRequired'
-        - $ref: '#/components/schemas/EmailTextRequired'
-        - $ref: '#/components/schemas/EmailHtml'
-        - $ref: '#/components/schemas/EmailCategory'
-      example:
-        to:
-          - email: john_doe@example.com
-            name: John Doe
-        cc:
-          - email: jane_doe@example.com
-            name: Jane Doe
-        bcc:
-          - email: james_doe@example.com
-            name: Jim Doe
-        from:
-          email: sales@example.com
-          name: Example Sales Team
-        reply_to:
-          email: reply@example.com
-          name: Reply
-        attachments:
-          - content: PCFET0NUWVBFIGh0bWw+CjxodG1sIGxhbmc9ImVuIj4KCiAgICA8aGVhZD4KICAgICAgICA8bWV0YSBjaGFyc2V0PSJVVEYtOCI+CiAgICAgICAgPG1ldGEgaHR0cC1lcXVpdj0iWC1VQS1Db21wYXRpYmxlIiBjb250ZW50PSJJRT1lZGdlIj4KICAgICAgICA8bWV0YSBuYW1lPSJ2aWV3cG9ydCIgY29udGVudD0id2lkdGg9ZGV2aWNlLXdpZHRoLCBpbml0aWFsLXNjYWxlPTEuMCI+CiAgICAgICAgPHRpdGxlPkRvY3VtZW50PC90aXRsZT4KICAgIDwvaGVhZD4KCiAgICA8Ym9keT4KCiAgICA8L2JvZHk+Cgo8L2h0bWw+Cg==
-            filename: index.html
-            type: text/html
-            disposition: attachment
-        custom_variables:
-          user_id: '45982'
-          batch_id: PSJ-12
-        headers:
-          X-Message-Source: dev.mydomain.com
-        subject: Your Example Order Confirmation
-        text: Congratulations on your order no. 1234
-        category: API Test
-    EmailWithHtml:
-      title: HTML Only
-      allOf:
-        - $ref: '#/components/schemas/EmailSenderRequired'
-        - $ref: '#/components/schemas/EmailRecipients'
-        - $ref: '#/components/schemas/EmailReplyTo'
-        - $ref: '#/components/schemas/EmailAttachments'
-        - $ref: '#/components/schemas/EmailSendingHeaders'
-        - $ref: '#/components/schemas/EmailCustomVariables'
-        - $ref: '#/components/schemas/EmailSubjectRequired'
-        - $ref: '#/components/schemas/EmailText'
-        - $ref: '#/components/schemas/EmailHtmlRequired'
-        - $ref: '#/components/schemas/EmailCategory'
-      example:
-        to:
-          - email: john_doe@example.com
-            name: John Doe
-        cc:
-          - email: jane_doe@example.com
-            name: Jane Doe
-        bcc:
-          - email: james_doe@example.com
-            name: Jim Doe
-        from:
-          email: sales@example.com
-          name: Example Sales Team
-        reply_to:
-          email: reply@example.com
-          name: Reply
-        attachments:
-          - content: PCFET0NUWVBFIGh0bWw+CjxodG1sIGxhbmc9ImVuIj4KCiAgICA8aGVhZD4KICAgICAgICA8bWV0YSBjaGFyc2V0PSJVVEYtOCI+CiAgICAgICAgPG1ldGEgaHR0cC1lcXVpdj0iWC1VQS1Db21wYXRpYmxlIiBjb250ZW50PSJJRT1lZGdlIj4KICAgICAgICA8bWV0YSBuYW1lPSJ2aWV3cG9ydCIgY29udGVudD0id2lkdGg9ZGV2aWNlLXdpZHRoLCBpbml0aWFsLXNjYWxlPTEuMCI+CiAgICAgICAgPHRpdGxlPkRvY3VtZW50PC90aXRsZT4KICAgIDwvaGVhZD4KCiAgICA8Ym9keT4KCiAgICA8L2JvZHk+Cgo8L2h0bWw+Cg==
-            filename: index.html
-            type: text/html
-            disposition: attachment
-        custom_variables:
-          user_id: '45982'
-          batch_id: PSJ-12
-        headers:
-          X-Message-Source: dev.mydomain.com
-        subject: Your Example Order Confirmation
-        html: <p>Congratulations on your order no. <strong>1234</strong>.</p>
-        category: API Test
-    EmailWithTextAndHtml:
-      title: Text and HTML
-      allOf:
-        - $ref: '#/components/schemas/EmailSenderRequired'
-        - $ref: '#/components/schemas/EmailRecipients'
-        - $ref: '#/components/schemas/EmailReplyTo'
-        - $ref: '#/components/schemas/EmailAttachments'
-        - $ref: '#/components/schemas/EmailSendingHeaders'
-        - $ref: '#/components/schemas/EmailCustomVariables'
-        - $ref: '#/components/schemas/EmailSubjectRequired'
-        - $ref: '#/components/schemas/EmailTextRequired'
-        - $ref: '#/components/schemas/EmailHtmlRequired'
-        - $ref: '#/components/schemas/EmailCategory'
-      example:
-        to:
-          - email: john_doe@example.com
-            name: John Doe
-        cc:
-          - email: jane_doe@example.com
-            name: Jane Doe
-        bcc:
-          - email: james_doe@example.com
-            name: Jim Doe
-        from:
-          email: sales@example.com
-          name: Example Sales Team
-        reply_to:
-          email: reply@example.com
-          name: Reply
-        attachments:
-          - content: PCFET0NUWVBFIGh0bWw+CjxodG1sIGxhbmc9ImVuIj4KCiAgICA8aGVhZD4KICAgICAgICA8bWV0YSBjaGFyc2V0PSJVVEYtOCI+CiAgICAgICAgPG1ldGEgaHR0cC1lcXVpdj0iWC1VQS1Db21wYXRpYmxlIiBjb250ZW50PSJJRT1lZGdlIj4KICAgICAgICA8bWV0YSBuYW1lPSJ2aWV3cG9ydCIgY29udGVudD0id2lkdGg9ZGV2aWNlLXdpZHRoLCBpbml0aWFsLXNjYWxlPTEuMCI+CiAgICAgICAgPHRpdGxlPkRvY3VtZW50PC90aXRsZT4KICAgIDwvaGVhZD4KCiAgICA8Ym9keT4KCiAgICA8L2JvZHk+Cgo8L2h0bWw+Cg==
-            filename: index.html
-            type: text/html
-            disposition: attachment
-        custom_variables:
-          user_id: '45982'
-          batch_id: PSJ-12
-        headers:
-          X-Message-Source: dev.mydomain.com
-        subject: Your Example Order Confirmation
-        html: <p>Congratulations on your order no. <strong>1234</strong>.</p>
-        text: Congratulations on your order no. 1234
-        category: API Test
-    EmailFromTemplate:
-      title: From Template
-      allOf:
-        - $ref: '#/components/schemas/EmailSenderRequired'
-        - $ref: '#/components/schemas/EmailRecipients'
-        - $ref: '#/components/schemas/EmailReplyTo'
-        - $ref: '#/components/schemas/EmailAttachments'
-        - $ref: '#/components/schemas/EmailSendingHeaders'
-        - $ref: '#/components/schemas/EmailCustomVariables'
-        - $ref: '#/components/schemas/TemplateUuidRequired'
-        - $ref: '#/components/schemas/TemplateVariables'
-      example:
-        to:
-          - email: john_doe@example.com
-            name: John Doe
-        cc:
-          - email: jane_doe@example.com
-            name: Jane Doe
-        bcc:
-          - email: james_doe@example.com
-            name: Jim Doe
-        from:
-          email: sales@example.com
-          name: Example Sales Team
-        reply_to:
-          email: reply@example.com
-          name: Reply
-        attachments:
-          - content: PCFET0NUWVBFIGh0bWw+CjxodG1sIGxhbmc9ImVuIj4KCiAgICA8aGVhZD4KICAgICAgICA8bWV0YSBjaGFyc2V0PSJVVEYtOCI+CiAgICAgICAgPG1ldGEgaHR0cC1lcXVpdj0iWC1VQS1Db21wYXRpYmxlIiBjb250ZW50PSJJRT1lZGdlIj4KICAgICAgICA8bWV0YSBuYW1lPSJ2aWV3cG9ydCIgY29udGVudD0id2lkdGg9ZGV2aWNlLXdpZHRoLCBpbml0aWFsLXNjYWxlPTEuMCI+CiAgICAgICAgPHRpdGxlPkRvY3VtZW50PC90aXRsZT4KICAgIDwvaGVhZD4KCiAgICA8Ym9keT4KCiAgICA8L2JvZHk+Cgo8L2h0bWw+Cg==
-            filename: index.html
-            type: text/html
-            disposition: attachment
-        custom_variables:
-          user_id: '45982'
-          batch_id: PSJ-12
-        headers:
-          X-Message-Source: dev.mydomain.com
-        template_uuid: b81aabcd-1a1e-41cf-91b6-eca0254b3d96
-        template_variables:
-          user.name: Jon Snow
-          user.email: jon.snow@got.com
-    BatchEmail:
-      title: BatchEmail
-      type: object
-      properties:
-        base:
-          title: BatchEmailBase
-          description: General properties of all emails in the batch. Each of them can be overridden in `requests` for individual emails.
-          allOf:
-            - $ref: '#/components/schemas/EmailSender'
-            - $ref: '#/components/schemas/EmailReplyTo'
-            - $ref: '#/components/schemas/EmailSubject'
-            - $ref: '#/components/schemas/EmailText'
-            - $ref: '#/components/schemas/EmailHtml'
-            - $ref: '#/components/schemas/EmailAttachments'
-            - $ref: '#/components/schemas/EmailSendingHeaders'
-            - $ref: '#/components/schemas/EmailCategory'
-            - $ref: '#/components/schemas/EmailCustomVariables'
-            - $ref: '#/components/schemas/TemplateUuid'
-            - $ref: '#/components/schemas/TemplateVariables'
-        requests:
-          description: 'The list of emails. Each of them requires recipients (one of `to`, `cc`, or `bcc`). Each email inherits properties from `base` but can override them.'
-          type: array
-          items:
-            title: BatchEmailRequests
-            allOf:
-              - $ref: '#/components/schemas/EmailSender'
-              - $ref: '#/components/schemas/EmailRecipients'
-              - $ref: '#/components/schemas/EmailReplyTo'
-              - $ref: '#/components/schemas/EmailSubject'
-              - $ref: '#/components/schemas/EmailText'
-              - $ref: '#/components/schemas/EmailHtml'
-              - $ref: '#/components/schemas/EmailAttachments'
-              - $ref: '#/components/schemas/EmailSendingHeaders'
-              - $ref: '#/components/schemas/EmailCategory'
-              - $ref: '#/components/schemas/EmailCustomVariables'
-              - $ref: '#/components/schemas/TemplateUuid'
-              - $ref: '#/components/schemas/TemplateVariables'
-      required:
-        - requests
-      example:
-        base:
-          from:
-            email: sales@example.com
-            name: Example Sales Team
-          reply_to:
-            email: reply@example.com
-            name: Reply
-          attachments:
-            - content: PCFET0NUWVBFIGh0bWw+CjxodG1sIGxhbmc9ImVuIj4KCiAgICA8aGVhZD4KICAgICAgICA8bWV0YSBjaGFyc2V0PSJVVEYtOCI+CiAgICAgICAgPG1ldGEgaHR0cC1lcXVpdj0iWC1VQS1Db21wYXRpYmxlIiBjb250ZW50PSJJRT1lZGdlIj4KICAgICAgICA8bWV0YSBuYW1lPSJ2aWV3cG9ydCIgY29udGVudD0id2lkdGg9ZGV2aWNlLXdpZHRoLCBpbml0aWFsLXNjYWxlPTEuMCI+CiAgICAgICAgPHRpdGxlPkRvY3VtZW50PC90aXRsZT4KICAgIDwvaGVhZD4KCiAgICA8Ym9keT4KCiAgICA8L2JvZHk+Cgo8L2h0bWw+Cg==
-              filename: index.html
-              type: text/html
-              disposition: attachment
-          headers:
-            X-Message-Source: dev.mydomain.com
-          subject: Your Example Order Confirmation
-          text: Congratulations on your order no. 1234
-          category: API Test
-        requests:
-          - to:
-              - email: john_doe@example.com
-                name: John Doe
-            custom_variables:
-              user_id: '45982'
-              batch_id: PSJ-12
-          - to:
-              - email: jane_doe@example.com
-                name: Jane Doe
-            custom_variables:
-              user_id: '12345'
-              batch_id: PSJ-12
-    Address:
-      title: Address
-      x-stoplight:
-        id: 3c0b572130b6e
-      type: object
-      properties:
-        email:
-          type: string
-          example: mike@mailtrap.io
-        name:
-          type: string
-          example: Mike
-    BatchSentResponse:
-      title: BatchSentResponse
-      type: object
-      properties:
-        success:
-          description: |
-            Indicates whether the was a general error. When false, you should check the `errors` array for information. When true, you should check individual message `responses` and their `success`.
-          type: boolean
-          example: true
-        responses:
-          description: Individual message responses. The results are ordered the same as the original messages - `requests`.
-          type: array
-          items:
-            type: object
-            properties:
-              success:
-                type: boolean
-                example: true
-              message_ids:
-                description: 'An array of message IDs, one per recipient, in order of To, Cc, Bcc.'
-                type: array
-                items:
-                  type: string
-                  example: 0c7fd939-02cf-11ed-88c2-0a58a9feac02
-              errors:
-                type: array
-                items:
-                  type: string
-        errors:
-          description: General request errors.
-          type: array
-          items:
-            type: string
-    EmailAttachments:
-      type: object
-      properties:
-        attachments:
-          type: array
-          description: An array of objects where you can specify any attachments you want to include.
-          items:
-            type: object
-            properties:
-              content:
-                type: string
-                description: The Base64 encoded content of the attachment.
-                minLength: 1
-              type:
-                type: string
-                description: 'The MIME type of the content you are attaching (e.g., `“text/plain”` or `“text/html”`).'
-                minLength: 1
-              filename:
-                type: string
-                description: The attachment's filename.
-              disposition:
-                type: string
-                default: attachment
-                description: 'The attachment''s content-disposition, specifying how you would like the attachment to be displayed. For example, `“inline”` results in the attached file are displayed automatically within the message while `“attachment”` results in the attached file require some action to be taken before it is displayed, such as opening or downloading the file.'
-                enum:
-                  - inline
-                  - attachment
-              content_id:
-                type: string
-                description: 'The attachment''s content ID. This is used when the disposition is set to `“inline”` and the attachment is an image, allowing the file to be displayed within the body of your email.'
-            required:
-              - content
-              - filename
-    EmailCategory:
-      type: object
-      properties:
-        category:
-          type: string
-          maxLength: 255
-    EmailCustomVariables:
-      type: object
-      properties:
-        custom_variables:
-          description: Values that are specific to the entire send that will be carried along with the email and its activity data. Total size of custom variables in JSON form must not exceed 1000 bytes.
-          type: object
-          additionalProperties:
-            type: string
-    EmailHtml:
-      type: object
-      properties:
-        html:
-          type: string
-          description: HTML version of the body of the email. Can be used along with `text` to create a fallback for non-html clients. Required in the absence of `text`.
-          minLength: 1
-
-    EmailHtmlRequired:
-      type: object
-      required:
-        - html
-      properties:
-        html:
-          type: string
-          description: HTML version of the body of the email. Can be used along with `text` to create a fallback for non-html clients. Required in the absence of `text`.
-          minLength: 1
-    EmailRecipients:
-      type: object
-      properties:
-        to:
-          type: array
-          maxItems: 1000
-          items:
-            $ref: '#/components/schemas/Address'
-        cc:
-          type: array
-          maxItems: 1000
-          items:
-            $ref: '#/components/schemas/Address'
-        bcc:
-          type: array
-          description: An array of recipients who will receive a blind carbon copy of your email. Each object in this array must contain the recipient's email address. Each object in the array may optionally contain the recipient's name.
-          maxItems: 1000
-          items:
-            $ref: '#/components/schemas/Address'
-    EmailReplyTo:
-      type: object
-      properties:
-        reply_to:
-          $ref: '#/components/schemas/Address'
-    EmailSender:
-      type: object
-      properties:
-        from:
-          $ref: '#/components/schemas/Address'
-    EmailSenderRequired:
-      type: object
-      required:
-        - from
-      properties:
-        from:
-          $ref: '#/components/schemas/Address'
-    EmailSendingHeaders:
-      type: object
-      properties:
-        headers:
-          description: An object containing key/value pairs of header names and the value to substitute for them. The key/value pairs must be strings. You must ensure these are properly encoded if they contain unicode characters. These headers cannot be one of the reserved headers. `Content-Transfer-Encoding` header will be ignored and replaced with `quoted-printable`.
-          type: object
-          additionalProperties:
-            type: string
-    EmailSubject:
-      type: object
-      properties:
-        subject:
-          type: string
-          description: The global or 'message level' subject of your email. This may be overridden by subject lines set in personalizations.
-          minLength: 1
-
-    EmailSubjectRequired:
-      type: object
-      required:
-        - subject
-      properties:
-        subject:
-          type: string
-          description: The global or 'message level' subject of your email. This may be overridden by subject lines set in personalizations.
-          minLength: 1
-
-    EmailText:
-      type: object
-      properties:
-        text:
-          type: string
-          description: Text version of the body of the email. Can be used along with `html` to create a fallback for non-html clients. Required in the absence of `html`.
-          minLength: 1
-
-    EmailTextRequired:
-      type: object
-      required:
-        - text
-      properties:
-        text:
-          type: string
-          description: Text version of the body of the email. Can be used along with `html` to create a fallback for non-html clients. Required in the absence of `html`.
-          minLength: 1
     NotFoundResponse:
       title: NotFoundResponse
       type: object
@@ -5453,60 +4544,6 @@ components:
           type: string
           description: Error message
           example: Access forbidden
-    SendEmailErrorResponse:
-      title: SendEmailErrorResponse
-      type: object
-      properties:
-        success:
-          type: boolean
-        errors:
-          type: array
-          items:
-            type: string
-    SentResponse:
-      title: SentResponse
-      type: object
-      properties:
-        success:
-          type: boolean
-          example: true
-        message_ids:
-          description: 'An array of message IDs, one per recipient, in order of To, Cc, Bcc'
-          type: array
-          items:
-            type: string
-            example: 0c7fd939-02cf-11ed-88c2-0a58a9feac02
-    TemplateUuid:
-      type: object
-      properties:
-        template_uuid:
-          type: string
-          minLength: 1
-          format: uuid
-          description: |-
-            UUID of email template.
-            Subject, text and html will be generated from template using optional template_variables.
-            If template_uuid is provided then subject, text and html params are forbidden.
-
-    TemplateUuidRequired:
-      type: object
-      required:
-        - template_uuid
-      properties:
-        template_uuid:
-          type: string
-          minLength: 1
-          format: uuid
-          description: |-
-            UUID of email template.
-            Subject, text and html will be generated from template using optional template_variables.
-            If template_uuid is provided then subject, text and html params are forbidden.
-    TemplateVariables:
-      type: object
-      properties:
-        template_variables:
-          type: object
-          description: 'Optional template variables that will be used to generate actual subject, text and html from email template'
     TestingInbox:
       title: Testing Inbox
       type: object

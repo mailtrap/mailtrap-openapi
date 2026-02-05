@@ -1,6 +1,6 @@
 openapi: 3.1.0
 info:
-  title: Send Email - Transactional
+  title: Transactional
   version: 2.0.0
   description: |
     Send transactional emails for order confirmations, password resets, notifications, and other user-triggered communications.
@@ -24,8 +24,7 @@ security:
 
 tags:
   - name: send-email
-    x-page-title: Send Email - Transactional
-    x-page-icon: envelope
+    x-page-title: Transactional
     x-page-description: Send individual transactional emails
     description: |
       Send transactional emails for order confirmations, password resets, and notifications.

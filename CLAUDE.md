@@ -15,12 +15,13 @@ This is the official **Mailtrap OpenAPI Specifications** repository. It contains
 mailtrap-openapi/
 ├── specs/                    # OpenAPI specification files
 │   ├── contacts.openapi.yml
-│   ├── email-api.openapi.yml
+│   ├── email-sending.openapi.yml
 │   ├── email-sending-bulk.openapi.yml
 │   ├── email-sending-transactional.openapi.yml
-│   ├── email-templates.openapi.yml
-│   ├── general.openapi.yml
-│   └── sandbox.openapi.yml
+│   ├── account-management.openapi.yml
+│   ├── sandbox.openapi.yml
+│   ├── sandbox-sending.openapi.yml
+│   └── templates.openapi.yml
 ├── .claude/
 │   └── skills/
 │       └── gitbook-assistant/    # GitBook formatting skill
@@ -33,12 +34,14 @@ mailtrap-openapi/
 
 | Spec File | Description | Base URL |
 |-----------|-------------|----------|
-| `email-sending-transactional.openapi.yml` | Transactional email sending | `https://send.api.mailtrap.io` |
+| `account-management.openapi.yml` | Account, users, permissions, billing | `https://mailtrap.io` |
+| `contacts.openapi.yml` | Contact management | `https://mailtrap.io` |
+| `email-sending.openapi.yml` | Combined email API reference | Varies by operation |
 | `email-sending-bulk.openapi.yml` | Bulk/marketing email sending | `https://bulk.api.mailtrap.io` |
-| `contacts.openapi.yml` | Contact management API | `https://mailtrap.io` |
-| `sandbox.openapi.yml` | Email Sandbox/testing API | `https://mailtrap.io` |
-| `general.openapi.yml` | Account, users, permissions, billing | `https://mailtrap.io` |
-| `email-api.openapi.yml` | Combined email API reference | Varies by operation |
+| `email-sending-transactional.openapi.yml` | Transactional email sending | `https://send.api.mailtrap.io` |
+| `sandbox-sending.openapi.yml` | Sandbox send & batch email | `https://sandbox.api.mailtrap.io` |
+| `sandbox.openapi.yml` | Email Sandbox/testing | `https://mailtrap.io` |
+| `templates.openapi.yml` | Email templates | `https://mailtrap.io` |
 
 ### Base URL Rules
 
