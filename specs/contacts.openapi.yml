@@ -72,9 +72,11 @@ paths:
               -H 'Authorization: Bearer YOUR_API_TOKEN' \
               -H 'Content-Type: application/json' \
               -d '{
-                "email": "john.smith@example.com",
-                "fields": {"first_name": "John", "last_name": "Smith", "company": "Example Inc"},
-                "list_ids": [1, 2, 3]
+                "contact": {
+                  "email": "john.smith@example.com",
+                  "fields": {"first_name": "John", "last_name": "Smith", "company": "Example Inc"},
+                  "list_ids": [1, 2, 3]
+                }
               }'
         - lang: javascript
           label: Node.js
@@ -436,7 +438,7 @@ paths:
             curl -X PATCH https://mailtrap.io/api/accounts/{account_id}/contacts/{contact_identifier} \
               -H 'Authorization: Bearer YOUR_API_TOKEN' \
               -H 'Content-Type: application/json' \
-              -d '{"email": "new@example.com", "fields": {"first_name": "John"}}'
+              -d '{"contact": { "email": "new@example.com", "fields": {"first_name": "John"}}}'
         - lang: javascript
           label: Node.js
           source: |
