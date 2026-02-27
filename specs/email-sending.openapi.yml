@@ -3,7 +3,7 @@ info:
   title: Email Sending
   version: 2.0.0
   description: |
-    Manage sending domains and suppressions for your Mailtrap account.
+    Manage sending domains, suppressions, and email sending logs for your Mailtrap account.
   contact:
     name: Mailtrap Support
     url: 'https://docs.mailtrap.io'
@@ -39,6 +39,11 @@ tags:
     x-page-title: Stats
     x-page-description: Email sending stats
     description: Email sending aggregated stats. The same you see in your Stats dashboard.
+
+  - name: email-logs
+    x-page-title: Email Logs
+    x-page-description: Email logs
+    description: List and retrieve email sending logs for the account.
 
 paths:
   /api/accounts/{account_id}/sending_domains:
@@ -292,7 +297,6 @@ paths:
           $ref: '#/components/responses/Unauthorized'
         '403':
           $ref: '#/components/responses/Forbidden'
-
   /api/accounts/{account_id}/sending_domains/{sending_domain_id}:
     get:
       summary: Get sending domain
@@ -503,7 +507,6 @@ paths:
           $ref: '#/components/responses/Forbidden'
         '404':
           $ref: '#/components/responses/NotFound'
-
   /api/accounts/{account_id}/sending_domains/{sending_domain_id}/send_setup_instructions:
     post:
       summary: Send setup instructions
@@ -843,7 +846,6 @@ paths:
           $ref: '#/components/responses/Forbidden'
         '429':
           $ref: '#/components/responses/LIMIT_EXCEEDED'
-
   /api/accounts/{account_id}/suppressions/{suppression_id}:
     delete:
       summary: Delete suppression
@@ -1188,6 +1190,85 @@ paths:
         '429':
           $ref: '#/components/responses/LIMIT_EXCEEDED'
 
+  /api/accounts/{account_id}/email_logs:
+    get:
+      operationId: listEmailLogs
+      summary: List email logs
+      description: |
+        Returns a paginated list of email logs (messages) for the account.
+        Results are restricted to sending domains the authenticated token has access to.
+        Invalid or unknown filters are ignored. Results are ordered by sent_at descending.
+      tags:
+        - email-logs
+      x-codeSamples:
+        - lang: shell
+          label: 'cURL'
+          source: |
+            curl -X GET -g 'https://mailtrap.io/api/accounts/{account_id}/email_logs?filters[sent_after]=2025-01-01T00:00:00Z&filters[sent_before]=2025-01-31T23:59:59Z&filters[to][operator]=ci_equal&filters[to][value]=recipient@example.com&filters[sending_domain_id][operator]=equal&filters[sending_domain_id][value]=3938' \
+              -H 'Authorization: Bearer YOUR_API_KEY'
+      parameters:
+        - $ref: '#/components/parameters/account_id'
+        - name: search_after
+          in: query
+          description: Cursor for the next page (message_id UUID from previous response next_page_cursor).
+          schema:
+            type: string
+            format: uuid
+        - name: filters
+          in: query
+          description: |
+            Filter criteria (deep object). Pass as filters[field][operator] and filters[field][value].
+            Date range: use filters[sent_after] and filters[sent_before] (ISO 8601 strings).
+            Unknown filters are ignored.
+          style: deepObject
+          explode: true
+          schema:
+            $ref: '#/components/schemas/EmailLogsListFilters'
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EmailLogsListResponse'
+        '400':
+          $ref: '#/components/responses/BAD_REQUEST'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '429':
+          $ref: '#/components/responses/LIMIT_EXCEEDED'
+  /api/accounts/{account_id}/email_logs/{sending_message_id}:
+    get:
+      operationId: getEmailLogMessage
+      summary: Get an email log message by ID
+      description: Returns a single message by message UUID. Message must belong to the account and a sending domain the token can access.
+      tags:
+        - email-logs
+      x-codeSamples:
+        - lang: shell
+          label: 'cURL'
+          source: |
+            curl -X GET 'https://mailtrap.io/api/accounts/{account_id}/email_logs/{sending_message_id}' \
+              -H 'Authorization: Bearer YOUR_API_KEY'
+      parameters:
+        - $ref: '#/components/parameters/account_id'
+        - $ref: '#/components/parameters/sending_message_id'
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SendingMessage'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '429':
+          $ref: '#/components/responses/LIMIT_EXCEEDED'
+
 components:
   securitySchemes:
     HeaderAuth:
@@ -1228,6 +1309,15 @@ components:
       schema:
         type: integer
         example: 1
+
+    sending_message_id:
+      name: sending_message_id
+      in: path
+      required: true
+      description: Message UUID
+      schema:
+        type: string
+        format: uuid
 
     StartDateQueryFilter:
       name: start_date
@@ -1550,6 +1640,629 @@ components:
           items:
             type: string
             example: "Rate limit exceeded"
+
+    EmailLogsListResponse:
+      type: object
+      required:
+        - messages
+        - total_count
+        - next_page_cursor
+      properties:
+        messages:
+          type: array
+          items:
+            type: object
+            properties:
+              message_id:
+                type: string
+                format: uuid
+              status:
+                type: string
+                enum: [delivered, not_delivered, enqueued, opted_out]
+              subject:
+                type: string
+                nullable: true
+              from:
+                type: string
+              to:
+                type: string
+              sent_at:
+                type: string
+                format: date-time
+              client_ip:
+                type: string
+                nullable: true
+              category:
+                type: string
+                nullable: true
+              custom_variables:
+                type: object
+              sending_stream:
+                type: string
+                enum: [transactional, bulk]
+              sending_domain_id:
+                type: integer
+              template_id:
+                type: integer
+                nullable: true
+              template_variables:
+                type: object
+              opens_count:
+                type: integer
+              clicks_count:
+                type: integer
+        total_count:
+          type: integer
+          description: Total number of messages matching the filters (before pagination).
+        next_page_cursor:
+          type: string
+          format: uuid
+          nullable: true
+          description: Message UUID to use as search_after for the next page. Null if no more pages.
+      example:
+        messages:
+          - message_id: 'a1b2c3d4-e5f6-7890-abcd-ef1234567890'
+            status: delivered
+            subject: Welcome to our service
+            from: sender@example.com
+            to: recipient@example.com
+            sent_at: '2025-01-15T10:30:00Z'
+            client_ip: 203.0.113.42
+            category: Welcome Email
+            custom_variables: {}
+            sending_stream: transactional
+            sending_domain_id: 3938
+            template_id: 100
+            template_variables: {}
+            opens_count: 2
+            clicks_count: 1
+          - message_id: 'b2c3d4e5-f6a7-8901-bcde-f12345678901'
+            status: delivered
+            subject: Your order confirmation
+            from: orders@example.com
+            to: customer@example.com
+            sent_at: '2025-01-15T11:00:00Z'
+            client_ip: null
+            category: Order Confirmation
+            custom_variables: { order_id: '12345' }
+            sending_stream: transactional
+            sending_domain_id: 3938
+            template_id: null
+            template_variables: {}
+            opens_count: 0
+            clicks_count: 0
+        total_count: 150
+        next_page_cursor: 'b2c3d4e5-f6a7-8901-bcde-f12345678901'
+
+    SendingMessage:
+      type: object
+      properties:
+        message_id:
+          type: string
+          format: uuid
+        status:
+          type: string
+          enum: [delivered, not_delivered, enqueued, opted_out]
+        subject:
+          type: string
+          nullable: true
+        from:
+          type: string
+        to:
+          type: string
+        sent_at:
+          type: string
+          format: date-time
+        client_ip:
+          type: string
+          nullable: true
+        category:
+          type: string
+          nullable: true
+        custom_variables:
+          type: object
+        sending_stream:
+          type: string
+          enum: [transactional, bulk]
+        sending_domain_id:
+          type: integer
+        template_id:
+          type: integer
+          nullable: true
+        template_variables:
+          type: object
+        opens_count:
+          type: integer
+        clicks_count:
+          type: integer
+        raw_message_url:
+          type: string
+          format: uri
+          description: Signed URL to download raw .eml message (temporary).
+        events:
+          type: array
+          items:
+            $ref: '#/components/schemas/MessageEvent'
+      example:
+        message_id: 'a1b2c3d4-e5f6-7890-abcd-ef1234567890'
+        status: delivered
+        subject: Welcome to our service
+        from: sender@example.com
+        to: recipient@example.com
+        sent_at: '2025-01-15T10:30:00Z'
+        client_ip: 203.0.113.42
+        category: Welcome Email
+        custom_variables: {}
+        sending_stream: transactional
+        sending_domain_id: 3938
+        template_id: 100
+        template_variables: {}
+        opens_count: 2
+        clicks_count: 1
+        raw_message_url: 'https://storage.example.com/signed/eml/a1b2c3d4-e5f6-7890-abcd-ef1234567890?token=...'
+        events:
+          - event_type: click
+            created_at: '2025-01-15T10:35:00Z'
+            details:
+              click_url: 'https://example.com/track/click/abc123'
+              web_ip_address: 198.51.100.50
+          - event_type: spam
+            created_at: '2025-01-15T10:40:00Z'
+            details:
+              spam_feedback_type: abuse
+
+    MessageEvent:
+      description: Event with type-specific details. Use event_type to determine which details schema applies.
+      discriminator:
+        propertyName: event_type
+        mapping:
+          delivery: '#/components/schemas/MessageEventDelivery'
+          open: '#/components/schemas/MessageEventOpen'
+          click: '#/components/schemas/MessageEventClick'
+          soft_bounce: '#/components/schemas/MessageEventBounce'
+          bounce: '#/components/schemas/MessageEventBounce'
+          spam: '#/components/schemas/MessageEventSpam'
+          unsubscribe: '#/components/schemas/MessageEventUnsubscribe'
+          suspension: '#/components/schemas/MessageEventReject'
+          reject: '#/components/schemas/MessageEventReject'
+      oneOf:
+        - $ref: '#/components/schemas/MessageEventDelivery'
+        - $ref: '#/components/schemas/MessageEventOpen'
+        - $ref: '#/components/schemas/MessageEventClick'
+        - $ref: '#/components/schemas/MessageEventBounce'
+        - $ref: '#/components/schemas/MessageEventSpam'
+        - $ref: '#/components/schemas/MessageEventUnsubscribe'
+        - $ref: '#/components/schemas/MessageEventReject'
+      example:
+        event_type: click
+        created_at: '2025-01-15T10:35:00Z'
+        details:
+          click_url: 'https://example.com/track/click/abc123'
+          web_ip_address: 198.51.100.50
+
+    MessageEventDelivery:
+      type: object
+      required: [event_type, created_at, details]
+      properties:
+        event_type:
+          type: string
+          enum: [delivery]
+        created_at:
+          type: string
+          format: date-time
+        details:
+          $ref: '#/components/schemas/EventDetailsDelivery'
+
+    MessageEventOpen:
+      type: object
+      required: [event_type, created_at, details]
+      properties:
+        event_type:
+          type: string
+          enum: [open]
+        created_at:
+          type: string
+          format: date-time
+        details:
+          $ref: '#/components/schemas/EventDetailsOpen'
+
+    MessageEventClick:
+      type: object
+      required: [event_type, created_at, details]
+      properties:
+        event_type:
+          type: string
+          enum: [click]
+        created_at:
+          type: string
+          format: date-time
+        details:
+          $ref: '#/components/schemas/EventDetailsClick'
+
+    MessageEventBounce:
+      type: object
+      required: [event_type, created_at, details]
+      properties:
+        event_type:
+          type: string
+          enum: [soft_bounce, bounce]
+        created_at:
+          type: string
+          format: date-time
+        details:
+          $ref: '#/components/schemas/EventDetailsBounce'
+
+    MessageEventSpam:
+      type: object
+      required: [event_type, created_at, details]
+      properties:
+        event_type:
+          type: string
+          enum: [spam]
+        created_at:
+          type: string
+          format: date-time
+        details:
+          $ref: '#/components/schemas/EventDetailsSpam'
+
+    MessageEventUnsubscribe:
+      type: object
+      required: [event_type, created_at, details]
+      properties:
+        event_type:
+          type: string
+          enum: [unsubscribe]
+        created_at:
+          type: string
+          format: date-time
+        details:
+          $ref: '#/components/schemas/EventDetailsUnsubscribe'
+
+    MessageEventReject:
+      type: object
+      required: [event_type, created_at, details]
+      properties:
+        event_type:
+          type: string
+          enum: [suspension, reject]
+        created_at:
+          type: string
+          format: date-time
+        details:
+          $ref: '#/components/schemas/EventDetailsReject'
+
+    EventDetailsDelivery:
+      type: object
+      description: For event_type = delivery
+      additionalProperties: false
+      properties:
+        sending_ip:
+          type: string
+          nullable: true
+        recipient_mx:
+          type: string
+          nullable: true
+        email_service_provider:
+          type: string
+          nullable: true
+      example:
+        sending_ip: 192.0.2.1
+        recipient_mx: gmail-smtp-in.l.google.com
+        email_service_provider: Google
+
+    EventDetailsOpen:
+      type: object
+      description: For event_type = open
+      additionalProperties: false
+      properties:
+        web_ip_address:
+          type: string
+          nullable: true
+      example:
+        web_ip_address: 198.51.100.50
+
+    EventDetailsClick:
+      type: object
+      description: For event_type = click
+      additionalProperties: false
+      properties:
+        click_url:
+          type: string
+          nullable: true
+        web_ip_address:
+          type: string
+          nullable: true
+      example:
+        click_url: 'https://example.com/track/click/abc123'
+        web_ip_address: 198.51.100.50
+
+    EventDetailsBounce:
+      type: object
+      description: For event_type = soft_bounce or bounce
+      additionalProperties: false
+      properties:
+        sending_ip:
+          type: string
+          nullable: true
+        recipient_mx:
+          type: string
+          nullable: true
+        email_service_provider:
+          type: string
+          nullable: true
+        email_service_provider_status:
+          type: string
+          nullable: true
+        email_service_provider_response:
+          type: string
+          nullable: true
+        bounce_category:
+          type: string
+          nullable: true
+      example:
+        sending_ip: 192.0.2.1
+        recipient_mx: mx.example.com
+        email_service_provider: Google
+        email_service_provider_status: 5.7.1
+        email_service_provider_response: User unknown
+        bounce_category: invalid_recipient
+
+    EventDetailsSpam:
+      type: object
+      description: For event_type = spam
+      additionalProperties: false
+      properties:
+        spam_feedback_type:
+          type: string
+          nullable: true
+      example:
+        spam_feedback_type: abuse
+
+    EventDetailsUnsubscribe:
+      type: object
+      description: For event_type = unsubscribe
+      additionalProperties: false
+      properties:
+        web_ip_address:
+          type: string
+          nullable: true
+      example:
+        web_ip_address: 198.51.100.50
+
+    EventDetailsReject:
+      type: object
+      description: For event_type = suspension or reject
+      additionalProperties: false
+      properties:
+        reject_reason:
+          type: string
+          nullable: true
+      example:
+        reject_reason: Policy rejection
+
+    EmailLogsListFilters:
+      type: object
+      description: |
+        Key-value map of filter name to filter spec. Each spec has operator and optional value.
+        Date range uses sent_after / sent_before at top level of filters (see below).
+      properties:
+        sent_after:
+          type: string
+          format: date-time
+          description: Start of sent-at range (ISO 8601). Must be before or equal to sent_before.
+        sent_before:
+          type: string
+          format: date-time
+          description: End of sent-at range (ISO 8601). Must be after or equal to sent_after.
+        to:
+          $ref: '#/components/schemas/FilterTo'
+        from:
+          $ref: '#/components/schemas/FilterFrom'
+        subject:
+          $ref: '#/components/schemas/FilterSubject'
+        status:
+          $ref: '#/components/schemas/FilterStatus'
+        events:
+          $ref: '#/components/schemas/FilterEvents'
+        clicks_count:
+          $ref: '#/components/schemas/FilterNumber'
+        opens_count:
+          $ref: '#/components/schemas/FilterNumber'
+        client_ip:
+          $ref: '#/components/schemas/FilterClientIp'
+        sending_ip:
+          $ref: '#/components/schemas/FilterSendingIp'
+        email_service_provider_response:
+          $ref: '#/components/schemas/FilterMandatoryText'
+        email_service_provider:
+          $ref: '#/components/schemas/FilterExact'
+        recipient_mx:
+          $ref: '#/components/schemas/FilterMandatoryText'
+        category:
+          $ref: '#/components/schemas/FilterExact'
+        sending_domain_id:
+          $ref: '#/components/schemas/FilterSendingDomainId'
+        sending_stream:
+          $ref: '#/components/schemas/FilterSendingStream'
+      example:
+        sent_after: '2025-01-01T00:00:00Z'
+        sent_before: '2025-01-31T23:59:59Z'
+        to:
+          operator: ci_equal
+          value: recipient@example.com
+        status:
+          operator: equal
+          value: delivered
+        sending_domain_id:
+          operator: equal
+          value: 3938
+        sending_stream:
+          operator: equal
+          value: transactional
+
+    FilterTo:
+      type: object
+      required: [operator, value]
+      properties:
+        operator:
+          type: string
+          enum: [ci_contain, ci_not_contain, ci_equal, ci_not_equal]
+          description: "ci_* = case-insensitive"
+        value:
+          type: string
+          description: Required for all operators (recipient email or substring).
+      example:
+        operator: ci_equal
+        value: recipient@example.com
+
+    FilterFrom:
+      type: object
+      required: [operator, value]
+      properties:
+        operator:
+          type: string
+          enum: [ci_contain, ci_not_contain, ci_equal, ci_not_equal]
+        value:
+          type: string
+      example:
+        operator: ci_contain
+        value: noreply@example.com
+
+    FilterSubject:
+      type: object
+      required: [operator]
+      properties:
+        operator:
+          type: string
+          enum: [ci_contain, ci_not_contain, ci_equal, ci_not_equal, empty, not_empty]
+        value:
+          type: string
+          description: Omit or leave empty for empty / not_empty.
+      example:
+        operator: ci_contain
+        value: Order confirmation
+
+    FilterStatus:
+      type: object
+      required: [operator, value]
+      properties:
+        operator:
+          type: string
+          enum: [equal, not_equal]
+        value:
+          type: string
+          enum: [delivered, not_delivered, enqueued, opted_out]
+      example:
+        operator: equal
+        value: delivered
+
+    FilterEvents:
+      type: object
+      required: [operator, value]
+      properties:
+        operator:
+          type: string
+          enum: [include_event, not_include_event]
+        value:
+          type: string
+          enum: [delivery, open, click, bounce, spam, unsubscribe, soft_bounce, reject, suspension]
+      example:
+        operator: include_event
+        value: open
+
+    FilterNumber:
+      type: object
+      required: [operator, value]
+      properties:
+        operator:
+          type: string
+          enum: [equal, greater_than, less_than]
+        value:
+          type: integer
+          description: Numeric value (integer).
+      example:
+        operator: greater_than
+        value: 0
+
+    FilterClientIp:
+      type: object
+      required: [operator, value]
+      properties:
+        operator:
+          type: string
+          enum: [equal, not_equal, contain, not_contain]
+        value:
+          type: string
+      example:
+        operator: equal
+        value: 203.0.113.42
+
+    FilterSendingIp:
+      type: object
+      required: [operator, value]
+      properties:
+        operator:
+          type: string
+          enum: [equal, not_equal, contain, not_contain]
+        value:
+          type: string
+      example:
+        operator: equal
+        value: 192.0.2.1
+
+    FilterMandatoryText:
+      type: object
+      required: [operator, value]
+      properties:
+        operator:
+          type: string
+          enum: [ci_contain, ci_not_contain, ci_equal, ci_not_equal]
+        value:
+          type: string
+      example:
+        operator: ci_contain
+        value: User unknown
+
+    FilterExact:
+      type: object
+      required: [operator, value]
+      properties:
+        operator:
+          type: string
+          enum: [equal, not_equal]
+        value:
+          type: string
+      example:
+        operator: equal
+        value: Google
+
+    FilterSendingDomainId:
+      type: object
+      required: [operator, value]
+      properties:
+        operator:
+          type: string
+          enum: [equal, not_equal]
+        value:
+          type: integer
+          description: Sending domain ID
+      example:
+        operator: equal
+        value: 3938
+
+    FilterSendingStream:
+      type: object
+      required: [operator, value]
+      properties:
+        operator:
+          type: string
+          enum: [equal, not_equal]
+        value:
+          type: string
+          enum: [transactional, bulk]
+      example:
+        operator: equal
+        value: transactional
 
     ErrorResponse:
       type: object
