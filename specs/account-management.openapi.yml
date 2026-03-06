@@ -29,8 +29,8 @@ tags:
   - name: Account Accesses
     x-page-title: Access Control
 
-  - name: Account Users
-    x-page-title: Users
+  - name: API Tokens
+    x-page-title: API Tokens
 
   - name: Permissions
     x-page-title: Permissions
@@ -681,6 +681,158 @@ paths:
           $ref: '#/components/responses/PERMISSION_DENIED'
     parameters:
       - $ref: '#/components/parameters/account_id'
+  '/api/accounts/{account_id}/api_tokens':
+    get:
+      operationId: listApiTokens
+      summary: List API tokens
+      description: Returns all API tokens visible to the current API token.
+      tags:
+        - API Tokens
+      x-codeSamples:
+        - lang: shell
+          label: cURL
+          source: |
+            curl -X GET https://mailtrap.io/api/accounts/{account_id}/api_tokens \
+              -H 'Authorization: Bearer YOUR_API_TOKEN'
+      parameters:
+        - $ref: '#/components/parameters/account_id'
+      responses:
+        '200':
+          description: List of API tokens
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ApiToken'
+        '401':
+          $ref: '#/components/responses/UNAUTHENTICATED'
+    post:
+      operationId: createApiToken
+      summary: Create API token
+      description: Creates a new API token for the account with the given name and resource permissions.
+      tags:
+        - API Tokens
+      x-codeSamples:
+        - lang: shell
+          label: cURL
+          source: |
+            curl -X POST https://mailtrap.io/api/accounts/{account_id}/api_tokens \
+              -H 'Authorization: Bearer YOUR_API_TOKEN' \
+              -H 'Content-Type: application/json' \
+              -d '{
+                "name": "My API Token",
+                "resources": [
+                  {"resource_type": "account", "resource_id": 3229, "access_level": 100}
+                ]
+              }'
+      parameters:
+        - $ref: '#/components/parameters/account_id'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateApiTokenRequest'
+      responses:
+        '200':
+          description: Created API token (includes full token value once)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiTokenWithToken'
+        '401':
+          $ref: '#/components/responses/UNAUTHENTICATED'
+        '403':
+          $ref: '#/components/responses/PERMISSION_DENIED'
+        '422':
+          $ref: '#/components/responses/UNPROCESSABLE_ENTITY'
+  '/api/accounts/{account_id}/api_tokens/{id}':
+    get:
+      operationId: getApiToken
+      summary: Get API token
+      description: Returns a single API token by id.
+      tags:
+        - API Tokens
+      x-codeSamples:
+        - lang: shell
+          label: cURL
+          source: |
+            curl -X GET https://mailtrap.io/api/accounts/{account_id}/api_tokens/{id} \
+              -H 'Authorization: Bearer YOUR_API_TOKEN'
+      parameters:
+        - $ref: '#/components/parameters/account_id'
+        - $ref: '#/components/parameters/api_token_id'
+      responses:
+        '200':
+          description: API token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiToken'
+        '401':
+          $ref: '#/components/responses/UNAUTHENTICATED'
+        '404':
+          $ref: '#/components/responses/NOT_FOUND'
+    delete:
+      operationId: deleteApiToken
+      summary: Delete API token
+      description: Permanently deletes an API token.
+      tags:
+        - API Tokens
+      x-codeSamples:
+        - lang: shell
+          label: cURL
+          source: |
+            curl -X DELETE https://mailtrap.io/api/accounts/{account_id}/api_tokens/{id} \
+              -H 'Authorization: Bearer YOUR_API_TOKEN'
+      parameters:
+        - $ref: '#/components/parameters/account_id'
+        - $ref: '#/components/parameters/api_token_id'
+      responses:
+        '204':
+          description: Token deleted (no body)
+        '401':
+          $ref: '#/components/responses/UNAUTHENTICATED'
+        '403':
+          $ref: '#/components/responses/PERMISSION_DENIED'
+        '404':
+          $ref: '#/components/responses/NOT_FOUND'
+  '/api/accounts/{account_id}/api_tokens/{id}/reset':
+    post:
+      operationId: resetApiToken
+      summary: Reset API token
+      description: |
+        Expires the requested token and creates a new token with the same permissions.
+        The old token stops working after a short grace period. The response includes
+        the new token value (store it securely; it is only returned once).
+        Only tokens that have not already been reset (no expiration set) can be reset.
+      tags:
+        - API Tokens
+      x-codeSamples:
+        - lang: shell
+          label: cURL
+          source: |
+            curl -X POST https://mailtrap.io/api/accounts/{account_id}/api_tokens/{id}/reset \
+              -H 'Authorization: Bearer YOUR_API_TOKEN'
+      parameters:
+        - $ref: '#/components/parameters/account_id'
+        - $ref: '#/components/parameters/api_token_id'
+      responses:
+        '200':
+          description: New API token (includes full token value once)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiTokenWithToken'
+        '401':
+          $ref: '#/components/responses/UNAUTHENTICATED'
+        '403':
+          $ref: '#/components/responses/PERMISSION_DENIED'
+        '404':
+          $ref: '#/components/responses/NOT_FOUND'
+        '422':
+          $ref: '#/components/responses/UNPROCESSABLE_ENTITY'
   '/api/accounts/{account_id}/billing/usage':
     get:
       operationId: getAccountBillingUsage
@@ -1092,6 +1244,158 @@ components:
         errors:
           type: object
           description: Validation errors per attribute. Entire record errors are under `base` key.
+    ApiToken:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          description: API token ID
+        name:
+          type: string
+          description: Token display name
+        last_4_digits:
+          type: string
+          description: Last 4 characters of the token (full token is only shown on create or reset)
+        created_by:
+          type: string
+          description: Name of the user or token that created this token
+        expires_at:
+          type: string
+          format: date-time
+          nullable: true
+          description: When the token expires (ISO 8601); null if the token does not expire
+        resources:
+          type: array
+          description: Permissions granted to this token
+          items:
+            $ref: '#/components/schemas/ResourcePermission'
+      example:
+        id: 12345
+        name: My API Token
+        last_4_digits: 'x7k9'
+        created_by: user@example.com
+        expires_at: null
+        resources:
+          - resource_type: account
+            resource_id: 3229
+            access_level: 100
+    ApiTokenWithToken:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          description: API token ID
+        name:
+          type: string
+          description: Token display name
+        last_4_digits:
+          type: string
+          description: Last 4 characters of the token (full token is only shown on create or reset)
+        created_by:
+          type: string
+          description: Name of the user or token that created this token
+        expires_at:
+          type: string
+          format: date-time
+          nullable: true
+          description: When the token expires (ISO 8601); null if the token does not expire
+        resources:
+          type: array
+          description: Permissions granted to this token
+          items:
+            $ref: '#/components/schemas/ResourcePermission'
+        token:
+          type: string
+          description: Full token value (only returned on create or reset; store securely)
+      example:
+        id: 12345
+        name: My API Token
+        last_4_digits: 'x7k9'
+        created_by: user@example.com
+        expires_at: null
+        resources:
+          - resource_type: account
+            resource_id: 3229
+            access_level: 100
+        token: 'a1b2c3d4e5f6...'
+    ResourcePermission:
+      type: object
+      properties:
+        resource_type:
+          type: string
+          enum:
+            - account
+            - project
+            - inbox
+            - sending_domain
+          description: Resource type for this permission
+        resource_id:
+          oneOf:
+            - type: integer
+            - type: string
+          description: Resource identifier
+        access_level:
+          type: integer
+          enum: [10, 100]
+          description: 10 = viewer, 100 = admin.
+      example:
+        resource_type: account
+        resource_id: 3229
+        access_level: 100
+    CreateApiTokenRequest:
+      type: object
+      required:
+        - name
+      properties:
+        name:
+          type: string
+          description: Display name for the token
+        resources:
+          type: array
+          description: Permissions to assign to the token
+          items:
+            $ref: '#/components/schemas/ResourcePermissionInput'
+      example:
+        name: My API Token
+        resources:
+          - resource_type: account
+            resource_id: 3229
+            access_level: 100
+    ResourcePermissionInput:
+      type: object
+      required:
+        - resource_type
+        - resource_id
+        - access_level
+      properties:
+        resource_type:
+          $ref: '#/components/schemas/ResourceType'
+        resource_id:
+          oneOf:
+            - type: integer
+            - type: string
+        access_level:
+          $ref: '#/components/schemas/AccessLevel'
+      example:
+        resource_type: account
+        resource_id: 3229
+        access_level: 100
+    ResourceType:
+      type: string
+      enum:
+        - account
+        - project
+        - inbox
+        - sending_domain
+      description: Resource type for API token permissions.
+      example: account
+    AccessLevel:
+      type: integer
+      enum: [10, 100]
+      description: 10 = viewer, 100 = admin.
+      example: 100
   securitySchemes:
     HeaderAuth:
       type: apiKey
@@ -1121,6 +1425,12 @@ components:
         application/json:
           schema:
             $ref: '#/components/schemas/NotFoundResponse'
+    UNPROCESSABLE_ENTITY:
+      description: Validation error or other business rule violation
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/UnprocessableEntity'
   parameters:
     organization_id:
       description: Unique organization ID
@@ -1142,3 +1452,12 @@ components:
         format: int64
         minimum: 1
         example: 3229
+    api_token_id:
+      description: API token ID
+      name: id
+      in: path
+      required: true
+      schema:
+        type: integer
+        format: int64
+        example: 12345
