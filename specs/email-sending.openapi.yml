@@ -1039,9 +1039,7 @@ paths:
                       format: int64
                       example: 3938
                     stats:
-                      type: array
-                      items:
-                        $ref: '#/components/schemas/SendingStats'
+                      $ref: '#/components/schemas/SendingStats'
         '400':
           $ref: '#/components/responses/BAD_REQUEST'
         '401':
@@ -1085,9 +1083,7 @@ paths:
                       type: string
                       example: Welcome Email
                     stats:
-                      type: array
-                      items:
-                        $ref: '#/components/schemas/SendingStats'
+                      $ref: '#/components/schemas/SendingStats'
         '400':
           $ref: '#/components/responses/BAD_REQUEST'
         '401':
@@ -1131,9 +1127,7 @@ paths:
                       type: string
                       example: Google
                     stats:
-                      type: array
-                      items:
-                        $ref: '#/components/schemas/SendingStats'
+                      $ref: '#/components/schemas/SendingStats'
         '400':
           $ref: '#/components/responses/BAD_REQUEST'
         '401':
@@ -1178,9 +1172,7 @@ paths:
                       format: date
                       example: '2025-01-01'
                     stats:
-                      type: array
-                      items:
-                        $ref: '#/components/schemas/SendingStats'
+                      $ref: '#/components/schemas/SendingStats'
         '400':
           $ref: '#/components/responses/BAD_REQUEST'
         '401':
