@@ -1,0 +1,23 @@
+specs/email-sending.openapi.yml
+  0e86370e9b6bdcfb 1815-1843,1855-1862,1864-1865,1867-1932,1937,1956,1967,1982,2013,2024,2035
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.1.5",
+  "base_commit_sha": "aa000d1732d93703b7070d6a5496748761cead2b",
+  "prompts": {
+    "0e86370e9b6bdcfb": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "e0447dc3-5d50-4f0d-a973-0785e6357414",
+        "model": "default"
+      },
+      "human_author": null,
+      "messages": [],
+      "total_additions": 166,
+      "total_deletions": 67,
+      "accepted_lines": 112,
+      "overriden_lines": 0
+    }
+  }
+}

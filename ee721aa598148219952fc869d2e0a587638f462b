@@ -1,0 +1,23 @@
+specs/account-management.openapi.yml
+  6bfa83ad329bb876 691-696,716-728,757-762,783-788,812-817,1273-1282,1312-1322,1343-1346,1360-1365,1381-1384,1393,1398,1463
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.1.8",
+  "base_commit_sha": "ee721aa598148219952fc869d2e0a587638f462b",
+  "prompts": {
+    "6bfa83ad329bb876": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "e2628b0b-db0e-4937-b99f-89e80f16fce6",
+        "model": "default"
+      },
+      "human_author": "Marcin Klocek <marcin.klocek@railsware.com>",
+      "messages": [],
+      "total_additions": 75,
+      "total_deletions": 0,
+      "accepted_lines": 75,
+      "overriden_lines": 0
+    }
+  }
+}

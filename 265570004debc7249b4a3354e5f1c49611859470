@@ -1,0 +1,23 @@
+specs/email-sending.openapi.yml
+  0e86370e9b6bdcfb 1698-1731,1774-1789,1840-1867,1890-1896,1911-1914,1923-1924,1936-1938,1962-1968,1977-1978,1987-1988,1997-1998,2044-2058,2071-2073,2084-2086,2098-2100,2112-2114,2126-2128,2140-2142,2153-2155,2166-2168,2179-2181,2192-2194,2206-2208,2220-2222
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.1.5",
+  "base_commit_sha": "265570004debc7249b4a3354e5f1c49611859470",
+  "prompts": {
+    "0e86370e9b6bdcfb": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "e0447dc3-5d50-4f0d-a973-0785e6357414",
+        "model": "default"
+      },
+      "human_author": "Marcin Klocek <marcin.klocek@railsware.com>",
+      "messages": [],
+      "total_additions": 159,
+      "total_deletions": 5,
+      "accepted_lines": 158,
+      "overriden_lines": 0
+    }
+  }
+}
