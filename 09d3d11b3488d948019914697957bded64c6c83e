@@ -1,0 +1,27 @@
+specs/email-sending.openapi.yml
+  90a11f54f39073c9 124-134,267-277,385-395,500-508,628-636,1034-1042,1079-1087,1133-1141,1186-1194,1239-1247
+specs/sandbox.openapi.yml
+  90a11f54f39073c9 123-133,933-943,1059-1067,1170-1178,1316-1324,1445-1453,1562-1570,1679-1687,2058-2066,2300-2308,2516-2524,2736-2751,2933-2941,3104-3112,3287-3295,3419-3427,3595-3603,3746-3754,3901-3909,4077-4085,4204-4212,4367-4377,4525-4535
+specs/account-management.openapi.yml
+  90a11f54f39073c9 98-109,227-242,357-365,921-929
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.1.4",
+  "base_commit_sha": "09d3d11b3488d948019914697957bded64c6c83e",
+  "prompts": {
+    "90a11f54f39073c9": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "976c59f5-374a-4a39-8831-9effc894b6e7",
+        "model": "claude-4.6-opus-high-thinking"
+      },
+      "human_author": "DagonWat <yahor.vaitsiakhouski@railsware.com>",
+      "messages": [],
+      "total_additions": 364,
+      "total_deletions": 0,
+      "accepted_lines": 364,
+      "overriden_lines": 0
+    }
+  }
+}
