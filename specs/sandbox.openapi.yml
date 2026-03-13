@@ -120,6 +120,17 @@ paths:
             inboxes = inboxes_api.get_list()
 
             print(inboxes)
+        - lang: ruby
+          label: Ruby
+          source: |
+            require 'mailtrap'
+
+            client = Mailtrap::Client.new(api_key: ENV['MAILTRAP_API_KEY'])
+            inboxes = Mailtrap::InboxesAPI.new(YOUR_ACCOUNT_ID, client)
+
+            inboxes.list.each do |inbox|
+              puts "Inbox: #{inbox.name} (ID: #{inbox.id})"
+            end
         - lang: csharp
           label: .NET
           source: |
@@ -919,6 +930,17 @@ paths:
 
             print(f"Inbox created: {inbox.name}")
             print(f"SMTP credentials - User: {inbox.username}")
+        - lang: ruby
+          label: Ruby
+          source: |
+            require 'mailtrap'
+
+            client = Mailtrap::Client.new(api_key: ENV['MAILTRAP_API_KEY'])
+            inboxes = Mailtrap::InboxesAPI.new(YOUR_ACCOUNT_ID, client)
+
+            inbox = inboxes.create(name: 'My Test Inbox', project_id: PROJECT_ID)
+
+            puts "Inbox created: #{inbox.name}"
         - lang: csharp
           label: .NET
           source: |
@@ -1034,6 +1056,15 @@ paths:
             inbox_attributes = inboxes_api.get_by_id(inbox_id)
 
             print(inbox_attributes)
+        - lang: ruby
+          label: Ruby
+          source: |
+            require 'mailtrap'
+
+            client = Mailtrap::Client.new(api_key: ENV['MAILTRAP_API_KEY'])
+            inboxes = Mailtrap::InboxesAPI.new(YOUR_ACCOUNT_ID, client)
+
+            inbox = inboxes.get(INBOX_ID)
         - lang: csharp
           label: .NET
           source: |
@@ -1136,6 +1167,15 @@ paths:
             result = inboxes_api.delete(inbox_id)
 
             print(result)
+        - lang: ruby
+          label: Ruby
+          source: |
+            require 'mailtrap'
+
+            client = Mailtrap::Client.new(api_key: ENV['MAILTRAP_API_KEY'])
+            inboxes = Mailtrap::InboxesAPI.new(YOUR_ACCOUNT_ID, client)
+
+            inboxes.delete(INBOX_ID)
         - lang: csharp
           label: .NET
           source: |
@@ -1273,6 +1313,15 @@ paths:
             )
 
             print(updated_inbox)
+        - lang: ruby
+          label: Ruby
+          source: |
+            require 'mailtrap'
+
+            client = Mailtrap::Client.new(api_key: ENV['MAILTRAP_API_KEY'])
+            inboxes = Mailtrap::InboxesAPI.new(YOUR_ACCOUNT_ID, client)
+
+            inboxes.update(INBOX_ID, name: 'Updated Inbox Name')
         - lang: csharp
           label: .NET
           source: |
@@ -1393,6 +1442,15 @@ paths:
             result = inboxes_api.clean(inbox_id)
 
             print(result)
+        - lang: ruby
+          label: Ruby
+          source: |
+            require 'mailtrap'
+
+            client = Mailtrap::Client.new(api_key: ENV['MAILTRAP_API_KEY'])
+            inboxes = Mailtrap::InboxesAPI.new(YOUR_ACCOUNT_ID, client)
+
+            inboxes.clean(INBOX_ID)
         - lang: csharp
           label: .NET
           source: |
@@ -1501,6 +1559,15 @@ paths:
             result = inboxes_api.mark_as_read(inbox_id)
 
             print(result)
+        - lang: ruby
+          label: Ruby
+          source: |
+            require 'mailtrap'
+
+            client = Mailtrap::Client.new(api_key: ENV['MAILTRAP_API_KEY'])
+            inboxes = Mailtrap::InboxesAPI.new(YOUR_ACCOUNT_ID, client)
+
+            inboxes.mark_as_read(INBOX_ID)
         - lang: csharp
           label: .NET
           source: |
@@ -1609,6 +1676,15 @@ paths:
             result = inboxes_api.reset_credentials(inbox_id)
 
             print(result)
+        - lang: ruby
+          label: Ruby
+          source: |
+            require 'mailtrap'
+
+            client = Mailtrap::Client.new(api_key: ENV['MAILTRAP_API_KEY'])
+            inboxes = Mailtrap::InboxesAPI.new(YOUR_ACCOUNT_ID, client)
+
+            inboxes.reset_credentials(INBOX_ID)
         - lang: csharp
           label: .NET
           source: |
@@ -1979,6 +2055,15 @@ paths:
             message = messages_api.show_message(inbox_id=inbox_id, message_id=message_id)
 
             print(message)
+        - lang: ruby
+          label: Ruby
+          source: |
+            require 'mailtrap'
+
+            client = Mailtrap::Client.new(api_key: ENV['MAILTRAP_API_KEY'])
+            messages = Mailtrap::SandboxMessagesAPI.new(YOUR_ACCOUNT_ID, INBOX_ID, client)
+
+            message = messages.get(MESSAGE_ID)
         - lang: csharp
           label: .NET
           source: |
@@ -2212,6 +2297,15 @@ paths:
             )
 
             print(updated_message)
+        - lang: ruby
+          label: Ruby
+          source: |
+            require 'mailtrap'
+
+            client = Mailtrap::Client.new(api_key: ENV['MAILTRAP_API_KEY'])
+            messages = Mailtrap::SandboxMessagesAPI.new(YOUR_ACCOUNT_ID, INBOX_ID, client)
+
+            messages.mark_as_read(MESSAGE_ID)
         - lang: csharp
           label: .NET
           source: |
@@ -2419,6 +2513,15 @@ paths:
             result = messages_api.delete(inbox_id=inbox_id, message_id=message_id)
 
             print(result)
+        - lang: ruby
+          label: Ruby
+          source: |
+            require 'mailtrap'
+
+            client = Mailtrap::Client.new(api_key: ENV['MAILTRAP_API_KEY'])
+            messages = Mailtrap::SandboxMessagesAPI.new(YOUR_ACCOUNT_ID, INBOX_ID, client)
+
+            messages.delete(MESSAGE_ID)
         - lang: csharp
           label: .NET
           source: |
@@ -2630,6 +2733,22 @@ paths:
                 print(f"From: {message.from_email}")
                 print(f"Subject: {message.subject}")
                 print(f"Received: {message.created_at}")
+        - lang: ruby
+          label: Ruby
+          source: |
+            require 'mailtrap'
+
+            client = Mailtrap::Client.new(api_key: ENV['MAILTRAP_API_KEY'])
+            messages = Mailtrap::SandboxMessagesAPI.new(YOUR_ACCOUNT_ID, INBOX_ID, client)
+
+            messages.list.each do |message|
+              puts "From: #{message.from_email}"
+              puts "Subject: #{message.subject}"
+            end
+
+            # With search and pagination
+            messages.list(search: 'welcome')
+            messages.list(page: 2)
         - lang: csharp
           label: .NET
           source: |
@@ -2811,6 +2930,15 @@ paths:
             )
 
             print(result)
+        - lang: ruby
+          label: Ruby
+          source: |
+            require 'mailtrap'
+
+            client = Mailtrap::Client.new(api_key: ENV['MAILTRAP_API_KEY'])
+            messages = Mailtrap::SandboxMessagesAPI.new(YOUR_ACCOUNT_ID, INBOX_ID, client)
+
+            messages.forward_message(MESSAGE_ID, email: 'recipient@example.com')
         - lang: csharp
           label: .NET
           source: |
@@ -2973,6 +3101,15 @@ paths:
             client = mt.MailtrapClient(token="YOUR_API_KEY", account_id="YOUR_ACCOUNT_ID")
             spam_report = client.testing_api.messages.get_spam_report(inbox_id=12345, message_id=67890)
             print(spam_report)
+        - lang: ruby
+          label: Ruby
+          source: |
+            require 'mailtrap'
+
+            client = Mailtrap::Client.new(api_key: ENV['MAILTRAP_API_KEY'])
+            messages = Mailtrap::SandboxMessagesAPI.new(YOUR_ACCOUNT_ID, INBOX_ID, client)
+
+            messages.spam_score(MESSAGE_ID)
         - lang: csharp
           label: .NET
           source: |
@@ -3147,6 +3284,15 @@ paths:
             client = mt.MailtrapClient(token="YOUR_API_KEY", account_id="YOUR_ACCOUNT_ID")
             html_analysis = client.testing_api.messages.get_html_analysis(inbox_id=12345, message_id=67890)
             print(html_analysis)
+        - lang: ruby
+          label: Ruby
+          source: |
+            require 'mailtrap'
+
+            client = Mailtrap::Client.new(api_key: ENV['MAILTRAP_API_KEY'])
+            messages = Mailtrap::SandboxMessagesAPI.new(YOUR_ACCOUNT_ID, INBOX_ID, client)
+
+            messages.html_analysis(MESSAGE_ID)
         - lang: csharp
           label: .NET
           source: |
@@ -3270,6 +3416,15 @@ paths:
             client = mt.MailtrapClient(token="YOUR_API_KEY", account_id="YOUR_ACCOUNT_ID")
             text_body = client.testing_api.messages.get_text_message(inbox_id=12345, message_id=67890)
             print(text_body)
+        - lang: ruby
+          label: Ruby
+          source: |
+            require 'mailtrap'
+
+            client = Mailtrap::Client.new(api_key: ENV['MAILTRAP_API_KEY'])
+            messages = Mailtrap::SandboxMessagesAPI.new(YOUR_ACCOUNT_ID, INBOX_ID, client)
+
+            messages.text_body(MESSAGE_ID)
         - lang: csharp
           label: .NET
           source: |
@@ -3437,6 +3592,15 @@ paths:
             client = mt.MailtrapClient(token="YOUR_API_KEY", account_id="YOUR_ACCOUNT_ID")
             raw_body = client.testing_api.messages.get_raw_message(inbox_id=12345, message_id=67890)
             print(raw_body)
+        - lang: ruby
+          label: Ruby
+          source: |
+            require 'mailtrap'
+
+            client = Mailtrap::Client.new(api_key: ENV['MAILTRAP_API_KEY'])
+            messages = Mailtrap::SandboxMessagesAPI.new(YOUR_ACCOUNT_ID, INBOX_ID, client)
+
+            messages.raw_body(MESSAGE_ID)
         - lang: csharp
           label: .NET
           source: |
@@ -3579,6 +3743,15 @@ paths:
             client = mt.MailtrapClient(token="YOUR_API_KEY", account_id="YOUR_ACCOUNT_ID")
             html_source = client.testing_api.messages.get_html_source(inbox_id=12345, message_id=67890)
             print(html_source)
+        - lang: ruby
+          label: Ruby
+          source: |
+            require 'mailtrap'
+
+            client = Mailtrap::Client.new(api_key: ENV['MAILTRAP_API_KEY'])
+            messages = Mailtrap::SandboxMessagesAPI.new(YOUR_ACCOUNT_ID, INBOX_ID, client)
+
+            messages.html_source(MESSAGE_ID)
         - lang: csharp
           label: .NET
           source: |
@@ -3725,6 +3898,15 @@ paths:
             client = mt.MailtrapClient(token="YOUR_API_KEY", account_id="YOUR_ACCOUNT_ID")
             html_body = client.testing_api.messages.get_html_message(inbox_id=12345, message_id=67890)
             print(html_body)
+        - lang: ruby
+          label: Ruby
+          source: |
+            require 'mailtrap'
+
+            client = Mailtrap::Client.new(api_key: ENV['MAILTRAP_API_KEY'])
+            messages = Mailtrap::SandboxMessagesAPI.new(YOUR_ACCOUNT_ID, INBOX_ID, client)
+
+            messages.html_body(MESSAGE_ID)
         - lang: csharp
           label: .NET
           source: |
@@ -3892,6 +4074,15 @@ paths:
             client = mt.MailtrapClient(token="YOUR_API_KEY", account_id="YOUR_ACCOUNT_ID")
             eml_content = client.testing_api.messages.get_message_as_eml(inbox_id=12345, message_id=67890)
             print(eml_content)
+        - lang: ruby
+          label: Ruby
+          source: |
+            require 'mailtrap'
+
+            client = Mailtrap::Client.new(api_key: ENV['MAILTRAP_API_KEY'])
+            messages = Mailtrap::SandboxMessagesAPI.new(YOUR_ACCOUNT_ID, INBOX_ID, client)
+
+            messages.eml_body(MESSAGE_ID)
         - lang: csharp
           label: .NET
           source: |
@@ -4010,6 +4201,15 @@ paths:
             client = mt.MailtrapClient(token="YOUR_API_KEY", account_id="YOUR_ACCOUNT_ID")
             mail_headers = client.testing_api.messages.get_mail_headers(inbox_id=12345, message_id=67890)
             print(mail_headers)
+        - lang: ruby
+          label: Ruby
+          source: |
+            require 'mailtrap'
+
+            client = Mailtrap::Client.new(api_key: ENV['MAILTRAP_API_KEY'])
+            messages = Mailtrap::SandboxMessagesAPI.new(YOUR_ACCOUNT_ID, INBOX_ID, client)
+
+            messages.mail_headers(MESSAGE_ID)
         - lang: csharp
           label: .NET
           source: |
@@ -4164,6 +4364,17 @@ paths:
             import mailtrap as mt
             client = mt.MailtrapClient(token="YOUR_API_KEY", account_id="YOUR_ACCOUNT_ID")
             attachments = client.testing_api.attachments.get_list(inbox_id=12345, message_id=67890)
+        - lang: ruby
+          label: Ruby
+          source: |
+            require 'mailtrap'
+
+            client = Mailtrap::Client.new(api_key: ENV['MAILTRAP_API_KEY'])
+            attachments = Mailtrap::SandboxAttachmentsAPI.new(
+              YOUR_ACCOUNT_ID, INBOX_ID, MESSAGE_ID, client
+            )
+
+            attachments.list
         - lang: csharp
           label: C#
           source: |
@@ -4311,6 +4522,17 @@ paths:
             import mailtrap as mt
             client = mt.MailtrapClient(token="YOUR_API_KEY", account_id="YOUR_ACCOUNT_ID")
             attachment = client.testing_api.attachments.get(inbox_id=12345, message_id=67890, attachment_id=222222)
+        - lang: ruby
+          label: Ruby
+          source: |
+            require 'mailtrap'
+
+            client = Mailtrap::Client.new(api_key: ENV['MAILTRAP_API_KEY'])
+            attachments = Mailtrap::SandboxAttachmentsAPI.new(
+              YOUR_ACCOUNT_ID, INBOX_ID, MESSAGE_ID, client
+            )
+
+            attachments.get(ATTACHMENT_ID)
         - lang: csharp
           label: C#
           source: |
