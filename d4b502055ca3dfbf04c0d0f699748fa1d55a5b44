@@ -1,0 +1,29 @@
+specs/sandbox.openapi.yml
+  90a11f54f39073c9 819-829,945-953,1052-1060,1188-1196,1320-1328,1433-1441,1546-1554,1861-1871,2434-2442,2665-2673,2872-2880,3087-3102,3275-3283,3438-3446,3605-3613,3720-3728,3879-3887,4013-4021,4149-4157,4308-4316,4418-4426,4563-4573,4702-4712
+specs/webhooks.openapi.yml
+  90a11f54f39073c9 512-533
+specs/email-api.openapi.yml
+  90a11f54f39073c9 110-120,254-264,369-379,480-488,601-609,1414-1423,1454-1463,1505-1514,1555-1564,1605-1614
+specs/general.openapi.yml
+  90a11f54f39073c9 221-232,338-353,453-461,813-821
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.1.4",
+  "base_commit_sha": "d4b502055ca3dfbf04c0d0f699748fa1d55a5b44",
+  "prompts": {
+    "90a11f54f39073c9": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "976c59f5-374a-4a39-8831-9effc894b6e7",
+        "model": "claude-4.6-opus-high-thinking"
+      },
+      "human_author": "DagonWat <yahor.vaitsiakhouski@railsware.com>",
+      "messages": [],
+      "total_additions": 391,
+      "total_deletions": 0,
+      "accepted_lines": 391,
+      "overriden_lines": 0
+    }
+  }
+}
