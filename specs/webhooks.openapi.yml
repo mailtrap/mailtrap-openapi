@@ -509,6 +509,28 @@ webhooks:
 
             http_response_code(200);
             echo 'OK';
+        - lang: ruby
+          label: 'Ruby'
+          source: |
+            # Rails controller for JSON Lines webhook
+            class WebhooksController < ApplicationController
+              skip_before_action :verify_authenticity_token
+
+              def receive
+                request.body.read.each_line do |line|
+                  event = JSON.parse(line)
+
+                  case event['event']
+                  when 'delivery'
+                    Rails.logger.info "Delivered to #{event['email']}"
+                  when 'bounce'
+                    Rails.logger.info "Bounced: #{event['response']}"
+                  end
+                end
+
+                head :ok
+              end
+            end
       requestBody:
         description: Events in JSON Lines format (one JSON object per line)
         content:

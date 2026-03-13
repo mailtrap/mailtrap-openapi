@@ -218,6 +218,18 @@ paths:
                 print(f"Account: {account.name}")
                 print(f"ID: {account.id}")
                 print(f"Access Level: {account.access_levels[0]}")
+        - lang: ruby
+          label: Ruby
+          source: |
+            require 'mailtrap'
+
+            client = Mailtrap::Client.new(api_key: ENV['MAILTRAP_API_KEY'])
+            accounts = Mailtrap::AccountsAPI.new(client)
+
+            accounts.list.each do |account|
+              puts "Account: #{account.name}"
+              puts "ID: #{account.id}"
+            end
         - lang: csharp
           label: .NET
           source: |
@@ -323,6 +335,22 @@ paths:
             accesses = client.general_api.account_accesses.get_all()
             for access in accesses:
                 print(f"User: {access.specifier.email}, Level: {access.permission_level}")
+        - lang: ruby
+          label: Ruby
+          source: |
+            require 'mailtrap'
+
+            client = Mailtrap::Client.new(api_key: ENV['MAILTRAP_API_KEY'])
+            account_accesses = Mailtrap::AccountAccessesAPI.new(YOUR_ACCOUNT_ID, client)
+
+            account_accesses.list.each do |access|
+              puts access.specifier
+            end
+
+            # With optional filters
+            account_accesses.list(domain_ids: [1, 2])
+            account_accesses.list(inbox_ids: [12, 34])
+            account_accesses.list(project_ids: [100, 200])
         - lang: csharp
           label: C#
           source: |
@@ -422,6 +450,15 @@ paths:
             import mailtrap as mt
             client = mt.MailtrapClient(token="YOUR_API_KEY", account_id=YOUR_ACCOUNT_ID)
             client.general_api.account_accesses.delete(access_id)
+        - lang: ruby
+          label: Ruby
+          source: |
+            require 'mailtrap'
+
+            client = Mailtrap::Client.new(api_key: ENV['MAILTRAP_API_KEY'])
+            account_accesses = Mailtrap::AccountAccessesAPI.new(YOUR_ACCOUNT_ID, client)
+
+            account_accesses.delete(ACCOUNT_ACCESS_ID)
         - lang: csharp
           label: C#
           source: |
@@ -773,6 +810,15 @@ paths:
             client = mt.MailtrapClient(token="YOUR_API_KEY", account_id=YOUR_ACCOUNT_ID)
             usage = client.general_api.billing.get_usage()
             print(f"Sandbox sent: {usage.testing.usage.sent_messages_count.current}/{usage.testing.usage.sent_messages_count.limit}")
+        - lang: ruby
+          label: Ruby
+          source: |
+            require 'mailtrap'
+
+            client = Mailtrap::Client.new(api_key: ENV['MAILTRAP_API_KEY'])
+            billing = Mailtrap::BillingAPI.new(YOUR_ACCOUNT_ID, client)
+
+            billing.usage
         - lang: csharp
           label: C#
           source: |
@@ -1074,7 +1120,7 @@ components:
       description: Unique organization ID
       name: organization_id
       in: path
-      required: true
+      required: trueg
       schema:
         type: integer
         format: int64
