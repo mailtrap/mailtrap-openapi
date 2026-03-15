@@ -1,0 +1,36 @@
+specs/email-sending.openapi.yml
+  6bcfd798f60fbda4 2142-2185,2350-2354,2367-2373
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.1.11",
+  "base_commit_sha": "f66ae749b6b6d7af0b0601ae45b55553e5bd63d3",
+  "prompts": {
+    "0e86370e9b6bdcfb": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "e0447dc3-5d50-4f0d-a973-0785e6357414",
+        "model": "default"
+      },
+      "human_author": null,
+      "messages": [],
+      "total_additions": 166,
+      "total_deletions": 67,
+      "accepted_lines": 112,
+      "overriden_lines": 0
+    },
+    "6bcfd798f60fbda4": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "c426a6f0-e21d-4079-9151-c27ede4b3a78",
+        "model": "default"
+      },
+      "human_author": "Marcin Klocek <marcin.klocek@railsware.com>",
+      "messages": [],
+      "total_additions": 84,
+      "total_deletions": 136,
+      "accepted_lines": 84,
+      "overriden_lines": 0
+    }
+  }
+}
