@@ -1065,6 +1065,7 @@ paths:
             inboxes = Mailtrap::InboxesAPI.new(YOUR_ACCOUNT_ID, client)
 
             inbox = inboxes.get(INBOX_ID)
+            puts "Inbox: #{inbox}"
         - lang: csharp
           label: .NET
           source: |
@@ -2064,6 +2065,7 @@ paths:
             messages = Mailtrap::SandboxMessagesAPI.new(YOUR_ACCOUNT_ID, INBOX_ID, client)
 
             message = messages.get(MESSAGE_ID)
+            puts message
         - lang: csharp
           label: .NET
           source: |
@@ -2747,8 +2749,8 @@ paths:
             end
 
             # With search and pagination
-            messages.list(search: 'welcome')
-            messages.list(page: 2)
+            puts messages.list(search: 'welcome')
+            puts messages.list(page: 2)
         - lang: csharp
           label: .NET
           source: |
@@ -2938,7 +2940,7 @@ paths:
             client = Mailtrap::Client.new(api_key: ENV['MAILTRAP_API_KEY'])
             messages = Mailtrap::SandboxMessagesAPI.new(YOUR_ACCOUNT_ID, INBOX_ID, client)
 
-            messages.forward_message(MESSAGE_ID, email: 'recipient@example.com')
+            puts messages.forward_message(MESSAGE_ID, email: 'recipient@example.com')
         - lang: csharp
           label: .NET
           source: |
@@ -3109,7 +3111,7 @@ paths:
             client = Mailtrap::Client.new(api_key: ENV['MAILTRAP_API_KEY'])
             messages = Mailtrap::SandboxMessagesAPI.new(YOUR_ACCOUNT_ID, INBOX_ID, client)
 
-            messages.spam_score(MESSAGE_ID)
+            puts messages.spam_score(MESSAGE_ID)
         - lang: csharp
           label: .NET
           source: |
@@ -3292,7 +3294,7 @@ paths:
             client = Mailtrap::Client.new(api_key: ENV['MAILTRAP_API_KEY'])
             messages = Mailtrap::SandboxMessagesAPI.new(YOUR_ACCOUNT_ID, INBOX_ID, client)
 
-            messages.html_analysis(MESSAGE_ID)
+            puts messages.html_analysis(MESSAGE_ID)
         - lang: csharp
           label: .NET
           source: |
@@ -3424,7 +3426,7 @@ paths:
             client = Mailtrap::Client.new(api_key: ENV['MAILTRAP_API_KEY'])
             messages = Mailtrap::SandboxMessagesAPI.new(YOUR_ACCOUNT_ID, INBOX_ID, client)
 
-            messages.text_body(MESSAGE_ID)
+            puts messages.text_body(MESSAGE_ID)
         - lang: csharp
           label: .NET
           source: |
@@ -3600,7 +3602,7 @@ paths:
             client = Mailtrap::Client.new(api_key: ENV['MAILTRAP_API_KEY'])
             messages = Mailtrap::SandboxMessagesAPI.new(YOUR_ACCOUNT_ID, INBOX_ID, client)
 
-            messages.raw_body(MESSAGE_ID)
+            puts messages.raw_body(MESSAGE_ID)
         - lang: csharp
           label: .NET
           source: |
@@ -3751,7 +3753,7 @@ paths:
             client = Mailtrap::Client.new(api_key: ENV['MAILTRAP_API_KEY'])
             messages = Mailtrap::SandboxMessagesAPI.new(YOUR_ACCOUNT_ID, INBOX_ID, client)
 
-            messages.html_source(MESSAGE_ID)
+            puts messages.html_source(MESSAGE_ID)
         - lang: csharp
           label: .NET
           source: |
@@ -3906,7 +3908,7 @@ paths:
             client = Mailtrap::Client.new(api_key: ENV['MAILTRAP_API_KEY'])
             messages = Mailtrap::SandboxMessagesAPI.new(YOUR_ACCOUNT_ID, INBOX_ID, client)
 
-            messages.html_body(MESSAGE_ID)
+            puts messages.html_body(MESSAGE_ID)
         - lang: csharp
           label: .NET
           source: |
@@ -4082,7 +4084,7 @@ paths:
             client = Mailtrap::Client.new(api_key: ENV['MAILTRAP_API_KEY'])
             messages = Mailtrap::SandboxMessagesAPI.new(YOUR_ACCOUNT_ID, INBOX_ID, client)
 
-            messages.eml_body(MESSAGE_ID)
+            puts messages.eml_body(MESSAGE_ID)
         - lang: csharp
           label: .NET
           source: |
@@ -4209,7 +4211,7 @@ paths:
             client = Mailtrap::Client.new(api_key: ENV['MAILTRAP_API_KEY'])
             messages = Mailtrap::SandboxMessagesAPI.new(YOUR_ACCOUNT_ID, INBOX_ID, client)
 
-            messages.mail_headers(MESSAGE_ID)
+            puts messages.mail_headers(MESSAGE_ID)
         - lang: csharp
           label: .NET
           source: |
@@ -4374,7 +4376,7 @@ paths:
               YOUR_ACCOUNT_ID, INBOX_ID, MESSAGE_ID, client
             )
 
-            attachments.list
+            puts attachments.list
         - lang: csharp
           label: C#
           source: |
@@ -4532,7 +4534,7 @@ paths:
               YOUR_ACCOUNT_ID, INBOX_ID, MESSAGE_ID, client
             )
 
-            attachments.get(ATTACHMENT_ID)
+            puts "Attachment: #{attachments.get(ATTACHMENT_ID)}"
         - lang: csharp
           label: C#
           source: |

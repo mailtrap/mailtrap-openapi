@@ -237,9 +237,9 @@ paths:
             end
 
             # With optional filters
-            account_accesses.list(domain_ids: [1, 2])
-            account_accesses.list(inbox_ids: [12, 34])
-            account_accesses.list(project_ids: [100, 200])
+            puts account_accesses.list(domain_ids: [1, 2])
+            puts account_accesses.list(inbox_ids: [12, 34])
+            puts account_accesses.list(project_ids: [100, 200])
         - lang: csharp
           label: C#
           source: |
@@ -926,7 +926,7 @@ paths:
             client = Mailtrap::Client.new(api_key: ENV['MAILTRAP_API_KEY'])
             billing = Mailtrap::BillingAPI.new(YOUR_ACCOUNT_ID, client)
 
-            billing.usage
+            puts "Usage: #{billing.usage}"
         - lang: csharp
           label: C#
           source: |

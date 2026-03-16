@@ -1039,7 +1039,7 @@ paths:
             client = Mailtrap::Client.new(api_key: ENV['MAILTRAP_API_KEY'])
             stats = Mailtrap::StatsAPI.new(YOUR_ACCOUNT_ID, client)
 
-            stats.get(start_date: '2026-01-01', end_date: '2026-01-31')
+            puts "Stats: #{stats.get(start_date: '2026-01-01', end_date: '2026-01-31')}"
       parameters:
         - $ref: '#/components/parameters/account_id'
         - $ref: '#/components/parameters/StartDateQueryFilter'
@@ -1084,7 +1084,7 @@ paths:
             client = Mailtrap::Client.new(api_key: ENV['MAILTRAP_API_KEY'])
             stats = Mailtrap::StatsAPI.new(YOUR_ACCOUNT_ID, client)
 
-            stats.by_domain(start_date: '2026-01-01', end_date: '2026-01-31')
+            puts "Stats: #{stats.by_domain(start_date: '2026-01-01', end_date: '2026-01-31')}"
       parameters:
         - $ref: '#/components/parameters/account_id'
         - $ref: '#/components/parameters/StartDateQueryFilter'
@@ -1138,7 +1138,7 @@ paths:
             client = Mailtrap::Client.new(api_key: ENV['MAILTRAP_API_KEY'])
             stats = Mailtrap::StatsAPI.new(YOUR_ACCOUNT_ID, client)
 
-            stats.by_category(start_date: '2026-01-01', end_date: '2026-01-31')
+            puts "Stats: #{stats.by_category(start_date: '2026-01-01', end_date: '2026-01-31')}"
       parameters:
         - $ref: '#/components/parameters/account_id'
         - $ref: '#/components/parameters/StartDateQueryFilter'
@@ -1191,7 +1191,7 @@ paths:
             client = Mailtrap::Client.new(api_key: ENV['MAILTRAP_API_KEY'])
             stats = Mailtrap::StatsAPI.new(YOUR_ACCOUNT_ID, client)
 
-            stats.by_email_service_provider(start_date: '2026-01-01', end_date: '2026-01-31')
+            puts "Stats: #{stats.by_email_service_provider(start_date: '2026-01-01', end_date: '2026-01-31')}"
       parameters:
         - $ref: '#/components/parameters/account_id'
         - $ref: '#/components/parameters/StartDateQueryFilter'
@@ -1244,7 +1244,7 @@ paths:
             client = Mailtrap::Client.new(api_key: ENV['MAILTRAP_API_KEY'])
             stats = Mailtrap::StatsAPI.new(YOUR_ACCOUNT_ID, client)
 
-            stats.by_date(start_date: '2026-01-01', end_date: '2026-01-31')
+            puts "Stats: #{stats.by_date(start_date: '2026-01-01', end_date: '2026-01-31')}"
       parameters:
         - $ref: '#/components/parameters/account_id'
         - $ref: '#/components/parameters/StartDateQueryFilter'
