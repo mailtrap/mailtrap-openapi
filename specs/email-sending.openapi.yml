@@ -121,6 +121,17 @@ paths:
             domain = client.sending_domains_api.sending_domains.create(params)
 
             print(f"Created domain: {domain}")
+        - lang: ruby
+          label: Ruby
+          source: |
+            require 'mailtrap'
+
+            client = Mailtrap::Client.new(api_key: ENV['MAILTRAP_API_KEY'])
+            sending_domains = Mailtrap::SendingDomainsAPI.new(YOUR_ACCOUNT_ID, client)
+
+            domain = sending_domains.create(domain_name: 'example.com')
+
+            puts "Created domain: #{domain.name}"
         - lang: csharp
           label: .NET
           source: |
@@ -253,6 +264,17 @@ paths:
 
             for domain in domains:
                 print(f"Domain: {domain.domain_name}, Verified: {domain.dns_verified}")
+        - lang: ruby
+          label: Ruby
+          source: |
+            require 'mailtrap'
+
+            client = Mailtrap::Client.new(api_key: ENV['MAILTRAP_API_KEY'])
+            sending_domains = Mailtrap::SendingDomainsAPI.new(YOUR_ACCOUNT_ID, client)
+
+            sending_domains.list.each do |domain|
+              puts "Domain: #{domain.name}"
+            end
         - lang: csharp
           label: .NET
           source: |
@@ -360,6 +382,17 @@ paths:
 
             print(f"Domain: {domain.domain_name}")
             print(f"DNS Verified: {domain.dns_verified}")
+        - lang: ruby
+          label: Ruby
+          source: |
+            require 'mailtrap'
+
+            client = Mailtrap::Client.new(api_key: ENV['MAILTRAP_API_KEY'])
+            sending_domains = Mailtrap::SendingDomainsAPI.new(YOUR_ACCOUNT_ID, client)
+
+            domain = sending_domains.get(DOMAIN_ID)
+
+            puts "Domain: #{domain.name}"
         - lang: csharp
           label: .NET
           source: |
@@ -464,6 +497,15 @@ paths:
             client.sending_domains_api.sending_domains.delete(domain_id)
 
             print("Domain deleted successfully")
+        - lang: ruby
+          label: Ruby
+          source: |
+            require 'mailtrap'
+
+            client = Mailtrap::Client.new(api_key: ENV['MAILTRAP_API_KEY'])
+            sending_domains = Mailtrap::SendingDomainsAPI.new(YOUR_ACCOUNT_ID, client)
+
+            sending_domains.delete(DOMAIN_ID)
         - lang: csharp
           label: .NET
           source: |
@@ -583,6 +625,15 @@ paths:
             )
 
             print("Setup instructions sent")
+        - lang: ruby
+          label: Ruby
+          source: |
+            require 'mailtrap'
+
+            client = Mailtrap::Client.new(api_key: ENV['MAILTRAP_API_KEY'])
+            sending_domains = Mailtrap::SendingDomainsAPI.new(YOUR_ACCOUNT_ID, client)
+
+            sending_domains.send_setup_instructions(DOMAIN_ID, email: 'devops@example.com')
         - lang: csharp
           label: .NET
           source: |
@@ -980,6 +1031,15 @@ paths:
           source: |
             curl -X GET 'https://mailtrap.io/api/accounts/{account_id}/stats?start_date=2025-01-01&end_date=2025-12-31' \
               -H 'Authorization: Bearer YOUR_API_KEY'
+        - lang: ruby
+          label: Ruby
+          source: |
+            require 'mailtrap'
+
+            client = Mailtrap::Client.new(api_key: ENV['MAILTRAP_API_KEY'])
+            stats = Mailtrap::StatsAPI.new(YOUR_ACCOUNT_ID, client)
+
+            puts "Stats: #{stats.get(start_date: '2026-01-01', end_date: '2026-01-31')}"
       parameters:
         - $ref: '#/components/parameters/account_id'
         - $ref: '#/components/parameters/StartDateQueryFilter'
@@ -1016,6 +1076,15 @@ paths:
           source: |
             curl -X GET 'https://mailtrap.io/api/accounts/{account_id}/stats/domains?start_date=2025-01-01&end_date=2025-12-31' \
               -H 'Authorization: Bearer YOUR_API_KEY'
+        - lang: ruby
+          label: Ruby
+          source: |
+            require 'mailtrap'
+
+            client = Mailtrap::Client.new(api_key: ENV['MAILTRAP_API_KEY'])
+            stats = Mailtrap::StatsAPI.new(YOUR_ACCOUNT_ID, client)
+
+            puts "Stats: #{stats.by_domain(start_date: '2026-01-01', end_date: '2026-01-31')}"
       parameters:
         - $ref: '#/components/parameters/account_id'
         - $ref: '#/components/parameters/StartDateQueryFilter'
@@ -1061,6 +1130,15 @@ paths:
           source: |
             curl -X GET 'https://mailtrap.io/api/accounts/{account_id}/stats/categories?start_date=2025-01-01&end_date=2025-12-31' \
               -H 'Authorization: Bearer YOUR_API_KEY'
+        - lang: ruby
+          label: Ruby
+          source: |
+            require 'mailtrap'
+
+            client = Mailtrap::Client.new(api_key: ENV['MAILTRAP_API_KEY'])
+            stats = Mailtrap::StatsAPI.new(YOUR_ACCOUNT_ID, client)
+
+            puts "Stats: #{stats.by_category(start_date: '2026-01-01', end_date: '2026-01-31')}"
       parameters:
         - $ref: '#/components/parameters/account_id'
         - $ref: '#/components/parameters/StartDateQueryFilter'
@@ -1105,6 +1183,15 @@ paths:
           source: |
             curl -X GET 'https://mailtrap.io/api/accounts/{account_id}/stats/email_service_providers?start_date=2025-01-01&end_date=2025-12-31' \
               -H 'Authorization: Bearer YOUR_API_KEY'
+        - lang: ruby
+          label: Ruby
+          source: |
+            require 'mailtrap'
+
+            client = Mailtrap::Client.new(api_key: ENV['MAILTRAP_API_KEY'])
+            stats = Mailtrap::StatsAPI.new(YOUR_ACCOUNT_ID, client)
+
+            puts "Stats: #{stats.by_email_service_provider(start_date: '2026-01-01', end_date: '2026-01-31')}"
       parameters:
         - $ref: '#/components/parameters/account_id'
         - $ref: '#/components/parameters/StartDateQueryFilter'
@@ -1149,6 +1236,15 @@ paths:
           source: |
             curl -X GET 'https://mailtrap.io/api/accounts/{account_id}/stats/date?start_date=2025-01-01&end_date=2025-12-31' \
               -H 'Authorization: Bearer YOUR_API_KEY'
+        - lang: ruby
+          label: Ruby
+          source: |
+            require 'mailtrap'
+
+            client = Mailtrap::Client.new(api_key: ENV['MAILTRAP_API_KEY'])
+            stats = Mailtrap::StatsAPI.new(YOUR_ACCOUNT_ID, client)
+
+            puts "Stats: #{stats.by_date(start_date: '2026-01-01', end_date: '2026-01-31')}"
       parameters:
         - $ref: '#/components/parameters/account_id'
         - $ref: '#/components/parameters/StartDateQueryFilter'

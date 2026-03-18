@@ -1073,6 +1073,7 @@ paths:
             import_job = imports.create([
               { email: "user1@example.com", fields: { first_name: "John" }, list_ids_included: [1, 2] }
             ])
+            puts "Import job: #{import_job}"
         - lang: csharp
           label: C#
           source: |
@@ -1193,6 +1194,7 @@ paths:
             client = Mailtrap::Client.new(api_key: 'YOUR_API_KEY')
             imports = Mailtrap::ContactImportsAPI.new(YOUR_ACCOUNT_ID, client)
             import_status = imports.get(import_id)
+            puts "Import status: #{import_status}"
         - lang: csharp
           label: C#
           source: |
@@ -1292,6 +1294,7 @@ paths:
             client = Mailtrap::Client.new(api_key: 'YOUR_API_KEY')
             lists = Mailtrap::ContactListsAPI.new(YOUR_ACCOUNT_ID, client)
             all_lists = lists.list
+            puts "Lists: #{all_lists}"
         - lang: csharp
           label: C#
           source: |
@@ -1384,6 +1387,7 @@ paths:
             client = Mailtrap::Client.new(api_key: 'YOUR_API_KEY')
             lists = Mailtrap::ContactListsAPI.new(YOUR_ACCOUNT_ID, client)
             new_list = lists.create(name: "Customers")
+            puts "List: #{new_list}"
         - lang: csharp
           label: C#
           source: |
@@ -1482,6 +1486,7 @@ paths:
             client = Mailtrap::Client.new(api_key: 'YOUR_API_KEY')
             lists = Mailtrap::ContactListsAPI.new(YOUR_ACCOUNT_ID, client)
             list = lists.get(list_id)
+            puts "List: #{list}"
         - lang: csharp
           label: C#
           source: |
@@ -1752,6 +1757,7 @@ paths:
             client = Mailtrap::Client.new(api_key: 'YOUR_API_KEY')
             fields = Mailtrap::ContactFieldsAPI.new(YOUR_ACCOUNT_ID, client)
             all_fields = fields.list
+            puts "All fields: #{all_fields}"
         - lang: csharp
           label: C#
           source: |
@@ -1851,6 +1857,7 @@ paths:
             client = Mailtrap::Client.new(api_key: 'YOUR_API_KEY')
             fields = Mailtrap::ContactFieldsAPI.new(YOUR_ACCOUNT_ID, client)
             new_field = fields.create(name: "Company", data_type: "text", merge_tag: "company")
+            puts "New field: #{new_field}"
         - lang: csharp
           label: C#
           source: |
@@ -1986,6 +1993,7 @@ paths:
             client = Mailtrap::Client.new(api_key: 'YOUR_API_KEY')
             fields = Mailtrap::ContactFieldsAPI.new(YOUR_ACCOUNT_ID, client)
             field = fields.get(field_id)
+            puts field
         - lang: csharp
           label: C#
           source: |

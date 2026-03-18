@@ -85,7 +85,7 @@ paths:
             require 'mailtrap'
             client = Mailtrap::Client.new(api_key: 'YOUR_API_KEY')
             templates = Mailtrap::EmailTemplatesAPI.new(YOUR_ACCOUNT_ID, client)
-            all_templates = templates.list
+            puts templates.list
         - lang: csharp
           label: .NET
           source: |
@@ -212,6 +212,7 @@ paths:
               body_html: '<h1>Welcome {{user_name}}!</h1>',
               body_text: 'Welcome {{user_name}}!'
             )
+            puts "Template: #{template}"
         - lang: csharp
           label: .NET
           source: |
@@ -331,6 +332,7 @@ paths:
               client
             )
             template = templates.get(template_id)
+            puts "Template: #{template}"
       responses:
         '200':
           description: Returns attributes of the email template.
