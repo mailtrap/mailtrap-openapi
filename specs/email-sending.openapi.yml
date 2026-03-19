@@ -1292,7 +1292,7 @@ paths:
         - lang: shell
           label: 'cURL'
           source: |
-            curl -X GET -g 'https://mailtrap.io/api/accounts/{account_id}/email_logs?filters[sent_after]=2025-01-01T00:00:00Z&filters[sent_before]=2025-01-31T23:59:59Z&filters[to][operator]=ci_equal&filters[to][value]=recipient@example.com&filters[sending_domain_id][operator]=equal&filters[sending_domain_id][value]=3938' \
+            curl -X GET -g 'https://mailtrap.io/api/accounts/{account_id}/email_logs?filters[sent_after]=2025-01-01T00:00:00Z&filters[sent_before]=2025-01-31T23:59:59Z&filters[to][operator]=ci_equal&filters[to][value]=recipient@example.com&filters[sending_domain_id][operator]=equal&filters[sending_domain_id][value][]=3938&filters[sending_domain_id][value][]=3939' \
               -H 'Authorization: Bearer YOUR_API_KEY'
       parameters:
         - $ref: '#/components/parameters/account_id'
@@ -1305,8 +1305,9 @@ paths:
         - name: filters
           in: query
           description: |
-            Filter criteria (deep object). Pass as filters[field][operator] and filters[field][value].
-            Date range: use filters[sent_after] and filters[sent_before] (ISO 8601 strings).
+            Filter criteria (deep object). Pass as `filters[field][operator]` and `filters[field][value]`.
+            When a filter accepts an array value, use bracket notation: `filters[field][value][]=item1&filters[field][value][]=item2`.
+            Date range: use `filters[sent_after]` and `filters[sent_before]` (ISO 8601 strings).
             Unknown filters are ignored.
           style: deepObject
           explode: true
@@ -2133,15 +2134,18 @@ components:
       description: |
         Key-value map of filter name to filter spec. Each spec has operator and optional value.
         Date range uses sent_after / sent_before at top level of filters (see below).
+        In query params, array values use bracket notation: `filters[field][value][]=a&filters[field][value][]=b`.
       properties:
         sent_after:
           type: string
           format: date-time
           description: Start of sent-at range (ISO 8601). Must be before or equal to sent_before.
+          example: '2025-01-01T00:00:00Z'
         sent_before:
           type: string
           format: date-time
           description: End of sent-at range (ISO 8601). Must be after or equal to sent_after.
+          example: '2025-01-31T23:59:59Z'
         to:
           $ref: '#/components/schemas/FilterTo'
         from:
@@ -2153,79 +2157,128 @@ components:
         events:
           $ref: '#/components/schemas/FilterEvents'
         clicks_count:
-          $ref: '#/components/schemas/FilterNumber'
+          $ref: '#/components/schemas/FilterClicksCount'
         opens_count:
-          $ref: '#/components/schemas/FilterNumber'
+          $ref: '#/components/schemas/FilterOpensCount'
         client_ip:
           $ref: '#/components/schemas/FilterClientIp'
         sending_ip:
           $ref: '#/components/schemas/FilterSendingIp'
         email_service_provider_response:
-          $ref: '#/components/schemas/FilterMandatoryText'
+          $ref: '#/components/schemas/FilterEmailServiceProviderResponse'
         email_service_provider:
-          $ref: '#/components/schemas/FilterExact'
+          $ref: '#/components/schemas/FilterEmailServiceProvider'
         recipient_mx:
-          $ref: '#/components/schemas/FilterMandatoryText'
+          $ref: '#/components/schemas/FilterRecipientMx'
         category:
-          $ref: '#/components/schemas/FilterExact'
+          $ref: '#/components/schemas/FilterCategory'
         sending_domain_id:
           $ref: '#/components/schemas/FilterSendingDomainId'
         sending_stream:
           $ref: '#/components/schemas/FilterSendingStream'
-      example:
-        sent_after: '2025-01-01T00:00:00Z'
-        sent_before: '2025-01-31T23:59:59Z'
-        to:
-          operator: ci_equal
-          value: recipient@example.com
-        status:
-          operator: equal
-          value: delivered
-        sending_domain_id:
-          operator: equal
-          value: 3938
-        sending_stream:
-          operator: equal
-          value: transactional
 
-    FilterTo:
+    FilterCiEqualString:
       type: object
       required: [operator, value]
       properties:
         operator:
           type: string
-          enum: [ci_contain, ci_not_contain, ci_equal, ci_not_equal]
+          enum: [ci_equal, ci_not_equal]
+          description: "ci_* = case-insensitive"
+        value:
+          oneOf:
+            - type: string
+            - type: array
+              items:
+                type: string
+
+    FilterCiContainString:
+      type: object
+      required: [operator, value]
+      properties:
+        operator:
+          type: string
+          enum: [ci_contain, ci_not_contain]
           description: "ci_* = case-insensitive"
         value:
           type: string
-          description: Required for all operators (recipient email or substring).
-      example:
-        operator: ci_equal
-        value: recipient@example.com
 
-    FilterFrom:
+    FilterEqualString:
       type: object
       required: [operator, value]
       properties:
         operator:
           type: string
-          enum: [ci_contain, ci_not_contain, ci_equal, ci_not_equal]
+          enum: [equal, not_equal]
+        value:
+          oneOf:
+            - type: string
+            - type: array
+              items:
+                type: string
+
+    FilterContainString:
+      type: object
+      required: [operator, value]
+      properties:
+        operator:
+          type: string
+          enum: [contain, not_contain]
         value:
           type: string
-      example:
-        operator: ci_contain
-        value: noreply@example.com
 
-    FilterSubject:
+    FilterEmptyString:
       type: object
       required: [operator]
       properties:
         operator:
           type: string
-          enum: [ci_contain, ci_not_contain, ci_equal, ci_not_equal, empty, not_empty]
-        value:
-          type: string
-          description: Omit or leave empty for empty / not_empty.
+          enum: [empty, not_empty]
+
+    FilterTo:
+      oneOf:
+        - $ref: '#/components/schemas/FilterCiEqualString'
+        - $ref: '#/components/schemas/FilterCiContainString'
+      discriminator:
+        propertyName: operator
+        mapping:
+          ci_equal: '#/components/schemas/FilterCiEqualString'
+          ci_not_equal: '#/components/schemas/FilterCiEqualString'
+          ci_contain: '#/components/schemas/FilterCiContainString'
+          ci_not_contain: '#/components/schemas/FilterCiContainString'
+      example:
+        operator: ci_equal
+        value: recipient@example.com
+
+    FilterFrom:
+      oneOf:
+        - $ref: '#/components/schemas/FilterCiEqualString'
+        - $ref: '#/components/schemas/FilterCiContainString'
+      discriminator:
+        propertyName: operator
+        mapping:
+          ci_equal: '#/components/schemas/FilterCiEqualString'
+          ci_not_equal: '#/components/schemas/FilterCiEqualString'
+          ci_contain: '#/components/schemas/FilterCiContainString'
+          ci_not_contain: '#/components/schemas/FilterCiContainString'
+      example:
+        operator: ci_contain
+        value: noreply@example.com
+
+    FilterSubject:
+      oneOf:
+        - $ref: '#/components/schemas/FilterCiEqualString'
+        - $ref: '#/components/schemas/FilterCiContainString'
+        - $ref: '#/components/schemas/FilterEmptyString'
+      discriminator:
+        propertyName: operator
+        mapping:
+          ci_equal: '#/components/schemas/FilterCiEqualString'
+          ci_not_equal: '#/components/schemas/FilterCiEqualString'
+          ci_contain: '#/components/schemas/FilterCiContainString'
+          ci_not_contain: '#/components/schemas/FilterCiContainString'
+          empty: '#/components/schemas/FilterEmptyString'
+          not_empty: '#/components/schemas/FilterEmptyString'
       example:
         operator: ci_contain
         value: Order confirmation
@@ -2238,11 +2291,13 @@ components:
           type: string
           enum: [equal, not_equal]
         value:
-          type: string
-          enum: [delivered, not_delivered, enqueued, opted_out]
-      example:
-        operator: equal
-        value: delivered
+          oneOf:
+            - type: string
+              enum: [delivered, not_delivered, enqueued, opted_out]
+            - type: array
+              items:
+                type: string
+                enum: [delivered, not_delivered, enqueued, opted_out]
 
     FilterEvents:
       type: object
@@ -2252,13 +2307,15 @@ components:
           type: string
           enum: [include_event, not_include_event]
         value:
-          type: string
-          enum: [delivery, open, click, bounce, spam, unsubscribe, soft_bounce, reject, suspension]
-      example:
-        operator: include_event
-        value: open
+          oneOf:
+            - type: string
+              enum: [delivery, open, click, bounce, spam, unsubscribe, soft_bounce, reject, suspension]
+            - type: array
+              items:
+                type: string
+                enum: [delivery, open, click, bounce, spam, unsubscribe, soft_bounce, reject, suspension]
 
-    FilterNumber:
+    FilterClicksCount:
       type: object
       required: [operator, value]
       properties:
@@ -2267,51 +2324,69 @@ components:
           enum: [equal, greater_than, less_than]
         value:
           type: integer
-          description: Numeric value (integer).
       example:
         operator: greater_than
         value: 0
 
-    FilterClientIp:
+    FilterOpensCount:
       type: object
       required: [operator, value]
       properties:
         operator:
           type: string
-          enum: [equal, not_equal, contain, not_contain]
+          enum: [equal, greater_than, less_than]
         value:
-          type: string
+          type: integer
+      example:
+        operator: equal
+        value: 1
+
+    FilterClientIp:
+      oneOf:
+        - $ref: '#/components/schemas/FilterEqualString'
+        - $ref: '#/components/schemas/FilterContainString'
+      discriminator:
+        propertyName: operator
+        mapping:
+          equal: '#/components/schemas/FilterEqualString'
+          not_equal: '#/components/schemas/FilterEqualString'
+          contain: '#/components/schemas/FilterContainString'
+          not_contain: '#/components/schemas/FilterContainString'
       example:
         operator: equal
         value: 203.0.113.42
 
     FilterSendingIp:
-      type: object
-      required: [operator, value]
-      properties:
-        operator:
-          type: string
-          enum: [equal, not_equal, contain, not_contain]
-        value:
-          type: string
+      oneOf:
+        - $ref: '#/components/schemas/FilterEqualString'
+        - $ref: '#/components/schemas/FilterContainString'
+      discriminator:
+        propertyName: operator
+        mapping:
+          equal: '#/components/schemas/FilterEqualString'
+          not_equal: '#/components/schemas/FilterEqualString'
+          contain: '#/components/schemas/FilterContainString'
+          not_contain: '#/components/schemas/FilterContainString'
       example:
-        operator: equal
-        value: 192.0.2.1
+        operator: contain
+        value: 192.0.2
 
-    FilterMandatoryText:
-      type: object
-      required: [operator, value]
-      properties:
-        operator:
-          type: string
-          enum: [ci_contain, ci_not_contain, ci_equal, ci_not_equal]
-        value:
-          type: string
+    FilterEmailServiceProviderResponse:
+      oneOf:
+        - $ref: '#/components/schemas/FilterCiEqualString'
+        - $ref: '#/components/schemas/FilterCiContainString'
+      discriminator:
+        propertyName: operator
+        mapping:
+          ci_equal: '#/components/schemas/FilterCiEqualString'
+          ci_not_equal: '#/components/schemas/FilterCiEqualString'
+          ci_contain: '#/components/schemas/FilterCiContainString'
+          ci_not_contain: '#/components/schemas/FilterCiContainString'
       example:
         operator: ci_contain
         value: User unknown
 
-    FilterExact:
+    FilterEmailServiceProvider:
       type: object
       required: [operator, value]
       properties:
@@ -2319,10 +2394,46 @@ components:
           type: string
           enum: [equal, not_equal]
         value:
-          type: string
+          oneOf:
+            - type: string
+            - type: array
+              items:
+                type: string
       example:
         operator: equal
         value: Google
+
+    FilterRecipientMx:
+      oneOf:
+        - $ref: '#/components/schemas/FilterCiEqualString'
+        - $ref: '#/components/schemas/FilterCiContainString'
+      discriminator:
+        propertyName: operator
+        mapping:
+          ci_equal: '#/components/schemas/FilterCiEqualString'
+          ci_not_equal: '#/components/schemas/FilterCiEqualString'
+          ci_contain: '#/components/schemas/FilterCiContainString'
+          ci_not_contain: '#/components/schemas/FilterCiContainString'
+      example:
+        operator: ci_equal
+        value: gmail-smtp-in.l.google.com
+
+    FilterCategory:
+      type: object
+      required: [operator, value]
+      properties:
+        operator:
+          type: string
+          enum: [equal, not_equal]
+        value:
+          oneOf:
+            - type: string
+            - type: array
+              items:
+                type: string
+      example:
+        operator: equal
+        value: Welcome Email
 
     FilterSendingDomainId:
       type: object
@@ -2332,8 +2443,11 @@ components:
           type: string
           enum: [equal, not_equal]
         value:
-          type: integer
-          description: Sending domain ID
+          oneOf:
+            - type: integer
+            - type: array
+              items:
+                type: integer
       example:
         operator: equal
         value: 3938
@@ -2346,8 +2460,13 @@ components:
           type: string
           enum: [equal, not_equal]
         value:
-          type: string
-          enum: [transactional, bulk]
+          oneOf:
+            - type: string
+              enum: [transactional, bulk]
+            - type: array
+              items:
+                type: string
+                enum: [transactional, bulk]
       example:
         operator: equal
         value: transactional
