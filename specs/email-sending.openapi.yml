@@ -1515,19 +1515,35 @@ components:
         compliance_status:
           type: string
           description: |
-            Indicates the compliance verification status of the sending domain. The domain must reach `compliant` status before you can send emails in production.
+            Indicates the compliance verification status of the sending domain.
+            The domain must reach `compliant` status before you can send emails
+            in production.
 
             Possible values:
 
-            - `initial` - Domain has just been created and no verification steps have been completed yet.
-            - `unverified_dns` - DNS records have not been verified. Add the required DNS records and verify them to proceed.
-            - `demo` - Domain is in demo mode with limited sending capabilities. Complete the compliance review to unlock full sending.
-            - `missing_company_info` - Company information is incomplete. Go to your [account settings](https://mailtrap.io/accounts) and fill in the required company details.
-            - `pending` - Domain has been submitted for compliance review and is awaiting processing.
-            - `under_review` - Domain is currently being reviewed by the Mailtrap compliance team.
-            - `compliant` - Domain has passed compliance review and is fully approved for sending.
-            - `non_compliant` - Domain did not pass the compliance review. Check your email for details and re-submit after addressing the issues.
-            - `suspended` - Domain has been suspended due to a compliance violation. Contact [Mailtrap Support](mailto:support@mailtrap.io) for assistance.
+            - `demo` - A demo domain provided by Mailtrap. Can only send emails
+              to the account owner.
+            - `exhausted` - A demo domain that has used up its sending
+              allowance. Cannot send emails.
+            - `unverified_dns` - Domain DNS records have not been verified yet.
+              Add and verify the required DNS records before sending.
+            - `missing_company_info` - Account is missing required company
+              information. Fill in the company details to proceed.
+            - `initial` - Domain is verified and undergoing automatic
+              compliance review (takes up to 2 minutes).
+            - `pending` - Automatic review required additional information.
+              Fill in the compliance questionnaire to continue.
+            - `pending_cc` - Compliance questionnaire was submitted but credit
+              card identity verification is still needed.
+            - `under_review` - Compliance questionnaire submitted and manual
+              review is in progress. Can take up to one business day.
+            - `non_compliant` - Domain did not pass compliance checks. Sending
+              is not allowed. Contact [Mailtrap Support](mailto:support@mailtrap.io)
+              for details.
+            - `compliant` - Domain has passed all compliance checks and is
+              ready to send emails.
+            - `suspended` - Domain sending has been suspended. Check the reason
+              in your dashboard and resolve the issue.
 
             {% hint style="info" %}
             To check and manage your domain compliance status, visit the [Sending Domains](https://mailtrap.io/sending/domains) page in the Mailtrap dashboard.
@@ -1538,10 +1554,12 @@ components:
             - demo
             - missing_company_info
             - pending
+            - pending_cc
             - under_review
+            - compliant
             - non_compliant
             - suspended
-            - compliant
+            - exhausted
         dns_verified:
           type: boolean
         dns_verified_at:
