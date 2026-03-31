@@ -1519,8 +1519,6 @@ components:
             The domain must reach `compliant` status before you can send emails
             in production.
 
-            Possible values:
-
             - `demo` - A demo domain provided by Mailtrap. Can only send emails to the account owner.
             - `exhausted` - A demo domain that has used up its sending allowance. Cannot send emails.
             - `unverified_dns` - Domain DNS records have not been verified yet. Open your domain on the [Sending Domains](https://mailtrap.io/sending/domains) page and follow the [Sending Domain Setup](https://docs.mailtrap.io/email-api-smtp/setup/sending-domain) guide.
