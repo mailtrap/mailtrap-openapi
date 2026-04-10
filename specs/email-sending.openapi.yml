@@ -49,12 +49,27 @@ tags:
     x-page-title: Webhooks
     x-page-description: Manage webhook endpoints
     description: |
-      Configure webhooks to receive real-time notifications about events in your Mailtrap account. Supported webhook types:
+      Configure webhooks to receive real-time notifications about events in your Mailtrap account. For a complete guide, see [Webhooks](https://docs.mailtrap.io/email-api-smtp/advanced/webhooks).
+
+      **Supported webhook types:**
 
       - **Sending (Transactional & Bulk)** - Email sending events such as deliveries, bounces, opens, clicks, unsubscribes, and more. Can be scoped to a specific sending domain or apply to all domains.
       - **Activity Log** - [User audit log](https://docs.mailtrap.io/account-and-organization/privacy-and-security/activity-log#using-user-audit-log-with-mailtrap-webhooks) events for monitoring account activities live, such as user profile changes, domain additions, and other administrative actions.
 
-      Each webhook has a signing secret (returned only on creation) that you can use to verify the authenticity of incoming webhook payloads using HMAC SHA-256.
+      **Payload delivery:**
+
+      - Events are batched and delivered every 30 seconds, up to 500 events per request.
+      - **JSON** format (`application/json`) wraps events in `{"events": [...]}`.
+      - **JSON Lines** format (`application/jsonl`) sends one event per line.
+
+      **Signature verification:**
+
+      Each webhook has a signing secret (returned only on creation) used to sign payloads with HMAC SHA-256. The signature is sent in the `Mailtrap-Signature` header. See [Verify webhook signature](https://docs.mailtrap.io/email-api-smtp/advanced/webhooks#verify-webhook-signature) for details.
+
+      **Delivery requirements:**
+
+      - Your endpoint must respond with HTTP `200` within 30 seconds.
+      - Failed deliveries are retried up to 40 times every 5 minutes. After all retries are exhausted, the webhook is automatically paused.
 
 paths:
   /api/accounts/{account_id}/sending_domains:
@@ -1431,7 +1446,7 @@ paths:
       operationId: createWebhook
       summary: Create a webhook
       description: |
-        Create a new webhook for the account. The response includes a `signing_secret` that can be used to verify webhook payloads. The signing secret is only returned in the create response and cannot be retrieved later.
+        Create a new webhook for the account. The response includes a `signing_secret` that is used to [verify webhook signatures](https://docs.mailtrap.io/email-api-smtp/advanced/webhooks#verify-webhook-signature) via HMAC SHA-256 (sent in the `Mailtrap-Signature` header). The signing secret is only returned in the create response and cannot be retrieved later.
 
         {% hint style="warning" %}
         Make sure to store the `signing_secret` from the response. It is only returned once upon creation.
