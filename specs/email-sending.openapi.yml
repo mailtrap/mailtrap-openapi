@@ -1388,7 +1388,7 @@ paths:
     get:
       operationId: listWebhooks
       summary: List webhooks
-      description: Returns all webhooks for the account. Results are ordered by ID descending (newest first).
+      description: Returns all webhooks for the account.
       tags:
         - webhooks
       x-codeSamples:
@@ -1419,7 +1419,7 @@ paths:
                     webhook_type: sending_transactional
                     payload_format: json
                     sending_mode: transactional
-                    mailsend_domain_id: 435
+                    domain_id: 435
                     event_types:
                       - delivery
                       - bounce
@@ -1430,7 +1430,7 @@ paths:
                     webhook_type: sending_bulk
                     payload_format: jsonlines
                     sending_mode: campaigns
-                    mailsend_domain_id: 436
+                    domain_id: 436
                     event_types:
                       - delivery
                       - bounce
@@ -1467,7 +1467,7 @@ paths:
                   "payload_format": "json",
                   "sending_mode": "transactional",
                   "event_types": ["delivery", "bounce"],
-                  "mailsend_domain_id": 435
+                  "domain_id": 435
                 }
               }'
       parameters:
@@ -1499,7 +1499,7 @@ paths:
 
                         - `sending_transactional` - Events for transactional email sending. Requires `sending_mode` set to `transactional` and `event_types`.
                         - `sending_bulk` - Events for bulk/campaign email sending. Requires `sending_mode` set to `campaigns` and `event_types`.
-                        - `activity_log` - Account activity log events. Does not accept `sending_mode`, `mailsend_domain_id`, or `event_types`.
+                        - `activity_log` - Account activity log events. Does not accept `sending_mode`, `domain_id`, or `event_types`.
                       enum:
                         - sending_transactional
                         - sending_bulk
@@ -1545,7 +1545,7 @@ paths:
                       example:
                         - delivery
                         - bounce
-                    mailsend_domain_id:
+                    domain_id:
                       type: integer
                       description: |
                         ID of the sending domain to scope this webhook to. If omitted, the webhook applies to all domains. Must not be set for `activity_log` type.
@@ -1565,7 +1565,7 @@ paths:
                   webhook_type: sending_transactional
                   payload_format: json
                   sending_mode: transactional
-                  mailsend_domain_id: 435
+                  domain_id: 435
                   event_types:
                     - delivery
                     - bounce
@@ -1612,7 +1612,7 @@ paths:
                   webhook_type: sending_transactional
                   payload_format: json
                   sending_mode: transactional
-                  mailsend_domain_id: 435
+                  domain_id: 435
                   event_types:
                     - delivery
                     - bounce
@@ -1719,7 +1719,7 @@ paths:
                   webhook_type: sending_transactional
                   payload_format: json
                   sending_mode: transactional
-                  mailsend_domain_id: 435
+                  domain_id: 435
                   event_types:
                     - delivery
                     - bounce
@@ -1767,7 +1767,7 @@ paths:
                   webhook_type: activity_log
                   payload_format: json
                   sending_mode: null
-                  mailsend_domain_id: null
+                  domain_id: null
                   event_types: []
                   domain_name: null
         '401':
@@ -2137,7 +2137,7 @@ components:
           description: |
             The sending mode. Set to `transactional` for `sending_transactional` webhooks, `campaigns` for `sending_bulk` webhooks. Null for `activity_log` webhooks.
           example: transactional
-        mailsend_domain_id:
+        domain_id:
           type:
             - integer
             - 'null'
