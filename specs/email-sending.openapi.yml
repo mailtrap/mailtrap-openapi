@@ -1425,18 +1425,14 @@ paths:
                       - bounce
                     domain_name: mailtrap.io
                   - id: 2
-                    url: 'https://example.com/webhooks/bulk'
+                    url: 'https://example.com/webhooks/audit'
                     active: true
-                    webhook_type: sending_bulk
-                    payload_format: jsonlines
-                    sending_mode: campaigns
-                    domain_id: 436
-                    event_types:
-                      - delivery
-                      - bounce
-                      - open
-                      - click
-                    domain_name: notifications.mailtrap.io
+                    webhook_type: activity_log
+                    payload_format: json
+                    sending_mode: null
+                    domain_id: null
+                    event_types: []
+                    domain_name: null
         '401':
           $ref: '#/components/responses/Unauthorized'
         '403':
