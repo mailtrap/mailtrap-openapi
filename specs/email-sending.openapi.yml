@@ -45,6 +45,32 @@ tags:
     x-page-description: Email logs
     description: List and retrieve email sending logs for the account.
 
+  - name: webhooks
+    x-page-title: Webhooks
+    x-page-description: Manage webhook endpoints
+    description: |
+      Configure webhooks to receive real-time notifications about events in your Mailtrap account. For a complete guide, see [Webhooks](https://docs.mailtrap.io/email-api-smtp/advanced/webhooks).
+
+      **Supported webhook types:**
+
+      - **Sending (Transactional & Bulk)** - Email sending events such as deliveries, bounces, opens, clicks, unsubscribes, and more. Can be scoped to a specific sending domain or apply to all domains.
+      - **Activity Log** - [User audit log](https://docs.mailtrap.io/account-and-organization/privacy-and-security/activity-log#using-user-audit-log-with-mailtrap-webhooks) events for monitoring account activities live, such as user profile changes, domain additions, and other administrative actions.
+
+      **Payload delivery:**
+
+      - Events are batched and delivered every 30 seconds, up to 500 events per request.
+      - **JSON** format (`application/json`) wraps events in `{"events": [...]}`.
+      - **JSON Lines** format (`application/jsonl`) sends one event per line.
+
+      **Signature verification:**
+
+      Each webhook has a signing secret (returned only on creation) used to sign payloads with HMAC SHA-256. The signature is sent in the `Mailtrap-Signature` header. See [Verify webhook signature](https://docs.mailtrap.io/email-api-smtp/advanced/webhooks#verify-webhook-signature) for details.
+
+      **Delivery requirements:**
+
+      - Your endpoint must respond with HTTP `200` within 30 seconds.
+      - Failed deliveries are retried up to 40 times every 5 minutes. After all retries are exhausted, the webhook is automatically paused.
+
 paths:
   /api/accounts/{account_id}/sending_domains:
     post:
@@ -1358,6 +1384,395 @@ paths:
         '429':
           $ref: '#/components/responses/LIMIT_EXCEEDED'
 
+  /api/accounts/{account_id}/webhooks:
+    get:
+      operationId: listWebhooks
+      summary: List webhooks
+      description: Returns all webhooks for the account.
+      tags:
+        - webhooks
+      x-codeSamples:
+        - lang: shell
+          label: 'cURL'
+          source: |
+            curl -X GET https://mailtrap.io/api/accounts/{account_id}/webhooks \
+              -H 'Authorization: Bearer YOUR_API_KEY'
+      parameters:
+        - $ref: '#/components/parameters/account_id'
+      responses:
+        '200':
+          description: List of webhooks
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Webhook'
+              example:
+                data:
+                  - id: 1
+                    url: 'https://example.com/webhooks/transactional'
+                    active: true
+                    webhook_type: sending_transactional
+                    payload_format: json
+                    sending_mode: transactional
+                    domain_id: 435
+                    event_types:
+                      - delivery
+                      - bounce
+                    domain_name: mailtrap.io
+                  - id: 2
+                    url: 'https://example.com/webhooks/audit'
+                    active: true
+                    webhook_type: activity_log
+                    payload_format: json
+                    sending_mode: null
+                    domain_id: null
+                    event_types: []
+                    domain_name: null
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+    post:
+      operationId: createWebhook
+      summary: Create a webhook
+      description: |
+        Create a new webhook for the account. The response includes a `signing_secret` that is used to [verify webhook signatures](https://docs.mailtrap.io/email-api-smtp/advanced/webhooks#verify-webhook-signature) via HMAC SHA-256 (sent in the `Mailtrap-Signature` header). The signing secret is only returned in the create response and cannot be retrieved later.
+
+        {% hint style="warning" %}
+        Make sure to store the `signing_secret` from the response. It is only returned once upon creation.
+        {% endhint %}
+      tags:
+        - webhooks
+      x-codeSamples:
+        - lang: shell
+          label: 'cURL'
+          source: |
+            curl -X POST https://mailtrap.io/api/accounts/{account_id}/webhooks \
+              -H 'Authorization: Bearer YOUR_API_KEY' \
+              -H 'Content-Type: application/json' \
+              -d '{
+                "webhook": {
+                  "url": "https://example.com/webhooks",
+                  "webhook_type": "sending_transactional",
+                  "payload_format": "json",
+                  "sending_mode": "transactional",
+                  "event_types": ["delivery", "bounce"],
+                  "domain_id": 435
+                }
+              }'
+      parameters:
+        - $ref: '#/components/parameters/account_id'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - webhook
+              properties:
+                webhook:
+                  type: object
+                  required:
+                    - url
+                    - webhook_type
+                  properties:
+                    url:
+                      type: string
+                      format: uri
+                      description: The URL that will receive webhook payloads. Must be a valid HTTP(S) URL.
+                      example: 'https://example.com/webhooks'
+                    webhook_type:
+                      type: string
+                      description: |
+                        The type of webhook. Determines which events the webhook can subscribe to.
+
+                        - `sending_transactional` - Events for transactional email sending. Requires `sending_mode` set to `transactional` and `event_types`.
+                        - `sending_bulk` - Events for bulk/campaign email sending. Requires `sending_mode` set to `campaigns` and `event_types`.
+                        - `activity_log` - Account activity log events. Does not accept `sending_mode`, `domain_id`, or `event_types`.
+                      enum:
+                        - sending_transactional
+                        - sending_bulk
+                        - activity_log
+                      example: sending_transactional
+                    active:
+                      type: boolean
+                      description: Whether the webhook is active. Defaults to `true`.
+                      default: true
+                      example: true
+                    payload_format:
+                      type: string
+                      description: Format of the webhook payload.
+                      enum:
+                        - json
+                        - jsonlines
+                      default: json
+                      example: json
+                    sending_mode:
+                      type: string
+                      description: |
+                        Required for `sending_transactional` and `sending_bulk` webhook types. Must match the webhook type: `transactional` for `sending_transactional`, `campaigns` for `sending_bulk`.
+                      enum:
+                        - transactional
+                        - campaigns
+                      example: transactional
+                    event_types:
+                      type: array
+                      description: |
+                        List of event types to subscribe to. Required for `sending_transactional` and `sending_bulk` webhook types. Must not be set for `activity_log` type.
+                      items:
+                        type: string
+                        enum:
+                          - delivery
+                          - soft_bounce
+                          - bounce
+                          - suspension
+                          - unsubscribe
+                          - open
+                          - spam_complaint
+                          - click
+                          - reject
+                      example:
+                        - delivery
+                        - bounce
+                    domain_id:
+                      type: integer
+                      description: |
+                        ID of the sending domain to scope this webhook to. If omitted, the webhook applies to all domains. Must not be set for `activity_log` type.
+                      example: 435
+      responses:
+        '200':
+          description: Webhook created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WebhookCreateResponse'
+              example:
+                data:
+                  id: 1
+                  url: 'https://example.com/webhooks'
+                  active: true
+                  webhook_type: sending_transactional
+                  payload_format: json
+                  sending_mode: transactional
+                  domain_id: 435
+                  event_types:
+                    - delivery
+                    - bounce
+                  domain_name: mailtrap.io
+                  signing_secret: a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+
+  /api/accounts/{account_id}/webhooks/{webhook_id}:
+    get:
+      operationId: getWebhook
+      summary: Get a webhook
+      description: Returns a single webhook by ID.
+      tags:
+        - webhooks
+      x-codeSamples:
+        - lang: shell
+          label: 'cURL'
+          source: |
+            curl -X GET https://mailtrap.io/api/accounts/{account_id}/webhooks/{webhook_id} \
+              -H 'Authorization: Bearer YOUR_API_KEY'
+      parameters:
+        - $ref: '#/components/parameters/account_id'
+        - $ref: '#/components/parameters/webhook_id'
+      responses:
+        '200':
+          description: Webhook details
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Webhook'
+              example:
+                data:
+                  id: 1
+                  url: 'https://example.com/webhooks'
+                  active: true
+                  webhook_type: sending_transactional
+                  payload_format: json
+                  sending_mode: transactional
+                  domain_id: 435
+                  event_types:
+                    - delivery
+                    - bounce
+                  domain_name: mailtrap.io
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    patch:
+      operationId: updateWebhook
+      summary: Update a webhook
+      description: Update an existing webhook. Only the fields provided in the request body will be updated.
+      tags:
+        - webhooks
+      x-codeSamples:
+        - lang: shell
+          label: 'cURL'
+          source: |
+            curl -X PATCH https://mailtrap.io/api/accounts/{account_id}/webhooks/{webhook_id} \
+              -H 'Authorization: Bearer YOUR_API_KEY' \
+              -H 'Content-Type: application/json' \
+              -d '{
+                "webhook": {
+                  "url": "https://example.com/webhooks/updated",
+                  "active": false
+                }
+              }'
+      parameters:
+        - $ref: '#/components/parameters/account_id'
+        - $ref: '#/components/parameters/webhook_id'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - webhook
+              properties:
+                webhook:
+                  type: object
+                  properties:
+                    url:
+                      type: string
+                      format: uri
+                      description: The URL that will receive webhook payloads. Must be a valid HTTP(S) URL.
+                      example: 'https://example.com/webhooks/updated'
+                    active:
+                      type: boolean
+                      description: Whether the webhook is active.
+                      example: false
+                    payload_format:
+                      type: string
+                      description: Format of the webhook payload.
+                      enum:
+                        - json
+                        - jsonlines
+                      example: json
+                    sending_mode:
+                      type: string
+                      description: |
+                        Must match the webhook type: `transactional` for `sending_transactional`, `campaigns` for `sending_bulk`.
+                      enum:
+                        - transactional
+                        - campaigns
+                      example: transactional
+                    event_types:
+                      type: array
+                      description: List of event types to subscribe to.
+                      items:
+                        type: string
+                        enum:
+                          - delivery
+                          - soft_bounce
+                          - bounce
+                          - suspension
+                          - unsubscribe
+                          - open
+                          - spam_complaint
+                          - click
+                          - reject
+                      example:
+                        - delivery
+                        - bounce
+                        - unsubscribe
+      responses:
+        '200':
+          description: Webhook updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Webhook'
+              example:
+                data:
+                  id: 1
+                  url: 'https://example.com/webhooks/updated'
+                  active: false
+                  webhook_type: sending_transactional
+                  payload_format: json
+                  sending_mode: transactional
+                  domain_id: 435
+                  event_types:
+                    - delivery
+                    - bounce
+                    - unsubscribe
+                  domain_name: mailtrap.io
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+
+    delete:
+      operationId: deleteWebhook
+      summary: Delete a webhook
+      description: Permanently delete a webhook. Returns the deleted webhook data.
+      tags:
+        - webhooks
+      x-codeSamples:
+        - lang: shell
+          label: 'cURL'
+          source: |
+            curl -X DELETE https://mailtrap.io/api/accounts/{account_id}/webhooks/{webhook_id} \
+              -H 'Authorization: Bearer YOUR_API_KEY'
+      parameters:
+        - $ref: '#/components/parameters/account_id'
+        - $ref: '#/components/parameters/webhook_id'
+      responses:
+        '200':
+          description: Webhook deleted successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Webhook'
+              example:
+                data:
+                  id: 1
+                  url: 'https://example.com/webhooks'
+                  active: true
+                  webhook_type: activity_log
+                  payload_format: json
+                  sending_mode: null
+                  domain_id: null
+                  event_types: []
+                  domain_name: null
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
 components:
   securitySchemes:
     HeaderAuth:
@@ -1407,6 +1822,15 @@ components:
       schema:
         type: string
         format: uuid
+
+    webhook_id:
+      name: webhook_id
+      in: path
+      required: true
+      description: Webhook ID
+      schema:
+        type: integer
+        example: 1
 
     StartDateQueryFilter:
       name: start_date
@@ -1671,6 +2095,88 @@ components:
         created_at:
           type: string
           format: date-time
+
+    Webhook:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        url:
+          type: string
+          format: uri
+          example: 'https://example.com/webhooks'
+        active:
+          type: boolean
+          example: true
+        webhook_type:
+          type: string
+          enum:
+            - sending_transactional
+            - sending_bulk
+            - activity_log
+          example: sending_transactional
+        payload_format:
+          type: string
+          enum:
+            - json
+            - jsonlines
+          example: json
+        sending_mode:
+          type:
+            - string
+            - 'null'
+          enum:
+            - transactional
+            - campaigns
+            - null
+          description: |
+            The sending mode. Set to `transactional` for `sending_transactional` webhooks, `campaigns` for `sending_bulk` webhooks. Null for `activity_log` webhooks.
+          example: transactional
+        domain_id:
+          type:
+            - integer
+            - 'null'
+          description: ID of the sending domain this webhook is scoped to. Null if the webhook applies to all domains.
+          example: 435
+        event_types:
+          type: array
+          description: List of event types the webhook is subscribed to. Empty for `activity_log` webhooks.
+          items:
+            type: string
+            enum:
+              - delivery
+              - soft_bounce
+              - bounce
+              - suspension
+              - unsubscribe
+              - open
+              - spam_complaint
+              - click
+              - reject
+          example:
+            - delivery
+            - bounce
+        domain_name:
+          type:
+            - string
+            - 'null'
+          description: Domain name of the associated sending domain. Null if not scoped to a domain.
+          example: mailtrap.io
+
+    WebhookCreateResponse:
+      type: object
+      properties:
+        data:
+          allOf:
+            - $ref: '#/components/schemas/Webhook'
+            - type: object
+              properties:
+                signing_secret:
+                  type: string
+                  description: |
+                    Secret key for verifying webhook payload signatures using HMAC SHA-256. Only returned on creation.
+                  example: a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6
 
     UnprocessableEntity:
       type: object
