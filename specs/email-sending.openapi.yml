@@ -49,9 +49,12 @@ tags:
     x-page-title: Webhooks
     x-page-description: Manage webhook endpoints
     description: |
-      Configure webhooks to receive real-time notifications about email events such as deliveries, bounces, opens, clicks, and more.
+      Configure webhooks to receive real-time notifications about events in your Mailtrap account. Supported webhook types:
 
-      Webhooks can be scoped to a specific sending domain or apply to all domains in the account. Each webhook has a signing secret (returned only on creation) that you can use to verify the authenticity of incoming webhook payloads.
+      - **Sending (Transactional & Bulk)** - Email sending events such as deliveries, bounces, opens, clicks, unsubscribes, and more. Can be scoped to a specific sending domain or apply to all domains.
+      - **Activity Log** - [User audit log](https://docs.mailtrap.io/account-and-organization/privacy-and-security/activity-log#using-user-audit-log-with-mailtrap-webhooks) events for monitoring account activities live, such as user profile changes, domain additions, and other administrative actions.
+
+      Each webhook has a signing secret (returned only on creation) that you can use to verify the authenticity of incoming webhook payloads using HMAC SHA-256.
 
 paths:
   /api/accounts/{account_id}/sending_domains:
