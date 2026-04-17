@@ -2862,7 +2862,10 @@ components:
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/CompanyInfo'
+            type: object
+            properties:
+              data:
+                $ref: '#/components/schemas/CompanyInfo'
 
     SendingDomainsResponse:
       description: List of sending domains
