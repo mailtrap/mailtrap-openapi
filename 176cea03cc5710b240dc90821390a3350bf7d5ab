@@ -1,0 +1,62 @@
+specs/email-sending.openapi.yml
+  1b39bc1009e613cc 48-54,1368-1730,1781-1789,2054-2133
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.3.0",
+  "base_commit_sha": "176cea03cc5710b240dc90821390a3350bf7d5ab",
+  "prompts": {
+    "1b39bc1009e613cc": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "85aec189-416f-497f-ae72-13f914bd16c1",
+        "model": "claude-opus-4-6"
+      },
+      "human_author": "Ivan Yurchanka",
+      "messages": [],
+      "total_additions": 546,
+      "total_deletions": 48,
+      "accepted_lines": 418,
+      "overriden_lines": 0
+    },
+    "6bcfd798f60fbda4": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "c426a6f0-e21d-4079-9151-c27ede4b3a78",
+        "model": "default"
+      },
+      "human_author": "Marcin Klocek <marcin.klocek@railsware.com>",
+      "messages": [],
+      "total_additions": 84,
+      "total_deletions": 136,
+      "accepted_lines": 56,
+      "overriden_lines": 0
+    },
+    "7c1831d24564a17c": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "e8f76f7e-801f-4734-8337-716860e30e26",
+        "model": "claude-opus-4-6"
+      },
+      "human_author": "Ivan Yurchanka <vanya.yu@gmail.com>",
+      "messages": [],
+      "total_additions": 0,
+      "total_deletions": 2,
+      "accepted_lines": 13,
+      "overriden_lines": 0
+    },
+    "90a11f54f39073c9": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "976c59f5-374a-4a39-8831-9effc894b6e7",
+        "model": "claude-4.6-opus-high-thinking"
+      },
+      "human_author": "DagonWat <yahor.vaitsiakhouski@railsware.com>",
+      "messages": [],
+      "total_additions": 364,
+      "total_deletions": 0,
+      "accepted_lines": 91,
+      "overriden_lines": 0
+    }
+  }
+}
