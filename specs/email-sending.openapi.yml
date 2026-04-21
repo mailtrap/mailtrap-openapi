@@ -787,19 +787,19 @@ paths:
         '404':
           $ref: '#/components/responses/NotFound'
 
-    put:
-      summary: Update company info
+    post:
+      summary: Create company info
       description: |
-        Create or update company information for a sending domain / account.
+        Create company information for a sending domain / account.
         Company info is required for domain compliance verification.
-      operationId: updateSendingDomainCompanyInfo
+      operationId: createSendingDomainCompanyInfo
       tags:
         - domains
       x-codeSamples:
         - lang: shell
           label: 'cURL'
           source: |
-            curl -X PUT https://mailtrap.io/api/accounts/{account_id}/sending_domains/{sending_domain_id}/company_info \
+            curl -X POST https://mailtrap.io/api/accounts/{account_id}/sending_domains/{sending_domain_id}/company_info \
               -H 'Authorization: Bearer YOUR_API_KEY' \
               -H 'Content-Type: application/json' \
               -d '{
@@ -842,6 +842,57 @@ paths:
                 privacy_policy_url: 'https://mailtrap.io/privacy'
                 terms_of_service_url: 'https://mailtrap.io/terms'
                 info_level: business
+      responses:
+        '200':
+          $ref: '#/components/responses/CompanyInfoResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+
+    patch:
+      summary: Update company info
+      description: |
+        Update company information for a sending domain / account. All fields are optional;
+        only the fields provided in the request will be updated.
+      operationId: updateSendingDomainCompanyInfo
+      tags:
+        - domains
+      x-codeSamples:
+        - lang: shell
+          label: 'cURL'
+          source: |
+            curl -X PATCH https://mailtrap.io/api/accounts/{account_id}/sending_domains/{sending_domain_id}/company_info \
+              -H 'Authorization: Bearer YOUR_API_KEY' \
+              -H 'Content-Type: application/json' \
+              -d '{
+                "company_info": {
+                  "city": "New York",
+                  "zip_code": "10001"
+                }
+              }'
+      parameters:
+        - $ref: '#/components/parameters/account_id'
+        - $ref: '#/components/parameters/sending_domain_id'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - company_info
+              properties:
+                company_info:
+                  $ref: '#/components/schemas/CompanyInfoUpdateRequest'
+            example:
+              company_info:
+                city: New York
+                zip_code: '10001'
       responses:
         '200':
           $ref: '#/components/responses/CompanyInfoResponse'
@@ -1892,6 +1943,58 @@ components:
         - country
         - zip_code
         - website_url
+      properties:
+        name:
+          type: string
+          description: Company or individual name
+          example: Mailtrap
+        address:
+          type: string
+          description: Street address
+          example: 123 Main St
+        city:
+          type: string
+          description: City
+          example: San Francisco
+        country:
+          type: string
+          description: Country
+          example: US
+        phone:
+          type: string
+          description: Phone number
+          example: '+1-555-0100'
+        zip_code:
+          type: string
+          description: ZIP or postal code
+          example: '94105'
+        privacy_policy_url:
+          type: string
+          format: uri
+          description: URL to the privacy policy page
+          example: 'https://mailtrap.io/privacy'
+        terms_of_service_url:
+          type: string
+          format: uri
+          description: URL to the terms of service page
+          example: 'https://mailtrap.io/terms'
+        website_url:
+          type: string
+          format: uri
+          description: Company website URL
+          example: 'https://mailtrap.io'
+        info_level:
+          type: string
+          enum:
+            - business
+            - individual
+          description: Whether the sender is a business or individual
+          example: business
+
+    CompanyInfoUpdateRequest:
+      type: object
+      description: |
+        All fields are optional. Only the fields provided in the request will be updated.
       properties:
         name:
           type: string
