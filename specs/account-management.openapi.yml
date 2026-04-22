@@ -19,12 +19,6 @@ servers:
 tags:
   - name: Accounts
     x-page-title: Accounts
-    description: |
-      The Account ID is required when working with Account Management endpoints.
-  
-      To find your Account ID, you can either:
-      - Use the endpoint below to list your accounts, or
-      - Find it in the UI under [Account Settings](https://mailtrap.io/account-management)
 
   - name: Account Accesses
     x-page-title: Access Control
