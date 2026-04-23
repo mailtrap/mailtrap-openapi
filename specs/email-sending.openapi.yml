@@ -1719,11 +1719,11 @@ components:
 
             - `demo` - A demo domain provided by Mailtrap. Can only send emails to the account owner.
             - `demo_exhausted` - A demo domain that has used up its sending allowance. Cannot send emails.
-            - `unverified_dns` - Domain DNS records have not been verified yet. Open your domain on the [Sending Domains](https://mailtrap.io/sending/domains) page and follow the [Sending Domain Setup](https://docs.mailtrap.io/email-api-smtp/setup/sending-domain) guide.
-            - `missing_company_info` - Account is missing required company information. Go to [Company Information](https://mailtrap.io/account-management?current_tab=company_information) and fill in the required details.
+            - `unverified_dns` - Domain DNS records have not been verified yet. Open your domain on the [Sending Domains](https://mailtrap.io/domains) page and follow the [Sending Domain Setup](https://docs.mailtrap.io/email-api-smtp/setup/sending-domain) guide.
+            - `missing_company_info` - Account is missing required company information. Go to [Company Information](https://mailtrap.io/settings/account?current_tab=company_information) and fill in the required details.
             - `under_review` - Domain is undergoing automatic compliance review. No action needed — typically completes within 2 minutes.
-            - `awaiting_questionnaire` - Automatic review required additional information. Open your domain on the [Sending Domains](https://mailtrap.io/sending/domains) page and fill in the compliance questionnaire.
-            - `awaiting_card_verification` - Compliance questionnaire was submitted but credit card identity verification is still needed. Open your domain on the [Sending Domains](https://mailtrap.io/sending/domains) page and enter card details. The charged amount is refunded immediately and the card is not stored.
+            - `awaiting_questionnaire` - Automatic review required additional information. Open your domain on the [Sending Domains](https://mailtrap.io/domains) page and fill in the compliance questionnaire.
+            - `awaiting_card_verification` - Compliance questionnaire was submitted but credit card identity verification is still needed. Open your domain on the [Sending Domains](https://mailtrap.io/domains) page and enter card details. The charged amount is refunded immediately and the card is not stored.
             - `non_compliant` - Domain did not pass compliance checks. Sending is not allowed. Contact [Mailtrap Support](mailto:support@mailtrap.io) for details and next steps.
             - `compliant` - Domain has passed all compliance checks and is ready to send emails.
             - `suspended` - Domain sending has been suspended. Contact [Mailtrap Support](mailto:support@mailtrap.io) to resolve the issue.

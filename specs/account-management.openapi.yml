@@ -24,7 +24,7 @@ tags:
   
       To find your Account ID, you can either:
       - Use the endpoint below to list your accounts, or
-      - Find it in the UI under [Account Settings](https://mailtrap.io/account-management)
+      - Find it in the UI under [Account Settings](https://mailtrap.io/settings/account)
 
   - name: Account Accesses
     x-page-title: Access Control
