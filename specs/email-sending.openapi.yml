@@ -1728,17 +1728,16 @@ components:
             - `compliant` - Domain has passed all compliance checks and is ready to send emails.
             - `suspended` - Domain sending has been suspended. Contact [Mailtrap Support](mailto:support@mailtrap.io) to resolve the issue.
           enum:
-            - initial
-            - unverified_dns
             - demo
+            - demo_exhausted
+            - unverified_dns
             - missing_company_info
-            - pending
-            - pending_cc
             - under_review
-            - compliant
+            - awaiting_questionnaire
+            - awaiting_card_verification
             - non_compliant
+            - compliant
             - suspended
-            - exhausted
         dns_verified:
           type: boolean
         dns_verified_at:
