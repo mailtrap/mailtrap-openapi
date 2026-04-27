@@ -543,6 +543,59 @@ paths:
           $ref: '#/components/responses/Forbidden'
         '404':
           $ref: '#/components/responses/NotFound'
+
+    patch:
+      summary: Update sending domain
+      description: |
+        Update configuration settings for a sending domain.
+      operationId: updateSendingDomain
+      tags:
+        - domains
+      x-codeSamples:
+        - lang: shell
+          label: 'cURL'
+          source: |
+            curl -X PATCH https://mailtrap.io/api/accounts/{account_id}/sending_domains/{sending_domain_id} \
+              -H 'Authorization: Bearer YOUR_API_KEY' \
+              -H 'Content-Type: application/json' \
+              -d '{
+                "sending_domain": {
+                  "open_tracking_enabled": true,
+                  "click_tracking_enabled": true,
+                  "auto_unsubscribe_link_enabled": false
+                }
+              }'
+      parameters:
+        - $ref: '#/components/parameters/account_id'
+        - $ref: '#/components/parameters/sending_domain_id'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - sending_domain
+              properties:
+                sending_domain:
+                  $ref: '#/components/schemas/UpdateSendingDomainRequest'
+            example:
+              sending_domain:
+                open_tracking_enabled: true
+                click_tracking_enabled: true
+                auto_unsubscribe_link_enabled: false
+      responses:
+        '200':
+          $ref: '#/components/responses/SendingDomainResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+
   /api/sending_domains/{sending_domain_id}/send_setup_instructions:
     post:
       summary: Send setup instructions
@@ -691,6 +744,151 @@ paths:
       responses:
         '204':
           description: Instructions sent successfully
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+
+  /api/accounts/{account_id}/sending_domains/{sending_domain_id}/company_info:
+    get:
+      summary: Get company info
+      description: |
+        Get company information associated with a sending domain / account.
+      operationId: getSendingDomainCompanyInfo
+      tags:
+        - domains
+      x-codeSamples:
+        - lang: shell
+          label: 'cURL'
+          source: |
+            curl -X GET https://mailtrap.io/api/accounts/{account_id}/sending_domains/{sending_domain_id}/company_info \
+              -H 'Authorization: Bearer YOUR_API_KEY'
+      parameters:
+        - $ref: '#/components/parameters/account_id'
+        - $ref: '#/components/parameters/sending_domain_id'
+      responses:
+        '200':
+          $ref: '#/components/responses/CompanyInfoResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    post:
+      summary: Create company info
+      description: |
+        Create company information for a sending domain / account.
+        Company info is required for domain compliance verification.
+      operationId: createSendingDomainCompanyInfo
+      tags:
+        - domains
+      x-codeSamples:
+        - lang: shell
+          label: 'cURL'
+          source: |
+            curl -X POST https://mailtrap.io/api/accounts/{account_id}/sending_domains/{sending_domain_id}/company_info \
+              -H 'Authorization: Bearer YOUR_API_KEY' \
+              -H 'Content-Type: application/json' \
+              -d '{
+                "company_info": {
+                  "name": "Mailtrap",
+                  "address": "123 Main St",
+                  "city": "San Francisco",
+                  "country": "US",
+                  "zip_code": "94105",
+                  "phone": "+1-555-0100",
+                  "website_url": "https://mailtrap.io",
+                  "privacy_policy_url": "https://mailtrap.io/privacy",
+                  "terms_of_service_url": "https://mailtrap.io/terms",
+                  "info_level": "business"
+                }
+              }'
+      parameters:
+        - $ref: '#/components/parameters/account_id'
+        - $ref: '#/components/parameters/sending_domain_id'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - company_info
+              properties:
+                company_info:
+                  $ref: '#/components/schemas/CompanyInfoRequest'
+            example:
+              company_info:
+                name: Mailtrap
+                address: 123 Main St
+                city: San Francisco
+                country: US
+                zip_code: '94105'
+                phone: '+1-555-0100'
+                website_url: 'https://mailtrap.io'
+                privacy_policy_url: 'https://mailtrap.io/privacy'
+                terms_of_service_url: 'https://mailtrap.io/terms'
+                info_level: business
+      responses:
+        '200':
+          $ref: '#/components/responses/CompanyInfoResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+
+    patch:
+      summary: Update company info
+      description: |
+        Update company information for a sending domain / account. All fields are optional;
+        only the fields provided in the request will be updated.
+      operationId: updateSendingDomainCompanyInfo
+      tags:
+        - domains
+      x-codeSamples:
+        - lang: shell
+          label: 'cURL'
+          source: |
+            curl -X PATCH https://mailtrap.io/api/accounts/{account_id}/sending_domains/{sending_domain_id}/company_info \
+              -H 'Authorization: Bearer YOUR_API_KEY' \
+              -H 'Content-Type: application/json' \
+              -d '{
+                "company_info": {
+                  "city": "New York",
+                  "zip_code": "10001"
+                }
+              }'
+      parameters:
+        - $ref: '#/components/parameters/account_id'
+        - $ref: '#/components/parameters/sending_domain_id'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - company_info
+              properties:
+                company_info:
+                  $ref: '#/components/schemas/CompanyInfoUpdateRequest'
+            example:
+              company_info:
+                city: New York
+                zip_code: '10001'
+      responses:
+        '200':
+          $ref: '#/components/responses/CompanyInfoResponse'
         '401':
           $ref: '#/components/responses/Unauthorized'
         '403':
@@ -1495,28 +1693,26 @@ components:
             in production.
 
             - `demo` - A demo domain provided by Mailtrap. Can only send emails to the account owner.
-            - `exhausted` - A demo domain that has used up its sending allowance. Cannot send emails.
-            - `unverified_dns` - Domain DNS records have not been verified yet. Open your domain on the [Sending Domains](https://mailtrap.io/sending/domains) page and follow the [Sending Domain Setup](https://docs.mailtrap.io/email-api-smtp/setup/sending-domain) guide.
-            - `missing_company_info` - Account is missing required company information. Go to [Company Information](https://mailtrap.io/account-management?current_tab=company_information) and fill in the required details.
-            - `initial` - Domain is verified and undergoing automatic compliance review. No action needed — typically completes within 2 minutes.
-            - `pending` - Automatic review required additional information. Open your domain on the [Sending Domains](https://mailtrap.io/sending/domains) page and fill in the compliance questionnaire.
-            - `pending_cc` - Compliance questionnaire was submitted but credit card identity verification is still needed. Open your domain on the [Sending Domains](https://mailtrap.io/sending/domains) page and enter card details. The charged amount is refunded immediately and the card is not stored.
-            - `under_review` - Compliance questionnaire submitted and manual review is in progress. No action needed — this can take up to one business day.
+            - `demo_exhausted` - A demo domain that has used up its sending allowance. Cannot send emails.
+            - `unverified_dns` - Domain DNS records have not been verified yet. Open your domain on the [Sending Domains](https://mailtrap.io/domains) page and follow the [Sending Domain Setup](https://docs.mailtrap.io/email-api-smtp/setup/sending-domain) guide.
+            - `missing_company_info` - Account is missing required company information. Go to [Company Information](https://mailtrap.io/settings/account?current_tab=company_information) and fill in the required details.
+            - `under_review` - Domain is undergoing automatic compliance review. No action needed — typically completes within 2 minutes.
+            - `awaiting_questionnaire` - Automatic review required additional information. Open your domain on the [Sending Domains](https://mailtrap.io/domains) page and fill in the compliance questionnaire.
+            - `awaiting_card_verification` - Compliance questionnaire was submitted but credit card identity verification is still needed. Open your domain on the [Sending Domains](https://mailtrap.io/domains) page and enter card details. The charged amount is refunded immediately and the card is not stored.
             - `non_compliant` - Domain did not pass compliance checks. Sending is not allowed. Contact [Mailtrap Support](mailto:support@mailtrap.io) for details and next steps.
             - `compliant` - Domain has passed all compliance checks and is ready to send emails.
             - `suspended` - Domain sending has been suspended. Contact [Mailtrap Support](mailto:support@mailtrap.io) to resolve the issue.
           enum:
-            - initial
-            - unverified_dns
             - demo
+            - demo_exhausted
+            - unverified_dns
             - missing_company_info
-            - pending
-            - pending_cc
             - under_review
-            - compliant
+            - awaiting_questionnaire
+            - awaiting_card_verification
             - non_compliant
+            - compliant
             - suspended
-            - exhausted
         dns_verified:
           type: boolean
         dns_verified_at:
@@ -1628,6 +1824,197 @@ components:
           can_read: true
           can_update: true
           can_destroy: true
+
+    UpdateSendingDomainRequest:
+      type: object
+      properties:
+        open_tracking_enabled:
+          type: boolean
+          description: Enable open tracking for emails sent from this domain
+        click_tracking_enabled:
+          type: boolean
+          description: Enable click tracking for links in emails sent from this domain
+        auto_unsubscribe_link_enabled:
+          type: boolean
+          description: Automatically add an unsubscribe link to emails sent from this domain
+
+    CompanyInfo:
+      type: object
+      properties:
+        name:
+          type:
+            - string
+            - 'null'
+          description: Company or individual name
+        address:
+          type:
+            - string
+            - 'null'
+          description: Street address
+        city:
+          type:
+            - string
+            - 'null'
+          description: City
+        country:
+          type:
+            - string
+            - 'null'
+          description: Country
+        phone:
+          type:
+            - string
+            - 'null'
+          description: Phone number
+        zip_code:
+          type:
+            - string
+            - 'null'
+          description: ZIP or postal code
+        privacy_policy_url:
+          type:
+            - string
+            - 'null'
+          format: uri
+          description: URL to the privacy policy page
+        terms_of_service_url:
+          type:
+            - string
+            - 'null'
+          format: uri
+          description: URL to the terms of service page
+        website_url:
+          type:
+            - string
+            - 'null'
+          format: uri
+          description: Company website URL or LinkedIn / personal website
+        info_level:
+          type: string
+          enum:
+            - business
+            - individual
+          description: Whether the sender is a business or individual
+      example:
+        name: Mailtrap
+        address: 123 Main St
+        city: San Francisco
+        country: US
+        phone: '+1-555-0100'
+        zip_code: '94105'
+        privacy_policy_url: 'https://mailtrap.io/privacy'
+        terms_of_service_url: 'https://mailtrap.io/terms'
+        website_url: 'https://mailtrap.io'
+        info_level: business
+
+    CompanyInfoRequest:
+      type: object
+      required:
+        - name
+        - address
+        - city
+        - country
+        - zip_code
+        - website_url
+      properties:
+        name:
+          type: string
+          description: Company or individual name
+          example: Mailtrap
+        address:
+          type: string
+          description: Street address
+          example: 123 Main St
+        city:
+          type: string
+          description: City
+          example: San Francisco
+        country:
+          type: string
+          description: Country
+          example: US
+        phone:
+          type: string
+          description: Phone number
+          example: '+1-555-0100'
+        zip_code:
+          type: string
+          description: ZIP or postal code
+          example: '94105'
+        privacy_policy_url:
+          type: string
+          format: uri
+          description: URL to the privacy policy page
+          example: 'https://mailtrap.io/privacy'
+        terms_of_service_url:
+          type: string
+          format: uri
+          description: URL to the terms of service page
+          example: 'https://mailtrap.io/terms'
+        website_url:
+          type: string
+          format: uri
+          description: Company website URL
+          example: 'https://mailtrap.io'
+        info_level:
+          type: string
+          enum:
+            - business
+            - individual
+          description: Whether the sender is a business or individual
+          example: business
+
+    CompanyInfoUpdateRequest:
+      type: object
+      description: |
+        All fields are optional. Only the fields provided in the request will be updated.
+      properties:
+        name:
+          type: string
+          description: Company or individual name
+          example: Mailtrap
+        address:
+          type: string
+          description: Street address
+          example: 123 Main St
+        city:
+          type: string
+          description: City
+          example: San Francisco
+        country:
+          type: string
+          description: Country
+          example: US
+        phone:
+          type: string
+          description: Phone number
+          example: '+1-555-0100'
+        zip_code:
+          type: string
+          description: ZIP or postal code
+          example: '94105'
+        privacy_policy_url:
+          type: string
+          format: uri
+          description: URL to the privacy policy page
+          example: 'https://mailtrap.io/privacy'
+        terms_of_service_url:
+          type: string
+          format: uri
+          description: URL to the terms of service page
+          example: 'https://mailtrap.io/terms'
+        website_url:
+          type: string
+          format: uri
+          description: Company website URL
+          example: 'https://mailtrap.io'
+        info_level:
+          type: string
+          enum:
+            - business
+            - individual
+          description: Whether the sender is a business or individual
+          example: business
 
     Suppression:
       type: object
@@ -2545,6 +2932,16 @@ components:
         application/json:
           schema:
             $ref: '#/components/schemas/SendingDomain'
+
+    CompanyInfoResponse:
+      description: Company information
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              data:
+                $ref: '#/components/schemas/CompanyInfo'
 
     SendingDomainsResponse:
       description: List of sending domains

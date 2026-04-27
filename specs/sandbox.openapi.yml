@@ -38,7 +38,7 @@ tags:
       2. Copy the ID from the inbox URL.
       
       Example:
-        - URL: https://mailtrap.io/inboxes/2564102/messages
+        - URL: https://mailtrap.io/sandboxes/2564102/settings
         - Sandbox ID: 2564102
       
       #### Option 2: Via the API
