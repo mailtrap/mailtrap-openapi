@@ -555,7 +555,7 @@ paths:
         - lang: shell
           label: 'cURL'
           source: |
-            curl -X PATCH https://mailtrap.io/api/accounts/{account_id}/sending_domains/{sending_domain_id} \
+            curl -X PATCH https://mailtrap.io/api/sending_domains/{sending_domain_id} \
               -H 'Authorization: Bearer YOUR_API_KEY' \
               -H 'Content-Type: application/json' \
               -d '{
@@ -566,7 +566,6 @@ paths:
                 }
               }'
       parameters:
-        - $ref: '#/components/parameters/account_id'
         - $ref: '#/components/parameters/sending_domain_id'
       requestBody:
         required: true
@@ -753,7 +752,7 @@ paths:
         '422':
           $ref: '#/components/responses/UnprocessableEntity'
 
-  /api/accounts/{account_id}/sending_domains/{sending_domain_id}/company_info:
+  /api/sending_domains/{sending_domain_id}/company_info:
     get:
       summary: Get company info
       description: |
@@ -765,10 +764,9 @@ paths:
         - lang: shell
           label: 'cURL'
           source: |
-            curl -X GET https://mailtrap.io/api/accounts/{account_id}/sending_domains/{sending_domain_id}/company_info \
+            curl -X GET https://mailtrap.io/api/sending_domains/{sending_domain_id}/company_info \
               -H 'Authorization: Bearer YOUR_API_KEY'
       parameters:
-        - $ref: '#/components/parameters/account_id'
         - $ref: '#/components/parameters/sending_domain_id'
       responses:
         '200':
@@ -792,7 +790,7 @@ paths:
         - lang: shell
           label: 'cURL'
           source: |
-            curl -X POST https://mailtrap.io/api/accounts/{account_id}/sending_domains/{sending_domain_id}/company_info \
+            curl -X POST https://mailtrap.io/api/sending_domains/{sending_domain_id}/company_info \
               -H 'Authorization: Bearer YOUR_API_KEY' \
               -H 'Content-Type: application/json' \
               -d '{
@@ -810,7 +808,6 @@ paths:
                 }
               }'
       parameters:
-        - $ref: '#/components/parameters/account_id'
         - $ref: '#/components/parameters/sending_domain_id'
       requestBody:
         required: true
@@ -859,7 +856,7 @@ paths:
         - lang: shell
           label: 'cURL'
           source: |
-            curl -X PATCH https://mailtrap.io/api/accounts/{account_id}/sending_domains/{sending_domain_id}/company_info \
+            curl -X PATCH https://mailtrap.io/api/sending_domains/{sending_domain_id}/company_info \
               -H 'Authorization: Bearer YOUR_API_KEY' \
               -H 'Content-Type: application/json' \
               -d '{
@@ -869,7 +866,6 @@ paths:
                 }
               }'
       parameters:
-        - $ref: '#/components/parameters/account_id'
         - $ref: '#/components/parameters/sending_domain_id'
       requestBody:
         required: true
