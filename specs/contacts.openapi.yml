@@ -57,7 +57,7 @@ tags:
     x-page-description: Track contact interactions
     description: Manage contact events
 paths:
-  '/api/contacts':
+  '/api/accounts/{account_id}/contacts':
     post:
       operationId: createContact
       summary: Create a new Contact
@@ -68,7 +68,7 @@ paths:
         - lang: shell
           label: 'cURL'
           source: |
-            curl -X POST https://mailtrap.io/api/contacts \
+            curl -X POST https://mailtrap.io/api/accounts/{account_id}/contacts \
               -H 'Authorization: Bearer YOUR_API_TOKEN' \
               -H 'Content-Type: application/json' \
               -d '{
@@ -269,7 +269,9 @@ paths:
           $ref: '#/components/responses/LIMIT_EXCEEDED'
         '500':
           $ref: '#/components/responses/INTERNAL_ERROR'
-  '/api/contacts/{contact_identifier}':
+    parameters:
+      - $ref: '#/components/parameters/account_id'
+  '/api/accounts/{account_id}/contacts/{contact_identifier}':
     get:
       description: Get contact using UUID or email (URL encoded)
       operationId: getContact
@@ -280,7 +282,7 @@ paths:
         - lang: shell
           label: 'cURL'
           source: |
-            curl -X GET https://mailtrap.io/api/contacts/{contact_identifier} \
+            curl -X GET https://mailtrap.io/api/accounts/{account_id}/contacts/{contact_identifier} \
               -H 'Authorization: Bearer YOUR_API_TOKEN'
         - lang: javascript
           label: Node.js
@@ -415,7 +417,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/Contact_2'
               example:
-                $ref: '#/paths/~1api~1contacts/post/responses/201/content/application~1json/example'
+                $ref: '#/paths/~1api~1accounts~1%7Baccount_id%7D~1contacts/post/responses/201/content/application~1json/example'
         '401':
           $ref: '#/components/responses/UNAUTHENTICATED'
         '403':
@@ -433,7 +435,7 @@ paths:
         - lang: shell
           label: 'cURL'
           source: |
-            curl -X PATCH https://mailtrap.io/api/contacts/{contact_identifier} \
+            curl -X PATCH https://mailtrap.io/api/accounts/{account_id}/contacts/{contact_identifier} \
               -H 'Authorization: Bearer YOUR_API_TOKEN' \
               -H 'Content-Type: application/json' \
               -d '{"contact": { "email": "new@example.com", "fields": {"first_name": "John"}}}'
@@ -573,7 +575,7 @@ paths:
         - lang: shell
           label: 'cURL'
           source: |
-            curl -X DELETE https://mailtrap.io/api/contacts/{contact_identifier} \
+            curl -X DELETE https://mailtrap.io/api/accounts/{account_id}/contacts/{contact_identifier} \
               -H 'Authorization: Bearer YOUR_API_TOKEN'
         - lang: javascript
           label: Node.js
@@ -647,8 +649,9 @@ paths:
         '500':
           $ref: '#/components/responses/INTERNAL_ERROR'
     parameters:
+      - $ref: '#/components/parameters/account_id'
       - $ref: '#/components/parameters/contact_identifier'
-  '/api/contacts/{contact_identifier}/events':
+  '/api/accounts/{account_id}/contacts/{contact_identifier}/events':
     post:
       operationId: createContactEvent
       summary: Create contact event
@@ -659,7 +662,7 @@ paths:
         - lang: shell
           label: 'cURL'
           source: |
-            curl -X POST https://mailtrap.io/api/contacts/{contact_identifier}/events \
+            curl -X POST https://mailtrap.io/api/accounts/{account_id}/contacts/{contact_identifier}/events \
               -H 'Authorization: Bearer YOUR_API_TOKEN' \
               -H 'Content-Type: application/json' \
               -d '{"name": "UserLogin", "params": {"user_id": 101, "is_active": true}}'
@@ -772,8 +775,9 @@ paths:
         '500':
           $ref: '#/components/responses/INTERNAL_ERROR'
     parameters:
+      - $ref: '#/components/parameters/account_id'
       - $ref: '#/components/parameters/contact_identifier'
-  '/api/contacts/exports':
+  '/api/accounts/{account_id}/contacts/exports':
     post:
       description: Create a new Contact Export
       operationId: createContactExport
@@ -784,7 +788,7 @@ paths:
         - lang: shell
           label: 'cURL'
           source: |
-            curl -X POST https://mailtrap.io/api/contacts/exports \
+            curl -X POST https://mailtrap.io/api/accounts/{account_id}/contacts/exports \
               -H 'Authorization: Bearer YOUR_API_TOKEN' \
               -H 'Content-Type: application/json' \
               -d '{"filters": [{"name": "list_id", "operator": "equal", "value": [1, 2]}]}'
@@ -891,7 +895,9 @@ paths:
           $ref: '#/components/responses/LIMIT_EXCEEDED'
         '500':
           $ref: '#/components/responses/INTERNAL_ERROR'
-  '/api/contacts/exports/{export_id}':
+    parameters:
+      - $ref: '#/components/parameters/account_id'
+  '/api/accounts/{account_id}/contacts/exports/{export_id}':
     get:
       description: Get Contact Export
       operationId: getContactExport
@@ -902,7 +908,7 @@ paths:
         - lang: shell
           label: 'cURL'
           source: |
-            curl -X GET https://mailtrap.io/api/contacts/exports/{export_id} \
+            curl -X GET https://mailtrap.io/api/accounts/{account_id}/contacts/exports/{export_id} \
               -H 'Authorization: Bearer YOUR_API_TOKEN'
         - lang: javascript
           label: Node.js
@@ -987,8 +993,9 @@ paths:
         '500':
           $ref: '#/components/responses/INTERNAL_ERROR'
     parameters:
+      - $ref: '#/components/parameters/account_id'
       - $ref: '#/components/parameters/export_id'
-  '/api/contacts/imports':
+  '/api/accounts/{account_id}/contacts/imports':
     post:
       description: 'Import contacts in bulk with support for custom fields and list management. Existing contacts with matching email addresses will be updated automatically. You can import up to 50,000 contacts per request. The import process runs asynchronously - use the returned import ID to check the status and results.'
       operationId: importContacts
@@ -999,7 +1006,7 @@ paths:
         - lang: shell
           label: 'cURL'
           source: |
-            curl -X POST https://mailtrap.io/api/contacts/imports \
+            curl -X POST https://mailtrap.io/api/accounts/{account_id}/contacts/imports \
               -H 'Authorization: Bearer YOUR_API_TOKEN' \
               -H 'Content-Type: application/json' \
               -d '{"contacts": [{"email": "user1@example.com", "fields": {"first_name": "John"}, "list_ids_included": [1, 2]}]}'
@@ -1132,7 +1139,9 @@ paths:
                         - is invalid
         '500':
           $ref: '#/components/responses/INTERNAL_ERROR'
-  '/api/contacts/imports/{import_id}':
+    parameters:
+      - $ref: '#/components/parameters/account_id'
+  '/api/accounts/{account_id}/contacts/imports/{import_id}':
     get:
       description: Get Contact Import
       operationId: getContactImport
@@ -1143,7 +1152,7 @@ paths:
         - lang: shell
           label: 'cURL'
           source: |
-            curl -X GET https://mailtrap.io/api/contacts/imports/{import_id} \
+            curl -X GET https://mailtrap.io/api/accounts/{account_id}/contacts/imports/{import_id} \
               -H 'Authorization: Bearer YOUR_API_TOKEN'
         - lang: javascript
           label: Node.js
@@ -1230,8 +1239,9 @@ paths:
         '500':
           $ref: '#/components/responses/INTERNAL_ERROR'
     parameters:
+      - $ref: '#/components/parameters/account_id'
       - $ref: '#/components/parameters/import_id'
-  '/api/contacts/lists':
+  '/api/accounts/{account_id}/contacts/lists':
     get:
       description: Get all contact lists existing in your account
       operationId: contactLists
@@ -1242,7 +1252,7 @@ paths:
         - lang: shell
           label: 'cURL'
           source: |
-            curl -X GET https://mailtrap.io/api/contacts/lists \
+            curl -X GET https://mailtrap.io/api/accounts/{account_id}/contacts/lists \
               -H 'Authorization: Bearer YOUR_API_TOKEN'
         - lang: javascript
           label: Node.js
@@ -1334,7 +1344,7 @@ paths:
         - lang: shell
           label: 'cURL'
           source: |
-            curl -X POST https://mailtrap.io/api/contacts/lists \
+            curl -X POST https://mailtrap.io/api/accounts/{account_id}/contacts/lists \
               -H 'Authorization: Bearer YOUR_API_TOKEN' \
               -H 'Content-Type: application/json' \
               -d '{"name": "Customers"}'
@@ -1424,7 +1434,9 @@ paths:
           $ref: '#/components/responses/LIMIT_EXCEEDED'
         '500':
           $ref: '#/components/responses/INTERNAL_ERROR'
-  '/api/contacts/lists/{list_id}':
+    parameters:
+      - $ref: '#/components/parameters/account_id'
+  '/api/accounts/{account_id}/contacts/lists/{list_id}':
     get:
       description: Get a contact list by ID
       operationId: getContactList
@@ -1435,7 +1447,7 @@ paths:
         - lang: shell
           label: 'cURL'
           source: |
-            curl -X GET https://mailtrap.io/api/contacts/lists/{list_id} \
+            curl -X GET https://mailtrap.io/api/accounts/{account_id}/contacts/lists/{list_id} \
               -H 'Authorization: Bearer YOUR_API_TOKEN'
         - lang: javascript
           label: Node.js
@@ -1520,7 +1532,7 @@ paths:
         - lang: shell
           label: 'cURL'
           source: |
-            curl -X PATCH https://mailtrap.io/api/contacts/lists/{list_id} \
+            curl -X PATCH https://mailtrap.io/api/accounts/{account_id}/contacts/lists/{list_id} \
               -H 'Authorization: Bearer YOUR_API_TOKEN' \
               -H 'Content-Type: application/json' \
               -d '{"name": "Former Customers"}'
@@ -1624,7 +1636,7 @@ paths:
         - lang: shell
           label: 'cURL'
           source: |
-            curl -X DELETE https://mailtrap.io/api/contacts/lists/{list_id} \
+            curl -X DELETE https://mailtrap.io/api/accounts/{account_id}/contacts/lists/{list_id} \
               -H 'Authorization: Bearer YOUR_API_TOKEN'
         - lang: javascript
           label: Node.js
@@ -1694,8 +1706,9 @@ paths:
         '500':
           $ref: '#/components/responses/INTERNAL_ERROR'
     parameters:
+      - $ref: '#/components/parameters/account_id'
       - $ref: '#/components/parameters/list_id'
-  '/api/contacts/fields':
+  '/api/accounts/{account_id}/contacts/fields':
     get:
       description: Get all Contact Fields existing in your account
       operationId: contactFields
@@ -1706,7 +1719,7 @@ paths:
         - lang: shell
           label: 'cURL'
           source: |
-            curl -X GET https://mailtrap.io/api/contacts/fields \
+            curl -X GET https://mailtrap.io/api/accounts/{account_id}/contacts/fields \
               -H 'Authorization: Bearer YOUR_API_TOKEN'
         - lang: javascript
           label: Node.js
@@ -1803,7 +1816,7 @@ paths:
         - lang: shell
           label: 'cURL'
           source: |
-            curl -X POST https://mailtrap.io/api/contacts/fields \
+            curl -X POST https://mailtrap.io/api/accounts/{account_id}/contacts/fields \
               -H 'Authorization: Bearer YOUR_API_TOKEN' \
               -H 'Content-Type: application/json' \
               -d '{"name": "Company", "data_type": "text", "merge_tag": "company"}'
@@ -1927,7 +1940,9 @@ paths:
           $ref: '#/components/responses/LIMIT_EXCEEDED'
         '500':
           $ref: '#/components/responses/INTERNAL_ERROR'
-  '/api/contacts/fields/{field_id}':
+    parameters:
+      - $ref: '#/components/parameters/account_id'
+  '/api/accounts/{account_id}/contacts/fields/{field_id}':
     get:
       description: Get a contact Field by ID
       operationId: getContactField
@@ -1938,7 +1953,7 @@ paths:
         - lang: shell
           label: 'cURL'
           source: |
-            curl -X GET https://mailtrap.io/api/contacts/fields/{field_id} \
+            curl -X GET https://mailtrap.io/api/accounts/{account_id}/contacts/fields/{field_id} \
               -H 'Authorization: Bearer YOUR_API_TOKEN'
         - lang: javascript
           label: Node.js
@@ -2005,7 +2020,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/ContactField'
               example:
-                $ref: '#/paths/~1api~1contacts~1fields/post/responses/201/content/application~1json/example'
+                $ref: '#/paths/~1api~1accounts~1%7Baccount_id%7D~1contacts~1fields/post/responses/201/content/application~1json/example'
         '401':
           $ref: '#/components/responses/UNAUTHENTICATED'
         '403':
@@ -2027,7 +2042,7 @@ paths:
         - lang: shell
           label: 'cURL'
           source: |
-            curl -X PATCH https://mailtrap.io/api/contacts/fields/{field_id} \
+            curl -X PATCH https://mailtrap.io/api/accounts/{account_id}/contacts/fields/{field_id} \
               -H 'Authorization: Bearer YOUR_API_TOKEN' \
               -H 'Content-Type: application/json' \
               -d '{"name": "Updated Name", "merge_tag": "updated_name"}'
@@ -2153,7 +2168,7 @@ paths:
         - lang: shell
           label: 'cURL'
           source: |
-            curl -X DELETE https://mailtrap.io/api/contacts/fields/{field_id} \
+            curl -X DELETE https://mailtrap.io/api/accounts/{account_id}/contacts/fields/{field_id} \
               -H 'Authorization: Bearer YOUR_API_TOKEN'
         - lang: javascript
           label: Node.js
@@ -2234,6 +2249,7 @@ paths:
         '500':
           $ref: '#/components/responses/INTERNAL_ERROR'
     parameters:
+      - $ref: '#/components/parameters/account_id'
       - $ref: '#/components/parameters/field_id'
 components:
   securitySchemes:
@@ -2791,6 +2807,16 @@ components:
           schema:
             $ref: '#/components/schemas/NotFoundResponse'
   parameters:
+    account_id:
+      description: Unique account ID
+      name: account_id
+      in: path
+      required: true
+      schema:
+        type: integer
+        format: int64
+        minimum: 1
+        example: 3229
     contact_identifier:
       name: contact_identifier
       description: Contact UUID or Email
