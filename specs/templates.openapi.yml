@@ -28,7 +28,7 @@ tags:
     description: Create and manage reusable email templates with dynamic content.
 
 paths:
-  /api/accounts/{account_id}/email_templates:
+  /api/email_templates:
     get:
       description: Get all email templates existing in your account
       operationId: emailTemplates
@@ -39,7 +39,7 @@ paths:
         - lang: shell
           label: 'cURL'
           source: |
-            curl -X GET "https://mailtrap.io/api/accounts/{account_id}/email_templates" \
+            curl -X GET "https://mailtrap.io/api/email_templates" \
               -H "Api-Token: YOUR_API_KEY"
         - lang: javascript
           label: Node.js
@@ -130,7 +130,7 @@ paths:
         - lang: shell
           label: 'cURL'
           source: |
-            curl -X POST "https://mailtrap.io/api/accounts/{account_id}/email_templates" \
+            curl -X POST "https://mailtrap.io/api/email_templates" \
               -H "Api-Token: YOUR_API_KEY" \
               -H "Content-Type: application/json" \
               -d '{
@@ -264,10 +264,8 @@ paths:
           $ref: '#/components/responses/Forbidden'
         '422':
           $ref: '#/components/responses/UnprocessableEntity'
-    parameters:
-      - $ref: '#/components/parameters/account_id'
 
-  /api/accounts/{account_id}/email_templates/{email_template_id}:
+  /api/email_templates/{email_template_id}:
     get:
       description: Get an email template by ID
       operationId: getEmailTemplate
@@ -278,7 +276,7 @@ paths:
         - lang: shell
           label: 'cURL'
           source: |
-            curl -X GET "https://mailtrap.io/api/accounts/{account_id}/email_templates/{email_template_id}" \
+            curl -X GET "https://mailtrap.io/api/email_templates/{email_template_id}" \
               -H "Api-Token: YOUR_API_KEY"
         - lang: javascript
           label: Node.js
@@ -356,7 +354,7 @@ paths:
         - lang: shell
           label: 'cURL'
           source: |
-            curl -X PATCH "https://mailtrap.io/api/accounts/{account_id}/email_templates/{email_template_id}" \
+            curl -X PATCH "https://mailtrap.io/api/email_templates/{email_template_id}" \
               -H "Api-Token: YOUR_API_KEY" \
               -H "Content-Type: application/json" \
               -d '{
@@ -465,7 +463,7 @@ paths:
         - lang: shell
           label: 'cURL'
           source: |
-            curl -X DELETE "https://mailtrap.io/api/accounts/{account_id}/email_templates/{email_template_id}" \
+            curl -X DELETE "https://mailtrap.io/api/email_templates/{email_template_id}" \
               -H "Api-Token: YOUR_API_KEY"
         - lang: javascript
           label: Node.js
@@ -529,7 +527,6 @@ paths:
         '404':
           $ref: '#/components/responses/NotFound'
     parameters:
-      - $ref: '#/components/parameters/account_id'
       - $ref: '#/components/parameters/email_template_id'
 
 components:
@@ -546,15 +543,6 @@ components:
       description: Bearer token authentication
 
   parameters:
-    account_id:
-      name: account_id
-      in: path
-      required: true
-      description: Account ID
-      schema:
-        type: integer
-        example: 1
-
     email_template_id:
       name: email_template_id
       in: path
