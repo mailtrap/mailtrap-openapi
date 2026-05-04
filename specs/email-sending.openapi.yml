@@ -15,7 +15,9 @@ info:
     url: 'https://mailtrap.io/wp-content/uploads/2021/04/mailtrap-logo.svg'
 
 servers:
-  - description: Mailtrap API
+  - description: |
+      Mailtrap account API (`mailtrap.io`) for sending domains, suppressions, stats, and email logs.
+      Error JSON matches other account endpoints (`error` or string `errors`), not the `send.api` / `bulk.api` sending shape (`success` + `errors` array).
     url: 'https://mailtrap.io'
 
 security:
@@ -2068,6 +2070,10 @@ components:
             type: array
             items:
               type: string
+      example:
+        errors:
+          base:
+            - "Validation failed: Domain name can't be blank, Tracking domain name is not a valid domain name"
 
     SendingStats:
       title: SendingStats
@@ -2111,29 +2117,26 @@ components:
 
     BadRequest:
       title: BadRequestResponse
+      description: |
+        Invalid parameters. Some endpoints return an empty body with HTTP 400; when present, a message may use an `error` field.
       type: object
       properties:
-        success:
-          type: boolean
-          example: false
-        errors:
-          type: array
-          items:
-            type: string
-            example: "Invalid request parameters"
+        error:
+          type: string
+          example: Bad Request
+      example:
+        error: Bad Request
 
     RateLimitExceededResponse:
       title: RateLimitExceededResponse
       type: object
       properties:
-        success:
-          type: boolean
-          example: false
         errors:
-          type: array
-          items:
-            type: string
-            example: "Rate limit exceeded"
+          type: string
+          description: Error message
+          example: Rate limit exceeded
+      example:
+        errors: Rate limit exceeded
 
     EmailLogsListResponse:
       type: object
@@ -2876,51 +2879,67 @@ components:
         operator: equal
         value: transactional
 
-    ErrorResponse:
+    UnauthenticatedResponse:
+      title: UnauthenticatedResponse
       type: object
       properties:
-        success:
-          type: boolean
-          example: false
+        error:
+          type: string
+          description: Error message
+          example: Incorrect API token
+      example:
+        error: Incorrect API token
+
+    PermissionsDeniedResponse:
+      title: PermissionsDeniedResponse
+      type: object
+      properties:
         errors:
-          type: array
-          items:
-            type: string
-            example: Invalid request
+          type: string
+          description: |
+            Human-readable reason. Common values include `Account access forbidden` (e.g. wrong account).
+          example: Account access forbidden
+      example:
+        errors: Account access forbidden
+
+    NotFoundResponse:
+      title: NotFoundResponse
+      type: object
+      properties:
+        error:
+          type: string
+          description: Error message
+          example: Not Found
+      example:
+        error: Not Found
 
   responses:
     Unauthorized:
-      description: Unauthorized. Check your API credentials.
+      description: Returns unauthorized error message. Check your credentials.
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/ErrorResponse'
+            $ref: '#/components/schemas/UnauthenticatedResponse'
           example:
-            success: false
-            errors:
-              - "Unauthorized"
+            error: Incorrect API token
 
     Forbidden:
-      description: Forbidden. Verify domain or check permissions.
+      description: Returns forbidden error message. Check your permissions.
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/ErrorResponse'
+            $ref: '#/components/schemas/PermissionsDeniedResponse'
           example:
-            success: false
-            errors:
-              - "Forbidden"
+            errors: Account access forbidden
 
     NotFound:
       description: Resource not found
       content:
         application/json:
           schema:
-            type: object
-            properties:
-              error:
-                type: string
-                example: Resource not found
+            $ref: '#/components/schemas/NotFoundResponse'
+          example:
+            error: Not Found
 
     UnprocessableEntity:
       description: Validation errors
@@ -2928,6 +2947,10 @@ components:
         application/json:
           schema:
             $ref: '#/components/schemas/UnprocessableEntity'
+          example:
+            errors:
+              base:
+                - "Validation failed: Domain name can't be blank, Tracking domain name is not a valid domain name"
 
     BAD_REQUEST:
       description: Bad request - invalid parameters.
@@ -2936,9 +2959,7 @@ components:
           schema:
             $ref: '#/components/schemas/BadRequest'
           example:
-            success: false
-            errors:
-              - "Invalid request parameters"
+            error: Bad Request
 
     LIMIT_EXCEEDED:
       description: Rate limit exceeded for the current account.
@@ -2947,9 +2968,7 @@ components:
           schema:
             $ref: '#/components/schemas/RateLimitExceededResponse'
           example:
-            success: false
-            errors:
-              - "Rate limit exceeded"
+            errors: Rate limit exceeded
 
     SendingDomainResponse:
       description: Sending domain details
