@@ -1,0 +1,28 @@
+specs/sandbox.openapi.yml
+  a0a8add63369941b 4845,4905,4952,4993,5026
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.3.4",
+  "base_commit_sha": "85750ceb5a56b1988822ba793563c3f3b6f7c160",
+  "prompts": {
+    "a0a8add63369941b": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "75f08ced-24f7-41f5-af84-8612805d3274",
+        "model": "claude-opus-4-7"
+      },
+      "human_author": "Ivan Yurchanka",
+      "messages": [],
+      "total_additions": 5,
+      "total_deletions": 5,
+      "accepted_lines": 5,
+      "overriden_lines": 3
+    }
+  },
+  "humans": {
+    "h_21a25e5a42af46": {
+      "author": "Ivan Yurchanka"
+    }
+  }
+}
