@@ -4842,7 +4842,7 @@ components:
               type: boolean
       example:
         id: 3538
-        name: Admin Inbox
+        name: Admin Sandbox
         username: b3a87978452ae1
         password: 6be9fcfc613a7c
         max_size: 0
@@ -4902,7 +4902,7 @@ components:
             viewer: 'https://localhost/projects/2436/share/QEVuQwEAYWN-NIhmrB8qX6ZWzToqdOE9dw1ylIfOQ-_fKwYAD_CCkhRzmAanker219x25PM7YSu12_li4QtOGl363syqCpKX7vlXvIub7b_V1BU2qypVHfspL7qfSIja0edd7hSh'
           inboxes:
             - id: 3874
-              name: Admin Inbox
+              name: Admin Sandbox
               username: f796d276ca4d13
               password: 293caeb0f100e4
               max_size: 0
@@ -4949,7 +4949,7 @@ components:
           viewer: 'https://localhost/projects/2436/share/QEVuQwEAYWN-NIhmrB8qX6ZWzToqdOE9dw1ylIfOQ-_fKwYAD_CCkhRzmAanker219x25PM7YSu12_li4QtOGl363syqCpKX7vlXvIub7b_V1BU2qypVHfspL7qfSIja0edd7hSh'
         inboxes:
           - id: 3874
-            name: Admin Inbox
+            name: Admin Sandbox
             username: f796d276ca4d13
             password: 293caeb0f100e4
             max_size: 0
@@ -4990,7 +4990,7 @@ components:
       summary: List of sandboxes
       value:
         - id: 3538
-          name: Admin Inbox
+          name: Admin Sandbox
           username: b3a87978452ae1
           password: 6be9fcfc613a7c
           max_size: 0
@@ -5023,7 +5023,7 @@ components:
             can_destroy: true
             can_leave: true
         - id: 4089
-          name: Viewer Inbox
+          name: Viewer Sandbox
           username: 1d0aa0282f7712
           password: 5667a20f611ae7
           max_size: 0
