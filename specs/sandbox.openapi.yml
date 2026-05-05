@@ -56,7 +56,7 @@ tags:
     description: Interactions with attachments
 
 paths:
-  '/api/inboxes':
+  '/api/accounts/{account_id}/inboxes':
     get:
       summary: Get a list of inboxes
       description: Get a list of inboxes.
@@ -73,7 +73,7 @@ paths:
         - lang: shell
           label: 'cURL'
           source: |
-            curl -X GET https://mailtrap.io/api/inboxes \
+            curl -X GET https://mailtrap.io/api/accounts/{account_id}/inboxes \
               -H 'Authorization: Bearer YOUR_API_KEY'
         - lang: javascript
           label: Node.js
@@ -162,7 +162,9 @@ paths:
 
             System.out.println(inboxes);
       operationId: getInboxes
-  '/api/projects':
+    parameters:
+      - $ref: '#/components/parameters/account_id'
+  '/api/accounts/{account_id}/projects':
     post:
       summary: Create project
       description: The project name is min 2 characters and max 100 characters long.
@@ -194,7 +196,7 @@ paths:
         - lang: shell
           label: 'cURL'
           source: |
-            curl -X POST https://mailtrap.io/api/projects \
+            curl -X POST https://mailtrap.io/api/accounts/{account_id}/projects \
               -H 'Authorization: Bearer YOUR_API_KEY' \
               -H 'Content-Type: application/json' \
               -d '{
@@ -320,7 +322,7 @@ paths:
         - lang: shell
           label: 'cURL'
           source: |
-            curl -X GET https://mailtrap.io/api/projects \
+            curl -X GET https://mailtrap.io/api/accounts/{account_id}/projects \
               -H 'Authorization: Bearer YOUR_API_KEY'
         - lang: javascript
           label: Node.js
@@ -419,7 +421,9 @@ paths:
                 System.out.println("Project: " + project.getName() +
                                    ", ID: " + project.getId());
             }
-  '/api/projects/{project_id}':
+    parameters:
+      - $ref: '#/components/parameters/account_id'
+  '/api/accounts/{account_id}/projects/{project_id}':
     get:
       summary: Get project by ID
       description: Get the project and its inboxes.
@@ -439,7 +443,7 @@ paths:
         - lang: shell
           label: 'cURL'
           source: |
-            curl -X GET https://mailtrap.io/api/projects/{project_id} \
+            curl -X GET https://mailtrap.io/api/accounts/{account_id}/projects/{project_id} \
               -H 'Authorization: Bearer YOUR_API_KEY'
         - lang: javascript
           label: Node.js
@@ -548,7 +552,7 @@ paths:
         - lang: shell
           label: 'cURL'
           source: |
-            curl -X PATCH https://mailtrap.io/api/projects/{project_id} \
+            curl -X PATCH https://mailtrap.io/api/accounts/{account_id}/projects/{project_id} \
               -H 'Authorization: Bearer YOUR_API_KEY' \
               -H 'Content-Type: application/json' \
               -d '{
@@ -704,7 +708,7 @@ paths:
         - lang: shell
           label: 'cURL'
           source: |
-            curl -X DELETE https://mailtrap.io/api/projects/{project_id} \
+            curl -X DELETE https://mailtrap.io/api/accounts/{account_id}/projects/{project_id} \
               -H 'Authorization: Bearer YOUR_API_KEY'
         - lang: javascript
           label: Node.js
@@ -823,8 +827,9 @@ paths:
           $ref: '#/components/responses/NOT_FOUND'
       operationId: deleteProject
     parameters:
+      - $ref: '#/components/parameters/account_id'
       - $ref: '#/components/parameters/project_id'
-  '/api/projects/{project_id}/inboxes':
+  '/api/accounts/{account_id}/projects/{project_id}/inboxes':
     post:
       summary: Create an inbox
       description: Create an inbox in a project.
@@ -858,7 +863,7 @@ paths:
         - lang: shell
           label: 'cURL'
           source: |
-            curl -X POST https://mailtrap.io/api/projects/{project_id}/inboxes \
+            curl -X POST https://mailtrap.io/api/accounts/{account_id}/projects/{project_id}/inboxes \
               -H 'Authorization: Bearer YOUR_API_KEY' \
               -H 'Content-Type: application/json' \
               -d '{
@@ -978,8 +983,9 @@ paths:
             System.out.println("Inbox created: " + inbox.getName());
             System.out.println("SMTP credentials - User: " + inbox.getUsername());
     parameters:
+      - $ref: '#/components/parameters/account_id'
       - $ref: '#/components/parameters/project_id'
-  '/api/inboxes/{inbox_id}':
+  '/api/accounts/{account_id}/inboxes/{inbox_id}':
     get:
       summary: Get inbox attributes
       description: Get inbox attributes by inbox id. See the list of attributes in the example
@@ -998,7 +1004,7 @@ paths:
         - lang: shell
           label: 'cURL'
           source: |
-            curl -X GET https://mailtrap.io/api/inboxes/{inbox_id} \
+            curl -X GET https://mailtrap.io/api/accounts/{account_id}/inboxes/{inbox_id} \
               -H 'Authorization: Bearer YOUR_API_KEY'
         - lang: javascript
           label: Node.js
@@ -1111,7 +1117,7 @@ paths:
         - lang: shell
           label: 'cURL'
           source: |
-            curl -X DELETE https://mailtrap.io/api/inboxes/{inbox_id} \
+            curl -X DELETE https://mailtrap.io/api/accounts/{account_id}/inboxes/{inbox_id} \
               -H 'Authorization: Bearer YOUR_API_KEY'
         - lang: javascript
           label: Node.js
@@ -1239,7 +1245,7 @@ paths:
         - lang: shell
           label: 'cURL'
           source: |
-            curl -X PATCH https://mailtrap.io/api/inboxes/{inbox_id} \
+            curl -X PATCH https://mailtrap.io/api/accounts/{account_id}/inboxes/{inbox_id} \
               -H 'Authorization: Bearer YOUR_API_KEY' \
               -H 'Content-Type: application/json' \
               -d '{
@@ -1363,8 +1369,9 @@ paths:
             System.out.println(updatedInbox);
       operationId: updateInbox
     parameters:
+      - $ref: '#/components/parameters/account_id'
       - $ref: '#/components/parameters/inbox_id'
-  '/api/inboxes/{inbox_id}/clean':
+  '/api/accounts/{account_id}/inboxes/{inbox_id}/clean':
     patch:
       summary: Clean inbox
       description: Delete all messages (emails) from inbox.
@@ -1383,7 +1390,7 @@ paths:
         - lang: shell
           label: 'cURL'
           source: |
-            curl -X PATCH https://mailtrap.io/api/inboxes/{inbox_id}/clean \
+            curl -X PATCH https://mailtrap.io/api/accounts/{account_id}/inboxes/{inbox_id}/clean \
               -H 'Authorization: Bearer YOUR_API_KEY'
         - lang: javascript
           label: Node.js
@@ -1479,8 +1486,9 @@ paths:
             System.out.println(cleanedInbox);
       operationId: cleanInbox
     parameters:
+      - $ref: '#/components/parameters/account_id'
       - $ref: '#/components/parameters/inbox_id'
-  '/api/inboxes/{inbox_id}/all_read':
+  '/api/accounts/{account_id}/inboxes/{inbox_id}/all_read':
     patch:
       summary: Mark as read
       description: Mark all messages in the inbox as read.
@@ -1499,7 +1507,7 @@ paths:
         - lang: shell
           label: 'cURL'
           source: |
-            curl -X PATCH https://mailtrap.io/api/inboxes/{inbox_id}/all_read \
+            curl -X PATCH https://mailtrap.io/api/accounts/{account_id}/inboxes/{inbox_id}/all_read \
               -H 'Authorization: Bearer YOUR_API_KEY'
         - lang: javascript
           label: Node.js
@@ -1595,8 +1603,9 @@ paths:
             System.out.println(markedInbox);
       operationId: markAsReadInbox
     parameters:
+      - $ref: '#/components/parameters/account_id'
       - $ref: '#/components/parameters/inbox_id'
-  '/api/inboxes/{inbox_id}/reset_credentials':
+  '/api/accounts/{account_id}/inboxes/{inbox_id}/reset_credentials':
     patch:
       summary: Reset credentials
       description: Reset SMTP credentials of the inbox.
@@ -1615,7 +1624,7 @@ paths:
         - lang: shell
           label: 'cURL'
           source: |
-            curl -X PATCH https://mailtrap.io/api/inboxes/{inbox_id}/reset_credentials \
+            curl -X PATCH https://mailtrap.io/api/accounts/{account_id}/inboxes/{inbox_id}/reset_credentials \
               -H 'Authorization: Bearer YOUR_API_KEY'
         - lang: javascript
           label: Node.js
@@ -1711,8 +1720,9 @@ paths:
             System.out.println(updatedInbox);
       operationId: resetInboxCredentials
     parameters:
+      - $ref: '#/components/parameters/account_id'
       - $ref: '#/components/parameters/inbox_id'
-  '/api/inboxes/{inbox_id}/toggle_email_username':
+  '/api/accounts/{account_id}/inboxes/{inbox_id}/toggle_email_username':
     patch:
       summary: Enable email address
       description: Turn the email address of the inbox on/off.
@@ -1731,7 +1741,7 @@ paths:
         - lang: shell
           label: 'cURL'
           source: |
-            curl -X PATCH https://mailtrap.io/api/inboxes/{inbox_id}/toggle_email_username \
+            curl -X PATCH https://mailtrap.io/api/accounts/{account_id}/inboxes/{inbox_id}/toggle_email_username \
               -H 'Authorization: Bearer YOUR_API_KEY'
         - lang: javascript
           label: Node.js
@@ -1818,8 +1828,9 @@ paths:
             System.out.println(updatedInbox);
       operationId: enableInboxEmailAddresses
     parameters:
+      - $ref: '#/components/parameters/account_id'
       - $ref: '#/components/parameters/inbox_id'
-  '/api/inboxes/{inbox_id}/reset_email_username':
+  '/api/accounts/{account_id}/inboxes/{inbox_id}/reset_email_username':
     patch:
       summary: Reset email address
       description: Reset username of email address per inbox.
@@ -1838,7 +1849,7 @@ paths:
         - lang: shell
           label: 'cURL'
           source: |
-            curl -X PATCH https://mailtrap.io/api/inboxes/{inbox_id}/reset_email_username \
+            curl -X PATCH https://mailtrap.io/api/accounts/{account_id}/inboxes/{inbox_id}/reset_email_username \
               -H 'Authorization: Bearer YOUR_API_KEY'
         - lang: javascript
           label: Node.js
@@ -1926,8 +1937,9 @@ paths:
             System.out.println(updatedInbox);
       operationId: resetEmailUserNamePerInbox
     parameters:
+      - $ref: '#/components/parameters/account_id'
       - $ref: '#/components/parameters/inbox_id'
-  '/api/inboxes/{inbox_id}/messages/{message_id}':
+  '/api/accounts/{account_id}/inboxes/{inbox_id}/messages/{message_id}':
     get:
       summary: Show email message
       description: Get email message by ID.
@@ -1987,7 +1999,7 @@ paths:
         - lang: shell
           label: 'cURL'
           source: |
-            curl -X GET https://mailtrap.io/api/inboxes/{inbox_id}/messages/{message_id} \
+            curl -X GET https://mailtrap.io/api/accounts/{account_id}/inboxes/{inbox_id}/messages/{message_id} \
               -H 'Authorization: Bearer YOUR_API_KEY'
         - lang: javascript
           label: Node.js
@@ -2217,7 +2229,7 @@ paths:
         - lang: shell
           label: 'cURL'
           source: |
-            curl -X PATCH https://mailtrap.io/api/inboxes/{inbox_id}/messages/{message_id} \
+            curl -X PATCH https://mailtrap.io/api/accounts/{account_id}/inboxes/{inbox_id}/messages/{message_id} \
               -H 'Authorization: Bearer YOUR_API_KEY' \
               -H 'Content-Type: application/json' \
               -d '{"message": {"is_read": "true"}}'
@@ -2444,7 +2456,7 @@ paths:
         - lang: shell
           label: 'cURL'
           source: |
-            curl -X DELETE https://mailtrap.io/api/inboxes/{inbox_id}/messages/{message_id} \
+            curl -X DELETE https://mailtrap.io/api/accounts/{account_id}/inboxes/{inbox_id}/messages/{message_id} \
               -H 'Authorization: Bearer YOUR_API_KEY'
         - lang: javascript
           label: Node.js
@@ -2550,9 +2562,10 @@ paths:
             System.out.println(deletedMessage);
       operationId: deleteInboxEmailMessage
     parameters:
+      - $ref: '#/components/parameters/account_id'
       - $ref: '#/components/parameters/inbox_id'
       - $ref: '#/components/parameters/message_id'
-  '/api/inboxes/{inbox_id}/messages':
+  '/api/accounts/{account_id}/inboxes/{inbox_id}/messages':
     get:
       summary: Get messages
       description: Get all messages in the inbox. The response contains up to 30 messages. Use `last_id` or `page` to retrieve more.
@@ -2666,7 +2679,7 @@ paths:
         - lang: shell
           label: 'cURL'
           source: |
-            curl -X GET https://mailtrap.io/api/inboxes/{inbox_id}/messages \
+            curl -X GET https://mailtrap.io/api/accounts/{account_id}/inboxes/{inbox_id}/messages \
               -H 'Authorization: Bearer YOUR_API_KEY'
         - lang: javascript
           label: Node.js
@@ -2802,8 +2815,9 @@ paths:
           name: page
           description: Page number for paginated results.
     parameters:
+      - $ref: '#/components/parameters/account_id'
       - $ref: '#/components/parameters/inbox_id'
-  '/api/inboxes/{inbox_id}/messages/{message_id}/forward':
+  '/api/accounts/{account_id}/inboxes/{inbox_id}/messages/{message_id}/forward':
     post:
       summary: Forward message
       description: Forward message to an email address. The email address must be confirmed by the recipient in advance.
@@ -2848,7 +2862,7 @@ paths:
         - lang: shell
           label: 'cURL'
           source: |
-            curl -X POST https://mailtrap.io/api/inboxes/{inbox_id}/messages/{message_id}/forward \
+            curl -X POST https://mailtrap.io/api/accounts/{account_id}/inboxes/{inbox_id}/messages/{message_id}/forward \
               -H 'Authorization: Bearer YOUR_API_KEY' \
               -H 'Content-Type: application/json' \
               -d '{"email": "recipient@example.com"}'
@@ -2969,9 +2983,10 @@ paths:
             System.out.println(forwardedMessage);
       operationId: forwardInboxEmailMessage
     parameters:
+      - $ref: '#/components/parameters/account_id'
       - $ref: '#/components/parameters/inbox_id'
       - $ref: '#/components/parameters/message_id'
-  '/api/inboxes/{inbox_id}/messages/{message_id}/spam_report':
+  '/api/accounts/{account_id}/inboxes/{inbox_id}/messages/{message_id}/spam_report':
     get:
       summary: Get message spam score
       description: Get a brief spam report by message ID.
@@ -3045,7 +3060,7 @@ paths:
         - lang: shell
           label: 'cURL'
           source: |
-            curl -X GET https://mailtrap.io/api/inboxes/{inbox_id}/messages/{message_id}/spam_report \
+            curl -X GET https://mailtrap.io/api/accounts/{account_id}/inboxes/{inbox_id}/messages/{message_id}/spam_report \
               -H 'Authorization: Bearer YOUR_API_KEY'
         - lang: javascript
           label: Node.js
@@ -3129,9 +3144,10 @@ paths:
             System.out.println(spamReport);
       operationId: getInboxEmailMessageSpamReport
     parameters:
+      - $ref: '#/components/parameters/account_id'
       - $ref: '#/components/parameters/inbox_id'
       - $ref: '#/components/parameters/message_id'
-  '/api/inboxes/{inbox_id}/messages/{message_id}/analyze':
+  '/api/accounts/{account_id}/inboxes/{inbox_id}/messages/{message_id}/analyze':
     get:
       summary: Get message HTML analysis
       description: Get a brief HTML report by message ID.
@@ -3227,7 +3243,7 @@ paths:
         - lang: shell
           label: 'cURL'
           source: |
-            curl -X GET https://mailtrap.io/api/inboxes/{inbox_id}/messages/{message_id}/analyze \
+            curl -X GET https://mailtrap.io/api/accounts/{account_id}/inboxes/{inbox_id}/messages/{message_id}/analyze \
               -H 'Authorization: Bearer YOUR_API_KEY'
         - lang: javascript
           label: Node.js
@@ -3309,9 +3325,10 @@ paths:
             System.out.println(htmlAnalysis);
       operationId: getInboxEmailMessageHTMLAnalysis
     parameters:
+      - $ref: '#/components/parameters/account_id'
       - $ref: '#/components/parameters/inbox_id'
       - $ref: '#/components/parameters/message_id'
-  '/api/inboxes/{inbox_id}/messages/{message_id}/body.txt':
+  '/api/accounts/{account_id}/inboxes/{inbox_id}/messages/{message_id}/body.txt':
     get:
       summary: Get text message
       description: 'Get text email body, if it exists.'
@@ -3358,7 +3375,7 @@ paths:
         - lang: shell
           label: 'cURL'
           source: |
-            curl -X GET https://mailtrap.io/api/inboxes/{inbox_id}/messages/{message_id}/body.txt \
+            curl -X GET https://mailtrap.io/api/accounts/{account_id}/inboxes/{inbox_id}/messages/{message_id}/body.txt \
               -H 'Authorization: Bearer YOUR_API_KEY'
         - lang: javascript
           label: Node.js
@@ -3440,9 +3457,10 @@ paths:
             System.out.println(textBody);
       operationId: getInboxEmailMessageBodyAsTxt
     parameters:
+      - $ref: '#/components/parameters/account_id'
       - $ref: '#/components/parameters/inbox_id'
       - $ref: '#/components/parameters/message_id'
-  '/api/inboxes/{inbox_id}/messages/{message_id}/body.raw':
+  '/api/accounts/{account_id}/inboxes/{inbox_id}/messages/{message_id}/body.raw':
     get:
       summary: Get raw message
       description: Get raw email body.
@@ -3533,7 +3551,7 @@ paths:
         - lang: shell
           label: 'cURL'
           source: |
-            curl -X GET https://mailtrap.io/api/inboxes/{inbox_id}/messages/{message_id}/body.raw \
+            curl -X GET https://mailtrap.io/api/accounts/{account_id}/inboxes/{inbox_id}/messages/{message_id}/body.raw \
               -H 'Authorization: Bearer YOUR_API_KEY'
         - lang: javascript
           label: Node.js
@@ -3615,9 +3633,10 @@ paths:
             System.out.println(rawBody);
       operationId: getInboxEmailMessageBodyAsRaw
     parameters:
+      - $ref: '#/components/parameters/account_id'
       - $ref: '#/components/parameters/inbox_id'
       - $ref: '#/components/parameters/message_id'
-  '/api/inboxes/{inbox_id}/messages/{message_id}/body.htmlsource':
+  '/api/accounts/{account_id}/inboxes/{inbox_id}/messages/{message_id}/body.htmlsource':
     get:
       summary: Get message source
       description: Get HTML source of email.
@@ -3687,7 +3706,7 @@ paths:
         - lang: shell
           label: 'cURL'
           source: |
-            curl -X GET https://mailtrap.io/api/inboxes/{inbox_id}/messages/{message_id}/body.htmlsource \
+            curl -X GET https://mailtrap.io/api/accounts/{account_id}/inboxes/{inbox_id}/messages/{message_id}/body.htmlsource \
               -H 'Authorization: Bearer YOUR_API_KEY'
         - lang: javascript
           label: Node.js
@@ -3765,9 +3784,10 @@ paths:
             System.out.println(htmlSource);
       operationId: getInboxEmailMessageBodyAsHtmlSource
     parameters:
+      - $ref: '#/components/parameters/account_id'
       - $ref: '#/components/parameters/inbox_id'
       - $ref: '#/components/parameters/message_id'
-  '/api/inboxes/{inbox_id}/messages/{message_id}/body.html':
+  '/api/accounts/{account_id}/inboxes/{inbox_id}/messages/{message_id}/body.html':
     get:
       summary: Get HTML message
       description: Get formatted HTML email body. Not applicable for plain text emails.
@@ -3835,7 +3855,7 @@ paths:
         - lang: shell
           label: 'cURL'
           source: |
-            curl -X GET https://mailtrap.io/api/inboxes/{inbox_id}/messages/{message_id}/body.html \
+            curl -X GET https://mailtrap.io/api/accounts/{account_id}/inboxes/{inbox_id}/messages/{message_id}/body.html \
               -H 'Authorization: Bearer YOUR_API_KEY'
         - lang: javascript
           label: Node.js
@@ -3918,9 +3938,10 @@ paths:
             System.out.println(htmlBody);
       operationId: getInboxEmailMessageBodyAsHtml
     parameters:
+      - $ref: '#/components/parameters/account_id'
       - $ref: '#/components/parameters/inbox_id'
       - $ref: '#/components/parameters/message_id'
-  '/api/inboxes/{inbox_id}/messages/{message_id}/body.eml':
+  '/api/accounts/{account_id}/inboxes/{inbox_id}/messages/{message_id}/body.eml':
     get:
       summary: Get message as .eml
       description: Get email message in .eml format.
@@ -4012,7 +4033,7 @@ paths:
         - lang: shell
           label: 'cURL'
           source: |
-            curl -X GET https://mailtrap.io/api/inboxes/{inbox_id}/messages/{message_id}/body.eml \
+            curl -X GET https://mailtrap.io/api/accounts/{account_id}/inboxes/{inbox_id}/messages/{message_id}/body.eml \
               -H 'Authorization: Bearer YOUR_API_KEY'
         - lang: javascript
           label: Node.js
@@ -4094,9 +4115,10 @@ paths:
             System.out.println(emlContent);
       operationId: getInboxEmailMessageBodyAsEml
     parameters:
+      - $ref: '#/components/parameters/account_id'
       - $ref: '#/components/parameters/inbox_id'
       - $ref: '#/components/parameters/message_id'
-  '/api/inboxes/{inbox_id}/messages/{message_id}/mail_headers':
+  '/api/accounts/{account_id}/inboxes/{inbox_id}/messages/{message_id}/mail_headers':
     get:
       summary: Get mail headers
       description: Get mail headers of a message
@@ -4140,7 +4162,7 @@ paths:
         - lang: shell
           label: 'cURL'
           source: |
-            curl -X GET https://mailtrap.io/api/inboxes/{inbox_id}/messages/{message_id}/mail_headers \
+            curl -X GET https://mailtrap.io/api/accounts/{account_id}/inboxes/{inbox_id}/messages/{message_id}/mail_headers \
               -H 'Authorization: Bearer YOUR_API_KEY'
         - lang: javascript
           label: Node.js
@@ -4220,9 +4242,10 @@ paths:
             System.out.println(mailHeaders);
       operationId: getMailHeadersOfEmailMessage
     parameters:
+      - $ref: '#/components/parameters/account_id'
       - $ref: '#/components/parameters/inbox_id'
       - $ref: '#/components/parameters/message_id'
-  '/api/inboxes/{inbox_id}/messages/{message_id}/attachments':
+  '/api/accounts/{account_id}/inboxes/{inbox_id}/messages/{message_id}/attachments':
     get:
       summary: Get attachments
       description: Get message attachments by inbox_id and message_id.
@@ -4303,7 +4326,7 @@ paths:
         - lang: shell
           label: 'cURL'
           source: |
-            curl -X GET https://mailtrap.io/api/inboxes/{inbox_id}/messages/{message_id}/attachments \
+            curl -X GET https://mailtrap.io/api/accounts/{account_id}/inboxes/{inbox_id}/messages/{message_id}/attachments \
               -H 'Authorization: Bearer YOUR_API_KEY'
         - lang: javascript
           label: Node.js
@@ -4384,9 +4407,10 @@ paths:
             
             var attachments = client.testingApi().attachments().getAttachments(accountId, inboxId, messageId, null);
     parameters:
+      - $ref: '#/components/parameters/account_id'
       - $ref: '#/components/parameters/inbox_id'
       - $ref: '#/components/parameters/message_id'
-  '/api/inboxes/{inbox_id}/messages/{message_id}/attachments/{attachment_id}':
+  '/api/accounts/{account_id}/inboxes/{inbox_id}/messages/{message_id}/attachments/{attachment_id}':
     get:
       summary: Get single attachment
       description: Get message single attachment by id.
@@ -4458,7 +4482,7 @@ paths:
         - lang: shell
           label: 'cURL'
           source: |
-            curl -X GET https://mailtrap.io/api/inboxes/{inbox_id}/messages/{message_id}/attachments/{attachment_id} \
+            curl -X GET https://mailtrap.io/api/accounts/{account_id}/inboxes/{inbox_id}/messages/{message_id}/attachments/{attachment_id} \
               -H 'Authorization: Bearer YOUR_API_KEY'
         - lang: javascript
           label: Node.js
@@ -4541,6 +4565,7 @@ paths:
             var client = MailtrapClientFactory.createMailtrapClient(config);
             var attachment = client.testingApi().attachments().getSingleAttachment(accountId, inboxId, messageId, attachmentId);
     parameters:
+      - $ref: '#/components/parameters/account_id'
       - $ref: '#/components/parameters/inbox_id'
       - $ref: '#/components/parameters/message_id'
       - $ref: '#/components/parameters/attachment_id'
@@ -5109,6 +5134,16 @@ components:
           schema:
             $ref: '#/components/schemas/TestingInbox'
   parameters:
+    account_id:
+      description: Unique account ID
+      name: account_id
+      in: path
+      required: true
+      schema:
+        type: integer
+        format: int64
+        minimum: 1
+        example: 3229
     inbox_id:
       description: Unique inbox ID
       name: inbox_id
