@@ -1419,6 +1419,7 @@ paths:
                         The type of webhook. Determines which events the webhook can subscribe to.
                       enum:
                         - email_sending
+                        - campaigns
                         - audit_log
                       example: email_sending
                     active:
@@ -1445,7 +1446,7 @@ paths:
                     event_types:
                       type: array
                       description: |
-                        List of event types to subscribe to. Required for `email_sending` webhook type.
+                        List of event types to subscribe to. Required for `email_sending` and `campaigns` webhook types.
                       items:
                         type: string
                         enum:
@@ -1466,7 +1467,7 @@ paths:
                       description: |
                         Scopes the webhook to a specific domain ID, or all
                         domains if omitted. Applicable only for `email_sending`
-                        webhooks.
+                        and `campaigns` webhooks.
                       example: 435
       responses:
         '200':
@@ -1640,7 +1641,7 @@ paths:
                       example: json
                     event_types:
                       type: array
-                      description: List of event types to subscribe to. Applicable only for `email_sending` webhooks.
+                      description: List of event types to subscribe to. Applicable only for `email_sending` and `campaigns` webhooks.
                       items:
                         type: string
                         enum:
@@ -2068,6 +2069,7 @@ components:
           type: string
           enum:
             - email_sending
+            - campaigns
             - audit_log
           example: email_sending
         payload_format:
@@ -2094,13 +2096,14 @@ components:
             - 'null'
           description: |
             Scopes the webhook to a specific domain ID, or all domains if
-            omitted. Applicable only for `email_sending` webhooks.
+            omitted. Applicable only for `email_sending` and `campaigns`
+            webhooks.
           example: 435
         event_types:
           type: array
           description: |
             List of event types the webhook is subscribed to. Applicable only
-            for `email_sending` webhooks.
+            for `email_sending` and `campaigns` webhooks.
           items:
             type: string
             enum:
