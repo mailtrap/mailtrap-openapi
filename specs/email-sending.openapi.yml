@@ -1137,6 +1137,8 @@ paths:
                 "sending_stream": "transactional",
                 "type": "manual import"
               }'
+      parameters:
+        - $ref: '#/components/parameters/account_id'
       requestBody:
         required: true
         content:
