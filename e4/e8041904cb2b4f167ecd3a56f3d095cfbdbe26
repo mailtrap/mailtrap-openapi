@@ -1,0 +1,23 @@
+specs/email-sending.openapi.yml
+  b5af5d9e38a89e27 1119,1143
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.3.4",
+  "base_commit_sha": "e4e8041904cb2b4f167ecd3a56f3d095cfbdbe26",
+  "prompts": {
+    "b5af5d9e38a89e27": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "3cd9de45-d16f-4ea6-bf82-51b8eaab569d",
+        "model": "claude-opus-4-7"
+      },
+      "human_author": "Volodymyr Pihol",
+      "messages": [],
+      "total_additions": 6,
+      "total_deletions": 6,
+      "accepted_lines": 4,
+      "overriden_lines": 0
+    }
+  }
+}
