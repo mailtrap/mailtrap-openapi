@@ -1116,7 +1116,7 @@ paths:
                 "email": "user@example.com",
                 "domain_id": 12345,
                 "sending_stream": "transactional",
-                "reason": "manual import"
+                "type": "manual import"
               }'
       requestBody:
         required: true
@@ -1140,7 +1140,7 @@ paths:
                   enum: [transactional, bulk]
                   description: The sending stream to suppress this email for
                   example: transactional
-                reason:
+                type:
                   type: string
                   enum: [hard bounce, unsubscription, spam complaint, manual import]
                   default: manual import
