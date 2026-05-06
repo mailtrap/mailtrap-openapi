@@ -1313,6 +1313,14 @@ components:
         errors:
           type: object
           description: Validation errors per attribute. Entire record errors are under `base` key.
+          additionalProperties:
+            type: array
+            items:
+              type: string
+      example:
+        errors:
+          base:
+            - No permissions selected. Please choose at least one.
     ApiToken:
       type: object
       properties:

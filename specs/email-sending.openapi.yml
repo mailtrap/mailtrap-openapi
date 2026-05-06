@@ -2063,6 +2063,9 @@ components:
 
     UnprocessableEntity:
       type: object
+      description: |-
+        Validation errors per field. Keys are attribute names; values are arrays of human-readable messages.
+        Some endpoints may also return a `base` key with general validation errors.
       properties:
         errors:
           type: object
@@ -2072,6 +2075,12 @@ components:
               type: string
       example:
         errors:
+          email:
+            - can't be blank
+          domain:
+            - can't be blank
+          sending_stream:
+            - 'is invalid. Allowed values: transactional, bulk.'
           base:
             - "Validation failed: Domain name can't be blank, Tracking domain name is not a valid domain name"
 
@@ -2949,6 +2958,12 @@ components:
             $ref: '#/components/schemas/UnprocessableEntity'
           example:
             errors:
+              email:
+                - can't be blank
+              domain:
+                - can't be blank
+              sending_stream:
+                - 'is invalid. Allowed values: transactional, bulk.'
               base:
                 - "Validation failed: Domain name can't be blank, Tracking domain name is not a valid domain name"
 

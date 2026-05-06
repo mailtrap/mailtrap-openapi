@@ -2793,6 +2793,14 @@ components:
         errors:
           type: object
           description: Validation errors per attribute. Entire record errors are under `base` key.
+          additionalProperties:
+            type: array
+            items:
+              type: string
+      example:
+        errors:
+          email:
+            - can't be blank
   examples: {}
   responses:
     UNAUTHENTICATED:
