@@ -1,0 +1,23 @@
+specs/email-sending.openapi.yml
+  1b39bc1009e613cc 52,54,59-69,71-72,1449
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.2.6",
+  "base_commit_sha": "85e1469a20bb546bbd0239fc614f0821e60893d1",
+  "prompts": {
+    "1b39bc1009e613cc": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "85aec189-416f-497f-ae72-13f914bd16c1",
+        "model": "claude-opus-4-6"
+      },
+      "human_author": "Ivan Yurchanka",
+      "messages": [],
+      "total_additions": 18,
+      "total_deletions": 3,
+      "accepted_lines": 18,
+      "overriden_lines": 0
+    }
+  }
+}

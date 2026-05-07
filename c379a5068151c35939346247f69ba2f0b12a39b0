@@ -1,0 +1,23 @@
+specs/email-sending.openapi.yml
+  1716340b64d1448d 6,27-28,56,58,60,74,78,189,191,202,215-216,224,240,329,331-332,340,436,448-449,457,549,561,563,571,575,583,591,593,596,612,615,623,742,770,774,782,786,800,809,828,867,876,887,1492,1540,1953-1954,1957,2009,2096,2102,2105-2106,3417,3434
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.3.4",
+  "base_commit_sha": "c379a5068151c35939346247f69ba2f0b12a39b0",
+  "prompts": {
+    "1716340b64d1448d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "797f28c9-69d2-45d2-a0a4-09fe785c2bb3",
+        "model": "claude-opus-4-7"
+      },
+      "human_author": "Ivan Yurchanka",
+      "messages": [],
+      "total_additions": 58,
+      "total_deletions": 58,
+      "accepted_lines": 58,
+      "overriden_lines": 0
+    }
+  }
+}
