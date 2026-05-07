@@ -247,14 +247,6 @@ paths:
           $ref: '#/components/responses/UNAUTHENTICATED'
         '403':
           $ref: '#/components/responses/PERMISSION_DENIED'
-        '409':
-          description: A Contact with the same email is already being created.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-              example:
-                errors: Contact exists
         '422':
           description: Returns validation errors.
           content:
@@ -540,14 +532,6 @@ paths:
           $ref: '#/components/responses/UNAUTHENTICATED'
         '403':
           $ref: '#/components/responses/PERMISSION_DENIED'
-        '409':
-          description: A Contact with the same email is already being created.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-              example:
-                errors: Contact exists
         '422':
           description: Returns validation errors.
           content:
