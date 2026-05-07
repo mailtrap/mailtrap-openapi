@@ -1310,7 +1310,13 @@ paths:
                     stats:
                       $ref: '#/components/schemas/SendingStats'
         '400':
-          $ref: '#/components/responses/BAD_REQUEST'
+          description: Bad request - invalid parameters.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BadRequest'
+              example:
+                error: "Missing required parameter: start_date"
         '401':
           $ref: '#/components/responses/Unauthorized'
         '403':
@@ -2905,8 +2911,7 @@ components:
       properties:
         errors:
           type: string
-          description: |
-            Human-readable reason. Common values include `Account access forbidden` (e.g. wrong account).
+          description: Error message
           example: Account access forbidden
       example:
         errors: Account access forbidden
