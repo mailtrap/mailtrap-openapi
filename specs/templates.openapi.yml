@@ -600,8 +600,6 @@ components:
       properties:
         errors:
           type: string
-          description: |
-            Human-readable reason. Common values include `Account access forbidden` (e.g. wrong account).
           example: Account access forbidden
       example:
         errors: Account access forbidden

@@ -2744,9 +2744,6 @@ components:
       properties:
         errors:
           type: string
-          description: |
-            Human-readable reason. Common values include `Account access forbidden` (e.g. wrong account)
-            and `Access forbidden` when the token lacks rights for the operation.
           example: Account access forbidden
       example:
         errors: Account access forbidden
