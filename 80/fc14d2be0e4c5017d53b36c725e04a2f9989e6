@@ -1,0 +1,24 @@
+specs/email-sending.openapi.yml
+  s_1af5c1ba33597a::t_aa0de9d4ce4a59 53,1622,1671-1677,1867-1872,2475,2504-2511
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.4",
+  "base_commit_sha": "80fc14d2be0e4c5017d53b36c725e04a2f9989e6",
+  "prompts": {},
+  "humans": {
+    "h_3075e3cb809e55": {
+      "author": "Piotr Bednarz <piotr.bednarz@railsware.com>"
+    }
+  },
+  "sessions": {
+    "s_1af5c1ba33597a": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "a1a161d0-b0c7-4a04-8177-07a36c3d2ad6",
+        "model": "claude-opus-4-7"
+      },
+      "human_author": "Piotr Bednarz <piotr.bednarz@railsware.com>"
+    }
+  }
+}
