@@ -673,45 +673,28 @@ paths:
               schema:
                 type: array
                 items:
-                  type: object
-                  properties:
-                    id:
-                      type: integer
-                    name:
-                      type: string
-                    type:
-                      type: string
-                    access_level:
-                      type: integer
-                    resources:
-                      type: array
-                      items:
-                        type: object
-                        properties:
-                          id:
-                            type: integer
-                          name:
-                            type: string
-                          type:
-                            type: string
-                          access_level:
-                            type: integer
-                          resources:
-                            type: array
-                            items:
-                              nullable: true
-                              type: object
+                  $ref: '#/components/schemas/PermissionResourceNode'
               example:
-                - id: 4001
-                  name: My First Project
-                  type: project
-                  access_level: 1
+                - id: 1774100
+                  name: Account
+                  type: account
+                  access_level: 100
                   resources:
-                    - id: 3816
-                      name: My First Inbox
-                      type: inbox
+                    - id: 1774100
+                      name: Templates
+                      type: email_template_permission_scope
                       access_level: 100
                       resources: []
+                    - id: 2550469
+                      name: My Project
+                      type: project
+                      access_level: 100
+                      resources:
+                        - id: 4117907
+                          name: My Inbox
+                          type: inbox
+                          access_level: 100
+                          resources: []
         '401':
           $ref: '#/components/responses/UNAUTHENTICATED'
         '403':
@@ -1061,7 +1044,13 @@ paths:
         '401':
           $ref: '#/components/responses/UNAUTHENTICATED'
         '403':
-          $ref: '#/components/responses/PERMISSION_DENIED'
+          description: Insufficient organization permissions or wrong organization.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PermissionsDeniedResponse'
+              example:
+                errors: Access forbidden
     post:
       operationId: createOrganizationSubAccount
       summary: Create organization sub account
@@ -1117,7 +1106,13 @@ paths:
         '401':
           $ref: '#/components/responses/UNAUTHENTICATED'
         '403':
-          $ref: '#/components/responses/PERMISSION_DENIED'
+          description: Insufficient organization permissions or wrong organization.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PermissionsDeniedResponse'
+              example:
+                errors: Access forbidden
         '422':
           description: Unprocessable entity - validation errors.
           content:
@@ -1141,6 +1136,25 @@ components:
           type: string
           example: Development Team Account
           description: The name of the sub account
+    PermissionResourceNode:
+      title: Permission resource node
+      description: |
+        Nested resource tree for permission management. `type` values include `account`, `project`, `inbox`,
+        `sending_domain`, `email_template_permission_scope`, `email_campaign_permission_scope`, and others.
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        type:
+          type: string
+        access_level:
+          type: integer
+        resources:
+          type: array
+          items:
+            $ref: '#/components/schemas/PermissionResourceNode'
     AccountAccess:
       title: AccountAccess
       description: Assigns resource-specific permissions to a specifier.
@@ -1220,6 +1234,7 @@ components:
                 enum:
                   - account
                   - billing
+                  - organization
                   - project
                   - inbox
                   - sending_domain
@@ -1259,14 +1274,17 @@ components:
           type: string
           description: Error message
           example: Not Found
+      example:
+        error: Not Found
     PermissionsDeniedResponse:
       title: PermissionsDeniedResponse
       type: object
       properties:
         errors:
           type: string
-          description: Error message
-          example: Access forbidden
+          example: Account access forbidden
+      example:
+        errors: Account access forbidden
     UnauthenticatedResponse:
       title: UnauthenticatedResponse
       type: object
@@ -1275,6 +1293,8 @@ components:
           type: string
           description: Error message
           example: Incorrect API token
+      example:
+        error: Incorrect API token
     ErrorResponse:
       title: ErrorResponse
       type: object
@@ -1290,6 +1310,14 @@ components:
         errors:
           type: object
           description: Validation errors per attribute. Entire record errors are under `base` key.
+          additionalProperties:
+            type: array
+            items:
+              type: string
+      example:
+        errors:
+          base:
+            - No permissions selected. Please choose at least one.
     ApiToken:
       type: object
       properties:
@@ -1459,18 +1487,24 @@ components:
         application/json:
           schema:
             $ref: '#/components/schemas/UnauthenticatedResponse'
+          example:
+            error: Incorrect API token
     PERMISSION_DENIED:
       description: Returns forbidden error message. Check your permissions.
       content:
         application/json:
           schema:
             $ref: '#/components/schemas/PermissionsDeniedResponse'
+          example:
+            errors: Account access forbidden
     NOT_FOUND:
       description: Returns not found error message
       content:
         application/json:
           schema:
             $ref: '#/components/schemas/NotFoundResponse'
+          example:
+            error: Not Found
     UNPROCESSABLE_ENTITY:
       description: Validation error or other business rule violation
       content:

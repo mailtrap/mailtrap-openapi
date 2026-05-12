@@ -14,7 +14,10 @@ security:
   - HeaderAuth: []
   - BearerAuth: []
 servers:
-  - description: Mailtrap Sandbox API
+  - description: |
+      Mailtrap Sandbox Send API. Error bodies use `success: false` and an `errors` array (same family as
+      `send.api` / `bulk.api`), not the `mailtrap.io` account shape (`error` / string `errors`).
+      Use a normal HTTP client `User-Agent` (e.g. `curl`); bare requests may be blocked by edge protection.
     url: 'https://sandbox.api.mailtrap.io'
 tags:
   - name: Test Emails
@@ -205,24 +208,43 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/SendEmailErrorResponse'
+              example:
+                success: false
+                errors:
+                  - "'from' is required"
+                  - "'to', 'cc' or 'bcc' address is required"
+                  - "'subject' is required"
+                  - must specify either text or html body
         '401':
           description: Unauthorized. Make sure you are sending correct credentials with the request before retrying.
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/SendEmailErrorResponse'
+              example:
+                success: false
+                errors:
+                  - Unauthorized
         '429':
           description: Billing plan limit exhausted or inbox rate limit exceeded (see the response for details).
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/SendEmailErrorResponse'
+              example:
+                success: false
+                errors:
+                  - Rate limit exceeded
         '500':
           description: Internal error. Mail was not delivered. Retry later or contact support.
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/SendEmailErrorResponse'
+              example:
+                success: false
+                errors:
+                  - Internal server error
     parameters:
       - $ref: '#/components/parameters/inbox_id'
   '/api/batch/{inbox_id}':
@@ -456,18 +478,30 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/SendEmailErrorResponse'
+              example:
+                success: false
+                errors:
+                  - "empty field: 'requests'"
         '401':
           description: Unauthorized. Make sure you are sending correct credentials with the request before retrying.
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/SendEmailErrorResponse'
+              example:
+                success: false
+                errors:
+                  - Unauthorized
         '500':
           description: Internal error. Messages were not delivered. Retry later or contact support.
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/SendEmailErrorResponse'
+              example:
+                success: false
+                errors:
+                  - Internal server error
     parameters:
       - $ref: '#/components/parameters/inbox_id'
 components:
@@ -900,14 +934,23 @@ components:
           minLength: 1
     SendEmailErrorResponse:
       title: SendEmailErrorResponse
+      description: |
+        Error responses use `success: false` and an `errors` array of strings (same pattern as Transactional
+        and Bulk sending APIs).
       type: object
       properties:
         success:
           type: boolean
+          example: false
         errors:
           type: array
           items:
             type: string
+            example: "'from' address is invalid"
+      example:
+        success: false
+        errors:
+          - "'from' address is invalid"
     SentResponse:
       title: SentResponse
       type: object

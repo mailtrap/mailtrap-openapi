@@ -247,14 +247,6 @@ paths:
           $ref: '#/components/responses/UNAUTHENTICATED'
         '403':
           $ref: '#/components/responses/PERMISSION_DENIED'
-        '409':
-          description: A Contact with the same email is already being created.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-              example:
-                errors: Contact exists
         '422':
           description: Returns validation errors.
           content:
@@ -540,14 +532,6 @@ paths:
           $ref: '#/components/responses/UNAUTHENTICATED'
         '403':
           $ref: '#/components/responses/PERMISSION_DENIED'
-        '409':
-          description: A Contact with the same email is already being created.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-              example:
-                errors: Contact exists
         '422':
           description: Returns validation errors.
           content:
@@ -643,7 +627,14 @@ paths:
         '403':
           $ref: '#/components/responses/PERMISSION_DENIED'
         '404':
-          $ref: '#/components/responses/NOT_FOUND'
+          description: |-
+            No contact for the given identifier. The JSON body uses an `errors` string (not the `error` key used by some other 404 responses).
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                errors: Contact(s) not found
         '429':
           $ref: '#/components/responses/LIMIT_EXCEEDED'
         '500':
@@ -1787,15 +1778,15 @@ paths:
               example:
                 - id: 6730
                   name: First name
-                  type: text
+                  data_type: text
                   merge_tag: first_name
                 - id: 6731
                   name: Birthdate
-                  type: date
+                  data_type: date
                   merge_tag: birthdate
                 - id: 6732
                   name: Cats count
-                  type: integer
+                  data_type: integer
                   merge_tag: cats_count
         '401':
           $ref: '#/components/responses/UNAUTHENTICATED'
@@ -2735,6 +2726,8 @@ components:
           type: string
           description: Error message
           example: Unexpected error
+      example:
+        errors: Unexpected error
     NotFoundResponse:
       title: NotFoundResponse
       type: object
@@ -2743,14 +2736,17 @@ components:
           type: string
           description: Error message
           example: Not Found
+      example:
+        error: Not Found
     PermissionsDeniedResponse:
       title: PermissionsDeniedResponse
       type: object
       properties:
         errors:
           type: string
-          description: Error message
-          example: Access forbidden
+          example: Account access forbidden
+      example:
+        errors: Account access forbidden
     RateLimitExceededResponse:
       title: RateLimitExceededResponse
       type: object
@@ -2759,6 +2755,8 @@ components:
           type: string
           description: Error message
           example: Rate limit exceeded
+      example:
+        errors: Rate limit exceeded
     UnauthenticatedResponse:
       title: UnauthenticatedResponse
       type: object
@@ -2767,6 +2765,8 @@ components:
           type: string
           description: Error message
           example: Incorrect API token
+      example:
+        error: Incorrect API token
     UnprocessableEntity:
       title: UnprocessableEntity
       type: object
@@ -2774,6 +2774,14 @@ components:
         errors:
           type: object
           description: Validation errors per attribute. Entire record errors are under `base` key.
+          additionalProperties:
+            type: array
+            items:
+              type: string
+      example:
+        errors:
+          email:
+            - can't be blank
   examples: {}
   responses:
     UNAUTHENTICATED:
@@ -2782,30 +2790,40 @@ components:
         application/json:
           schema:
             $ref: '#/components/schemas/UnauthenticatedResponse'
+          example:
+            error: Incorrect API token
     LIMIT_EXCEEDED:
       description: Rate limit exceeded for the current account.
       content:
         application/json:
           schema:
             $ref: '#/components/schemas/RateLimitExceededResponse'
+          example:
+            errors: Rate limit exceeded
     PERMISSION_DENIED:
       description: Returns forbidden error message. Check your permissions.
       content:
         application/json:
           schema:
             $ref: '#/components/schemas/PermissionsDeniedResponse'
+          example:
+            errors: Account access forbidden
     INTERNAL_ERROR:
       description: Internal error. Retry later or contact support.
       content:
         application/json:
           schema:
             $ref: '#/components/schemas/ErrorResponse'
+          example:
+            errors: Unexpected error
     NOT_FOUND:
       description: Resource not found
       content:
         application/json:
           schema:
             $ref: '#/components/schemas/NotFoundResponse'
+          example:
+            error: Not Found
   parameters:
     account_id:
       description: Unique account ID
