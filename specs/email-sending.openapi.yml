@@ -918,9 +918,11 @@ paths:
     get:
       summary: List suppressions
       description: |
-        List and search suppressed email addresses. Returns up to 1000 suppressions per request.
+        List and search suppressed email addresses. Returns up to 1000 suppressions per request. Use `last_id` for cursor-based pagination through large lists.
 
         Suppressed addresses will not receive any emails from your account.
+
+        Rate limit: 10 requests per minute per account.
       operationId: getSuppressions
       tags:
         - suppressions
@@ -1074,25 +1076,32 @@ paths:
         - $ref: '#/components/parameters/account_id'
         - name: email
           in: query
-          description: Search for specific email address
+          description: Filter suppressions by exact email address (case-insensitive).
           schema:
             type: string
             format: email
             example: suppressed@example.com
-        - description: Search emails suppressed after this timestamp
-          name: start_time
+        - name: start_time
           in: query
+          description: Filter suppressions created at or after this timestamp (ISO 8601 format).
           schema:
             type: string
             format: date-time
             example: '2025-01-01T00:00:00Z'
-        - description: Search emails suppressed after this timestamp
-          name: end_time
+        - name: end_time
           in: query
+          description: Filter suppressions created at or before this timestamp (ISO 8601 format).
           schema:
             type: string
             format: date-time
             example: '2025-12-31T23:59:59Z'
+        - name: last_id
+          in: query
+          description: The suppression UUID from the last record of the previous response. Returns records after this suppression, enabling cursor-based pagination through large lists.
+          schema:
+            type: string
+            format: uuid
+            example: 64d71bf3-1276-417b-86e1-8e66f138acfe
       responses:
         '200':
           $ref: '#/components/responses/GetSuppressionsResponse'
@@ -1104,10 +1113,82 @@ paths:
           $ref: '#/components/responses/Forbidden'
         '429':
           $ref: '#/components/responses/LIMIT_EXCEEDED'
+    post:
+      summary: Create suppression
+      description: |
+        Add an email address to the suppression list. Suppressed addresses will not receive any emails from your account.
+
+        {% hint style="warning" %}
+        This endpoint requires admin-level access.
+        {% endhint %}
+
+        Rate limit: 10 requests per minute per account.
+      operationId: createSuppression
+      tags:
+        - suppressions
+      x-codeSamples:
+        - lang: shell
+          label: 'cURL'
+          source: |
+            curl -X POST https://mailtrap.io/api/accounts/{account_id}/suppressions \
+              -H 'Authorization: Bearer YOUR_API_KEY' \
+              -H 'Content-Type: application/json' \
+              -d '{
+                "email": "user@example.com",
+                "domain_id": 12345,
+                "sending_stream": "transactional",
+                "type": "manual import"
+              }'
+      parameters:
+        - $ref: '#/components/parameters/account_id'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, domain_id, sending_stream]
+              properties:
+                email:
+                  type: string
+                  format: email
+                  description: Email address to suppress
+                  example: user@example.com
+                domain_id:
+                  type: integer
+                  description: ID of the sending domain to suppress this email for
+                  example: 12345
+                sending_stream:
+                  type: string
+                  enum: [transactional, bulk]
+                  description: The sending stream to suppress this email for
+                  example: transactional
+                type:
+                  type: string
+                  enum: [hard bounce, unsubscription, spam complaint, manual import]
+                  default: manual import
+                  description: Reason for the suppression. Defaults to "manual import" if omitted.
+                  example: manual import
+      responses:
+        '201':
+          $ref: '#/components/responses/CreateSuppressionResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+        '429':
+          $ref: '#/components/responses/LIMIT_EXCEEDED'
   /api/accounts/{account_id}/suppressions/{suppression_id}:
     delete:
       summary: Delete suppression
-      description: Remove an email from the suppression list to allow sending again
+      description: |
+        Remove an email from the suppression list to allow sending again.
+
+        {% hint style="warning" %}
+        This endpoint requires admin-level access.
+        {% endhint %}
       operationId: deleteSuppression
       tags:
         - suppressions
@@ -1971,10 +2052,11 @@ components:
       name: suppression_id
       in: path
       required: true
-      description: Suppression ID
+      description: The suppression UUID
       schema:
-        type: integer
-        example: 1
+        type: string
+        format: uuid
+        example: 64d71bf3-1276-417b-86e1-8e66f138acfe
 
     sending_message_id:
       name: sending_message_id
@@ -2433,19 +2515,51 @@ components:
       type: object
       properties:
         id:
-          type: integer
-          example: 1
+          type: string
+          format: uuid
+          description: The suppression UUID
+          example: 64d71bf3-1276-417b-86e1-8e66f138acfe
+        type:
+          type: string
+          enum: [hard bounce, unsubscription, spam complaint, manual import]
+          description: Reason for the suppression
+          example: hard bounce
+        created_at:
+          type: string
+          format: date-time
+          example: '2025-01-15T10:30:00Z'
         email:
           type: string
           format: email
           example: suppressed@example.com
-        reason:
+        sending_stream:
           type: string
-          enum: [bounce, complaint, unsubscribe, manual]
-          example: bounce
-        created_at:
-          type: string
+          enum: [transactional, bulk, any]
+          example: transactional
+        domain_name:
+          type: [string, 'null']
+          example: example.com
+        message_bounce_category:
+          type: [string, 'null']
+        message_category:
+          type: [string, 'null']
+        message_client_ip:
+          type: [string, 'null']
+        message_created_at:
+          type: [string, 'null']
           format: date-time
+        message_esp_response:
+          type: [string, 'null']
+        message_esp_server_type:
+          type: [string, 'null']
+        message_outgoing_ip:
+          type: [string, 'null']
+        message_recipient_mx_name:
+          type: [string, 'null']
+        message_sender_email:
+          type: [string, 'null']
+        message_subject:
+          type: [string, 'null']
 
     Webhook:
       type: object
@@ -3495,11 +3609,14 @@ components:
       content:
         application/json:
           schema:
+            $ref: '#/components/schemas/Suppression'
+
+    CreateSuppressionResponse:
+      description: Suppression created
+      content:
+        application/json:
+          schema:
             type: object
             properties:
-              success:
-                type: boolean
-                example: true
-              message:
-                type: string
-                example: Suppression removed successfully
+              data:
+                $ref: '#/components/schemas/Suppression'
