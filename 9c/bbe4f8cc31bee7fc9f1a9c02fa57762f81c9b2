@@ -1,0 +1,48 @@
+specs/email-sending.openapi.yml
+  s_90da0c2e8c77a3::t_46508486cde86d 326
+  s_90da0c2e8c77a3::t_46ca847dba5308 3174
+  s_90da0c2e8c77a3::t_fbd18deb322d2a 1394
+  s_90da0c2e8c77a3::t_f2416a1bc6535e 1335,1380,1440,1493,1546
+  s_90da0c2e8c77a3::t_5dac80ede1675b 3574,3596
+  s_90da0c2e8c77a3::t_2e68b01b68997b 335
+  s_90da0c2e8c77a3::t_2f6acd4bf4d8ed 1159
+  s_90da0c2e8c77a3::t_3d9ec0c329e794 618
+  s_90da0c2e8c77a3::t_cba2d070dc8458 871
+  s_90da0c2e8c77a3::t_0aeccad886e50c 3569
+  s_90da0c2e8c77a3::t_bdc487072ea052 208,441,604
+  s_90da0c2e8c77a3::t_bd6bb2003983cc 219
+  s_90da0c2e8c77a3::t_322d73ccc8522c 2802,2817
+  s_90da0c2e8c77a3::t_695a3477363fd8 19
+  s_90da0c2e8c77a3::t_4bcae1ac88a957 804
+  s_90da0c2e8c77a3::t_d601e863e55120 2097-2098
+  s_90da0c2e8c77a3::t_cd54ee1a80ff82 1589
+  s_90da0c2e8c77a3::t_c805502fa53c7e 452
+  s_90da0c2e8c77a3::t_ce6c9dd11cce29 566
+  s_90da0c2e8c77a3::t_d2edcab430fd99 2771
+  s_90da0c2e8c77a3::t_6482e82e5adc0e 2855
+  s_90da0c2e8c77a3::t_cd657bec59274c 3437
+  s_90da0c2e8c77a3::t_a83f6c4e3d6ccb 596
+  s_90da0c2e8c77a3::t_51d2e254bc27ca 2885
+  s_90da0c2e8c77a3::t_58ecb5d3888c58 2174
+  s_90da0c2e8c77a3::t_da362f627e9d3f 3175
+  s_90da0c2e8c77a3::t_6699565c9fbd4a 3586
+  s_90da0c2e8c77a3::t_c8331138acaec8 2323
+  s_90da0c2e8c77a3::t_a7a24741079a3e 777
+  s_90da0c2e8c77a3::t_ce699833ac14fb 69
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.8",
+  "base_commit_sha": "9cbbe4f8cc31bee7fc9f1a9c02fa57762f81c9b2",
+  "prompts": {},
+  "sessions": {
+    "s_90da0c2e8c77a3": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "839312d7-ef96-490f-a515-80c475b8f7a6",
+        "model": "claude-opus-4-7"
+      },
+      "human_author": "Ivan Yurchanka <vanya.yu@gmail.com>"
+    }
+  }
+}
