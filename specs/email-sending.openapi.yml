@@ -16,7 +16,7 @@ info:
 
 servers:
   - description: |
-      Mailtrap account API (`mailtrap.io`) for sending domains, suppressions, stats, and email logs.
+      Mailtrap account API (`mailtrap.io`) for domains, suppressions, stats, and email logs.
       Error JSON matches other account endpoints (`error` or string `errors`), not the `send.api` / `bulk.api` sending shape (`success` + `errors` array).
     url: 'https://mailtrap.io'
 
@@ -66,7 +66,7 @@ paths:
         2. Add DNS records (SPF, DKIM, DMARC)
         3. Verify the records
         4. Start sending emails
-      operationId: createSendingDomain
+      operationId: createDomain
       tags:
         - domains
       x-codeSamples:
@@ -205,7 +205,7 @@ paths:
                 domain_name: example.com
       responses:
         '200':
-          $ref: '#/components/responses/SendingDomainResponse'
+          $ref: '#/components/responses/DomainResponse'
         '401':
           $ref: '#/components/responses/Unauthorized'
         '403':
@@ -216,7 +216,7 @@ paths:
     get:
       summary: List domains
       description: Get all domains and their verification status
-      operationId: getSendingDomains
+      operationId: getDomains
       tags:
         - domains
       x-codeSamples:
@@ -323,7 +323,7 @@ paths:
         - $ref: '#/components/parameters/account_id'
       responses:
         '200':
-          $ref: '#/components/responses/SendingDomainsResponse'
+          $ref: '#/components/responses/DomainsResponse'
         '401':
           $ref: '#/components/responses/Unauthorized'
         '403':
@@ -332,7 +332,7 @@ paths:
     get:
       summary: Get domain
       description: Get details and verification status of a specific domain
-      operationId: getSendingDomain
+      operationId: getDomain
       tags:
         - domains
       x-codeSamples:
@@ -438,7 +438,7 @@ paths:
         - $ref: '#/components/parameters/domain_id'
       responses:
         '200':
-          $ref: '#/components/responses/SendingDomainResponse'
+          $ref: '#/components/responses/DomainResponse'
         '401':
           $ref: '#/components/responses/Unauthorized'
         '403':
@@ -449,7 +449,7 @@ paths:
     delete:
       summary: Delete domain
       description: Remove a domain from your account
-      operationId: deleteSendingDomain
+      operationId: deleteDomain
       tags:
         - domains
       x-codeSamples:
@@ -563,7 +563,7 @@ paths:
       summary: Update domain
       description: |
         Update configuration settings for a domain.
-      operationId: updateSendingDomain
+      operationId: updateDomain
       tags:
         - domains
       x-codeSamples:
@@ -593,7 +593,7 @@ paths:
                 - domain
               properties:
                 domain:
-                  $ref: '#/components/schemas/UpdateSendingDomainRequest'
+                  $ref: '#/components/schemas/UpdateDomainRequest'
             example:
               domain:
                 open_tracking_enabled: true
@@ -601,7 +601,7 @@ paths:
                 auto_unsubscribe_link_enabled: false
       responses:
         '200':
-          $ref: '#/components/responses/SendingDomainResponse'
+          $ref: '#/components/responses/DomainResponse'
         '401':
           $ref: '#/components/responses/Unauthorized'
         '403':
@@ -615,7 +615,7 @@ paths:
     post:
       summary: Send setup instructions
       description: Email DNS configuration instructions for the domain
-      operationId: sendSendingDomainSetupInstructions
+      operationId: sendDomainSetupInstructions
       tags:
         - domains
       x-codeSamples:
@@ -774,7 +774,7 @@ paths:
       summary: Get company info
       description: |
         Get company information associated with a domain / account.
-      operationId: getSendingDomainCompanyInfo
+      operationId: getDomainCompanyInfo
       tags:
         - domains
       x-codeSamples:
@@ -801,7 +801,7 @@ paths:
       description: |
         Create company information for a domain / account.
         Company info is required for domain compliance verification.
-      operationId: createSendingDomainCompanyInfo
+      operationId: createDomainCompanyInfo
       tags:
         - domains
       x-codeSamples:
@@ -868,7 +868,7 @@ paths:
       description: |
         Update company information for a domain / account. All fields are optional;
         only the fields provided in the request will be updated.
-      operationId: updateSendingDomainCompanyInfo
+      operationId: updateDomainCompanyInfo
       tags:
         - domains
       x-codeSamples:
@@ -1156,7 +1156,7 @@ paths:
                   example: user@example.com
                 domain_id:
                   type: integer
-                  description: ID of the sending domain to suppress this email for
+                  description: ID of the domain to suppress this email for
                   example: 12345
                 sending_stream:
                   type: string
@@ -1332,7 +1332,7 @@ paths:
         - $ref: '#/components/parameters/account_id'
         - $ref: '#/components/parameters/StartDateQueryFilter'
         - $ref: '#/components/parameters/EndDateQueryFilter'
-        - $ref: '#/components/parameters/SendingDomainIDsQueryFilter'
+        - $ref: '#/components/parameters/DomainIDsQueryFilter'
         - $ref: '#/components/parameters/SendingStreamsQueryFilter'
         - $ref: '#/components/parameters/CategoriesQueryFilter'
         - $ref: '#/components/parameters/ESPsQueryFilter'
@@ -1377,7 +1377,7 @@ paths:
         - $ref: '#/components/parameters/account_id'
         - $ref: '#/components/parameters/StartDateQueryFilter'
         - $ref: '#/components/parameters/EndDateQueryFilter'
-        - $ref: '#/components/parameters/SendingDomainIDsQueryFilter'
+        - $ref: '#/components/parameters/DomainIDsQueryFilter'
         - $ref: '#/components/parameters/SendingStreamsQueryFilter'
         - $ref: '#/components/parameters/CategoriesQueryFilter'
         - $ref: '#/components/parameters/ESPsQueryFilter'
@@ -1391,7 +1391,7 @@ paths:
                 items:
                   type: object
                   properties:
-                    sending_domain_id:
+                    domain_id:
                       type: integer
                       format: int64
                       example: 3938
@@ -1437,7 +1437,7 @@ paths:
         - $ref: '#/components/parameters/account_id'
         - $ref: '#/components/parameters/StartDateQueryFilter'
         - $ref: '#/components/parameters/EndDateQueryFilter'
-        - $ref: '#/components/parameters/SendingDomainIDsQueryFilter'
+        - $ref: '#/components/parameters/DomainIDsQueryFilter'
         - $ref: '#/components/parameters/SendingStreamsQueryFilter'
         - $ref: '#/components/parameters/CategoriesQueryFilter'
         - $ref: '#/components/parameters/ESPsQueryFilter'
@@ -1490,7 +1490,7 @@ paths:
         - $ref: '#/components/parameters/account_id'
         - $ref: '#/components/parameters/StartDateQueryFilter'
         - $ref: '#/components/parameters/EndDateQueryFilter'
-        - $ref: '#/components/parameters/SendingDomainIDsQueryFilter'
+        - $ref: '#/components/parameters/DomainIDsQueryFilter'
         - $ref: '#/components/parameters/SendingStreamsQueryFilter'
         - $ref: '#/components/parameters/CategoriesQueryFilter'
         - $ref: '#/components/parameters/ESPsQueryFilter'
@@ -1543,7 +1543,7 @@ paths:
         - $ref: '#/components/parameters/account_id'
         - $ref: '#/components/parameters/StartDateQueryFilter'
         - $ref: '#/components/parameters/EndDateQueryFilter'
-        - $ref: '#/components/parameters/SendingDomainIDsQueryFilter'
+        - $ref: '#/components/parameters/DomainIDsQueryFilter'
         - $ref: '#/components/parameters/SendingStreamsQueryFilter'
         - $ref: '#/components/parameters/CategoriesQueryFilter'
         - $ref: '#/components/parameters/ESPsQueryFilter'
@@ -1586,7 +1586,7 @@ paths:
         - lang: shell
           label: 'cURL'
           source: |
-            curl -X GET -g 'https://mailtrap.io/api/accounts/{account_id}/email_logs?filters[sent_after]=2025-01-01T00:00:00Z&filters[sent_before]=2025-01-31T23:59:59Z&filters[to][operator]=ci_equal&filters[to][value]=recipient@example.com&filters[sending_domain_id][operator]=equal&filters[sending_domain_id][value][]=3938&filters[sending_domain_id][value][]=3939' \
+            curl -X GET -g 'https://mailtrap.io/api/accounts/{account_id}/email_logs?filters[sent_after]=2025-01-01T00:00:00Z&filters[sent_before]=2025-01-31T23:59:59Z&filters[to][operator]=ci_equal&filters[to][value]=recipient@example.com&filters[domain_id][operator]=equal&filters[domain_id][value][]=3938&filters[domain_id][value][]=3939' \
               -H 'Authorization: Bearer YOUR_API_KEY'
       parameters:
         - $ref: '#/components/parameters/account_id'
@@ -2094,8 +2094,8 @@ components:
         type: string
         format: date
         example: '2025-12-31'
-    SendingDomainIDsQueryFilter:
-      name: 'sending_domain_ids[]'
+    DomainIDsQueryFilter:
+      name: 'domain_ids[]'
       description: 'IDs of the domains for which to include the results. If not provided, results for all domains will be included.'
       in: query
       schema:
@@ -2171,7 +2171,7 @@ components:
           - Yahoo
 
   schemas:
-    SendingDomain:
+    Domain:
       type: object
       properties:
         id:
@@ -2320,7 +2320,7 @@ components:
           can_update: true
           can_destroy: true
 
-    UpdateSendingDomainRequest:
+    UpdateDomainRequest:
       type: object
       properties:
         open_tracking_enabled:
@@ -2768,7 +2768,7 @@ components:
               sending_stream:
                 type: string
                 enum: [transactional, bulk]
-              sending_domain_id:
+              domain_id:
                 type: integer
               template_id:
                 type: integer
@@ -2799,7 +2799,7 @@ components:
             category: Welcome Email
             custom_variables: {}
             sending_stream: transactional
-            sending_domain_id: 3938
+            domain_id: 3938
             template_id: 100
             template_variables: {}
             opens_count: 2
@@ -2814,7 +2814,7 @@ components:
             category: Order Confirmation
             custom_variables: { order_id: '12345' }
             sending_stream: transactional
-            sending_domain_id: 3938
+            domain_id: 3938
             template_id: null
             template_variables: {}
             opens_count: 0
@@ -2852,7 +2852,7 @@ components:
         sending_stream:
           type: string
           enum: [transactional, bulk]
-        sending_domain_id:
+        domain_id:
           type: integer
         template_id:
           type: integer
@@ -2882,7 +2882,7 @@ components:
         category: Welcome Email
         custom_variables: {}
         sending_stream: transactional
-        sending_domain_id: 3938
+        domain_id: 3938
         template_id: 100
         template_variables: {}
         opens_count: 2
@@ -3171,8 +3171,8 @@ components:
           $ref: '#/components/schemas/FilterRecipientMx'
         category:
           $ref: '#/components/schemas/FilterCategory'
-        sending_domain_id:
-          $ref: '#/components/schemas/FilterSendingDomainId'
+        domain_id:
+          $ref: '#/components/schemas/FilterDomainId'
         sending_stream:
           $ref: '#/components/schemas/FilterSendingStream'
 
@@ -3434,7 +3434,7 @@ components:
         operator: equal
         value: Welcome Email
 
-    FilterSendingDomainId:
+    FilterDomainId:
       type: object
       required: [operator, value]
       properties:
@@ -3566,12 +3566,12 @@ components:
           example:
             errors: Rate limit exceeded
 
-    SendingDomainResponse:
+    DomainResponse:
       description: Domain details
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/SendingDomain'
+            $ref: '#/components/schemas/Domain'
 
     CompanyInfoResponse:
       description: Company information
@@ -3583,7 +3583,7 @@ components:
               data:
                 $ref: '#/components/schemas/CompanyInfo'
 
-    SendingDomainsResponse:
+    DomainsResponse:
       description: List of domains
       content:
         application/json:
@@ -3593,7 +3593,7 @@ components:
               data:
                 type: array
                 items:
-                  $ref: '#/components/schemas/SendingDomain'
+                  $ref: '#/components/schemas/Domain'
 
     GetSuppressionsResponse:
       description: List of suppressions
