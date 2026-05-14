@@ -1,0 +1,31 @@
+specs/sandbox.openapi.yml
+  s_dce16b8cc913f8::t_bdfd09976e1c92 4820
+  s_dce16b8cc913f8::t_62da9d56e4bba3 4642,4686,5047,5058
+  s_dce16b8cc913f8::t_7ec1782df8a601 67,5038
+  s_dce16b8cc913f8::t_be175e6ad0a5d6 4867
+  s_dce16b8cc913f8::t_bbbeb9fda63482 4906
+  s_dce16b8cc913f8::t_cb212bf213a0f1 5049-5050
+  s_dce16b8cc913f8::t_dd3f33a51cc568 4638
+  s_dce16b8cc913f8::t_8842b3ab7e4c44 1954,2588,4530
+  s_dce16b8cc913f8::t_cd1760533d8d95 854,996,1109,1237,1382,1499,1616,1733,1841,5051
+  s_dce16b8cc913f8::t_459c3fe8111fc6 4531,4534
+  s_dce16b8cc913f8::t_9215d62baef662 4660
+  s_dce16b8cc913f8::t_d5a7267d4aceaf 4687
+  s_dce16b8cc913f8::t_b57a2bced010d2 4809
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.8",
+  "base_commit_sha": "0cc2ec529e9082962507de8dc3a7dadebce3be3a",
+  "prompts": {},
+  "sessions": {
+    "s_dce16b8cc913f8": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "71b04465-1171-476a-9c51-3e54cde66f48",
+        "model": "claude-opus-4-7"
+      },
+      "human_author": "Ivan Yurchanka <vanya.yu@gmail.com>"
+    }
+  }
+}
