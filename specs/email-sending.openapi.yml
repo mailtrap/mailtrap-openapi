@@ -15,7 +15,9 @@ info:
     url: 'https://mailtrap.io/wp-content/uploads/2021/04/mailtrap-logo.svg'
 
 servers:
-  - description: Mailtrap API
+  - description: |
+      Mailtrap account API (`mailtrap.io`) for sending domains, suppressions, stats, and email logs.
+      Error JSON matches other account endpoints (`error` or string `errors`), not the `send.api` / `bulk.api` sending shape (`success` + `errors` array).
     url: 'https://mailtrap.io'
 
 security:
@@ -45,6 +47,13 @@ tags:
     x-page-description: Email logs
     description: List and retrieve email sending logs for the account.
 
+  - name: webhooks
+    x-page-title: Webhooks
+    x-page-description: Manage webhook endpoints
+    description: |
+      Configure webhooks to receive real-time notifications about events in
+      your Mailtrap account. For a complete guide, see 
+      [Webhooks](https://docs.mailtrap.io/email-api-smtp/advanced/webhooks).
 paths:
   /api/accounts/{account_id}/sending_domains:
     post:
@@ -909,9 +918,11 @@ paths:
     get:
       summary: List suppressions
       description: |
-        List and search suppressed email addresses. Returns up to 1000 suppressions per request.
+        List and search suppressed email addresses. Returns up to 1000 suppressions per request. Use `last_id` for cursor-based pagination through large lists.
 
         Suppressed addresses will not receive any emails from your account.
+
+        Rate limit: 10 requests per minute per account.
       operationId: getSuppressions
       tags:
         - suppressions
@@ -1065,25 +1076,32 @@ paths:
         - $ref: '#/components/parameters/account_id'
         - name: email
           in: query
-          description: Search for specific email address
+          description: Filter suppressions by exact email address (case-insensitive).
           schema:
             type: string
             format: email
             example: suppressed@example.com
-        - description: Search emails suppressed after this timestamp
-          name: start_time
+        - name: start_time
           in: query
+          description: Filter suppressions created at or after this timestamp (ISO 8601 format).
           schema:
             type: string
             format: date-time
             example: '2025-01-01T00:00:00Z'
-        - description: Search emails suppressed after this timestamp
-          name: end_time
+        - name: end_time
           in: query
+          description: Filter suppressions created at or before this timestamp (ISO 8601 format).
           schema:
             type: string
             format: date-time
             example: '2025-12-31T23:59:59Z'
+        - name: last_id
+          in: query
+          description: The suppression UUID from the last record of the previous response. Returns records after this suppression, enabling cursor-based pagination through large lists.
+          schema:
+            type: string
+            format: uuid
+            example: 64d71bf3-1276-417b-86e1-8e66f138acfe
       responses:
         '200':
           $ref: '#/components/responses/GetSuppressionsResponse'
@@ -1095,10 +1113,82 @@ paths:
           $ref: '#/components/responses/Forbidden'
         '429':
           $ref: '#/components/responses/LIMIT_EXCEEDED'
+    post:
+      summary: Create suppression
+      description: |
+        Add an email address to the suppression list. Suppressed addresses will not receive any emails from your account.
+
+        {% hint style="warning" %}
+        This endpoint requires admin-level access.
+        {% endhint %}
+
+        Rate limit: 10 requests per minute per account.
+      operationId: createSuppression
+      tags:
+        - suppressions
+      x-codeSamples:
+        - lang: shell
+          label: 'cURL'
+          source: |
+            curl -X POST https://mailtrap.io/api/accounts/{account_id}/suppressions \
+              -H 'Authorization: Bearer YOUR_API_KEY' \
+              -H 'Content-Type: application/json' \
+              -d '{
+                "email": "user@example.com",
+                "domain_id": 12345,
+                "sending_stream": "transactional",
+                "type": "manual import"
+              }'
+      parameters:
+        - $ref: '#/components/parameters/account_id'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, domain_id, sending_stream]
+              properties:
+                email:
+                  type: string
+                  format: email
+                  description: Email address to suppress
+                  example: user@example.com
+                domain_id:
+                  type: integer
+                  description: ID of the sending domain to suppress this email for
+                  example: 12345
+                sending_stream:
+                  type: string
+                  enum: [transactional, bulk]
+                  description: The sending stream to suppress this email for
+                  example: transactional
+                type:
+                  type: string
+                  enum: [hard bounce, unsubscription, spam complaint, manual import]
+                  default: manual import
+                  description: Reason for the suppression. Defaults to "manual import" if omitted.
+                  example: manual import
+      responses:
+        '201':
+          $ref: '#/components/responses/CreateSuppressionResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+        '429':
+          $ref: '#/components/responses/LIMIT_EXCEEDED'
   /api/accounts/{account_id}/suppressions/{suppression_id}:
     delete:
       summary: Delete suppression
-      description: Remove an email from the suppression list to allow sending again
+      description: |
+        Remove an email from the suppression list to allow sending again.
+
+        {% hint style="warning" %}
+        This endpoint requires admin-level access.
+        {% endhint %}
       operationId: deleteSuppression
       tags:
         - suppressions
@@ -1308,7 +1398,13 @@ paths:
                     stats:
                       $ref: '#/components/schemas/SendingStats'
         '400':
-          $ref: '#/components/responses/BAD_REQUEST'
+          description: Bad request - invalid parameters.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BadRequest'
+              example:
+                error: "Missing required parameter: start_date"
         '401':
           $ref: '#/components/responses/Unauthorized'
         '403':
@@ -1556,6 +1652,370 @@ paths:
         '429':
           $ref: '#/components/responses/LIMIT_EXCEEDED'
 
+  /api/accounts/{account_id}/webhooks:
+    post:
+      operationId: createWebhook
+      summary: Create a webhook
+      description: |
+        Create a new webhook for the account. The response includes a
+        `signing_secret` that is used to [verify webhook signatures](https://docs.mailtrap.io/email-api-smtp/advanced/webhooks#webhook-signature-verification).
+      tags:
+        - webhooks
+      x-codeSamples:
+        - lang: shell
+          label: 'cURL'
+          source: |
+            curl -X POST https://mailtrap.io/api/accounts/{account_id}/webhooks \
+              -H 'Authorization: Bearer YOUR_API_KEY' \
+              -H 'Content-Type: application/json' \
+              -d '{
+                "webhook": {
+                  "url": "https://example.com/mailtrap/webhooks",
+                  "webhook_type": "email_sending",
+                  "payload_format": "json",
+                  "sending_stream": "transactional",
+                  "event_types": ["delivery", "bounce"],
+                  "domain_id": 435
+                }
+              }'
+      parameters:
+        - $ref: '#/components/parameters/account_id'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - webhook
+              properties:
+                webhook:
+                  type: object
+                  required:
+                    - url
+                    - webhook_type
+                  properties:
+                    url:
+                      type: string
+                      format: uri
+                      description: The URL that will receive webhook payloads.
+                      example: 'https://example.com/mailtrap/webhooks'
+                    webhook_type:
+                      type: string
+                      description: |
+                        The type of webhook. Determines which events the webhook can subscribe to.
+                      enum:
+                        - email_sending
+                        - campaigns
+                        - audit_log
+                      example: email_sending
+                    active:
+                      type: boolean
+                      description: Whether the webhook is active. Defaults to `true`.
+                      default: true
+                      example: true
+                    payload_format:
+                      type: string
+                      description: Format of the webhook payload.
+                      enum:
+                        - json
+                        - jsonlines
+                      default: json
+                      example: json
+                    sending_stream:
+                      type: string
+                      description: |
+                        Sending stream the webhook subscribes to. Required for `email_sending` webhook type.
+                      enum:
+                        - transactional
+                        - bulk
+                      example: transactional
+                    event_types:
+                      type: array
+                      description: |
+                        List of event types to subscribe to. Required for `email_sending` and `campaigns` webhook types.
+                      items:
+                        type: string
+                        enum:
+                          - delivery
+                          - soft_bounce
+                          - bounce
+                          - suspension
+                          - unsubscribe
+                          - open
+                          - spam_complaint
+                          - click
+                          - reject
+                      example:
+                        - delivery
+                        - bounce
+                    domain_id:
+                      type: integer
+                      description: |
+                        Scopes the webhook to a specific domain ID, or all
+                        domains if omitted. Applicable only for `email_sending`
+                        and `campaigns` webhooks.
+                      example: 435
+      responses:
+        '200':
+          description: Webhook created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WebhookCreateResponse'
+              example:
+                data:
+                  id: 1
+                  url: 'https://example.com/mailtrap/webhooks'
+                  active: true
+                  webhook_type: email_sending
+                  payload_format: json
+                  sending_stream: transactional
+                  domain_id: 435
+                  event_types:
+                    - delivery
+                    - bounce
+                  signing_secret: a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+
+    get:
+      operationId: listWebhooks
+      summary: List webhooks
+      description: Returns all webhooks for the account.
+      tags:
+        - webhooks
+      x-codeSamples:
+        - lang: shell
+          label: 'cURL'
+          source: |
+            curl -X GET https://mailtrap.io/api/accounts/{account_id}/webhooks \
+              -H 'Authorization: Bearer YOUR_API_KEY'
+      parameters:
+        - $ref: '#/components/parameters/account_id'
+      responses:
+        '200':
+          description: List of webhooks
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Webhook'
+              example:
+                data:
+                  - id: 1
+                    url: 'https://example.com/mailtrap/webhooks'
+                    active: true
+                    webhook_type: email_sending
+                    payload_format: json
+                    sending_stream: transactional
+                    domain_id: 435
+                    event_types:
+                      - delivery
+                      - bounce
+                  - id: 2
+                    url: 'https://example.com/mailtrap/webhooks'
+                    active: true
+                    webhook_type: audit_log
+                    payload_format: json
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /api/accounts/{account_id}/webhooks/{webhook_id}:
+    get:
+      operationId: getWebhook
+      summary: Get a webhook
+      description: Returns a single webhook by ID.
+      tags:
+        - webhooks
+      x-codeSamples:
+        - lang: shell
+          label: 'cURL'
+          source: |
+            curl -X GET https://mailtrap.io/api/accounts/{account_id}/webhooks/{webhook_id} \
+              -H 'Authorization: Bearer YOUR_API_KEY'
+      parameters:
+        - $ref: '#/components/parameters/account_id'
+        - $ref: '#/components/parameters/webhook_id'
+      responses:
+        '200':
+          description: Webhook details
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Webhook'
+              example:
+                data:
+                  id: 1
+                  url: 'https://example.com/mailtrap/webhooks'
+                  active: true
+                  webhook_type: email_sending
+                  payload_format: json
+                  sending_stream: transactional
+                  domain_id: 435
+                  event_types:
+                    - delivery
+                    - bounce
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    patch:
+      operationId: updateWebhook
+      summary: Update a webhook
+      description: |
+        Update an existing webhook.
+      tags:
+        - webhooks
+      x-codeSamples:
+        - lang: shell
+          label: 'cURL'
+          source: |
+            curl -X PATCH https://mailtrap.io/api/accounts/{account_id}/webhooks/{webhook_id} \
+              -H 'Authorization: Bearer YOUR_API_KEY' \
+              -H 'Content-Type: application/json' \
+              -d '{
+                "webhook": {
+                  "active": false
+                }
+              }'
+      parameters:
+        - $ref: '#/components/parameters/account_id'
+        - $ref: '#/components/parameters/webhook_id'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - webhook
+              properties:
+                webhook:
+                  type: object
+                  properties:
+                    url:
+                      type: string
+                      format: uri
+                      description: The URL that will receive webhook payloads.
+                      example: 'https://example.com/mailtrap/webhooks'
+                    active:
+                      type: boolean
+                      description: Whether the webhook is active.
+                      example: false
+                    payload_format:
+                      type: string
+                      description: Format of the webhook payload.
+                      enum:
+                        - json
+                        - jsonlines
+                      example: json
+                    event_types:
+                      type: array
+                      description: List of event types to subscribe to. Applicable only for `email_sending` and `campaigns` webhooks.
+                      items:
+                        type: string
+                        enum:
+                          - delivery
+                          - soft_bounce
+                          - bounce
+                          - suspension
+                          - unsubscribe
+                          - open
+                          - spam_complaint
+                          - click
+                          - reject
+                      example:
+                        - delivery
+                        - bounce
+                        - unsubscribe
+      responses:
+        '200':
+          description: Webhook updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Webhook'
+              example:
+                data:
+                  id: 1
+                  url: 'https://example.com/mailtrap/webhooks'
+                  active: false
+                  webhook_type: email_sending
+                  payload_format: json
+                  sending_stream: transactional
+                  domain_id: 435
+                  event_types:
+                    - delivery
+                    - bounce
+                    - unsubscribe
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+
+    delete:
+      operationId: deleteWebhook
+      summary: Delete a webhook
+      description: Permanently delete a webhook.
+      tags:
+        - webhooks
+      x-codeSamples:
+        - lang: shell
+          label: 'cURL'
+          source: |
+            curl -X DELETE https://mailtrap.io/api/accounts/{account_id}/webhooks/{webhook_id} \
+              -H 'Authorization: Bearer YOUR_API_KEY'
+      parameters:
+        - $ref: '#/components/parameters/account_id'
+        - $ref: '#/components/parameters/webhook_id'
+      responses:
+        '200':
+          description: Webhook deleted successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Webhook'
+              example:
+                data:
+                  id: 1
+                  url: 'https://example.com/mailtrap/webhooks'
+                  active: true
+                  webhook_type: audit_log
+                  payload_format: json
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
 components:
   securitySchemes:
     HeaderAuth:
@@ -1592,10 +2052,11 @@ components:
       name: suppression_id
       in: path
       required: true
-      description: Suppression ID
+      description: The suppression UUID
       schema:
-        type: integer
-        example: 1
+        type: string
+        format: uuid
+        example: 64d71bf3-1276-417b-86e1-8e66f138acfe
 
     sending_message_id:
       name: sending_message_id
@@ -1605,6 +2066,15 @@ components:
       schema:
         type: string
         format: uuid
+
+    webhook_id:
+      name: webhook_id
+      in: path
+      required: true
+      description: Webhook ID
+      schema:
+        type: integer
+        example: 1
 
     StartDateQueryFilter:
       name: start_date
@@ -2045,22 +2515,139 @@ components:
       type: object
       properties:
         id:
-          type: integer
-          example: 1
+          type: string
+          format: uuid
+          description: The suppression UUID
+          example: 64d71bf3-1276-417b-86e1-8e66f138acfe
+        type:
+          type: string
+          enum: [hard bounce, unsubscription, spam complaint, manual import]
+          description: Reason for the suppression
+          example: hard bounce
+        created_at:
+          type: string
+          format: date-time
+          example: '2025-01-15T10:30:00Z'
         email:
           type: string
           format: email
           example: suppressed@example.com
-        reason:
+        sending_stream:
           type: string
-          enum: [bounce, complaint, unsubscribe, manual]
-          example: bounce
-        created_at:
-          type: string
+          enum: [transactional, bulk, any]
+          example: transactional
+        domain_name:
+          type: [string, 'null']
+          example: example.com
+        message_bounce_category:
+          type: [string, 'null']
+        message_category:
+          type: [string, 'null']
+        message_client_ip:
+          type: [string, 'null']
+        message_created_at:
+          type: [string, 'null']
           format: date-time
+        message_esp_response:
+          type: [string, 'null']
+        message_esp_server_type:
+          type: [string, 'null']
+        message_outgoing_ip:
+          type: [string, 'null']
+        message_recipient_mx_name:
+          type: [string, 'null']
+        message_sender_email:
+          type: [string, 'null']
+        message_subject:
+          type: [string, 'null']
+
+    Webhook:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        url:
+          type: string
+          format: uri
+          example: 'https://example.com/mailtrap/webhooks'
+        active:
+          type: boolean
+          example: true
+        webhook_type:
+          type: string
+          enum:
+            - email_sending
+            - campaigns
+            - audit_log
+          example: email_sending
+        payload_format:
+          type: string
+          enum:
+            - json
+            - jsonlines
+          example: json
+        sending_stream:
+          type:
+            - string
+            - 'null'
+          enum:
+            - transactional
+            - bulk
+            - null
+          description: |
+            Sending stream the webhook is subscribed to. Applicable only for
+            `email_sending` webhooks.
+          example: transactional
+        domain_id:
+          type:
+            - integer
+            - 'null'
+          description: |
+            Scopes the webhook to a specific domain ID, or all domains if
+            omitted. Applicable only for `email_sending` and `campaigns`
+            webhooks.
+          example: 435
+        event_types:
+          type: array
+          description: |
+            List of event types the webhook is subscribed to. Applicable only
+            for `email_sending` and `campaigns` webhooks.
+          items:
+            type: string
+            enum:
+              - delivery
+              - soft_bounce
+              - bounce
+              - suspension
+              - unsubscribe
+              - open
+              - spam_complaint
+              - click
+              - reject
+          example:
+            - delivery
+            - bounce
+
+    WebhookCreateResponse:
+      type: object
+      properties:
+        data:
+          allOf:
+            - $ref: '#/components/schemas/Webhook'
+            - type: object
+              properties:
+                signing_secret:
+                  type: string
+                  description: |
+                    Secret key for verifying webhook payload signatures using HMAC SHA-256. Only returned on creation.
+                  example: a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6
 
     UnprocessableEntity:
       type: object
+      description: |-
+        Validation errors per field. Keys are attribute names; values are arrays of human-readable messages.
+        Some endpoints may also return a `base` key with general validation errors.
       properties:
         errors:
           type: object
@@ -2068,6 +2655,16 @@ components:
             type: array
             items:
               type: string
+      example:
+        errors:
+          email:
+            - can't be blank
+          domain:
+            - can't be blank
+          sending_stream:
+            - 'is invalid. Allowed values: transactional, bulk.'
+          base:
+            - "Validation failed: Domain name can't be blank, Tracking domain name is not a valid domain name"
 
     SendingStats:
       title: SendingStats
@@ -2111,29 +2708,26 @@ components:
 
     BadRequest:
       title: BadRequestResponse
+      description: |
+        Invalid parameters. Some endpoints return an empty body with HTTP 400; when present, a message may use an `error` field.
       type: object
       properties:
-        success:
-          type: boolean
-          example: false
-        errors:
-          type: array
-          items:
-            type: string
-            example: "Invalid request parameters"
+        error:
+          type: string
+          example: Bad Request
+      example:
+        error: Bad Request
 
     RateLimitExceededResponse:
       title: RateLimitExceededResponse
       type: object
       properties:
-        success:
-          type: boolean
-          example: false
         errors:
-          type: array
-          items:
-            type: string
-            example: "Rate limit exceeded"
+          type: string
+          description: Error message
+          example: Rate limit exceeded
+      example:
+        errors: Rate limit exceeded
 
     EmailLogsListResponse:
       type: object
@@ -2876,51 +3470,66 @@ components:
         operator: equal
         value: transactional
 
-    ErrorResponse:
+    UnauthenticatedResponse:
+      title: UnauthenticatedResponse
       type: object
       properties:
-        success:
-          type: boolean
-          example: false
+        error:
+          type: string
+          description: Error message
+          example: Incorrect API token
+      example:
+        error: Incorrect API token
+
+    PermissionsDeniedResponse:
+      title: PermissionsDeniedResponse
+      type: object
+      properties:
         errors:
-          type: array
-          items:
-            type: string
-            example: Invalid request
+          type: string
+          description: Error message
+          example: Account access forbidden
+      example:
+        errors: Account access forbidden
+
+    NotFoundResponse:
+      title: NotFoundResponse
+      type: object
+      properties:
+        error:
+          type: string
+          description: Error message
+          example: Not Found
+      example:
+        error: Not Found
 
   responses:
     Unauthorized:
-      description: Unauthorized. Check your API credentials.
+      description: Returns unauthorized error message. Check your credentials.
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/ErrorResponse'
+            $ref: '#/components/schemas/UnauthenticatedResponse'
           example:
-            success: false
-            errors:
-              - "Unauthorized"
+            error: Incorrect API token
 
     Forbidden:
-      description: Forbidden. Verify domain or check permissions.
+      description: Returns forbidden error message. Check your permissions.
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/ErrorResponse'
+            $ref: '#/components/schemas/PermissionsDeniedResponse'
           example:
-            success: false
-            errors:
-              - "Forbidden"
+            errors: Account access forbidden
 
     NotFound:
       description: Resource not found
       content:
         application/json:
           schema:
-            type: object
-            properties:
-              error:
-                type: string
-                example: Resource not found
+            $ref: '#/components/schemas/NotFoundResponse'
+          example:
+            error: Not Found
 
     UnprocessableEntity:
       description: Validation errors
@@ -2928,6 +3537,16 @@ components:
         application/json:
           schema:
             $ref: '#/components/schemas/UnprocessableEntity'
+          example:
+            errors:
+              email:
+                - can't be blank
+              domain:
+                - can't be blank
+              sending_stream:
+                - 'is invalid. Allowed values: transactional, bulk.'
+              base:
+                - "Validation failed: Domain name can't be blank, Tracking domain name is not a valid domain name"
 
     BAD_REQUEST:
       description: Bad request - invalid parameters.
@@ -2936,9 +3555,7 @@ components:
           schema:
             $ref: '#/components/schemas/BadRequest'
           example:
-            success: false
-            errors:
-              - "Invalid request parameters"
+            error: Bad Request
 
     LIMIT_EXCEEDED:
       description: Rate limit exceeded for the current account.
@@ -2947,9 +3564,7 @@ components:
           schema:
             $ref: '#/components/schemas/RateLimitExceededResponse'
           example:
-            success: false
-            errors:
-              - "Rate limit exceeded"
+            errors: Rate limit exceeded
 
     SendingDomainResponse:
       description: Sending domain details
@@ -2994,11 +3609,14 @@ components:
       content:
         application/json:
           schema:
+            $ref: '#/components/schemas/Suppression'
+
+    CreateSuppressionResponse:
+      description: Suppression created
+      content:
+        application/json:
+          schema:
             type: object
             properties:
-              success:
-                type: boolean
-                example: true
-              message:
-                type: string
-                example: Suppression removed successfully
+              data:
+                $ref: '#/components/schemas/Suppression'
