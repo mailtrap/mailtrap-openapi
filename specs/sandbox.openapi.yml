@@ -1939,9 +1939,7 @@ paths:
           content:
             application/json:
               schema:
-                oneOf:
-                  - $ref: '#/components/schemas/InboxMessageWithoutBlacklistsReportInfo'
-                  - $ref: '#/components/schemas/InboxMessageWithBlacklistsReportInfo'
+                $ref: '#/components/schemas/SandboxInboxMessage'
               example:
                 id: 2323
                 inbox_id: 17002
@@ -1955,6 +1953,8 @@ paths:
                 is_read: false
                 created_at: '2022-07-01T19:29:59.295Z'
                 updated_at: '2022-07-01T19:29:59.295Z'
+                template_id: 0
+                template_variables: null
                 html_body_size: 150
                 text_body_size: 100
                 human_size: 300 Bytes
@@ -1963,12 +1963,18 @@ paths:
                 raw_path: /api/accounts/16297/inboxes/17002/messages/2323/body.raw
                 download_path: /api/accounts/16297/inboxes/17002/messages/2323/body.eml
                 html_source_path: /api/accounts/16297/inboxes/17002/messages/2323/body.htmlsource
-                blacklists_report_info: false
+                blacklists_report_info:
+                  result: success
+                  domain: example.com
+                  ip: 23.215.0.138
+                  report: []
                 smtp_information:
                   ok: true
                   data:
                     mail_from_addr: john@mailtrap.io
                     client_ip: 193.62.62.184
+                    rcpt_to_addrs:
+                      - mary@mailtrap.io
         '401':
           $ref: '#/components/responses/UNAUTHENTICATED'
         '403':
@@ -1980,7 +1986,7 @@ paths:
                 properties:
                   errors:
                     type: string
-                    example: Inbox is not active or you have insufficient permissions
+                    example: Account access forbidden
         '404':
           $ref: '#/components/responses/NOT_FOUND'
       x-codeSamples:
@@ -2566,62 +2572,7 @@ paths:
               schema:
                 type: array
                 items:
-                  type: object
-                  properties:
-                    id:
-                      type: integer
-                    inbox_id:
-                      type: integer
-                    subject:
-                      type: string
-                    sent_at:
-                      type: string
-                    from_email:
-                      type: string
-                    from_name:
-                      type: string
-                    to_email:
-                      type: string
-                    to_name:
-                      type: string
-                    email_size:
-                      type: integer
-                    is_read:
-                      type: boolean
-                    created_at:
-                      type: string
-                    updated_at:
-                      type: string
-                    html_body_size:
-                      type: integer
-                    text_body_size:
-                      type: integer
-                    human_size:
-                      type: string
-                    html_path:
-                      type: string
-                    txt_path:
-                      type: string
-                    raw_path:
-                      type: string
-                    download_path:
-                      type: string
-                    html_source_path:
-                      type: string
-                    blacklists_report_info:
-                      type: boolean
-                    smtp_information:
-                      type: object
-                      properties:
-                        ok:
-                          type: boolean
-                        data:
-                          type: object
-                          properties:
-                            mail_from_addr:
-                              type: string
-                            client_ip:
-                              type: string
+                  $ref: '#/components/schemas/SandboxInboxMessage'
               example:
                 - id: 92
                   inbox_id: 342
@@ -2635,6 +2586,8 @@ paths:
                   is_read: false
                   created_at: '2022-08-19T11:34:33.841Z'
                   updated_at: '2022-08-19T11:34:33.841Z'
+                  template_id: 0
+                  template_variables: null
                   html_body_size: 150
                   text_body_size: 100
                   human_size: 300 Bytes
@@ -2643,12 +2596,15 @@ paths:
                   raw_path: /api/accounts/336/inboxes/342/messages/92/body.raw
                   download_path: /api/accounts/336/inboxes/342/messages/92/body.eml
                   html_source_path: /api/accounts/336/inboxes/342/messages/92/body.htmlsource
-                  blacklists_report_info: false
+                  blacklists_report_info:
+                    result: pending
                   smtp_information:
                     ok: true
                     data:
                       mail_from_addr: per667son25@feeney.biz
                       client_ip: 75.180.183.201
+                      rcpt_to_addrs:
+                        - per688son26@donnelly.info
         '401':
           $ref: '#/components/responses/UNAUTHENTICATED'
         '403':
@@ -2660,7 +2616,7 @@ paths:
                 properties:
                   errors:
                     type: string
-                    example: Inbox is not active or you have insufficient permissions
+                    example: Account access forbidden
       operationId: getInboxEmailMessage
       x-codeSamples:
         - lang: shell
@@ -2841,7 +2797,7 @@ paths:
                 properties:
                   errors:
                     type: string
-                    example: Inbox is not active or you have insufficient permissions
+                    example: Account access forbidden
         '404':
           $ref: '#/components/responses/NOT_FOUND'
       x-codeSamples:
@@ -3038,7 +2994,7 @@ paths:
                 properties:
                   errors:
                     type: string
-                    example: Inbox is not active or you have insufficient permissions
+                    example: Account access forbidden
         '404':
           $ref: '#/components/responses/NOT_FOUND'
       x-codeSamples:
@@ -3220,7 +3176,7 @@ paths:
                 properties:
                   errors:
                     type: string
-                    example: Inbox is not active or you have insufficient permissions
+                    example: Account access forbidden
         '404':
           $ref: '#/components/responses/NOT_FOUND'
       x-codeSamples:
@@ -3344,7 +3300,7 @@ paths:
             text/plain:
               schema:
                 type: string
-                example: '{:errors=>"Inbox is not active or you have insufficient permissions"}'
+                example: '{:errors=>"Account access forbidden"}'
         '404':
           $ref: '#/components/responses/NOT_FOUND'
         '409':
@@ -3519,7 +3475,7 @@ paths:
             text/plain:
               schema:
                 type: string
-                example: '{:errors=>"Inbox is not active or you have insufficient permissions"}'
+                example: '{:errors=>"Account access forbidden"}'
         '404':
           $ref: '#/components/responses/NOT_FOUND'
         '409':
@@ -3673,7 +3629,7 @@ paths:
             text/plain:
               schema:
                 type: string
-                example: '{:errors=>"Inbox is not active or you have insufficient permissions"}'
+                example: '{:errors=>"Account access forbidden"}'
         '404':
           $ref: '#/components/responses/NOT_FOUND'
         '409':
@@ -3821,7 +3777,7 @@ paths:
                 properties:
                   errors:
                     type: string
-                    example: Inbox is not active or you have insufficient permissions
+                    example: Account access forbidden
         '404':
           $ref: '#/components/responses/NOT_FOUND'
         '409':
@@ -3998,7 +3954,7 @@ paths:
             text/plain:
               schema:
                 type: string
-              example: '{:errors=>"Inbox is not active or you have insufficient permissions"}'
+              example: '{:errors=>"Account access forbidden"}'
         '404':
           $ref: '#/components/responses/NOT_FOUND'
         '409':
@@ -4295,7 +4251,7 @@ paths:
                 properties:
                   errors:
                     type: string
-                    example: Inbox is not active or you have insufficient permissions
+                    example: Account access forbidden
         '404':
           $ref: '#/components/responses/NOT_FOUND'
       operationId: getInboxMessageAttachments
@@ -4450,7 +4406,7 @@ paths:
                 properties:
                   errors:
                     type: string
-                    example: Inbox is not active or you have insufficient permissions
+                    example: Account access forbidden
         '404':
           $ref: '#/components/responses/NOT_FOUND'
       operationId: getInboxMessageAttachment
@@ -4546,9 +4502,12 @@ paths:
       - $ref: '#/components/parameters/attachment_id'
 components:
   schemas:
-    InboxMessageWithoutBlacklistsReportInfo:
-      title: Message without blacklists report
+    SandboxInboxMessage:
+      title: Sandbox inbox message
       type: object
+      description: |
+        Email message captured in a Sandbox inbox. Body URLs are often under `/api/testing_message_parts/...` rather than nested under `/api/accounts/.../messages/...`.
+        `blacklists_report_info` may contain only `result` or the full report. `template_variables` is set when the message was sent from a template.
       properties:
         id:
           type: integer
@@ -4574,64 +4533,12 @@ components:
           type: string
         updated_at:
           type: string
-        html_body_size:
+        template_id:
           type: integer
-        text_body_size:
-          type: integer
-        human_size:
-          type: string
-        html_path:
-          type: string
-        txt_path:
-          type: string
-        raw_path:
-          type: string
-        download_path:
-          type: string
-        html_source_path:
-          type: string
-        blacklists_report_info:
-          type: boolean
-        smtp_information:
+        template_variables:
           type: object
-          properties:
-            ok:
-              type: boolean
-            data:
-              type: object
-              properties:
-                mail_from_addr:
-                  type: string
-                client_ip:
-                  type: string
-    InboxMessageWithBlacklistsReportInfo:
-      title: Message with blacklists report
-      type: object
-      properties:
-        id:
-          type: integer
-        inbox_id:
-          type: integer
-        subject:
-          type: string
-        sent_at:
-          type: string
-        from_email:
-          type: string
-        from_name:
-          type: string
-        to_email:
-          type: string
-        to_name:
-          type: string
-        email_size:
-          type: integer
-        is_read:
-          type: boolean
-        created_at:
-          type: string
-        updated_at:
-          type: string
+          nullable: true
+          additionalProperties: true
         html_body_size:
           type: integer
         text_body_size:
@@ -4684,6 +4591,10 @@ components:
                   type: string
                 client_ip:
                   type: string
+                rcpt_to_addrs:
+                  type: array
+                  items:
+                    type: string
     Project:
       title: Testing Project
       type: object
@@ -4735,6 +4646,8 @@ components:
           type: string
           description: Error message
           example: Not Found
+      example:
+        error: Not Found
     PermissionsDeniedResponse:
       title: PermissionsDeniedResponse
       type: object
@@ -4742,7 +4655,9 @@ components:
         errors:
           type: string
           description: Error message
-          example: Access forbidden
+          example: Account access forbidden
+      example:
+        errors: Account access forbidden
     TestingInbox:
       title: Testing Inbox
       type: object
@@ -4858,6 +4773,8 @@ components:
           type: string
           description: Error message
           example: Incorrect API token
+      example:
+        error: Incorrect API token
   examples:
     Projects:
       summary: List of projects
@@ -5047,18 +4964,24 @@ components:
         application/json:
           schema:
             $ref: '#/components/schemas/UnauthenticatedResponse'
+          example:
+            error: Incorrect API token
     PERMISSION_DENIED:
       description: Returns forbidden error message. Check your permissions.
       content:
         application/json:
           schema:
             $ref: '#/components/schemas/PermissionsDeniedResponse'
+          example:
+            errors: Account access forbidden
     NOT_FOUND:
       description: Returns not found error message
       content:
         application/json:
           schema:
             $ref: '#/components/schemas/NotFoundResponse'
+          example:
+            error: Not Found
     ProjectsResponse:
       description: |-
         Lists project attributes and inboxes of this project with their attributes.
