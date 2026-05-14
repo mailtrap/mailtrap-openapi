@@ -1,0 +1,26 @@
+specs/email-sending.openapi.yml
+  s_919b47538862af::t_d74e2ed45a566e 1121
+  s_919b47538862af::t_4073699d47b20d 1646
+  s_919b47538862af::t_5605c9894c3189 1808
+  s_919b47538862af::t_4f99ee60c5f49d 1962
+  s_919b47538862af::t_333259316c24ef 1863
+  s_919b47538862af::t_89ecdd6226b58a 1772
+  s_919b47538862af::t_b5e9a28749ee91 1633
+  s_919b47538862af::t_1ed393649b8291 1819
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.8",
+  "base_commit_sha": "426092f9b2beb76bb9f57c2518ed33b6c7276807",
+  "prompts": {},
+  "sessions": {
+    "s_919b47538862af": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "a60355e0-2380-40fb-8e4a-dccd357caaa5",
+        "model": "claude-opus-4-7"
+      },
+      "human_author": "Ivan Yurchanka <vanya.yu@gmail.com>"
+    }
+  }
+}
