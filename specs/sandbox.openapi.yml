@@ -64,7 +64,7 @@ paths:
         - Sandboxes
       responses:
         '200':
-          $ref: '#/components/responses/InboxesResponse'
+          $ref: '#/components/responses/SandboxesResponse'
         '401':
           $ref: '#/components/responses/UNAUTHENTICATED'
         '403':
@@ -851,7 +851,7 @@ paths:
                 name: My new sandbox
       responses:
         '200':
-          $ref: '#/components/responses/InboxResponse'
+          $ref: '#/components/responses/SandboxResponse'
         '401':
           $ref: '#/components/responses/UNAUTHENTICATED'
         '403':
@@ -993,7 +993,7 @@ paths:
         - Sandboxes
       responses:
         '200':
-          $ref: '#/components/responses/InboxResponse'
+          $ref: '#/components/responses/SandboxResponse'
         '401':
           $ref: '#/components/responses/UNAUTHENTICATED'
         '403':
@@ -1106,7 +1106,7 @@ paths:
         - Sandboxes
       responses:
         '200':
-          $ref: '#/components/responses/InboxResponse'
+          $ref: '#/components/responses/SandboxResponse'
         '401':
           $ref: '#/components/responses/UNAUTHENTICATED'
         '403':
@@ -1234,7 +1234,7 @@ paths:
                 email_username: my-username
       responses:
         '200':
-          $ref: '#/components/responses/InboxResponse'
+          $ref: '#/components/responses/SandboxResponse'
         '401':
           $ref: '#/components/responses/UNAUTHENTICATED'
         '403':
@@ -1379,7 +1379,7 @@ paths:
         - Sandboxes
       responses:
         '200':
-          $ref: '#/components/responses/InboxResponse'
+          $ref: '#/components/responses/SandboxResponse'
         '401':
           $ref: '#/components/responses/UNAUTHENTICATED'
         '403':
@@ -1496,7 +1496,7 @@ paths:
         - Sandboxes
       responses:
         '200':
-          $ref: '#/components/responses/InboxResponse'
+          $ref: '#/components/responses/SandboxResponse'
         '401':
           $ref: '#/components/responses/UNAUTHENTICATED'
         '403':
@@ -1613,7 +1613,7 @@ paths:
         - Sandboxes
       responses:
         '200':
-          $ref: '#/components/responses/InboxResponse'
+          $ref: '#/components/responses/SandboxResponse'
         '401':
           $ref: '#/components/responses/UNAUTHENTICATED'
         '403':
@@ -1730,7 +1730,7 @@ paths:
         - Sandboxes
       responses:
         '200':
-          $ref: '#/components/responses/InboxResponse'
+          $ref: '#/components/responses/SandboxResponse'
         '401':
           $ref: '#/components/responses/UNAUTHENTICATED'
         '403':
@@ -1838,7 +1838,7 @@ paths:
         - Sandboxes
       responses:
         '200':
-          $ref: '#/components/responses/InboxResponse'
+          $ref: '#/components/responses/SandboxResponse'
         '401':
           $ref: '#/components/responses/UNAUTHENTICATED'
         '403':
@@ -1951,7 +1951,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SandboxInboxMessage'
+                $ref: '#/components/schemas/SandboxMessage'
               example:
                 id: 2323
                 sandbox_id: 17002
@@ -2585,7 +2585,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/SandboxInboxMessage'
+                  $ref: '#/components/schemas/SandboxMessage'
               example:
                 - id: 92
                   sandbox_id: 342
@@ -4527,11 +4527,11 @@ paths:
       - $ref: '#/components/parameters/attachment_id'
 components:
   schemas:
-    SandboxInboxMessage:
-      title: Sandbox inbox message
+    SandboxMessage:
+      title: Sandbox message
       type: object
       description: |
-        Email message captured in a Sandbox inbox. Body URLs are often under `/api/testing_message_parts/...` rather than nested under `/api/accounts/.../messages/...`.
+        Email message captured in a Sandbox. Body URLs are often under `/api/testing_message_parts/...` rather than nested under `/api/accounts/.../messages/...`.
         `blacklists_report_info` may contain only `result` or the full report. `template_variables` is set when the message was sent from a template.
       properties:
         id:
@@ -4635,11 +4635,11 @@ components:
               type: string
             viewer:
               type: string
-        inboxes:
+        sandboxes:
           type: array
           items:
             nullable: true
-            $ref: '#/components/schemas/TestingInbox'
+            $ref: '#/components/schemas/TestingSandbox'
         permissions:
           type: object
           properties:
@@ -4657,7 +4657,7 @@ components:
         share_links:
           admin: 'https://localhost/projects/2388/share/QEVuQwEAS-hQfYV1hqw15p7p9VcsuCrASDQUkcuV_N5G-zdVBPrd58V8Ce09AUl-JGFEJsQbt-K6IzRIMhjpU7zxAnIo9QpB8mJwuOqBiottfwdDhgKO-ab7t7WDCyyoGeG5dLK_'
           viewer: 'https://localhost/projects/2388/share/QEVuQwEAS-hQfYV1hqw15p7p9VcsuCrASDQUkcuV_N5G-zdVBPrd58V8Ce09AUl-JGFEJsQbHDFqI6Mk2wRVlVSxLNMgI-3LnWpSSSyCSbjqkQRAMPVoTPYF7WcXfw4H_CwkAc4e'
-        inboxes: []
+        sandboxes: []
         permissions:
           can_read: true
           can_update: true
@@ -4683,8 +4683,8 @@ components:
           example: Account access forbidden
       example:
         errors: Account access forbidden
-    TestingInbox:
-      title: Testing Inbox
+    TestingSandbox:
+      title: Testing Sandbox
       type: object
       properties:
         id:
@@ -4806,7 +4806,7 @@ components:
       value:
         - id: 2435
           name: Viewer Project
-          inboxes: []
+          sandboxes: []
           permissions:
             can_read: true
             can_update: false
@@ -4817,7 +4817,7 @@ components:
           share_links:
             admin: 'https://localhost/projects/2436/share/QEVuQwEAYWN-NIhmrB8qX6ZWzToqdOE9dw1ylIfOQ-_fKwYAD_CCkhRzmAanker219x25PM75TBaHgx1I4dsv058hghY_Ewaa3Vt7ET1aeg3ufVcit919V4baPLzxV9JaRzXWSjK'
             viewer: 'https://localhost/projects/2436/share/QEVuQwEAYWN-NIhmrB8qX6ZWzToqdOE9dw1ylIfOQ-_fKwYAD_CCkhRzmAanker219x25PM7YSu12_li4QtOGl363syqCpKX7vlXvIub7b_V1BU2qypVHfspL7qfSIja0edd7hSh'
-          inboxes:
+          sandboxes:
             - id: 3874
               name: Admin Sandbox
               username: f796d276ca4d13
@@ -4864,7 +4864,7 @@ components:
         share_links:
           admin: 'https://localhost/projects/2436/share/QEVuQwEAYWN-NIhmrB8qX6ZWzToqdOE9dw1ylIfOQ-_fKwYAD_CCkhRzmAanker219x25PM75TBaHgx1I4dsv058hghY_Ewaa3Vt7ET1aeg3ufVcit919V4baPLzxV9JaRzXWSjK'
           viewer: 'https://localhost/projects/2436/share/QEVuQwEAYWN-NIhmrB8qX6ZWzToqdOE9dw1ylIfOQ-_fKwYAD_CCkhRzmAanker219x25PM7YSu12_li4QtOGl363syqCpKX7vlXvIub7b_V1BU2qypVHfspL7qfSIja0edd7hSh'
-        inboxes:
+        sandboxes:
           - id: 3874
             name: Admin Sandbox
             username: f796d276ca4d13
@@ -4903,7 +4903,7 @@ components:
           can_update: true
           can_destroy: true
           can_leave: true
-    Inboxes:
+    Sandboxes:
       summary: List of sandboxes
       value:
         - id: 3538
@@ -5035,7 +5035,7 @@ components:
           examples:
             Project:
               $ref: '#/components/examples/Project'
-    InboxesResponse:
+    SandboxesResponse:
       description: |-
         Returns the list of sandboxes in the account to which the API token has access.
         - **permissions** returns the permissions of the token for the sandbox.
@@ -5044,18 +5044,18 @@ components:
           schema:
             type: array
             items:
-              $ref: '#/components/schemas/TestingInbox'
+              $ref: '#/components/schemas/TestingSandbox'
           examples:
-            InboxesList:
-              $ref: '#/components/examples/Inboxes'
-    InboxResponse:
+            SandboxesList:
+              $ref: '#/components/examples/Sandboxes'
+    SandboxResponse:
       description: |-
         Returns attributes of the sandbox.
         - **permissions** returns the permissions of the token for the sandbox.
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/TestingInbox'
+            $ref: '#/components/schemas/TestingSandbox'
   parameters:
     account_id:
       description: Unique account ID
