@@ -3,7 +3,7 @@ info:
   title: Email Sending
   version: 2.0.0
   description: |
-    Manage sending domains, suppressions, and email sending logs for your Mailtrap account.
+    Manage domains, suppressions, and email sending logs for your Mailtrap account.
   contact:
     name: Mailtrap Support
     url: 'https://docs.mailtrap.io'
@@ -16,7 +16,7 @@ info:
 
 servers:
   - description: |
-      Mailtrap account API (`mailtrap.io`) for sending domains, suppressions, stats, and email logs.
+      Mailtrap account API (`mailtrap.io`) for domains, suppressions, stats, and email logs.
       Error JSON matches other account endpoints (`error` or string `errors`), not the `send.api` / `bulk.api` sending shape (`success` + `errors` array).
     url: 'https://mailtrap.io'
 
@@ -26,8 +26,8 @@ security:
 
 tags:
   - name: domains
-    x-page-title: Sending Domains
-    x-page-description: Manage verified sending domains
+    x-page-title: Domains
+    x-page-description: Manage verified domains
     description: |
       Configure and verify domains for email sending to ensure deliverability.
 
@@ -55,29 +55,29 @@ tags:
       your Mailtrap account. For a complete guide, see 
       [Webhooks](https://docs.mailtrap.io/email-api-smtp/advanced/webhooks).
 paths:
-  /api/sending_domains:
+  /api/domains:
     post:
-      summary: Create sending domain
+      summary: Create domain
       description: |
-        Create a sending domain for email authentication. After creation, verify the domain by adding DNS records.
+        Create a domain for email authentication. After creation, verify the domain by adding DNS records.
 
         **Process:**
         1. Create the domain
         2. Add DNS records (SPF, DKIM, DMARC)
         3. Verify the records
         4. Start sending emails
-      operationId: createSendingDomain
+      operationId: createDomain
       tags:
         - domains
       x-codeSamples:
         - lang: shell
           label: 'cURL'
           source: |
-            curl -X POST https://mailtrap.io/api/sending_domains \
+            curl -X POST https://mailtrap.io/api/domains \
               -H 'Authorization: Bearer YOUR_API_KEY' \
               -H 'Content-Type: application/json' \
               -d '{
-                "sending_domain": {
+                "domain": {
                   "domain_name": "example.com"
                 }
               }'
@@ -186,9 +186,9 @@ paths:
             schema:
               type: object
               required:
-                - sending_domain
+                - domain
               properties:
-                sending_domain:
+                domain:
                   type: object
                   required:
                     - domain_name
@@ -199,11 +199,11 @@ paths:
                       description: Your domain name
                       example: example.com
             example:
-              sending_domain:
+              domain:
                 domain_name: example.com
       responses:
         '200':
-          $ref: '#/components/responses/SendingDomainResponse'
+          $ref: '#/components/responses/DomainResponse'
         '401':
           $ref: '#/components/responses/Unauthorized'
         '403':
@@ -212,16 +212,16 @@ paths:
           $ref: '#/components/responses/UnprocessableEntity'
 
     get:
-      summary: List sending domains
-      description: Get all sending domains and their verification status
-      operationId: getSendingDomains
+      summary: List domains
+      description: Get all domains and their verification status
+      operationId: getDomains
       tags:
         - domains
       x-codeSamples:
         - lang: shell
           label: 'cURL'
           source: |
-            curl -X GET https://mailtrap.io/api/sending_domains \
+            curl -X GET https://mailtrap.io/api/domains \
               -H 'Authorization: Bearer YOUR_API_KEY'
         - lang: javascript
           label: Node.js
@@ -237,7 +237,7 @@ paths:
               const response = await client.sendingDomains.getList();
               const domains = response.data;
 
-              console.log("Sending domains:", domains);
+              console.log("Domains:", domains);
             }
 
             getDomains();
@@ -319,23 +319,23 @@ paths:
             );
       responses:
         '200':
-          $ref: '#/components/responses/SendingDomainsResponse'
+          $ref: '#/components/responses/DomainsResponse'
         '401':
           $ref: '#/components/responses/Unauthorized'
         '403':
           $ref: '#/components/responses/Forbidden'
-  /api/sending_domains/{sending_domain_id}:
+  /api/domains/{domain_id}:
     get:
-      summary: Get sending domain
-      description: Get details and verification status of a specific sending domain
-      operationId: getSendingDomain
+      summary: Get domain
+      description: Get details and verification status of a specific domain
+      operationId: getDomain
       tags:
         - domains
       x-codeSamples:
         - lang: shell
           label: 'cURL'
           source: |
-            curl -X GET https://mailtrap.io/api/sending_domains/{sending_domain_id} \
+            curl -X GET https://mailtrap.io/api/domains/{domain_id} \
               -H 'Authorization: Bearer YOUR_API_KEY'
         - lang: javascript
           label: Node.js
@@ -430,10 +430,10 @@ paths:
 
             System.out.println("Domain: " + domain.getDomainName());
       parameters:
-        - $ref: '#/components/parameters/sending_domain_id'
+        - $ref: '#/components/parameters/domain_id'
       responses:
         '200':
-          $ref: '#/components/responses/SendingDomainResponse'
+          $ref: '#/components/responses/DomainResponse'
         '401':
           $ref: '#/components/responses/Unauthorized'
         '403':
@@ -442,16 +442,16 @@ paths:
           $ref: '#/components/responses/NotFound'
 
     delete:
-      summary: Delete sending domain
-      description: Remove a sending domain from your account
-      operationId: deleteSendingDomain
+      summary: Delete domain
+      description: Remove a domain from your account
+      operationId: deleteDomain
       tags:
         - domains
       x-codeSamples:
         - lang: shell
           label: 'cURL'
           source: |
-            curl -X DELETE https://mailtrap.io/api/sending_domains/{sending_domain_id} \
+            curl -X DELETE https://mailtrap.io/api/domains/{domain_id} \
               -H 'Authorization: Bearer YOUR_API_KEY'
         - lang: javascript
           label: Node.js
@@ -542,7 +542,7 @@ paths:
 
             System.out.println("Domain deleted successfully");
       parameters:
-        - $ref: '#/components/parameters/sending_domain_id'
+        - $ref: '#/components/parameters/domain_id'
       responses:
         '204':
           description: Domain successfully deleted
@@ -554,28 +554,28 @@ paths:
           $ref: '#/components/responses/NotFound'
 
     patch:
-      summary: Update sending domain
+      summary: Update domain
       description: |
-        Update configuration settings for a sending domain.
-      operationId: updateSendingDomain
+        Update configuration settings for a domain.
+      operationId: updateDomain
       tags:
         - domains
       x-codeSamples:
         - lang: shell
           label: 'cURL'
           source: |
-            curl -X PATCH https://mailtrap.io/api/sending_domains/{sending_domain_id} \
+            curl -X PATCH https://mailtrap.io/api/domains/{domain_id} \
               -H 'Authorization: Bearer YOUR_API_KEY' \
               -H 'Content-Type: application/json' \
               -d '{
-                "sending_domain": {
+                "domain": {
                   "open_tracking_enabled": true,
                   "click_tracking_enabled": true,
                   "auto_unsubscribe_link_enabled": false
                 }
               }'
       parameters:
-        - $ref: '#/components/parameters/sending_domain_id'
+        - $ref: '#/components/parameters/domain_id'
       requestBody:
         required: true
         content:
@@ -583,18 +583,18 @@ paths:
             schema:
               type: object
               required:
-                - sending_domain
+                - domain
               properties:
-                sending_domain:
-                  $ref: '#/components/schemas/UpdateSendingDomainRequest'
+                domain:
+                  $ref: '#/components/schemas/UpdateDomainRequest'
             example:
-              sending_domain:
+              domain:
                 open_tracking_enabled: true
                 click_tracking_enabled: true
                 auto_unsubscribe_link_enabled: false
       responses:
         '200':
-          $ref: '#/components/responses/SendingDomainResponse'
+          $ref: '#/components/responses/DomainResponse'
         '401':
           $ref: '#/components/responses/Unauthorized'
         '403':
@@ -604,18 +604,18 @@ paths:
         '422':
           $ref: '#/components/responses/UnprocessableEntity'
 
-  /api/sending_domains/{sending_domain_id}/send_setup_instructions:
+  /api/domains/{domain_id}/send_setup_instructions:
     post:
       summary: Send setup instructions
-      description: Email DNS configuration instructions for the sending domain
-      operationId: sendSendingDomainSetupInstructions
+      description: Email DNS configuration instructions for the domain
+      operationId: sendDomainSetupInstructions
       tags:
         - domains
       x-codeSamples:
         - lang: shell
           label: 'cURL'
           source: |
-            curl -X POST https://mailtrap.io/api/sending_domains/{sending_domain_id}/send_setup_instructions \
+            curl -X POST https://mailtrap.io/api/domains/{domain_id}/send_setup_instructions \
               -H 'Authorization: Bearer YOUR_API_KEY' \
               -H 'Content-Type: application/json' \
               -d '{
@@ -733,7 +733,7 @@ paths:
 
             System.out.println("Setup instructions sent");
       parameters:
-        - $ref: '#/components/parameters/sending_domain_id'
+        - $ref: '#/components/parameters/domain_id'
       requestBody:
         required: true
         content:
@@ -761,22 +761,22 @@ paths:
         '422':
           $ref: '#/components/responses/UnprocessableEntity'
 
-  /api/sending_domains/{sending_domain_id}/company_info:
+  /api/domains/{domain_id}/company_info:
     get:
       summary: Get company info
       description: |
-        Get company information associated with a sending domain / account.
-      operationId: getSendingDomainCompanyInfo
+        Get company information associated with a domain / account.
+      operationId: getDomainCompanyInfo
       tags:
         - domains
       x-codeSamples:
         - lang: shell
           label: 'cURL'
           source: |
-            curl -X GET https://mailtrap.io/api/sending_domains/{sending_domain_id}/company_info \
+            curl -X GET https://mailtrap.io/api/domains/{domain_id}/company_info \
               -H 'Authorization: Bearer YOUR_API_KEY'
       parameters:
-        - $ref: '#/components/parameters/sending_domain_id'
+        - $ref: '#/components/parameters/domain_id'
       responses:
         '200':
           $ref: '#/components/responses/CompanyInfoResponse'
@@ -790,16 +790,16 @@ paths:
     post:
       summary: Create company info
       description: |
-        Create company information for a sending domain / account.
+        Create company information for a domain / account.
         Company info is required for domain compliance verification.
-      operationId: createSendingDomainCompanyInfo
+      operationId: createDomainCompanyInfo
       tags:
         - domains
       x-codeSamples:
         - lang: shell
           label: 'cURL'
           source: |
-            curl -X POST https://mailtrap.io/api/sending_domains/{sending_domain_id}/company_info \
+            curl -X POST https://mailtrap.io/api/domains/{domain_id}/company_info \
               -H 'Authorization: Bearer YOUR_API_KEY' \
               -H 'Content-Type: application/json' \
               -d '{
@@ -817,7 +817,7 @@ paths:
                 }
               }'
       parameters:
-        - $ref: '#/components/parameters/sending_domain_id'
+        - $ref: '#/components/parameters/domain_id'
       requestBody:
         required: true
         content:
@@ -856,16 +856,16 @@ paths:
     patch:
       summary: Update company info
       description: |
-        Update company information for a sending domain / account. All fields are optional;
+        Update company information for a domain / account. All fields are optional;
         only the fields provided in the request will be updated.
-      operationId: updateSendingDomainCompanyInfo
+      operationId: updateDomainCompanyInfo
       tags:
         - domains
       x-codeSamples:
         - lang: shell
           label: 'cURL'
           source: |
-            curl -X PATCH https://mailtrap.io/api/sending_domains/{sending_domain_id}/company_info \
+            curl -X PATCH https://mailtrap.io/api/domains/{domain_id}/company_info \
               -H 'Authorization: Bearer YOUR_API_KEY' \
               -H 'Content-Type: application/json' \
               -d '{
@@ -875,7 +875,7 @@ paths:
                 }
               }'
       parameters:
-        - $ref: '#/components/parameters/sending_domain_id'
+        - $ref: '#/components/parameters/domain_id'
       requestBody:
         required: true
         content:
@@ -1142,7 +1142,7 @@ paths:
                   example: user@example.com
                 domain_id:
                   type: integer
-                  description: ID of the sending domain to suppress this email for
+                  description: ID of the domain to suppress this email for
                   example: 12345
                 sending_stream:
                   type: string
@@ -1316,7 +1316,7 @@ paths:
       parameters:
         - $ref: '#/components/parameters/StartDateQueryFilter'
         - $ref: '#/components/parameters/EndDateQueryFilter'
-        - $ref: '#/components/parameters/SendingDomainIDsQueryFilter'
+        - $ref: '#/components/parameters/DomainIDsQueryFilter'
         - $ref: '#/components/parameters/SendingStreamsQueryFilter'
         - $ref: '#/components/parameters/CategoriesQueryFilter'
         - $ref: '#/components/parameters/ESPsQueryFilter'
@@ -1360,7 +1360,7 @@ paths:
       parameters:
         - $ref: '#/components/parameters/StartDateQueryFilter'
         - $ref: '#/components/parameters/EndDateQueryFilter'
-        - $ref: '#/components/parameters/SendingDomainIDsQueryFilter'
+        - $ref: '#/components/parameters/DomainIDsQueryFilter'
         - $ref: '#/components/parameters/SendingStreamsQueryFilter'
         - $ref: '#/components/parameters/CategoriesQueryFilter'
         - $ref: '#/components/parameters/ESPsQueryFilter'
@@ -1374,7 +1374,7 @@ paths:
                 items:
                   type: object
                   properties:
-                    sending_domain_id:
+                    domain_id:
                       type: integer
                       format: int64
                       example: 3938
@@ -1419,7 +1419,7 @@ paths:
       parameters:
         - $ref: '#/components/parameters/StartDateQueryFilter'
         - $ref: '#/components/parameters/EndDateQueryFilter'
-        - $ref: '#/components/parameters/SendingDomainIDsQueryFilter'
+        - $ref: '#/components/parameters/DomainIDsQueryFilter'
         - $ref: '#/components/parameters/SendingStreamsQueryFilter'
         - $ref: '#/components/parameters/CategoriesQueryFilter'
         - $ref: '#/components/parameters/ESPsQueryFilter'
@@ -1471,7 +1471,7 @@ paths:
       parameters:
         - $ref: '#/components/parameters/StartDateQueryFilter'
         - $ref: '#/components/parameters/EndDateQueryFilter'
-        - $ref: '#/components/parameters/SendingDomainIDsQueryFilter'
+        - $ref: '#/components/parameters/DomainIDsQueryFilter'
         - $ref: '#/components/parameters/SendingStreamsQueryFilter'
         - $ref: '#/components/parameters/CategoriesQueryFilter'
         - $ref: '#/components/parameters/ESPsQueryFilter'
@@ -1523,7 +1523,7 @@ paths:
       parameters:
         - $ref: '#/components/parameters/StartDateQueryFilter'
         - $ref: '#/components/parameters/EndDateQueryFilter'
-        - $ref: '#/components/parameters/SendingDomainIDsQueryFilter'
+        - $ref: '#/components/parameters/DomainIDsQueryFilter'
         - $ref: '#/components/parameters/SendingStreamsQueryFilter'
         - $ref: '#/components/parameters/CategoriesQueryFilter'
         - $ref: '#/components/parameters/ESPsQueryFilter'
@@ -1558,7 +1558,7 @@ paths:
       summary: List email logs
       description: |
         Returns a paginated list of email logs (messages) for the account.
-        Results are restricted to sending domains the authenticated token has access to.
+        Results are restricted to domains the authenticated token has access to.
         Invalid or unknown filters are ignored. Results are ordered by sent_at descending.
       tags:
         - email-logs
@@ -1566,7 +1566,7 @@ paths:
         - lang: shell
           label: 'cURL'
           source: |
-            curl -X GET -g 'https://mailtrap.io/api/email_logs?filters[sent_after]=2025-01-01T00:00:00Z&filters[sent_before]=2025-01-31T23:59:59Z&filters[to][operator]=ci_equal&filters[to][value]=recipient@example.com&filters[sending_domain_id][operator]=equal&filters[sending_domain_id][value][]=3938&filters[sending_domain_id][value][]=3939' \
+            curl -X GET -g 'https://mailtrap.io/api/email_logs?filters[sent_after]=2025-01-01T00:00:00Z&filters[sent_before]=2025-01-31T23:59:59Z&filters[to][operator]=ci_equal&filters[to][value]=recipient@example.com&filters[domain_id][operator]=equal&filters[domain_id][value][]=3938&filters[domain_id][value][]=3939' \
               -H 'Authorization: Bearer YOUR_API_KEY'
       parameters:
         - name: search_after
@@ -1605,7 +1605,7 @@ paths:
     get:
       operationId: getEmailLogMessage
       summary: Get an email log message by ID
-      description: Returns a single message by message UUID. Message must belong to the account and a sending domain the token can access.
+      description: Returns a single message by message UUID. Message must belong to the account and a domain the token can access.
       tags:
         - email-logs
       x-codeSamples:
@@ -2001,11 +2001,11 @@ components:
       description: Bearer token authentication
 
   parameters:
-    sending_domain_id:
-      name: sending_domain_id
+    domain_id:
+      name: domain_id
       in: path
       required: true
-      description: Sending domain ID
+      description: Domain ID
       schema:
         type: integer
         example: 1
@@ -2056,9 +2056,9 @@ components:
         type: string
         format: date
         example: '2025-12-31'
-    SendingDomainIDsQueryFilter:
-      name: 'sending_domain_ids[]'
-      description: 'IDs of the sending domains for which to include the results. If not provided, results for all sending domains will be included.'
+    DomainIDsQueryFilter:
+      name: 'domain_ids[]'
+      description: 'IDs of the domains for which to include the results. If not provided, results for all domains will be included.'
       in: query
       schema:
         type: array
@@ -2133,7 +2133,7 @@ components:
           - Yahoo
 
   schemas:
-    SendingDomain:
+    Domain:
       type: object
       properties:
         id:
@@ -2145,17 +2145,17 @@ components:
         compliance_status:
           type: string
           description: |
-            Indicates the compliance verification status of the sending domain.
+            Indicates the compliance verification status of the domain.
             The domain must reach `compliant` status before you can send emails
             in production.
 
             - `demo` - A demo domain provided by Mailtrap. Can only send emails to the account owner.
             - `demo_exhausted` - A demo domain that has used up its sending allowance. Cannot send emails.
-            - `unverified_dns` - Domain DNS records have not been verified yet. Open your domain on the [Sending Domains](https://mailtrap.io/domains) page and follow the [Sending Domain Setup](https://docs.mailtrap.io/email-api-smtp/setup/sending-domain) guide.
+            - `unverified_dns` - Domain DNS records have not been verified yet. Open your domain on the [Domains](https://mailtrap.io/domains) page and follow the [Sending Domain Setup](https://docs.mailtrap.io/email-api-smtp/setup/sending-domain) guide.
             - `missing_company_info` - Account is missing required company information. Go to [Company Information](https://mailtrap.io/settings/account?current_tab=company_information) and fill in the required details.
             - `under_review` - Domain is undergoing automatic compliance review. No action needed — typically completes within 2 minutes.
-            - `awaiting_questionnaire` - Automatic review required additional information. Open your domain on the [Sending Domains](https://mailtrap.io/domains) page and fill in the compliance questionnaire.
-            - `awaiting_card_verification` - Compliance questionnaire was submitted but credit card identity verification is still needed. Open your domain on the [Sending Domains](https://mailtrap.io/domains) page and enter card details. The charged amount is refunded immediately and the card is not stored.
+            - `awaiting_questionnaire` - Automatic review required additional information. Open your domain on the [Domains](https://mailtrap.io/domains) page and fill in the compliance questionnaire.
+            - `awaiting_card_verification` - Compliance questionnaire was submitted but credit card identity verification is still needed. Open your domain on the [Domains](https://mailtrap.io/domains) page and enter card details. The charged amount is refunded immediately and the card is not stored.
             - `non_compliant` - Domain did not pass compliance checks. Sending is not allowed. Contact [Mailtrap Support](mailto:support@mailtrap.io) for details and next steps.
             - `compliant` - Domain has passed all compliance checks and is ready to send emails.
             - `suspended` - Domain sending has been suspended. Contact [Mailtrap Support](mailto:support@mailtrap.io) to resolve the issue.
@@ -2282,7 +2282,7 @@ components:
           can_update: true
           can_destroy: true
 
-    UpdateSendingDomainRequest:
+    UpdateDomainRequest:
       type: object
       properties:
         open_tracking_enabled:
@@ -2730,7 +2730,7 @@ components:
               sending_stream:
                 type: string
                 enum: [transactional, bulk]
-              sending_domain_id:
+              domain_id:
                 type: integer
               template_id:
                 type: integer
@@ -2761,7 +2761,7 @@ components:
             category: Welcome Email
             custom_variables: {}
             sending_stream: transactional
-            sending_domain_id: 3938
+            domain_id: 3938
             template_id: 100
             template_variables: {}
             opens_count: 2
@@ -2776,7 +2776,7 @@ components:
             category: Order Confirmation
             custom_variables: { order_id: '12345' }
             sending_stream: transactional
-            sending_domain_id: 3938
+            domain_id: 3938
             template_id: null
             template_variables: {}
             opens_count: 0
@@ -2814,7 +2814,7 @@ components:
         sending_stream:
           type: string
           enum: [transactional, bulk]
-        sending_domain_id:
+        domain_id:
           type: integer
         template_id:
           type: integer
@@ -2844,7 +2844,7 @@ components:
         category: Welcome Email
         custom_variables: {}
         sending_stream: transactional
-        sending_domain_id: 3938
+        domain_id: 3938
         template_id: 100
         template_variables: {}
         opens_count: 2
@@ -3133,8 +3133,8 @@ components:
           $ref: '#/components/schemas/FilterRecipientMx'
         category:
           $ref: '#/components/schemas/FilterCategory'
-        sending_domain_id:
-          $ref: '#/components/schemas/FilterSendingDomainId'
+        domain_id:
+          $ref: '#/components/schemas/FilterDomainId'
         sending_stream:
           $ref: '#/components/schemas/FilterSendingStream'
 
@@ -3396,7 +3396,7 @@ components:
         operator: equal
         value: Welcome Email
 
-    FilterSendingDomainId:
+    FilterDomainId:
       type: object
       required: [operator, value]
       properties:
@@ -3528,12 +3528,12 @@ components:
           example:
             errors: Rate limit exceeded
 
-    SendingDomainResponse:
-      description: Sending domain details
+    DomainResponse:
+      description: Domain details
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/SendingDomain'
+            $ref: '#/components/schemas/Domain'
 
     CompanyInfoResponse:
       description: Company information
@@ -3545,8 +3545,8 @@ components:
               data:
                 $ref: '#/components/schemas/CompanyInfo'
 
-    SendingDomainsResponse:
-      description: List of sending domains
+    DomainsResponse:
+      description: List of domains
       content:
         application/json:
           schema:
@@ -3555,7 +3555,7 @@ components:
               data:
                 type: array
                 items:
-                  $ref: '#/components/schemas/SendingDomain'
+                  $ref: '#/components/schemas/Domain'
 
     GetSuppressionsResponse:
       description: List of suppressions

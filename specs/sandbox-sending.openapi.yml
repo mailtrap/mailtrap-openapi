@@ -25,9 +25,9 @@ tags:
     x-page-description: Send emails to sandbox
     description: Test Emails
 paths:
-  '/api/send/{inbox_id}':
+  '/api/send/{sandbox_id}':
     post:
-      description: Send email message to the specified inbox.
+      description: Send email message to the specified sandbox.
       operationId: sendEmail
       summary: Send email (including templates)
       tags:
@@ -36,7 +36,7 @@ paths:
         - lang: shell
           label: 'cURL'
           source: |
-            curl -X POST https://sandbox.api.mailtrap.io/api/send/{inbox_id} \
+            curl -X POST https://sandbox.api.mailtrap.io/api/send/{sandbox_id} \
               -H 'Authorization: Bearer YOUR_API_KEY' \
               -H 'Content-Type: application/json' \
               -d '{
@@ -226,7 +226,7 @@ paths:
                 errors:
                   - Unauthorized
         '429':
-          description: Billing plan limit exhausted or inbox rate limit exceeded (see the response for details).
+          description: Billing plan limit exhausted or sandbox rate limit exceeded (see the response for details).
           content:
             application/json:
               schema:
@@ -246,8 +246,8 @@ paths:
                 errors:
                   - Internal server error
     parameters:
-      - $ref: '#/components/parameters/inbox_id'
-  '/api/batch/{inbox_id}':
+      - $ref: '#/components/parameters/sandbox_id'
+  '/api/batch/{sandbox_id}':
     post:
       description: |
         Batch send email (text, html, text&html, templates). Please note that the endpoint will return a 200-level http status, even when sending for individual messages may fail. Users of this endpoint should check the success and errors for each message in the response (the results are ordered the same as the original messages - `requests`). Please note that the endpoint accepts up to 500 messages per API call, and up to 50 MB payload size, including attachments.
@@ -259,7 +259,7 @@ paths:
         - lang: shell
           label: 'cURL'
           source: |
-            curl -X POST https://sandbox.api.mailtrap.io/api/batch/{inbox_id} \
+            curl -X POST https://sandbox.api.mailtrap.io/api/batch/{sandbox_id} \
               -H 'Authorization: Bearer YOUR_API_KEY' \
               -H 'Content-Type: application/json' \
               -d '{
@@ -503,7 +503,7 @@ paths:
                 errors:
                   - Internal server error
     parameters:
-      - $ref: '#/components/parameters/inbox_id'
+      - $ref: '#/components/parameters/sandbox_id'
 components:
   schemas:
     EmailWithText:
@@ -1006,9 +1006,9 @@ components:
       scheme: bearer
       bearerFormat: JWT
   parameters:
-    inbox_id:
-      description: Unique inbox ID
-      name: inbox_id
+    sandbox_id:
+      description: Sandbox ID
+      name: sandbox_id
       in: path
       required: true
       schema:
