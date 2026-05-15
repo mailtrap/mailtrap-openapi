@@ -55,7 +55,7 @@ tags:
       your Mailtrap account. For a complete guide, see 
       [Webhooks](https://docs.mailtrap.io/email-api-smtp/advanced/webhooks).
 paths:
-  /api/accounts/{account_id}/domains:
+  /api/domains:
     post:
       summary: Create domain
       description: |
@@ -73,7 +73,7 @@ paths:
         - lang: shell
           label: 'cURL'
           source: |
-            curl -X POST https://mailtrap.io/api/accounts/{account_id}/domains \
+            curl -X POST https://mailtrap.io/api/domains \
               -H 'Authorization: Bearer YOUR_API_KEY' \
               -H 'Content-Type: application/json' \
               -d '{
@@ -179,8 +179,6 @@ paths:
                 .create(YOUR_ACCOUNT_ID, request);
 
             System.out.println(domain);
-      parameters:
-        - $ref: '#/components/parameters/account_id'
       requestBody:
         required: true
         content:
@@ -223,7 +221,7 @@ paths:
         - lang: shell
           label: 'cURL'
           source: |
-            curl -X GET https://mailtrap.io/api/accounts/{account_id}/domains \
+            curl -X GET https://mailtrap.io/api/domains \
               -H 'Authorization: Bearer YOUR_API_KEY'
         - lang: javascript
           label: Node.js
@@ -319,8 +317,6 @@ paths:
             domains.forEach(domain ->
                 System.out.println("Domain: " + domain.getDomainName())
             );
-      parameters:
-        - $ref: '#/components/parameters/account_id'
       responses:
         '200':
           $ref: '#/components/responses/DomainsResponse'
@@ -328,7 +324,7 @@ paths:
           $ref: '#/components/responses/Unauthorized'
         '403':
           $ref: '#/components/responses/Forbidden'
-  /api/accounts/{account_id}/domains/{domain_id}:
+  /api/domains/{domain_id}:
     get:
       summary: Get domain
       description: Get details and verification status of a specific domain
@@ -339,7 +335,7 @@ paths:
         - lang: shell
           label: 'cURL'
           source: |
-            curl -X GET https://mailtrap.io/api/accounts/{account_id}/domains/{domain_id} \
+            curl -X GET https://mailtrap.io/api/domains/{domain_id} \
               -H 'Authorization: Bearer YOUR_API_KEY'
         - lang: javascript
           label: Node.js
@@ -434,7 +430,6 @@ paths:
 
             System.out.println("Domain: " + domain.getDomainName());
       parameters:
-        - $ref: '#/components/parameters/account_id'
         - $ref: '#/components/parameters/domain_id'
       responses:
         '200':
@@ -456,7 +451,7 @@ paths:
         - lang: shell
           label: 'cURL'
           source: |
-            curl -X DELETE https://mailtrap.io/api/accounts/{account_id}/domains/{domain_id} \
+            curl -X DELETE https://mailtrap.io/api/domains/{domain_id} \
               -H 'Authorization: Bearer YOUR_API_KEY'
         - lang: javascript
           label: Node.js
@@ -547,7 +542,6 @@ paths:
 
             System.out.println("Domain deleted successfully");
       parameters:
-        - $ref: '#/components/parameters/account_id'
         - $ref: '#/components/parameters/domain_id'
       responses:
         '204':
@@ -570,7 +564,7 @@ paths:
         - lang: shell
           label: 'cURL'
           source: |
-            curl -X PATCH https://mailtrap.io/api/accounts/{account_id}/domains/{domain_id} \
+            curl -X PATCH https://mailtrap.io/api/domains/{domain_id} \
               -H 'Authorization: Bearer YOUR_API_KEY' \
               -H 'Content-Type: application/json' \
               -d '{
@@ -581,7 +575,6 @@ paths:
                 }
               }'
       parameters:
-        - $ref: '#/components/parameters/account_id'
         - $ref: '#/components/parameters/domain_id'
       requestBody:
         required: true
@@ -611,7 +604,7 @@ paths:
         '422':
           $ref: '#/components/responses/UnprocessableEntity'
 
-  /api/accounts/{account_id}/domains/{domain_id}/send_setup_instructions:
+  /api/domains/{domain_id}/send_setup_instructions:
     post:
       summary: Send setup instructions
       description: Email DNS configuration instructions for the domain
@@ -622,7 +615,7 @@ paths:
         - lang: shell
           label: 'cURL'
           source: |
-            curl -X POST https://mailtrap.io/api/accounts/{account_id}/domains/{domain_id}/send_setup_instructions \
+            curl -X POST https://mailtrap.io/api/domains/{domain_id}/send_setup_instructions \
               -H 'Authorization: Bearer YOUR_API_KEY' \
               -H 'Content-Type: application/json' \
               -d '{
@@ -740,7 +733,6 @@ paths:
 
             System.out.println("Setup instructions sent");
       parameters:
-        - $ref: '#/components/parameters/account_id'
         - $ref: '#/components/parameters/domain_id'
       requestBody:
         required: true
@@ -769,7 +761,7 @@ paths:
         '422':
           $ref: '#/components/responses/UnprocessableEntity'
 
-  /api/accounts/{account_id}/domains/{domain_id}/company_info:
+  /api/domains/{domain_id}/company_info:
     get:
       summary: Get company info
       description: |
@@ -781,10 +773,9 @@ paths:
         - lang: shell
           label: 'cURL'
           source: |
-            curl -X GET https://mailtrap.io/api/accounts/{account_id}/domains/{domain_id}/company_info \
+            curl -X GET https://mailtrap.io/api/domains/{domain_id}/company_info \
               -H 'Authorization: Bearer YOUR_API_KEY'
       parameters:
-        - $ref: '#/components/parameters/account_id'
         - $ref: '#/components/parameters/domain_id'
       responses:
         '200':
@@ -808,7 +799,7 @@ paths:
         - lang: shell
           label: 'cURL'
           source: |
-            curl -X POST https://mailtrap.io/api/accounts/{account_id}/domains/{domain_id}/company_info \
+            curl -X POST https://mailtrap.io/api/domains/{domain_id}/company_info \
               -H 'Authorization: Bearer YOUR_API_KEY' \
               -H 'Content-Type: application/json' \
               -d '{
@@ -826,7 +817,6 @@ paths:
                 }
               }'
       parameters:
-        - $ref: '#/components/parameters/account_id'
         - $ref: '#/components/parameters/domain_id'
       requestBody:
         required: true
@@ -875,7 +865,7 @@ paths:
         - lang: shell
           label: 'cURL'
           source: |
-            curl -X PATCH https://mailtrap.io/api/accounts/{account_id}/domains/{domain_id}/company_info \
+            curl -X PATCH https://mailtrap.io/api/domains/{domain_id}/company_info \
               -H 'Authorization: Bearer YOUR_API_KEY' \
               -H 'Content-Type: application/json' \
               -d '{
@@ -885,7 +875,6 @@ paths:
                 }
               }'
       parameters:
-        - $ref: '#/components/parameters/account_id'
         - $ref: '#/components/parameters/domain_id'
       requestBody:
         required: true
@@ -914,7 +903,7 @@ paths:
         '422':
           $ref: '#/components/responses/UnprocessableEntity'
 
-  /api/accounts/{account_id}/suppressions:
+  /api/suppressions:
     get:
       summary: List suppressions
       description: |
@@ -931,11 +920,11 @@ paths:
           label: 'cURL'
           source: |
             # Get all suppressions
-            curl -X GET https://mailtrap.io/api/accounts/{account_id}/suppressions \
+            curl -X GET https://mailtrap.io/api/suppressions \
               -H 'Authorization: Bearer YOUR_API_KEY'
 
             # Search for specific email
-            curl -X GET 'https://mailtrap.io/api/accounts/{account_id}/suppressions?email=suppressed@example.com' \
+            curl -X GET 'https://mailtrap.io/api/suppressions?email=suppressed@example.com' \
               -H 'Authorization: Bearer YOUR_API_KEY'
         - lang: javascript
           label: Node.js
@@ -1073,7 +1062,6 @@ paths:
                 System.out.println("Email: " + filteredSuppression.getEmail())
             );
       parameters:
-        - $ref: '#/components/parameters/account_id'
         - name: email
           in: query
           description: Filter suppressions by exact email address (case-insensitive).
@@ -1130,7 +1118,7 @@ paths:
         - lang: shell
           label: 'cURL'
           source: |
-            curl -X POST https://mailtrap.io/api/accounts/{account_id}/suppressions \
+            curl -X POST https://mailtrap.io/api/suppressions \
               -H 'Authorization: Bearer YOUR_API_KEY' \
               -H 'Content-Type: application/json' \
               -d '{
@@ -1139,8 +1127,6 @@ paths:
                 "sending_stream": "transactional",
                 "type": "manual import"
               }'
-      parameters:
-        - $ref: '#/components/parameters/account_id'
       requestBody:
         required: true
         content:
@@ -1180,7 +1166,7 @@ paths:
           $ref: '#/components/responses/UnprocessableEntity'
         '429':
           $ref: '#/components/responses/LIMIT_EXCEEDED'
-  /api/accounts/{account_id}/suppressions/{suppression_id}:
+  /api/suppressions/{suppression_id}:
     delete:
       summary: Delete suppression
       description: |
@@ -1196,7 +1182,7 @@ paths:
         - lang: shell
           label: 'cURL'
           source: |
-            curl -X DELETE https://mailtrap.io/api/accounts/{account_id}/suppressions/{suppression_id} \
+            curl -X DELETE https://mailtrap.io/api/suppressions/{suppression_id} \
               -H 'Authorization: Bearer YOUR_API_KEY'
         - lang: javascript
           label: Node.js
@@ -1294,7 +1280,6 @@ paths:
 
             System.out.println("Suppression removed: " + result.getEmail());
       parameters:
-        - $ref: '#/components/parameters/account_id'
         - $ref: '#/components/parameters/suppression_id'
       responses:
         '200':
@@ -1306,7 +1291,7 @@ paths:
         '404':
           $ref: '#/components/responses/NotFound'
 
-  '/api/accounts/{account_id}/stats':
+  '/api/stats':
     get:
       operationId: getAccountSendingStats
       summary: Get Sending Stats
@@ -1317,7 +1302,7 @@ paths:
         - lang: shell
           label: 'cURL'
           source: |
-            curl -X GET 'https://mailtrap.io/api/accounts/{account_id}/stats?start_date=2025-01-01&end_date=2025-12-31' \
+            curl -X GET 'https://mailtrap.io/api/stats?start_date=2025-01-01&end_date=2025-12-31' \
               -H 'Authorization: Bearer YOUR_API_KEY'
         - lang: ruby
           label: Ruby
@@ -1329,7 +1314,6 @@ paths:
 
             puts "Stats: #{stats.get(start_date: '2026-01-01', end_date: '2026-01-31')}"
       parameters:
-        - $ref: '#/components/parameters/account_id'
         - $ref: '#/components/parameters/StartDateQueryFilter'
         - $ref: '#/components/parameters/EndDateQueryFilter'
         - $ref: '#/components/parameters/DomainIDsQueryFilter'
@@ -1351,7 +1335,7 @@ paths:
           $ref: '#/components/responses/Forbidden'
         '429':
           $ref: '#/components/responses/LIMIT_EXCEEDED'
-  '/api/accounts/{account_id}/stats/domains':
+  '/api/stats/domains':
     get:
       operationId: getAccountSendingStatsByDomains
       summary: Get Sending Stats by Domains
@@ -1362,7 +1346,7 @@ paths:
         - lang: shell
           label: 'cURL'
           source: |
-            curl -X GET 'https://mailtrap.io/api/accounts/{account_id}/stats/domains?start_date=2025-01-01&end_date=2025-12-31' \
+            curl -X GET 'https://mailtrap.io/api/stats/domains?start_date=2025-01-01&end_date=2025-12-31' \
               -H 'Authorization: Bearer YOUR_API_KEY'
         - lang: ruby
           label: Ruby
@@ -1374,7 +1358,6 @@ paths:
 
             puts "Stats: #{stats.by_domain(start_date: '2026-01-01', end_date: '2026-01-31')}"
       parameters:
-        - $ref: '#/components/parameters/account_id'
         - $ref: '#/components/parameters/StartDateQueryFilter'
         - $ref: '#/components/parameters/EndDateQueryFilter'
         - $ref: '#/components/parameters/DomainIDsQueryFilter'
@@ -1411,7 +1394,7 @@ paths:
           $ref: '#/components/responses/Forbidden'
         '429':
           $ref: '#/components/responses/LIMIT_EXCEEDED'
-  '/api/accounts/{account_id}/stats/categories':
+  '/api/stats/categories':
     get:
       operationId: getAccountSendingStatsByCategories
       summary: Get Sending Stats by Categories
@@ -1422,7 +1405,7 @@ paths:
         - lang: shell
           label: 'cURL'
           source: |
-            curl -X GET 'https://mailtrap.io/api/accounts/{account_id}/stats/categories?start_date=2025-01-01&end_date=2025-12-31' \
+            curl -X GET 'https://mailtrap.io/api/stats/categories?start_date=2025-01-01&end_date=2025-12-31' \
               -H 'Authorization: Bearer YOUR_API_KEY'
         - lang: ruby
           label: Ruby
@@ -1434,7 +1417,6 @@ paths:
 
             puts "Stats: #{stats.by_category(start_date: '2026-01-01', end_date: '2026-01-31')}"
       parameters:
-        - $ref: '#/components/parameters/account_id'
         - $ref: '#/components/parameters/StartDateQueryFilter'
         - $ref: '#/components/parameters/EndDateQueryFilter'
         - $ref: '#/components/parameters/DomainIDsQueryFilter'
@@ -1464,7 +1446,7 @@ paths:
           $ref: '#/components/responses/Forbidden'
         '429':
           $ref: '#/components/responses/LIMIT_EXCEEDED'
-  '/api/accounts/{account_id}/stats/email_service_providers':
+  '/api/stats/email_service_providers':
     get:
       operationId: getAccountSendingStatsByEmailServiceProviders
       summary: Get Sending Stats by Email Service Providers
@@ -1475,7 +1457,7 @@ paths:
         - lang: shell
           label: 'cURL'
           source: |
-            curl -X GET 'https://mailtrap.io/api/accounts/{account_id}/stats/email_service_providers?start_date=2025-01-01&end_date=2025-12-31' \
+            curl -X GET 'https://mailtrap.io/api/stats/email_service_providers?start_date=2025-01-01&end_date=2025-12-31' \
               -H 'Authorization: Bearer YOUR_API_KEY'
         - lang: ruby
           label: Ruby
@@ -1487,7 +1469,6 @@ paths:
 
             puts "Stats: #{stats.by_email_service_provider(start_date: '2026-01-01', end_date: '2026-01-31')}"
       parameters:
-        - $ref: '#/components/parameters/account_id'
         - $ref: '#/components/parameters/StartDateQueryFilter'
         - $ref: '#/components/parameters/EndDateQueryFilter'
         - $ref: '#/components/parameters/DomainIDsQueryFilter'
@@ -1517,7 +1498,7 @@ paths:
           $ref: '#/components/responses/Forbidden'
         '429':
           $ref: '#/components/responses/LIMIT_EXCEEDED'
-  '/api/accounts/{account_id}/stats/date':
+  '/api/stats/date':
     get:
       operationId: getAccountSendingStatsByDate
       summary: Get Sending Stats by Date
@@ -1528,7 +1509,7 @@ paths:
         - lang: shell
           label: 'cURL'
           source: |
-            curl -X GET 'https://mailtrap.io/api/accounts/{account_id}/stats/date?start_date=2025-01-01&end_date=2025-12-31' \
+            curl -X GET 'https://mailtrap.io/api/stats/date?start_date=2025-01-01&end_date=2025-12-31' \
               -H 'Authorization: Bearer YOUR_API_KEY'
         - lang: ruby
           label: Ruby
@@ -1540,7 +1521,6 @@ paths:
 
             puts "Stats: #{stats.by_date(start_date: '2026-01-01', end_date: '2026-01-31')}"
       parameters:
-        - $ref: '#/components/parameters/account_id'
         - $ref: '#/components/parameters/StartDateQueryFilter'
         - $ref: '#/components/parameters/EndDateQueryFilter'
         - $ref: '#/components/parameters/DomainIDsQueryFilter'
@@ -1572,7 +1552,7 @@ paths:
         '429':
           $ref: '#/components/responses/LIMIT_EXCEEDED'
 
-  /api/accounts/{account_id}/email_logs:
+  /api/email_logs:
     get:
       operationId: listEmailLogs
       summary: List email logs
@@ -1586,10 +1566,9 @@ paths:
         - lang: shell
           label: 'cURL'
           source: |
-            curl -X GET -g 'https://mailtrap.io/api/accounts/{account_id}/email_logs?filters[sent_after]=2025-01-01T00:00:00Z&filters[sent_before]=2025-01-31T23:59:59Z&filters[to][operator]=ci_equal&filters[to][value]=recipient@example.com&filters[domain_id][operator]=equal&filters[domain_id][value][]=3938&filters[domain_id][value][]=3939' \
+            curl -X GET -g 'https://mailtrap.io/api/email_logs?filters[sent_after]=2025-01-01T00:00:00Z&filters[sent_before]=2025-01-31T23:59:59Z&filters[to][operator]=ci_equal&filters[to][value]=recipient@example.com&filters[domain_id][operator]=equal&filters[domain_id][value][]=3938&filters[domain_id][value][]=3939' \
               -H 'Authorization: Bearer YOUR_API_KEY'
       parameters:
-        - $ref: '#/components/parameters/account_id'
         - name: search_after
           in: query
           description: Cursor for the next page (message_id UUID from previous response next_page_cursor).
@@ -1622,7 +1601,7 @@ paths:
           $ref: '#/components/responses/NotFound'
         '429':
           $ref: '#/components/responses/LIMIT_EXCEEDED'
-  /api/accounts/{account_id}/email_logs/{sending_message_id}:
+  /api/email_logs/{sending_message_id}:
     get:
       operationId: getEmailLogMessage
       summary: Get an email log message by ID
@@ -1633,10 +1612,9 @@ paths:
         - lang: shell
           label: 'cURL'
           source: |
-            curl -X GET 'https://mailtrap.io/api/accounts/{account_id}/email_logs/{sending_message_id}' \
+            curl -X GET 'https://mailtrap.io/api/email_logs/{sending_message_id}' \
               -H 'Authorization: Bearer YOUR_API_KEY'
       parameters:
-        - $ref: '#/components/parameters/account_id'
         - $ref: '#/components/parameters/sending_message_id'
       responses:
         '200':
@@ -1652,7 +1630,7 @@ paths:
         '429':
           $ref: '#/components/responses/LIMIT_EXCEEDED'
 
-  /api/accounts/{account_id}/webhooks:
+  /api/webhooks:
     post:
       operationId: createWebhook
       summary: Create a webhook
@@ -1665,7 +1643,7 @@ paths:
         - lang: shell
           label: 'cURL'
           source: |
-            curl -X POST https://mailtrap.io/api/accounts/{account_id}/webhooks \
+            curl -X POST https://mailtrap.io/api/webhooks \
               -H 'Authorization: Bearer YOUR_API_KEY' \
               -H 'Content-Type: application/json' \
               -d '{
@@ -1678,8 +1656,6 @@ paths:
                   "domain_id": 435
                 }
               }'
-      parameters:
-        - $ref: '#/components/parameters/account_id'
       requestBody:
         required: true
         content:
@@ -1793,10 +1769,8 @@ paths:
         - lang: shell
           label: 'cURL'
           source: |
-            curl -X GET https://mailtrap.io/api/accounts/{account_id}/webhooks \
+            curl -X GET https://mailtrap.io/api/webhooks \
               -H 'Authorization: Bearer YOUR_API_KEY'
-      parameters:
-        - $ref: '#/components/parameters/account_id'
       responses:
         '200':
           description: List of webhooks
@@ -1831,7 +1805,7 @@ paths:
         '403':
           $ref: '#/components/responses/Forbidden'
 
-  /api/accounts/{account_id}/webhooks/{webhook_id}:
+  /api/webhooks/{webhook_id}:
     get:
       operationId: getWebhook
       summary: Get a webhook
@@ -1842,10 +1816,9 @@ paths:
         - lang: shell
           label: 'cURL'
           source: |
-            curl -X GET https://mailtrap.io/api/accounts/{account_id}/webhooks/{webhook_id} \
+            curl -X GET https://mailtrap.io/api/webhooks/{webhook_id} \
               -H 'Authorization: Bearer YOUR_API_KEY'
       parameters:
-        - $ref: '#/components/parameters/account_id'
         - $ref: '#/components/parameters/webhook_id'
       responses:
         '200':
@@ -1887,7 +1860,7 @@ paths:
         - lang: shell
           label: 'cURL'
           source: |
-            curl -X PATCH https://mailtrap.io/api/accounts/{account_id}/webhooks/{webhook_id} \
+            curl -X PATCH https://mailtrap.io/api/webhooks/{webhook_id} \
               -H 'Authorization: Bearer YOUR_API_KEY' \
               -H 'Content-Type: application/json' \
               -d '{
@@ -1896,7 +1869,6 @@ paths:
                 }
               }'
       parameters:
-        - $ref: '#/components/parameters/account_id'
         - $ref: '#/components/parameters/webhook_id'
       requestBody:
         required: true
@@ -1987,10 +1959,9 @@ paths:
         - lang: shell
           label: 'cURL'
           source: |
-            curl -X DELETE https://mailtrap.io/api/accounts/{account_id}/webhooks/{webhook_id} \
+            curl -X DELETE https://mailtrap.io/api/webhooks/{webhook_id} \
               -H 'Authorization: Bearer YOUR_API_KEY'
       parameters:
-        - $ref: '#/components/parameters/account_id'
         - $ref: '#/components/parameters/webhook_id'
       responses:
         '200':
@@ -2030,15 +2001,6 @@ components:
       description: Bearer token authentication
 
   parameters:
-    account_id:
-      name: account_id
-      in: path
-      required: true
-      description: Account ID
-      schema:
-        type: integer
-        example: 1
-
     domain_id:
       name: domain_id
       in: path

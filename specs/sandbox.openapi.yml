@@ -56,7 +56,7 @@ tags:
     description: Interactions with attachments
 
 paths:
-  '/api/accounts/{account_id}/sandboxes':
+  '/api/sandboxes':
     get:
       summary: Get a list of sandboxes
       description: Get a list of sandboxes.
@@ -73,7 +73,7 @@ paths:
         - lang: shell
           label: 'cURL'
           source: |
-            curl -X GET https://mailtrap.io/api/accounts/{account_id}/sandboxes \
+            curl -X GET https://mailtrap.io/api/sandboxes \
               -H 'Authorization: Bearer YOUR_API_KEY'
         - lang: javascript
           label: Node.js
@@ -162,9 +162,7 @@ paths:
 
             System.out.println(inboxes);
       operationId: getSandboxes
-    parameters:
-      - $ref: '#/components/parameters/account_id'
-  '/api/accounts/{account_id}/projects':
+  '/api/projects':
     post:
       summary: Create project
       description: The project name is min 2 characters and max 100 characters long.
@@ -196,7 +194,7 @@ paths:
         - lang: shell
           label: 'cURL'
           source: |
-            curl -X POST https://mailtrap.io/api/accounts/{account_id}/projects \
+            curl -X POST https://mailtrap.io/api/projects \
               -H 'Authorization: Bearer YOUR_API_KEY' \
               -H 'Content-Type: application/json' \
               -d '{
@@ -322,7 +320,7 @@ paths:
         - lang: shell
           label: 'cURL'
           source: |
-            curl -X GET https://mailtrap.io/api/accounts/{account_id}/projects \
+            curl -X GET https://mailtrap.io/api/projects \
               -H 'Authorization: Bearer YOUR_API_KEY'
         - lang: javascript
           label: Node.js
@@ -421,9 +419,7 @@ paths:
                 System.out.println("Project: " + project.getName() +
                                    ", ID: " + project.getId());
             }
-    parameters:
-      - $ref: '#/components/parameters/account_id'
-  '/api/accounts/{account_id}/projects/{project_id}':
+  '/api/projects/{project_id}':
     get:
       summary: Get project by ID
       description: Get the project and its sandboxes.
@@ -443,7 +439,7 @@ paths:
         - lang: shell
           label: 'cURL'
           source: |
-            curl -X GET https://mailtrap.io/api/accounts/{account_id}/projects/{project_id} \
+            curl -X GET https://mailtrap.io/api/projects/{project_id} \
               -H 'Authorization: Bearer YOUR_API_KEY'
         - lang: javascript
           label: Node.js
@@ -552,7 +548,7 @@ paths:
         - lang: shell
           label: 'cURL'
           source: |
-            curl -X PATCH https://mailtrap.io/api/accounts/{account_id}/projects/{project_id} \
+            curl -X PATCH https://mailtrap.io/api/projects/{project_id} \
               -H 'Authorization: Bearer YOUR_API_KEY' \
               -H 'Content-Type: application/json' \
               -d '{
@@ -708,7 +704,7 @@ paths:
         - lang: shell
           label: 'cURL'
           source: |
-            curl -X DELETE https://mailtrap.io/api/accounts/{account_id}/projects/{project_id} \
+            curl -X DELETE https://mailtrap.io/api/projects/{project_id} \
               -H 'Authorization: Bearer YOUR_API_KEY'
         - lang: javascript
           label: Node.js
@@ -827,9 +823,8 @@ paths:
           $ref: '#/components/responses/NOT_FOUND'
       operationId: deleteProject
     parameters:
-      - $ref: '#/components/parameters/account_id'
       - $ref: '#/components/parameters/project_id'
-  '/api/accounts/{account_id}/projects/{project_id}/sandboxes':
+  '/api/projects/{project_id}/sandboxes':
     post:
       summary: Create a sandbox
       description: Create a sandbox in a project.
@@ -863,7 +858,7 @@ paths:
         - lang: shell
           label: 'cURL'
           source: |
-            curl -X POST https://mailtrap.io/api/accounts/{account_id}/projects/{project_id}/sandboxes \
+            curl -X POST https://mailtrap.io/api/projects/{project_id}/sandboxes \
               -H 'Authorization: Bearer YOUR_API_KEY' \
               -H 'Content-Type: application/json' \
               -d '{
@@ -983,9 +978,8 @@ paths:
             System.out.println("Inbox created: " + inbox.getName());
             System.out.println("SMTP credentials - User: " + inbox.getUsername());
     parameters:
-      - $ref: '#/components/parameters/account_id'
       - $ref: '#/components/parameters/project_id'
-  '/api/accounts/{account_id}/sandboxes/{sandbox_id}':
+  '/api/sandboxes/{sandbox_id}':
     get:
       summary: Get sandbox attributes
       description: Get sandbox attributes by sandbox id. See the list of attributes in the example
@@ -1004,7 +998,7 @@ paths:
         - lang: shell
           label: 'cURL'
           source: |
-            curl -X GET https://mailtrap.io/api/accounts/{account_id}/sandboxes/{sandbox_id} \
+            curl -X GET https://mailtrap.io/api/sandboxes/{sandbox_id} \
               -H 'Authorization: Bearer YOUR_API_KEY'
         - lang: javascript
           label: Node.js
@@ -1117,7 +1111,7 @@ paths:
         - lang: shell
           label: 'cURL'
           source: |
-            curl -X DELETE https://mailtrap.io/api/accounts/{account_id}/sandboxes/{sandbox_id} \
+            curl -X DELETE https://mailtrap.io/api/sandboxes/{sandbox_id} \
               -H 'Authorization: Bearer YOUR_API_KEY'
         - lang: javascript
           label: Node.js
@@ -1245,7 +1239,7 @@ paths:
         - lang: shell
           label: 'cURL'
           source: |
-            curl -X PATCH https://mailtrap.io/api/accounts/{account_id}/sandboxes/{sandbox_id} \
+            curl -X PATCH https://mailtrap.io/api/sandboxes/{sandbox_id} \
               -H 'Authorization: Bearer YOUR_API_KEY' \
               -H 'Content-Type: application/json' \
               -d '{
@@ -1369,9 +1363,8 @@ paths:
             System.out.println(updatedInbox);
       operationId: updateSandbox
     parameters:
-      - $ref: '#/components/parameters/account_id'
       - $ref: '#/components/parameters/sandbox_id'
-  '/api/accounts/{account_id}/sandboxes/{sandbox_id}/clean':
+  '/api/sandboxes/{sandbox_id}/clean':
     patch:
       summary: Clean sandbox
       description: Delete all messages (emails) from sandbox.
@@ -1390,7 +1383,7 @@ paths:
         - lang: shell
           label: 'cURL'
           source: |
-            curl -X PATCH https://mailtrap.io/api/accounts/{account_id}/sandboxes/{sandbox_id}/clean \
+            curl -X PATCH https://mailtrap.io/api/sandboxes/{sandbox_id}/clean \
               -H 'Authorization: Bearer YOUR_API_KEY'
         - lang: javascript
           label: Node.js
@@ -1486,9 +1479,8 @@ paths:
             System.out.println(cleanedInbox);
       operationId: cleanSandbox
     parameters:
-      - $ref: '#/components/parameters/account_id'
       - $ref: '#/components/parameters/sandbox_id'
-  '/api/accounts/{account_id}/sandboxes/{sandbox_id}/all_read':
+  '/api/sandboxes/{sandbox_id}/all_read':
     patch:
       summary: Mark as read
       description: Mark all messages in the sandbox as read.
@@ -1507,7 +1499,7 @@ paths:
         - lang: shell
           label: 'cURL'
           source: |
-            curl -X PATCH https://mailtrap.io/api/accounts/{account_id}/sandboxes/{sandbox_id}/all_read \
+            curl -X PATCH https://mailtrap.io/api/sandboxes/{sandbox_id}/all_read \
               -H 'Authorization: Bearer YOUR_API_KEY'
         - lang: javascript
           label: Node.js
@@ -1603,9 +1595,8 @@ paths:
             System.out.println(markedInbox);
       operationId: markAsReadSandbox
     parameters:
-      - $ref: '#/components/parameters/account_id'
       - $ref: '#/components/parameters/sandbox_id'
-  '/api/accounts/{account_id}/sandboxes/{sandbox_id}/reset_credentials':
+  '/api/sandboxes/{sandbox_id}/reset_credentials':
     patch:
       summary: Reset credentials
       description: Reset SMTP credentials of the sandbox.
@@ -1624,7 +1615,7 @@ paths:
         - lang: shell
           label: 'cURL'
           source: |
-            curl -X PATCH https://mailtrap.io/api/accounts/{account_id}/sandboxes/{sandbox_id}/reset_credentials \
+            curl -X PATCH https://mailtrap.io/api/sandboxes/{sandbox_id}/reset_credentials \
               -H 'Authorization: Bearer YOUR_API_KEY'
         - lang: javascript
           label: Node.js
@@ -1720,9 +1711,8 @@ paths:
             System.out.println(updatedInbox);
       operationId: resetSandboxCredentials
     parameters:
-      - $ref: '#/components/parameters/account_id'
       - $ref: '#/components/parameters/sandbox_id'
-  '/api/accounts/{account_id}/sandboxes/{sandbox_id}/toggle_email_username':
+  '/api/sandboxes/{sandbox_id}/toggle_email_username':
     patch:
       summary: Enable email address
       description: Turn the email address of the sandbox on/off.
@@ -1741,7 +1731,7 @@ paths:
         - lang: shell
           label: 'cURL'
           source: |
-            curl -X PATCH https://mailtrap.io/api/accounts/{account_id}/sandboxes/{sandbox_id}/toggle_email_username \
+            curl -X PATCH https://mailtrap.io/api/sandboxes/{sandbox_id}/toggle_email_username \
               -H 'Authorization: Bearer YOUR_API_KEY'
         - lang: javascript
           label: Node.js
@@ -1828,9 +1818,8 @@ paths:
             System.out.println(updatedInbox);
       operationId: enableSandboxEmailAddresses
     parameters:
-      - $ref: '#/components/parameters/account_id'
       - $ref: '#/components/parameters/sandbox_id'
-  '/api/accounts/{account_id}/sandboxes/{sandbox_id}/reset_email_username':
+  '/api/sandboxes/{sandbox_id}/reset_email_username':
     patch:
       summary: Reset email address
       description: Reset username of email address per sandbox.
@@ -1849,7 +1838,7 @@ paths:
         - lang: shell
           label: 'cURL'
           source: |
-            curl -X PATCH https://mailtrap.io/api/accounts/{account_id}/sandboxes/{sandbox_id}/reset_email_username \
+            curl -X PATCH https://mailtrap.io/api/sandboxes/{sandbox_id}/reset_email_username \
               -H 'Authorization: Bearer YOUR_API_KEY'
         - lang: javascript
           label: Node.js
@@ -1937,9 +1926,8 @@ paths:
             System.out.println(updatedInbox);
       operationId: resetEmailUserNamePerSandbox
     parameters:
-      - $ref: '#/components/parameters/account_id'
       - $ref: '#/components/parameters/sandbox_id'
-  '/api/accounts/{account_id}/sandboxes/{sandbox_id}/messages/{message_id}':
+  '/api/sandboxes/{sandbox_id}/messages/{message_id}':
     get:
       summary: Show email message
       description: Get email message by ID.
@@ -2005,7 +1993,7 @@ paths:
         - lang: shell
           label: 'cURL'
           source: |
-            curl -X GET https://mailtrap.io/api/accounts/{account_id}/sandboxes/{sandbox_id}/messages/{message_id} \
+            curl -X GET https://mailtrap.io/api/sandboxes/{sandbox_id}/messages/{message_id} \
               -H 'Authorization: Bearer YOUR_API_KEY'
         - lang: javascript
           label: Node.js
@@ -2235,7 +2223,7 @@ paths:
         - lang: shell
           label: 'cURL'
           source: |
-            curl -X PATCH https://mailtrap.io/api/accounts/{account_id}/sandboxes/{sandbox_id}/messages/{message_id} \
+            curl -X PATCH https://mailtrap.io/api/sandboxes/{sandbox_id}/messages/{message_id} \
               -H 'Authorization: Bearer YOUR_API_KEY' \
               -H 'Content-Type: application/json' \
               -d '{"message": {"is_read": "true"}}'
@@ -2462,7 +2450,7 @@ paths:
         - lang: shell
           label: 'cURL'
           source: |
-            curl -X DELETE https://mailtrap.io/api/accounts/{account_id}/sandboxes/{sandbox_id}/messages/{message_id} \
+            curl -X DELETE https://mailtrap.io/api/sandboxes/{sandbox_id}/messages/{message_id} \
               -H 'Authorization: Bearer YOUR_API_KEY'
         - lang: javascript
           label: Node.js
@@ -2568,10 +2556,9 @@ paths:
             System.out.println(deletedMessage);
       operationId: deleteSandboxEmailMessage
     parameters:
-      - $ref: '#/components/parameters/account_id'
       - $ref: '#/components/parameters/sandbox_id'
       - $ref: '#/components/parameters/message_id'
-  '/api/accounts/{account_id}/sandboxes/{sandbox_id}/messages':
+  '/api/sandboxes/{sandbox_id}/messages':
     get:
       summary: Get messages
       description: Get all messages in the sandbox. The response contains up to 30 messages. Use `last_id` or `page` to retrieve more.
@@ -2635,7 +2622,7 @@ paths:
         - lang: shell
           label: 'cURL'
           source: |
-            curl -X GET https://mailtrap.io/api/accounts/{account_id}/sandboxes/{sandbox_id}/messages \
+            curl -X GET https://mailtrap.io/api/sandboxes/{sandbox_id}/messages \
               -H 'Authorization: Bearer YOUR_API_KEY'
         - lang: javascript
           label: Node.js
@@ -2771,9 +2758,8 @@ paths:
           name: page
           description: Page number for paginated results.
     parameters:
-      - $ref: '#/components/parameters/account_id'
       - $ref: '#/components/parameters/sandbox_id'
-  '/api/accounts/{account_id}/sandboxes/{sandbox_id}/messages/{message_id}/forward':
+  '/api/sandboxes/{sandbox_id}/messages/{message_id}/forward':
     post:
       summary: Forward message
       description: Forward message to an email address. The email address must be confirmed by the recipient in advance.
@@ -2818,7 +2804,7 @@ paths:
         - lang: shell
           label: 'cURL'
           source: |
-            curl -X POST https://mailtrap.io/api/accounts/{account_id}/sandboxes/{sandbox_id}/messages/{message_id}/forward \
+            curl -X POST https://mailtrap.io/api/sandboxes/{sandbox_id}/messages/{message_id}/forward \
               -H 'Authorization: Bearer YOUR_API_KEY' \
               -H 'Content-Type: application/json' \
               -d '{"email": "recipient@example.com"}'
@@ -2939,10 +2925,9 @@ paths:
             System.out.println(forwardedMessage);
       operationId: forwardSandboxEmailMessage
     parameters:
-      - $ref: '#/components/parameters/account_id'
       - $ref: '#/components/parameters/sandbox_id'
       - $ref: '#/components/parameters/message_id'
-  '/api/accounts/{account_id}/sandboxes/{sandbox_id}/messages/{message_id}/spam_report':
+  '/api/sandboxes/{sandbox_id}/messages/{message_id}/spam_report':
     get:
       summary: Get message spam score
       description: Get a brief spam report by message ID.
@@ -3016,7 +3001,7 @@ paths:
         - lang: shell
           label: 'cURL'
           source: |
-            curl -X GET https://mailtrap.io/api/accounts/{account_id}/sandboxes/{sandbox_id}/messages/{message_id}/spam_report \
+            curl -X GET https://mailtrap.io/api/sandboxes/{sandbox_id}/messages/{message_id}/spam_report \
               -H 'Authorization: Bearer YOUR_API_KEY'
         - lang: javascript
           label: Node.js
@@ -3100,10 +3085,9 @@ paths:
             System.out.println(spamReport);
       operationId: getSandboxEmailMessageSpamReport
     parameters:
-      - $ref: '#/components/parameters/account_id'
       - $ref: '#/components/parameters/sandbox_id'
       - $ref: '#/components/parameters/message_id'
-  '/api/accounts/{account_id}/sandboxes/{sandbox_id}/messages/{message_id}/analyze':
+  '/api/sandboxes/{sandbox_id}/messages/{message_id}/analyze':
     get:
       summary: Get message HTML analysis
       description: Get a brief HTML report by message ID.
@@ -3199,7 +3183,7 @@ paths:
         - lang: shell
           label: 'cURL'
           source: |
-            curl -X GET https://mailtrap.io/api/accounts/{account_id}/sandboxes/{sandbox_id}/messages/{message_id}/analyze \
+            curl -X GET https://mailtrap.io/api/sandboxes/{sandbox_id}/messages/{message_id}/analyze \
               -H 'Authorization: Bearer YOUR_API_KEY'
         - lang: javascript
           label: Node.js
@@ -3281,10 +3265,9 @@ paths:
             System.out.println(htmlAnalysis);
       operationId: getSandboxEmailMessageHTMLAnalysis
     parameters:
-      - $ref: '#/components/parameters/account_id'
       - $ref: '#/components/parameters/sandbox_id'
       - $ref: '#/components/parameters/message_id'
-  '/api/accounts/{account_id}/sandboxes/{sandbox_id}/messages/{message_id}/body.txt':
+  '/api/sandboxes/{sandbox_id}/messages/{message_id}/body.txt':
     get:
       summary: Get text message
       description: 'Get text email body, if it exists.'
@@ -3331,7 +3314,7 @@ paths:
         - lang: shell
           label: 'cURL'
           source: |
-            curl -X GET https://mailtrap.io/api/accounts/{account_id}/sandboxes/{sandbox_id}/messages/{message_id}/body.txt \
+            curl -X GET https://mailtrap.io/api/sandboxes/{sandbox_id}/messages/{message_id}/body.txt \
               -H 'Authorization: Bearer YOUR_API_KEY'
         - lang: javascript
           label: Node.js
@@ -3413,10 +3396,9 @@ paths:
             System.out.println(textBody);
       operationId: getSandboxEmailMessageBodyAsTxt
     parameters:
-      - $ref: '#/components/parameters/account_id'
       - $ref: '#/components/parameters/sandbox_id'
       - $ref: '#/components/parameters/message_id'
-  '/api/accounts/{account_id}/sandboxes/{sandbox_id}/messages/{message_id}/body.raw':
+  '/api/sandboxes/{sandbox_id}/messages/{message_id}/body.raw':
     get:
       summary: Get raw message
       description: Get raw email body.
@@ -3507,7 +3489,7 @@ paths:
         - lang: shell
           label: 'cURL'
           source: |
-            curl -X GET https://mailtrap.io/api/accounts/{account_id}/sandboxes/{sandbox_id}/messages/{message_id}/body.raw \
+            curl -X GET https://mailtrap.io/api/sandboxes/{sandbox_id}/messages/{message_id}/body.raw \
               -H 'Authorization: Bearer YOUR_API_KEY'
         - lang: javascript
           label: Node.js
@@ -3589,10 +3571,9 @@ paths:
             System.out.println(rawBody);
       operationId: getSandboxEmailMessageBodyAsRaw
     parameters:
-      - $ref: '#/components/parameters/account_id'
       - $ref: '#/components/parameters/sandbox_id'
       - $ref: '#/components/parameters/message_id'
-  '/api/accounts/{account_id}/sandboxes/{sandbox_id}/messages/{message_id}/body.htmlsource':
+  '/api/sandboxes/{sandbox_id}/messages/{message_id}/body.htmlsource':
     get:
       summary: Get message source
       description: Get HTML source of email.
@@ -3662,7 +3643,7 @@ paths:
         - lang: shell
           label: 'cURL'
           source: |
-            curl -X GET https://mailtrap.io/api/accounts/{account_id}/sandboxes/{sandbox_id}/messages/{message_id}/body.htmlsource \
+            curl -X GET https://mailtrap.io/api/sandboxes/{sandbox_id}/messages/{message_id}/body.htmlsource \
               -H 'Authorization: Bearer YOUR_API_KEY'
         - lang: javascript
           label: Node.js
@@ -3740,10 +3721,9 @@ paths:
             System.out.println(htmlSource);
       operationId: getSandboxEmailMessageBodyAsHtmlSource
     parameters:
-      - $ref: '#/components/parameters/account_id'
       - $ref: '#/components/parameters/sandbox_id'
       - $ref: '#/components/parameters/message_id'
-  '/api/accounts/{account_id}/sandboxes/{sandbox_id}/messages/{message_id}/body.html':
+  '/api/sandboxes/{sandbox_id}/messages/{message_id}/body.html':
     get:
       summary: Get HTML message
       description: Get formatted HTML email body. Not applicable for plain text emails.
@@ -3811,7 +3791,7 @@ paths:
         - lang: shell
           label: 'cURL'
           source: |
-            curl -X GET https://mailtrap.io/api/accounts/{account_id}/sandboxes/{sandbox_id}/messages/{message_id}/body.html \
+            curl -X GET https://mailtrap.io/api/sandboxes/{sandbox_id}/messages/{message_id}/body.html \
               -H 'Authorization: Bearer YOUR_API_KEY'
         - lang: javascript
           label: Node.js
@@ -3894,10 +3874,9 @@ paths:
             System.out.println(htmlBody);
       operationId: getSandboxEmailMessageBodyAsHtml
     parameters:
-      - $ref: '#/components/parameters/account_id'
       - $ref: '#/components/parameters/sandbox_id'
       - $ref: '#/components/parameters/message_id'
-  '/api/accounts/{account_id}/sandboxes/{sandbox_id}/messages/{message_id}/body.eml':
+  '/api/sandboxes/{sandbox_id}/messages/{message_id}/body.eml':
     get:
       summary: Get message as .eml
       description: Get email message in .eml format.
@@ -3989,7 +3968,7 @@ paths:
         - lang: shell
           label: 'cURL'
           source: |
-            curl -X GET https://mailtrap.io/api/accounts/{account_id}/sandboxes/{sandbox_id}/messages/{message_id}/body.eml \
+            curl -X GET https://mailtrap.io/api/sandboxes/{sandbox_id}/messages/{message_id}/body.eml \
               -H 'Authorization: Bearer YOUR_API_KEY'
         - lang: javascript
           label: Node.js
@@ -4071,10 +4050,9 @@ paths:
             System.out.println(emlContent);
       operationId: getSandboxEmailMessageBodyAsEml
     parameters:
-      - $ref: '#/components/parameters/account_id'
       - $ref: '#/components/parameters/sandbox_id'
       - $ref: '#/components/parameters/message_id'
-  '/api/accounts/{account_id}/sandboxes/{sandbox_id}/messages/{message_id}/mail_headers':
+  '/api/sandboxes/{sandbox_id}/messages/{message_id}/mail_headers':
     get:
       summary: Get mail headers
       description: Get mail headers of a message
@@ -4118,7 +4096,7 @@ paths:
         - lang: shell
           label: 'cURL'
           source: |
-            curl -X GET https://mailtrap.io/api/accounts/{account_id}/sandboxes/{sandbox_id}/messages/{message_id}/mail_headers \
+            curl -X GET https://mailtrap.io/api/sandboxes/{sandbox_id}/messages/{message_id}/mail_headers \
               -H 'Authorization: Bearer YOUR_API_KEY'
         - lang: javascript
           label: Node.js
@@ -4198,10 +4176,9 @@ paths:
             System.out.println(mailHeaders);
       operationId: getMailHeadersOfEmailMessage
     parameters:
-      - $ref: '#/components/parameters/account_id'
       - $ref: '#/components/parameters/sandbox_id'
       - $ref: '#/components/parameters/message_id'
-  '/api/accounts/{account_id}/sandboxes/{sandbox_id}/messages/{message_id}/attachments':
+  '/api/sandboxes/{sandbox_id}/messages/{message_id}/attachments':
     get:
       summary: Get attachments
       description: Get message attachments by sandbox_id and message_id.
@@ -4282,7 +4259,7 @@ paths:
         - lang: shell
           label: 'cURL'
           source: |
-            curl -X GET https://mailtrap.io/api/accounts/{account_id}/sandboxes/{sandbox_id}/messages/{message_id}/attachments \
+            curl -X GET https://mailtrap.io/api/sandboxes/{sandbox_id}/messages/{message_id}/attachments \
               -H 'Authorization: Bearer YOUR_API_KEY'
         - lang: javascript
           label: Node.js
@@ -4363,10 +4340,9 @@ paths:
             
             var attachments = client.testingApi().attachments().getAttachments(accountId, inboxId, messageId, null);
     parameters:
-      - $ref: '#/components/parameters/account_id'
       - $ref: '#/components/parameters/sandbox_id'
       - $ref: '#/components/parameters/message_id'
-  '/api/accounts/{account_id}/sandboxes/{sandbox_id}/messages/{message_id}/attachments/{attachment_id}':
+  '/api/sandboxes/{sandbox_id}/messages/{message_id}/attachments/{attachment_id}':
     get:
       summary: Get single attachment
       description: Get message single attachment by id.
@@ -4438,7 +4414,7 @@ paths:
         - lang: shell
           label: 'cURL'
           source: |
-            curl -X GET https://mailtrap.io/api/accounts/{account_id}/sandboxes/{sandbox_id}/messages/{message_id}/attachments/{attachment_id} \
+            curl -X GET https://mailtrap.io/api/sandboxes/{sandbox_id}/messages/{message_id}/attachments/{attachment_id} \
               -H 'Authorization: Bearer YOUR_API_KEY'
         - lang: javascript
           label: Node.js
@@ -4521,7 +4497,6 @@ paths:
             var client = MailtrapClientFactory.createMailtrapClient(config);
             var attachment = client.testingApi().attachments().getSingleAttachment(accountId, inboxId, messageId, attachmentId);
     parameters:
-      - $ref: '#/components/parameters/account_id'
       - $ref: '#/components/parameters/sandbox_id'
       - $ref: '#/components/parameters/message_id'
       - $ref: '#/components/parameters/attachment_id'
@@ -5057,16 +5032,6 @@ components:
           schema:
             $ref: '#/components/schemas/TestingSandbox'
   parameters:
-    account_id:
-      description: Unique account ID
-      name: account_id
-      in: path
-      required: true
-      schema:
-        type: integer
-        format: int64
-        minimum: 1
-        example: 3229
     sandbox_id:
       description: Unique sandbox ID
       name: sandbox_id

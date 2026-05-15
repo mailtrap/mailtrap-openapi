@@ -19,12 +19,6 @@ servers:
 tags:
   - name: Accounts
     x-page-title: Accounts
-    description: |
-      The Account ID is required when working with Account Management endpoints.
-  
-      To find your Account ID, you can either:
-      - Use the endpoint below to list your accounts, or
-      - Find it in the UI under [Account Settings](https://mailtrap.io/settings/account)
 
   - name: Account Accesses
     x-page-title: Access Control
@@ -170,7 +164,7 @@ paths:
                     - 1000
         '401':
           $ref: '#/components/responses/UNAUTHENTICATED'
-  '/api/accounts/{account_id}/account_accesses':
+  '/api/account_accesses':
     get:
       operationId: getAllUsersInAccount
       summary: List User & Invite account accesses
@@ -178,7 +172,7 @@ paths:
         Get list of account accesses for which `specifier_type` is `User` or `Invite`. You have to have
         account admin/owner permissions for this endpoint to work.
 
-        If you specify `project_ids`, `inbox_ids` or `domain_ids`, the endpoint will return account
+        If you specify `project_ids`, `sandbox_ids` or `domain_ids`, the endpoint will return account
         accesses for these resources.
       tags:
         - Account Accesses
@@ -186,7 +180,7 @@ paths:
         - lang: shell
           label: 'cURL'
           source: |
-            curl -X GET https://mailtrap.io/api/accounts/{account_id}/account_accesses \
+            curl -X GET https://mailtrap.io/api/account_accesses \
               -H 'Authorization: Bearer YOUR_API_TOKEN'
         - lang: javascript
           label: Node.js
@@ -268,8 +262,8 @@ paths:
               type: string
             example:
               - '3938'
-        - name: inbox_ids
-          description: The identifiers of the inboxes for which to include the results
+        - name: sandbox_ids
+          description: The identifiers of the sandboxes for which to include the results
           in: query
           schema:
             type: array
@@ -299,9 +293,7 @@ paths:
           $ref: '#/components/responses/UNAUTHENTICATED'
         '403':
           $ref: '#/components/responses/PERMISSION_DENIED'
-    parameters:
-      - $ref: '#/components/parameters/account_id'
-  '/api/accounts/{account_id}/account_accesses/{account_access_id}':
+  '/api/account_accesses/{account_access_id}':
     delete:
       operationId: deleteAccountAccessById
       summary: Remove account access
@@ -317,7 +309,7 @@ paths:
         - lang: shell
           label: 'cURL'
           source: |
-            curl -X DELETE https://mailtrap.io/api/accounts/{account_id}/account_accesses/{account_access_id} \
+            curl -X DELETE https://mailtrap.io/api/account_accesses/{account_access_id} \
               -H 'Authorization: Bearer YOUR_API_TOKEN'
         - lang: javascript
           label: Node.js
@@ -399,7 +391,6 @@ paths:
         '404':
           $ref: '#/components/responses/NOT_FOUND'
     parameters:
-      - $ref: '#/components/parameters/account_id'
       - schema:
           type: integer
           format: int64
@@ -409,7 +400,7 @@ paths:
         in: path
         description: Unique account access ID
         required: true
-  '/api/accounts/{account_id}/account_accesses/{account_access_id}/permissions/bulk':
+  '/api/account_accesses/{account_access_id}/permissions/bulk':
     put:
       operationId: updateUserPermissions
       summary: Manage user or token permissions
@@ -423,7 +414,7 @@ paths:
         - lang: shell
           label: 'cURL'
           source: |
-            curl -X PUT https://mailtrap.io/api/accounts/{account_id}/account_accesses/{account_access_id}/permissions/bulk \
+            curl -X PUT https://mailtrap.io/api/account_accesses/{account_access_id}/permissions/bulk \
               -H 'Authorization: Bearer YOUR_API_TOKEN' \
               -H 'Content-Type: application/json' \
               -d '{
@@ -544,8 +535,8 @@ paths:
                           - account
                           - billing
                           - project
-                          - inbox
-                          - sending_domain
+                          - sandbox
+                          - domain
                           - email_campaign_permission_scope
                       access_level:
                         type: string
@@ -566,7 +557,7 @@ paths:
                   resource_type: account
                   access_level: viewer
                 - resource_id: '3809'
-                  resource_type: inbox
+                  resource_type: sandbox
                   _destroy: true
       responses:
         '200':
@@ -587,7 +578,6 @@ paths:
         '404':
           $ref: '#/components/responses/NOT_FOUND'
     parameters:
-      - $ref: '#/components/parameters/account_id'
       - schema:
           type: integer
           format: int64
@@ -597,18 +587,18 @@ paths:
         in: path
         required: true
         description: Unique account access ID
-  '/api/accounts/{account_id}/permissions/resources':
+  '/api/permissions/resources':
     get:
       operationId: getResources
       summary: Get resources
-      description: 'Get all resources in your account (Inboxes, Projects, Domains, Email Campaigns, Billing and Account itself) to which the token has admin access.'
+      description: 'Get all resources in your account (Sandboxes, Projects, Domains, Email Campaigns, Billing and Account itself) to which the token has admin access.'
       tags:
         - Permissions
       x-codeSamples:
         - lang: shell
           label: 'cURL'
           source: |
-            curl -X GET https://mailtrap.io/api/accounts/{account_id}/permissions/resources \
+            curl -X GET https://mailtrap.io/api/permissions/resources \
               -H 'Authorization: Bearer YOUR_API_TOKEN'
         - lang: javascript
           label: Node.js
@@ -691,17 +681,15 @@ paths:
                       access_level: 100
                       resources:
                         - id: 4117907
-                          name: My Inbox
-                          type: inbox
+                          name: My Sandbox
+                          type: sandbox
                           access_level: 100
                           resources: []
         '401':
           $ref: '#/components/responses/UNAUTHENTICATED'
         '403':
           $ref: '#/components/responses/PERMISSION_DENIED'
-    parameters:
-      - $ref: '#/components/parameters/account_id'
-  '/api/accounts/{account_id}/api_tokens':
+  '/api/api_tokens':
     get:
       operationId: listApiTokens
       summary: List API tokens
@@ -712,10 +700,8 @@ paths:
         - lang: shell
           label: cURL
           source: |
-            curl -X GET https://mailtrap.io/api/accounts/{account_id}/api_tokens \
+            curl -X GET https://mailtrap.io/api/api_tokens \
               -H 'Authorization: Bearer YOUR_API_TOKEN'
-      parameters:
-        - $ref: '#/components/parameters/account_id'
       responses:
         '200':
           description: List of API tokens
@@ -737,7 +723,7 @@ paths:
         - lang: shell
           label: cURL
           source: |
-            curl -X POST https://mailtrap.io/api/accounts/{account_id}/api_tokens \
+            curl -X POST https://mailtrap.io/api/api_tokens \
               -H 'Authorization: Bearer YOUR_API_TOKEN' \
               -H 'Content-Type: application/json' \
               -d '{
@@ -746,8 +732,6 @@ paths:
                   {"resource_type": "account", "resource_id": 3229, "access_level": 100}
                 ]
               }'
-      parameters:
-        - $ref: '#/components/parameters/account_id'
       requestBody:
         required: true
         content:
@@ -767,7 +751,7 @@ paths:
           $ref: '#/components/responses/PERMISSION_DENIED'
         '422':
           $ref: '#/components/responses/UNPROCESSABLE_ENTITY'
-  '/api/accounts/{account_id}/api_tokens/{id}':
+  '/api/api_tokens/{id}':
     get:
       operationId: getApiToken
       summary: Get API token
@@ -778,10 +762,9 @@ paths:
         - lang: shell
           label: cURL
           source: |
-            curl -X GET https://mailtrap.io/api/accounts/{account_id}/api_tokens/{id} \
+            curl -X GET https://mailtrap.io/api/api_tokens/{id} \
               -H 'Authorization: Bearer YOUR_API_TOKEN'
       parameters:
-        - $ref: '#/components/parameters/account_id'
         - $ref: '#/components/parameters/api_token_id'
       responses:
         '200':
@@ -804,10 +787,9 @@ paths:
         - lang: shell
           label: cURL
           source: |
-            curl -X DELETE https://mailtrap.io/api/accounts/{account_id}/api_tokens/{id} \
+            curl -X DELETE https://mailtrap.io/api/api_tokens/{id} \
               -H 'Authorization: Bearer YOUR_API_TOKEN'
       parameters:
-        - $ref: '#/components/parameters/account_id'
         - $ref: '#/components/parameters/api_token_id'
       responses:
         '204':
@@ -818,7 +800,7 @@ paths:
           $ref: '#/components/responses/PERMISSION_DENIED'
         '404':
           $ref: '#/components/responses/NOT_FOUND'
-  '/api/accounts/{account_id}/api_tokens/{id}/reset':
+  '/api/api_tokens/{id}/reset':
     post:
       operationId: resetApiToken
       summary: Reset API token
@@ -833,10 +815,9 @@ paths:
         - lang: shell
           label: cURL
           source: |
-            curl -X POST https://mailtrap.io/api/accounts/{account_id}/api_tokens/{id}/reset \
+            curl -X POST https://mailtrap.io/api/api_tokens/{id}/reset \
               -H 'Authorization: Bearer YOUR_API_TOKEN'
       parameters:
-        - $ref: '#/components/parameters/account_id'
         - $ref: '#/components/parameters/api_token_id'
       responses:
         '200':
@@ -853,7 +834,7 @@ paths:
           $ref: '#/components/responses/NOT_FOUND'
         '422':
           $ref: '#/components/responses/UNPROCESSABLE_ENTITY'
-  '/api/accounts/{account_id}/billing/usage':
+  '/api/billing/usage':
     get:
       operationId: getAccountBillingUsage
       summary: Get current billing cycle usage
@@ -864,7 +845,7 @@ paths:
         - lang: shell
           label: 'cURL'
           source: |
-            curl -X GET https://mailtrap.io/api/accounts/{account_id}/billing/usage \
+            curl -X GET https://mailtrap.io/api/billing/usage \
               -H 'Authorization: Bearer YOUR_API_TOKEN'
         - lang: javascript
           label: Node.js
@@ -1012,8 +993,6 @@ paths:
           $ref: '#/components/responses/UNAUTHENTICATED'
         '403':
           $ref: '#/components/responses/PERMISSION_DENIED'
-    parameters:
-      - $ref: '#/components/parameters/account_id'
   '/api/organizations/{organization_id}/sub_accounts':
     get:
       operationId: getOrganizationSubAccounts
@@ -1139,8 +1118,8 @@ components:
     PermissionResourceNode:
       title: Permission resource node
       description: |
-        Nested resource tree for permission management. `type` values include `account`, `project`, `inbox`,
-        `sending_domain`, `email_template_permission_scope`, `email_campaign_permission_scope`, and others.
+        Nested resource tree for permission management. `type` values include `account`, `project`, `sandbox`,
+        `domain`, `email_template_permission_scope`, `email_campaign_permission_scope`, and others.
       type: object
       properties:
         id:
@@ -1236,8 +1215,8 @@ components:
                   - billing
                   - organization
                   - project
-                  - inbox
-                  - sending_domain
+                  - sandbox
+                  - domain
                   - email_campaign_permission_scope
               access_level:
                 type: integer
@@ -1402,8 +1381,8 @@ components:
           enum:
             - account
             - project
-            - inbox
-            - sending_domain
+            - sandbox
+            - domain
           description: Resource type for this permission
         resource_id:
           oneOf:
@@ -1461,8 +1440,8 @@ components:
       enum:
         - account
         - project
-        - inbox
-        - sending_domain
+        - sandbox
+        - domain
       description: Resource type for API token permissions.
       example: account
     AccessLevel:
@@ -1522,16 +1501,6 @@ components:
         format: int64
         minimum: 1
         example: 1001
-    account_id:
-      description: Unique account ID
-      name: account_id
-      in: path
-      required: true
-      schema:
-        type: integer
-        format: int64
-        minimum: 1
-        example: 3229
     api_token_id:
       description: API token ID
       name: id
