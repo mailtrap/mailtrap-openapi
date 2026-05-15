@@ -22,20 +22,20 @@ tags:
     x-page-description: Organize test environments
     description: Interactions with projects
 
-  - name: Sandboxes (Inboxes)
-    x-page-title: Sandboxes (Inboxes)
-    x-page-description: Manage test inboxes
+  - name: Sandboxes
+    x-page-title: Sandboxes
+    x-page-description: Manage test sandboxes
     description: |
-      Manage Sandboxes (Inboxes) for email testing. Capture and inspect emails without delivering them to real recipients. This is ideal for development, staging, and QA environments.
+      Manage Sandboxes for email testing. Capture and inspect emails without delivering them to real recipients. This is ideal for development, staging, and QA environments.
 
       ### Get your Sandbox ID
 
-      To use the Sandbox API, you need a Sandbox (Inbox) ID. You can get it in one of the following ways.
+      To use the Sandbox API, you need a Sandbox ID. You can get it in one of the following ways.
       
-      #### Option 1: From the inbox URL
+      #### Option 1: From the sandbox URL
       
       1. Open your Sandbox in Mailtrap.
-      2. Copy the ID from the inbox URL.
+      2. Copy the ID from the sandbox URL.
       
       Example:
         - URL: https://mailtrap.io/sandboxes/2564102/settings
@@ -43,7 +43,7 @@ tags:
       
       #### Option 2: Via the API
       
-      Use the `Get a list of inboxes` endpoint to retrieve all Sandboxes in your account.
+      Use the `Get a list of sandboxes` endpoint to retrieve all Sandboxes in your account.
 
   - name: Messages
     x-page-title: Messages
@@ -56,15 +56,15 @@ tags:
     description: Interactions with attachments
 
 paths:
-  '/api/accounts/{account_id}/inboxes':
+  '/api/sandboxes':
     get:
-      summary: Get a list of inboxes
-      description: Get a list of inboxes.
+      summary: Get a list of sandboxes
+      description: Get a list of sandboxes.
       tags:
-        - Sandboxes (Inboxes)
+        - Sandboxes
       responses:
         '200':
-          $ref: '#/components/responses/InboxesResponse'
+          $ref: '#/components/responses/SandboxesResponse'
         '401':
           $ref: '#/components/responses/UNAUTHENTICATED'
         '403':
@@ -73,7 +73,7 @@ paths:
         - lang: shell
           label: 'cURL'
           source: |
-            curl -X GET https://mailtrap.io/api/accounts/{account_id}/inboxes \
+            curl -X GET https://mailtrap.io/api/sandboxes \
               -H 'Authorization: Bearer YOUR_API_KEY'
         - lang: javascript
           label: Node.js
@@ -161,10 +161,8 @@ paths:
                 .getInboxes(accountId);
 
             System.out.println(inboxes);
-      operationId: getInboxes
-    parameters:
-      - $ref: '#/components/parameters/account_id'
-  '/api/accounts/{account_id}/projects':
+      operationId: getSandboxes
+  '/api/projects':
     post:
       summary: Create project
       description: The project name is min 2 characters and max 100 characters long.
@@ -196,7 +194,7 @@ paths:
         - lang: shell
           label: 'cURL'
           source: |
-            curl -X POST https://mailtrap.io/api/accounts/{account_id}/projects \
+            curl -X POST https://mailtrap.io/api/projects \
               -H 'Authorization: Bearer YOUR_API_KEY' \
               -H 'Content-Type: application/json' \
               -d '{
@@ -307,7 +305,7 @@ paths:
             System.out.println(project);
     get:
       summary: Get a list of projects
-      description: List projects and their inboxes to which the API token has access.
+      description: List projects and their sandboxes to which the API token has access.
       tags:
         - Projects
       responses:
@@ -322,7 +320,7 @@ paths:
         - lang: shell
           label: 'cURL'
           source: |
-            curl -X GET https://mailtrap.io/api/accounts/{account_id}/projects \
+            curl -X GET https://mailtrap.io/api/projects \
               -H 'Authorization: Bearer YOUR_API_KEY'
         - lang: javascript
           label: Node.js
@@ -421,12 +419,10 @@ paths:
                 System.out.println("Project: " + project.getName() +
                                    ", ID: " + project.getId());
             }
-    parameters:
-      - $ref: '#/components/parameters/account_id'
-  '/api/accounts/{account_id}/projects/{project_id}':
+  '/api/projects/{project_id}':
     get:
       summary: Get project by ID
-      description: Get the project and its inboxes.
+      description: Get the project and its sandboxes.
       tags:
         - Projects
       responses:
@@ -443,7 +439,7 @@ paths:
         - lang: shell
           label: 'cURL'
           source: |
-            curl -X GET https://mailtrap.io/api/accounts/{account_id}/projects/{project_id} \
+            curl -X GET https://mailtrap.io/api/projects/{project_id} \
               -H 'Authorization: Bearer YOUR_API_KEY'
         - lang: javascript
           label: Node.js
@@ -552,7 +548,7 @@ paths:
         - lang: shell
           label: 'cURL'
           source: |
-            curl -X PATCH https://mailtrap.io/api/accounts/{account_id}/projects/{project_id} \
+            curl -X PATCH https://mailtrap.io/api/projects/{project_id} \
               -H 'Authorization: Bearer YOUR_API_KEY' \
               -H 'Content-Type: application/json' \
               -d '{
@@ -701,14 +697,14 @@ paths:
       operationId: updateProject
     delete:
       summary: Delete project
-      description: Delete project and its inboxes.
+      description: Delete project and its sandboxes.
       tags:
         - Projects
       x-codeSamples:
         - lang: shell
           label: 'cURL'
           source: |
-            curl -X DELETE https://mailtrap.io/api/accounts/{account_id}/projects/{project_id} \
+            curl -X DELETE https://mailtrap.io/api/projects/{project_id} \
               -H 'Authorization: Bearer YOUR_API_KEY'
         - lang: javascript
           label: Node.js
@@ -827,48 +823,47 @@ paths:
           $ref: '#/components/responses/NOT_FOUND'
       operationId: deleteProject
     parameters:
-      - $ref: '#/components/parameters/account_id'
       - $ref: '#/components/parameters/project_id'
-  '/api/accounts/{account_id}/projects/{project_id}/inboxes':
+  '/api/projects/{project_id}/sandboxes':
     post:
-      summary: Create an inbox
-      description: Create an inbox in a project.
+      summary: Create a sandbox
+      description: Create a sandbox in a project.
       tags:
-        - Sandboxes (Inboxes)
+        - Sandboxes
       requestBody:
         content:
           application/json:
             schema:
               type: object
               properties:
-                inbox:
+                sandbox:
                   type: object
                   properties:
                     name:
                       type: string
             example:
-              inbox:
-                name: My new inbox
+              sandbox:
+                name: My new sandbox
       responses:
         '200':
-          $ref: '#/components/responses/InboxResponse'
+          $ref: '#/components/responses/SandboxResponse'
         '401':
           $ref: '#/components/responses/UNAUTHENTICATED'
         '403':
           $ref: '#/components/responses/PERMISSION_DENIED'
         '404':
           $ref: '#/components/responses/NOT_FOUND'
-      operationId: createInbox
+      operationId: createSandbox
       x-codeSamples:
         - lang: shell
           label: 'cURL'
           source: |
-            curl -X POST https://mailtrap.io/api/accounts/{account_id}/projects/{project_id}/inboxes \
+            curl -X POST https://mailtrap.io/api/projects/{project_id}/sandboxes \
               -H 'Authorization: Bearer YOUR_API_KEY' \
               -H 'Content-Type: application/json' \
               -d '{
-                "inbox": {
-                  "name": "My Test Inbox"
+                "sandbox": {
+                  "name": "My Test Sandbox"
                 }
               }'
         - lang: javascript
@@ -983,17 +978,16 @@ paths:
             System.out.println("Inbox created: " + inbox.getName());
             System.out.println("SMTP credentials - User: " + inbox.getUsername());
     parameters:
-      - $ref: '#/components/parameters/account_id'
       - $ref: '#/components/parameters/project_id'
-  '/api/accounts/{account_id}/inboxes/{inbox_id}':
+  '/api/sandboxes/{sandbox_id}':
     get:
-      summary: Get inbox attributes
-      description: Get inbox attributes by inbox id. See the list of attributes in the example
+      summary: Get sandbox attributes
+      description: Get sandbox attributes by sandbox id. See the list of attributes in the example
       tags:
-        - Sandboxes (Inboxes)
+        - Sandboxes
       responses:
         '200':
-          $ref: '#/components/responses/InboxResponse'
+          $ref: '#/components/responses/SandboxResponse'
         '401':
           $ref: '#/components/responses/UNAUTHENTICATED'
         '403':
@@ -1004,7 +998,7 @@ paths:
         - lang: shell
           label: 'cURL'
           source: |
-            curl -X GET https://mailtrap.io/api/accounts/{account_id}/inboxes/{inbox_id} \
+            curl -X GET https://mailtrap.io/api/sandboxes/{sandbox_id} \
               -H 'Authorization: Bearer YOUR_API_KEY'
         - lang: javascript
           label: Node.js
@@ -1098,15 +1092,15 @@ paths:
                 .getInboxAttributes(accountId, inboxId);
 
             System.out.println(inboxAttributes);
-      operationId: getInboxAttributes
+      operationId: getSandboxAttributes
     delete:
-      summary: Delete an inbox
-      description: Delete an inbox with all its emails.
+      summary: Delete a sandbox
+      description: Delete a sandbox with all its emails.
       tags:
-        - Sandboxes (Inboxes)
+        - Sandboxes
       responses:
         '200':
-          $ref: '#/components/responses/InboxResponse'
+          $ref: '#/components/responses/SandboxResponse'
         '401':
           $ref: '#/components/responses/UNAUTHENTICATED'
         '403':
@@ -1117,7 +1111,7 @@ paths:
         - lang: shell
           label: 'cURL'
           source: |
-            curl -X DELETE https://mailtrap.io/api/accounts/{account_id}/inboxes/{inbox_id} \
+            curl -X DELETE https://mailtrap.io/api/sandboxes/{sandbox_id} \
               -H 'Authorization: Bearer YOUR_API_KEY'
         - lang: javascript
           label: Node.js
@@ -1209,19 +1203,19 @@ paths:
                 .deleteInbox(ACCOUNT_ID, inboxId);
 
             System.out.println(deletedInbox);
-      operationId: deleteInbox
+      operationId: deleteSandbox
     patch:
-      summary: Update an inbox
-      description: 'Update inbox name, inbox email username.'
+      summary: Update a sandbox
+      description: 'Update sandbox name, sandbox email username.'
       tags:
-        - Sandboxes (Inboxes)
+        - Sandboxes
       requestBody:
         content:
           application/json:
             schema:
               type: object
               properties:
-                inbox:
+                sandbox:
                   type: object
                   properties:
                     name:
@@ -1229,12 +1223,12 @@ paths:
                     email_username:
                       type: string
             example:
-              inbox:
-                name: New Inbox Name
+              sandbox:
+                name: New Sandbox Name
                 email_username: my-username
       responses:
         '200':
-          $ref: '#/components/responses/InboxResponse'
+          $ref: '#/components/responses/SandboxResponse'
         '401':
           $ref: '#/components/responses/UNAUTHENTICATED'
         '403':
@@ -1245,12 +1239,12 @@ paths:
         - lang: shell
           label: 'cURL'
           source: |
-            curl -X PATCH https://mailtrap.io/api/accounts/{account_id}/inboxes/{inbox_id} \
+            curl -X PATCH https://mailtrap.io/api/sandboxes/{sandbox_id} \
               -H 'Authorization: Bearer YOUR_API_KEY' \
               -H 'Content-Type: application/json' \
               -d '{
-                "inbox": {
-                  "name": "Updated Inbox Name",
+                "sandbox": {
+                  "name": "Updated Sandbox Name",
                   "email_username": "new-username"
                 }
               }'
@@ -1367,19 +1361,18 @@ paths:
                 .updateInbox(accountId, inboxId, updateRequest);
 
             System.out.println(updatedInbox);
-      operationId: updateInbox
+      operationId: updateSandbox
     parameters:
-      - $ref: '#/components/parameters/account_id'
-      - $ref: '#/components/parameters/inbox_id'
-  '/api/accounts/{account_id}/inboxes/{inbox_id}/clean':
+      - $ref: '#/components/parameters/sandbox_id'
+  '/api/sandboxes/{sandbox_id}/clean':
     patch:
-      summary: Clean inbox
-      description: Delete all messages (emails) from inbox.
+      summary: Clean sandbox
+      description: Delete all messages (emails) from sandbox.
       tags:
-        - Sandboxes (Inboxes)
+        - Sandboxes
       responses:
         '200':
-          $ref: '#/components/responses/InboxResponse'
+          $ref: '#/components/responses/SandboxResponse'
         '401':
           $ref: '#/components/responses/UNAUTHENTICATED'
         '403':
@@ -1390,7 +1383,7 @@ paths:
         - lang: shell
           label: 'cURL'
           source: |
-            curl -X PATCH https://mailtrap.io/api/accounts/{account_id}/inboxes/{inbox_id}/clean \
+            curl -X PATCH https://mailtrap.io/api/sandboxes/{sandbox_id}/clean \
               -H 'Authorization: Bearer YOUR_API_KEY'
         - lang: javascript
           label: Node.js
@@ -1484,19 +1477,18 @@ paths:
                 .cleanInbox(accountId, inboxId);
 
             System.out.println(cleanedInbox);
-      operationId: cleanInbox
+      operationId: cleanSandbox
     parameters:
-      - $ref: '#/components/parameters/account_id'
-      - $ref: '#/components/parameters/inbox_id'
-  '/api/accounts/{account_id}/inboxes/{inbox_id}/all_read':
+      - $ref: '#/components/parameters/sandbox_id'
+  '/api/sandboxes/{sandbox_id}/all_read':
     patch:
       summary: Mark as read
-      description: Mark all messages in the inbox as read.
+      description: Mark all messages in the sandbox as read.
       tags:
-        - Sandboxes (Inboxes)
+        - Sandboxes
       responses:
         '200':
-          $ref: '#/components/responses/InboxResponse'
+          $ref: '#/components/responses/SandboxResponse'
         '401':
           $ref: '#/components/responses/UNAUTHENTICATED'
         '403':
@@ -1507,7 +1499,7 @@ paths:
         - lang: shell
           label: 'cURL'
           source: |
-            curl -X PATCH https://mailtrap.io/api/accounts/{account_id}/inboxes/{inbox_id}/all_read \
+            curl -X PATCH https://mailtrap.io/api/sandboxes/{sandbox_id}/all_read \
               -H 'Authorization: Bearer YOUR_API_KEY'
         - lang: javascript
           label: Node.js
@@ -1601,19 +1593,18 @@ paths:
                 .markAsRead(accountId, inboxId);
 
             System.out.println(markedInbox);
-      operationId: markAsReadInbox
+      operationId: markAsReadSandbox
     parameters:
-      - $ref: '#/components/parameters/account_id'
-      - $ref: '#/components/parameters/inbox_id'
-  '/api/accounts/{account_id}/inboxes/{inbox_id}/reset_credentials':
+      - $ref: '#/components/parameters/sandbox_id'
+  '/api/sandboxes/{sandbox_id}/reset_credentials':
     patch:
       summary: Reset credentials
-      description: Reset SMTP credentials of the inbox.
+      description: Reset SMTP credentials of the sandbox.
       tags:
-        - Sandboxes (Inboxes)
+        - Sandboxes
       responses:
         '200':
-          $ref: '#/components/responses/InboxResponse'
+          $ref: '#/components/responses/SandboxResponse'
         '401':
           $ref: '#/components/responses/UNAUTHENTICATED'
         '403':
@@ -1624,7 +1615,7 @@ paths:
         - lang: shell
           label: 'cURL'
           source: |
-            curl -X PATCH https://mailtrap.io/api/accounts/{account_id}/inboxes/{inbox_id}/reset_credentials \
+            curl -X PATCH https://mailtrap.io/api/sandboxes/{sandbox_id}/reset_credentials \
               -H 'Authorization: Bearer YOUR_API_KEY'
         - lang: javascript
           label: Node.js
@@ -1718,19 +1709,18 @@ paths:
                 .resetCredentials(accountId, inboxId);
 
             System.out.println(updatedInbox);
-      operationId: resetInboxCredentials
+      operationId: resetSandboxCredentials
     parameters:
-      - $ref: '#/components/parameters/account_id'
-      - $ref: '#/components/parameters/inbox_id'
-  '/api/accounts/{account_id}/inboxes/{inbox_id}/toggle_email_username':
+      - $ref: '#/components/parameters/sandbox_id'
+  '/api/sandboxes/{sandbox_id}/toggle_email_username':
     patch:
       summary: Enable email address
-      description: Turn the email address of the inbox on/off.
+      description: Turn the email address of the sandbox on/off.
       tags:
-        - Sandboxes (Inboxes)
+        - Sandboxes
       responses:
         '200':
-          $ref: '#/components/responses/InboxResponse'
+          $ref: '#/components/responses/SandboxResponse'
         '401':
           $ref: '#/components/responses/UNAUTHENTICATED'
         '403':
@@ -1741,7 +1731,7 @@ paths:
         - lang: shell
           label: 'cURL'
           source: |
-            curl -X PATCH https://mailtrap.io/api/accounts/{account_id}/inboxes/{inbox_id}/toggle_email_username \
+            curl -X PATCH https://mailtrap.io/api/sandboxes/{sandbox_id}/toggle_email_username \
               -H 'Authorization: Bearer YOUR_API_KEY'
         - lang: javascript
           label: Node.js
@@ -1826,19 +1816,18 @@ paths:
                 .enableEmailAddress(accountId, inboxId);
 
             System.out.println(updatedInbox);
-      operationId: enableInboxEmailAddresses
+      operationId: enableSandboxEmailAddresses
     parameters:
-      - $ref: '#/components/parameters/account_id'
-      - $ref: '#/components/parameters/inbox_id'
-  '/api/accounts/{account_id}/inboxes/{inbox_id}/reset_email_username':
+      - $ref: '#/components/parameters/sandbox_id'
+  '/api/sandboxes/{sandbox_id}/reset_email_username':
     patch:
       summary: Reset email address
-      description: Reset username of email address per inbox.
+      description: Reset username of email address per sandbox.
       tags:
-        - Sandboxes (Inboxes)
+        - Sandboxes
       responses:
         '200':
-          $ref: '#/components/responses/InboxResponse'
+          $ref: '#/components/responses/SandboxResponse'
         '401':
           $ref: '#/components/responses/UNAUTHENTICATED'
         '403':
@@ -1849,7 +1838,7 @@ paths:
         - lang: shell
           label: 'cURL'
           source: |
-            curl -X PATCH https://mailtrap.io/api/accounts/{account_id}/inboxes/{inbox_id}/reset_email_username \
+            curl -X PATCH https://mailtrap.io/api/sandboxes/{sandbox_id}/reset_email_username \
               -H 'Authorization: Bearer YOUR_API_KEY'
         - lang: javascript
           label: Node.js
@@ -1935,11 +1924,10 @@ paths:
                 .resetEmailAddresses(accountId, inboxId);
 
             System.out.println(updatedInbox);
-      operationId: resetEmailUserNamePerInbox
+      operationId: resetEmailUserNamePerSandbox
     parameters:
-      - $ref: '#/components/parameters/account_id'
-      - $ref: '#/components/parameters/inbox_id'
-  '/api/accounts/{account_id}/inboxes/{inbox_id}/messages/{message_id}':
+      - $ref: '#/components/parameters/sandbox_id'
+  '/api/sandboxes/{sandbox_id}/messages/{message_id}':
     get:
       summary: Show email message
       description: Get email message by ID.
@@ -1951,12 +1939,10 @@ paths:
           content:
             application/json:
               schema:
-                oneOf:
-                  - $ref: '#/components/schemas/InboxMessageWithoutBlacklistsReportInfo'
-                  - $ref: '#/components/schemas/InboxMessageWithBlacklistsReportInfo'
+                $ref: '#/components/schemas/SandboxMessage'
               example:
                 id: 2323
-                inbox_id: 17002
+                sandbox_id: 17002
                 subject: Test email
                 sent_at: '2022-07-01T19:29:59.295Z'
                 from_email: john@mailtrap.io
@@ -1967,20 +1953,28 @@ paths:
                 is_read: false
                 created_at: '2022-07-01T19:29:59.295Z'
                 updated_at: '2022-07-01T19:29:59.295Z'
+                template_id: 0
+                template_variables: null
                 html_body_size: 150
                 text_body_size: 100
                 human_size: 300 Bytes
-                html_path: /api/accounts/16297/inboxes/17002/messages/2323/body.html
-                txt_path: /api/accounts/16297/inboxes/17002/messages/2323/body.txt
-                raw_path: /api/accounts/16297/inboxes/17002/messages/2323/body.raw
-                download_path: /api/accounts/16297/inboxes/17002/messages/2323/body.eml
-                html_source_path: /api/accounts/16297/inboxes/17002/messages/2323/body.htmlsource
-                blacklists_report_info: false
+                html_path: /api/accounts/16297/sandboxes/17002/messages/2323/body.html
+                txt_path: /api/accounts/16297/sandboxes/17002/messages/2323/body.txt
+                raw_path: /api/accounts/16297/sandboxes/17002/messages/2323/body.raw
+                download_path: /api/accounts/16297/sandboxes/17002/messages/2323/body.eml
+                html_source_path: /api/accounts/16297/sandboxes/17002/messages/2323/body.htmlsource
+                blacklists_report_info:
+                  result: success
+                  domain: example.com
+                  ip: 23.215.0.138
+                  report: []
                 smtp_information:
                   ok: true
                   data:
                     mail_from_addr: john@mailtrap.io
                     client_ip: 193.62.62.184
+                    rcpt_to_addrs:
+                      - mary@mailtrap.io
         '401':
           $ref: '#/components/responses/UNAUTHENTICATED'
         '403':
@@ -1992,14 +1986,14 @@ paths:
                 properties:
                   errors:
                     type: string
-                    example: Inbox is not active or you have insufficient permissions
+                    example: Account access forbidden
         '404':
           $ref: '#/components/responses/NOT_FOUND'
       x-codeSamples:
         - lang: shell
           label: 'cURL'
           source: |
-            curl -X GET https://mailtrap.io/api/accounts/{account_id}/inboxes/{inbox_id}/messages/{message_id} \
+            curl -X GET https://mailtrap.io/api/sandboxes/{sandbox_id}/messages/{message_id} \
               -H 'Authorization: Bearer YOUR_API_KEY'
         - lang: javascript
           label: Node.js
@@ -2102,7 +2096,7 @@ paths:
                 .getMessage(accountId, inboxId, messageId);
 
             System.out.println(message);
-      operationId: showInboxEmailMessage
+      operationId: showSandboxEmailMessage
     patch:
       summary: Update message
       description: Update message attributes (right now only the **is_read** attribute is available for modification).
@@ -2132,7 +2126,7 @@ paths:
                 properties:
                   id:
                     type: integer
-                  inbox_id:
+                  sandbox_id:
                     type: integer
                   subject:
                     type: string
@@ -2186,7 +2180,7 @@ paths:
                             type: string
               example:
                 id: 427
-                inbox_id: 4324
+                sandbox_id: 4324
                 subject: Test email
                 sent_at: '2022-06-02T19:24:08.941Z'
                 from_email: john@mailtrap.io
@@ -2200,11 +2194,11 @@ paths:
                 html_body_size: 150
                 text_body_size: 100
                 human_size: 300 Bytes
-                html_path: /api/accounts/3761/inboxes/4324/messages/427/body.html
-                txt_path: /api/accounts/3761/inboxes/4324/messages/427/body.txt
-                raw_path: /api/accounts/3761/inboxes/4324/messages/427/body.raw
-                download_path: /api/accounts/3761/inboxes/4324/messages/427/body.eml
-                html_source_path: /api/accounts/3761/inboxes/4324/messages/427/body.htmlsource
+                html_path: /api/accounts/3761/sandboxes/4324/messages/427/body.html
+                txt_path: /api/accounts/3761/sandboxes/4324/messages/427/body.txt
+                raw_path: /api/accounts/3761/sandboxes/4324/messages/427/body.raw
+                download_path: /api/accounts/3761/sandboxes/4324/messages/427/body.eml
+                html_source_path: /api/accounts/3761/sandboxes/4324/messages/427/body.htmlsource
                 blacklists_report_info: false
                 smtp_information:
                   ok: true
@@ -2222,14 +2216,14 @@ paths:
                 properties:
                   errors:
                     type: string
-                    example: Inbox is not active or you have insufficient permissions
+                    example: Sandbox is not active or you have insufficient permissions
         '404':
           $ref: '#/components/responses/NOT_FOUND'
       x-codeSamples:
         - lang: shell
           label: 'cURL'
           source: |
-            curl -X PATCH https://mailtrap.io/api/accounts/{account_id}/inboxes/{inbox_id}/messages/{message_id} \
+            curl -X PATCH https://mailtrap.io/api/sandboxes/{sandbox_id}/messages/{message_id} \
               -H 'Authorization: Bearer YOUR_API_KEY' \
               -H 'Content-Type: application/json' \
               -d '{"message": {"is_read": "true"}}'
@@ -2351,10 +2345,10 @@ paths:
                 .updateMessage(accountId, inboxId, messageId, updateRequest);
 
             System.out.println(updatedMessage);
-      operationId: updateInboxEmailMessage
+      operationId: updateSandboxEmailMessage
     delete:
       summary: Delete message
-      description: Delete message from inbox.
+      description: Delete message from sandbox.
       tags:
         - Messages
       responses:
@@ -2367,7 +2361,7 @@ paths:
                 properties:
                   id:
                     type: integer
-                  inbox_id:
+                  sandbox_id:
                     type: integer
                   subject:
                     type: string
@@ -2421,7 +2415,7 @@ paths:
                             type: string
               example:
                 id: 433
-                inbox_id: 4338
+                sandbox_id: 4338
                 subject: Test email
                 sent_at: '2022-06-02T19:24:10.746Z'
                 from_email: john@mailtrap.io
@@ -2435,11 +2429,11 @@ paths:
                 html_body_size: 150
                 text_body_size: 100
                 human_size: 300 Bytes
-                html_path: /api/accounts/3775/inboxes/4338/messages/433/body.html
-                txt_path: /api/accounts/3775/inboxes/4338/messages/433/body.txt
-                raw_path: /api/accounts/3775/inboxes/4338/messages/433/body.raw
-                download_path: /api/accounts/3775/inboxes/4338/messages/433/body.eml
-                html_source_path: /api/accounts/3775/inboxes/4338/messages/433/body.htmlsource
+                html_path: /api/accounts/3775/sandboxes/4338/messages/433/body.html
+                txt_path: /api/accounts/3775/sandboxes/4338/messages/433/body.txt
+                raw_path: /api/accounts/3775/sandboxes/4338/messages/433/body.raw
+                download_path: /api/accounts/3775/sandboxes/4338/messages/433/body.eml
+                html_source_path: /api/accounts/3775/sandboxes/4338/messages/433/body.htmlsource
                 blacklists_report_info: false
                 smtp_information:
                   ok: true
@@ -2456,7 +2450,7 @@ paths:
         - lang: shell
           label: 'cURL'
           source: |
-            curl -X DELETE https://mailtrap.io/api/accounts/{account_id}/inboxes/{inbox_id}/messages/{message_id} \
+            curl -X DELETE https://mailtrap.io/api/sandboxes/{sandbox_id}/messages/{message_id} \
               -H 'Authorization: Bearer YOUR_API_KEY'
         - lang: javascript
           label: Node.js
@@ -2560,15 +2554,14 @@ paths:
                 .deleteMessage(accountId, inboxId, messageId);
 
             System.out.println(deletedMessage);
-      operationId: deleteInboxEmailMessage
+      operationId: deleteSandboxEmailMessage
     parameters:
-      - $ref: '#/components/parameters/account_id'
-      - $ref: '#/components/parameters/inbox_id'
+      - $ref: '#/components/parameters/sandbox_id'
       - $ref: '#/components/parameters/message_id'
-  '/api/accounts/{account_id}/inboxes/{inbox_id}/messages':
+  '/api/sandboxes/{sandbox_id}/messages':
     get:
       summary: Get messages
-      description: Get all messages in the inbox. The response contains up to 30 messages. Use `last_id` or `page` to retrieve more.
+      description: Get all messages in the sandbox. The response contains up to 30 messages. Use `last_id` or `page` to retrieve more.
       tags:
         - Messages
       responses:
@@ -2579,65 +2572,10 @@ paths:
               schema:
                 type: array
                 items:
-                  type: object
-                  properties:
-                    id:
-                      type: integer
-                    inbox_id:
-                      type: integer
-                    subject:
-                      type: string
-                    sent_at:
-                      type: string
-                    from_email:
-                      type: string
-                    from_name:
-                      type: string
-                    to_email:
-                      type: string
-                    to_name:
-                      type: string
-                    email_size:
-                      type: integer
-                    is_read:
-                      type: boolean
-                    created_at:
-                      type: string
-                    updated_at:
-                      type: string
-                    html_body_size:
-                      type: integer
-                    text_body_size:
-                      type: integer
-                    human_size:
-                      type: string
-                    html_path:
-                      type: string
-                    txt_path:
-                      type: string
-                    raw_path:
-                      type: string
-                    download_path:
-                      type: string
-                    html_source_path:
-                      type: string
-                    blacklists_report_info:
-                      type: boolean
-                    smtp_information:
-                      type: object
-                      properties:
-                        ok:
-                          type: boolean
-                        data:
-                          type: object
-                          properties:
-                            mail_from_addr:
-                              type: string
-                            client_ip:
-                              type: string
+                  $ref: '#/components/schemas/SandboxMessage'
               example:
                 - id: 92
-                  inbox_id: 342
+                  sandbox_id: 342
                   subject: Test email
                   sent_at: '2022-08-19T11:34:33.839Z'
                   from_email: per667son25@feeney.biz
@@ -2648,20 +2586,25 @@ paths:
                   is_read: false
                   created_at: '2022-08-19T11:34:33.841Z'
                   updated_at: '2022-08-19T11:34:33.841Z'
+                  template_id: 0
+                  template_variables: null
                   html_body_size: 150
                   text_body_size: 100
                   human_size: 300 Bytes
-                  html_path: /api/accounts/336/inboxes/342/messages/92/body.html
-                  txt_path: /api/accounts/336/inboxes/342/messages/92/body.txt
-                  raw_path: /api/accounts/336/inboxes/342/messages/92/body.raw
-                  download_path: /api/accounts/336/inboxes/342/messages/92/body.eml
-                  html_source_path: /api/accounts/336/inboxes/342/messages/92/body.htmlsource
-                  blacklists_report_info: false
+                  html_path: /api/accounts/336/sandboxes/342/messages/92/body.html
+                  txt_path: /api/accounts/336/sandboxes/342/messages/92/body.txt
+                  raw_path: /api/accounts/336/sandboxes/342/messages/92/body.raw
+                  download_path: /api/accounts/336/sandboxes/342/messages/92/body.eml
+                  html_source_path: /api/accounts/336/sandboxes/342/messages/92/body.htmlsource
+                  blacklists_report_info:
+                    result: pending
                   smtp_information:
                     ok: true
                     data:
                       mail_from_addr: per667son25@feeney.biz
                       client_ip: 75.180.183.201
+                      rcpt_to_addrs:
+                        - per688son26@donnelly.info
         '401':
           $ref: '#/components/responses/UNAUTHENTICATED'
         '403':
@@ -2673,13 +2616,13 @@ paths:
                 properties:
                   errors:
                     type: string
-                    example: Inbox is not active or you have insufficient permissions
-      operationId: getInboxEmailMessage
+                    example: Account access forbidden
+      operationId: getSandboxEmailMessage
       x-codeSamples:
         - lang: shell
           label: 'cURL'
           source: |
-            curl -X GET https://mailtrap.io/api/accounts/{account_id}/inboxes/{inbox_id}/messages \
+            curl -X GET https://mailtrap.io/api/sandboxes/{sandbox_id}/messages \
               -H 'Authorization: Bearer YOUR_API_KEY'
         - lang: javascript
           label: Node.js
@@ -2815,9 +2758,8 @@ paths:
           name: page
           description: Page number for paginated results.
     parameters:
-      - $ref: '#/components/parameters/account_id'
-      - $ref: '#/components/parameters/inbox_id'
-  '/api/accounts/{account_id}/inboxes/{inbox_id}/messages/{message_id}/forward':
+      - $ref: '#/components/parameters/sandbox_id'
+  '/api/sandboxes/{sandbox_id}/messages/{message_id}/forward':
     post:
       summary: Forward message
       description: Forward message to an email address. The email address must be confirmed by the recipient in advance.
@@ -2855,14 +2797,14 @@ paths:
                 properties:
                   errors:
                     type: string
-                    example: Inbox is not active or you have insufficient permissions
+                    example: Account access forbidden
         '404':
           $ref: '#/components/responses/NOT_FOUND'
       x-codeSamples:
         - lang: shell
           label: 'cURL'
           source: |
-            curl -X POST https://mailtrap.io/api/accounts/{account_id}/inboxes/{inbox_id}/messages/{message_id}/forward \
+            curl -X POST https://mailtrap.io/api/sandboxes/{sandbox_id}/messages/{message_id}/forward \
               -H 'Authorization: Bearer YOUR_API_KEY' \
               -H 'Content-Type: application/json' \
               -d '{"email": "recipient@example.com"}'
@@ -2981,12 +2923,11 @@ paths:
                 .forwardMessage(accountId, inboxId, messageId, forwardRequest);
 
             System.out.println(forwardedMessage);
-      operationId: forwardInboxEmailMessage
+      operationId: forwardSandboxEmailMessage
     parameters:
-      - $ref: '#/components/parameters/account_id'
-      - $ref: '#/components/parameters/inbox_id'
+      - $ref: '#/components/parameters/sandbox_id'
       - $ref: '#/components/parameters/message_id'
-  '/api/accounts/{account_id}/inboxes/{inbox_id}/messages/{message_id}/spam_report':
+  '/api/sandboxes/{sandbox_id}/messages/{message_id}/spam_report':
     get:
       summary: Get message spam score
       description: Get a brief spam report by message ID.
@@ -3053,14 +2994,14 @@ paths:
                 properties:
                   errors:
                     type: string
-                    example: Inbox is not active or you have insufficient permissions
+                    example: Account access forbidden
         '404':
           $ref: '#/components/responses/NOT_FOUND'
       x-codeSamples:
         - lang: shell
           label: 'cURL'
           source: |
-            curl -X GET https://mailtrap.io/api/accounts/{account_id}/inboxes/{inbox_id}/messages/{message_id}/spam_report \
+            curl -X GET https://mailtrap.io/api/sandboxes/{sandbox_id}/messages/{message_id}/spam_report \
               -H 'Authorization: Bearer YOUR_API_KEY'
         - lang: javascript
           label: Node.js
@@ -3142,12 +3083,11 @@ paths:
 
             var spamReport = client.testingApi().messages().getSpamScore(accountId, inboxId, messageId);
             System.out.println(spamReport);
-      operationId: getInboxEmailMessageSpamReport
+      operationId: getSandboxEmailMessageSpamReport
     parameters:
-      - $ref: '#/components/parameters/account_id'
-      - $ref: '#/components/parameters/inbox_id'
+      - $ref: '#/components/parameters/sandbox_id'
       - $ref: '#/components/parameters/message_id'
-  '/api/accounts/{account_id}/inboxes/{inbox_id}/messages/{message_id}/analyze':
+  '/api/sandboxes/{sandbox_id}/messages/{message_id}/analyze':
     get:
       summary: Get message HTML analysis
       description: Get a brief HTML report by message ID.
@@ -3236,14 +3176,14 @@ paths:
                 properties:
                   errors:
                     type: string
-                    example: Inbox is not active or you have insufficient permissions
+                    example: Account access forbidden
         '404':
           $ref: '#/components/responses/NOT_FOUND'
       x-codeSamples:
         - lang: shell
           label: 'cURL'
           source: |
-            curl -X GET https://mailtrap.io/api/accounts/{account_id}/inboxes/{inbox_id}/messages/{message_id}/analyze \
+            curl -X GET https://mailtrap.io/api/sandboxes/{sandbox_id}/messages/{message_id}/analyze \
               -H 'Authorization: Bearer YOUR_API_KEY'
         - lang: javascript
           label: Node.js
@@ -3323,12 +3263,11 @@ paths:
             long inboxId = 12345L;
             var htmlAnalysis = client.testingApi().messages().getMessageHtmlAnalysis(accountId, inboxId, messageId);
             System.out.println(htmlAnalysis);
-      operationId: getInboxEmailMessageHTMLAnalysis
+      operationId: getSandboxEmailMessageHTMLAnalysis
     parameters:
-      - $ref: '#/components/parameters/account_id'
-      - $ref: '#/components/parameters/inbox_id'
+      - $ref: '#/components/parameters/sandbox_id'
       - $ref: '#/components/parameters/message_id'
-  '/api/accounts/{account_id}/inboxes/{inbox_id}/messages/{message_id}/body.txt':
+  '/api/sandboxes/{sandbox_id}/messages/{message_id}/body.txt':
     get:
       summary: Get text message
       description: 'Get text email body, if it exists.'
@@ -3361,7 +3300,7 @@ paths:
             text/plain:
               schema:
                 type: string
-                example: '{:errors=>"Inbox is not active or you have insufficient permissions"}'
+                example: '{:errors=>"Account access forbidden"}'
         '404':
           $ref: '#/components/responses/NOT_FOUND'
         '409':
@@ -3375,7 +3314,7 @@ paths:
         - lang: shell
           label: 'cURL'
           source: |
-            curl -X GET https://mailtrap.io/api/accounts/{account_id}/inboxes/{inbox_id}/messages/{message_id}/body.txt \
+            curl -X GET https://mailtrap.io/api/sandboxes/{sandbox_id}/messages/{message_id}/body.txt \
               -H 'Authorization: Bearer YOUR_API_KEY'
         - lang: javascript
           label: Node.js
@@ -3455,12 +3394,11 @@ paths:
 
             String textBody = client.testingApi().messages().getTextMessage(accountId, inboxId, messageId);
             System.out.println(textBody);
-      operationId: getInboxEmailMessageBodyAsTxt
+      operationId: getSandboxEmailMessageBodyAsTxt
     parameters:
-      - $ref: '#/components/parameters/account_id'
-      - $ref: '#/components/parameters/inbox_id'
+      - $ref: '#/components/parameters/sandbox_id'
       - $ref: '#/components/parameters/message_id'
-  '/api/accounts/{account_id}/inboxes/{inbox_id}/messages/{message_id}/body.raw':
+  '/api/sandboxes/{sandbox_id}/messages/{message_id}/body.raw':
     get:
       summary: Get raw message
       description: Get raw email body.
@@ -3537,7 +3475,7 @@ paths:
             text/plain:
               schema:
                 type: string
-                example: '{:errors=>"Inbox is not active or you have insufficient permissions"}'
+                example: '{:errors=>"Account access forbidden"}'
         '404':
           $ref: '#/components/responses/NOT_FOUND'
         '409':
@@ -3551,7 +3489,7 @@ paths:
         - lang: shell
           label: 'cURL'
           source: |
-            curl -X GET https://mailtrap.io/api/accounts/{account_id}/inboxes/{inbox_id}/messages/{message_id}/body.raw \
+            curl -X GET https://mailtrap.io/api/sandboxes/{sandbox_id}/messages/{message_id}/body.raw \
               -H 'Authorization: Bearer YOUR_API_KEY'
         - lang: javascript
           label: Node.js
@@ -3631,12 +3569,11 @@ paths:
 
             String rawBody = client.testingApi().messages().getRawMessage(accountId, inboxId, messageId);
             System.out.println(rawBody);
-      operationId: getInboxEmailMessageBodyAsRaw
+      operationId: getSandboxEmailMessageBodyAsRaw
     parameters:
-      - $ref: '#/components/parameters/account_id'
-      - $ref: '#/components/parameters/inbox_id'
+      - $ref: '#/components/parameters/sandbox_id'
       - $ref: '#/components/parameters/message_id'
-  '/api/accounts/{account_id}/inboxes/{inbox_id}/messages/{message_id}/body.htmlsource':
+  '/api/sandboxes/{sandbox_id}/messages/{message_id}/body.htmlsource':
     get:
       summary: Get message source
       description: Get HTML source of email.
@@ -3692,7 +3629,7 @@ paths:
             text/plain:
               schema:
                 type: string
-                example: '{:errors=>"Inbox is not active or you have insufficient permissions"}'
+                example: '{:errors=>"Account access forbidden"}'
         '404':
           $ref: '#/components/responses/NOT_FOUND'
         '409':
@@ -3706,7 +3643,7 @@ paths:
         - lang: shell
           label: 'cURL'
           source: |
-            curl -X GET https://mailtrap.io/api/accounts/{account_id}/inboxes/{inbox_id}/messages/{message_id}/body.htmlsource \
+            curl -X GET https://mailtrap.io/api/sandboxes/{sandbox_id}/messages/{message_id}/body.htmlsource \
               -H 'Authorization: Bearer YOUR_API_KEY'
         - lang: javascript
           label: Node.js
@@ -3782,12 +3719,11 @@ paths:
 
             String htmlSource = client.testingApi().messages().getMessageSource(accountId, inboxId, messageId);
             System.out.println(htmlSource);
-      operationId: getInboxEmailMessageBodyAsHtmlSource
+      operationId: getSandboxEmailMessageBodyAsHtmlSource
     parameters:
-      - $ref: '#/components/parameters/account_id'
-      - $ref: '#/components/parameters/inbox_id'
+      - $ref: '#/components/parameters/sandbox_id'
       - $ref: '#/components/parameters/message_id'
-  '/api/accounts/{account_id}/inboxes/{inbox_id}/messages/{message_id}/body.html':
+  '/api/sandboxes/{sandbox_id}/messages/{message_id}/body.html':
     get:
       summary: Get HTML message
       description: Get formatted HTML email body. Not applicable for plain text emails.
@@ -3841,7 +3777,7 @@ paths:
                 properties:
                   errors:
                     type: string
-                    example: Inbox is not active or you have insufficient permissions
+                    example: Account access forbidden
         '404':
           $ref: '#/components/responses/NOT_FOUND'
         '409':
@@ -3855,7 +3791,7 @@ paths:
         - lang: shell
           label: 'cURL'
           source: |
-            curl -X GET https://mailtrap.io/api/accounts/{account_id}/inboxes/{inbox_id}/messages/{message_id}/body.html \
+            curl -X GET https://mailtrap.io/api/sandboxes/{sandbox_id}/messages/{message_id}/body.html \
               -H 'Authorization: Bearer YOUR_API_KEY'
         - lang: javascript
           label: Node.js
@@ -3936,12 +3872,11 @@ paths:
             long messageId = 12345L;
             String htmlBody = client.testingApi().messages().getHtmlMessage(accountId, inboxId, messageId);
             System.out.println(htmlBody);
-      operationId: getInboxEmailMessageBodyAsHtml
+      operationId: getSandboxEmailMessageBodyAsHtml
     parameters:
-      - $ref: '#/components/parameters/account_id'
-      - $ref: '#/components/parameters/inbox_id'
+      - $ref: '#/components/parameters/sandbox_id'
       - $ref: '#/components/parameters/message_id'
-  '/api/accounts/{account_id}/inboxes/{inbox_id}/messages/{message_id}/body.eml':
+  '/api/sandboxes/{sandbox_id}/messages/{message_id}/body.eml':
     get:
       summary: Get message as .eml
       description: Get email message in .eml format.
@@ -4019,7 +3954,7 @@ paths:
             text/plain:
               schema:
                 type: string
-              example: '{:errors=>"Inbox is not active or you have insufficient permissions"}'
+              example: '{:errors=>"Account access forbidden"}'
         '404':
           $ref: '#/components/responses/NOT_FOUND'
         '409':
@@ -4033,7 +3968,7 @@ paths:
         - lang: shell
           label: 'cURL'
           source: |
-            curl -X GET https://mailtrap.io/api/accounts/{account_id}/inboxes/{inbox_id}/messages/{message_id}/body.eml \
+            curl -X GET https://mailtrap.io/api/sandboxes/{sandbox_id}/messages/{message_id}/body.eml \
               -H 'Authorization: Bearer YOUR_API_KEY'
         - lang: javascript
           label: Node.js
@@ -4113,12 +4048,11 @@ paths:
 
             String emlContent = client.testingApi().messages().getMessageAsEml(accountId, inboxId, messageId);
             System.out.println(emlContent);
-      operationId: getInboxEmailMessageBodyAsEml
+      operationId: getSandboxEmailMessageBodyAsEml
     parameters:
-      - $ref: '#/components/parameters/account_id'
-      - $ref: '#/components/parameters/inbox_id'
+      - $ref: '#/components/parameters/sandbox_id'
       - $ref: '#/components/parameters/message_id'
-  '/api/accounts/{account_id}/inboxes/{inbox_id}/messages/{message_id}/mail_headers':
+  '/api/sandboxes/{sandbox_id}/messages/{message_id}/mail_headers':
     get:
       summary: Get mail headers
       description: Get mail headers of a message
@@ -4162,7 +4096,7 @@ paths:
         - lang: shell
           label: 'cURL'
           source: |
-            curl -X GET https://mailtrap.io/api/accounts/{account_id}/inboxes/{inbox_id}/messages/{message_id}/mail_headers \
+            curl -X GET https://mailtrap.io/api/sandboxes/{sandbox_id}/messages/{message_id}/mail_headers \
               -H 'Authorization: Bearer YOUR_API_KEY'
         - lang: javascript
           label: Node.js
@@ -4242,13 +4176,12 @@ paths:
             System.out.println(mailHeaders);
       operationId: getMailHeadersOfEmailMessage
     parameters:
-      - $ref: '#/components/parameters/account_id'
-      - $ref: '#/components/parameters/inbox_id'
+      - $ref: '#/components/parameters/sandbox_id'
       - $ref: '#/components/parameters/message_id'
-  '/api/accounts/{account_id}/inboxes/{inbox_id}/messages/{message_id}/attachments':
+  '/api/sandboxes/{sandbox_id}/messages/{message_id}/attachments':
     get:
       summary: Get attachments
-      description: Get message attachments by inbox_id and message_id.
+      description: Get message attachments by sandbox_id and message_id.
       tags:
         - Attachments
       parameters:
@@ -4306,7 +4239,7 @@ paths:
                   created_at: '2022-06-02T19:25:54.827Z'
                   updated_at: '2022-06-02T19:25:54.827Z'
                   attachment_human_size: 0 Bytes
-                  download_path: /api/accounts/3831/inboxes/4394/messages/457/attachments/67/download
+                  download_path: /api/accounts/3831/sandboxes/4394/messages/457/attachments/67/download
         '401':
           $ref: '#/components/responses/UNAUTHENTICATED'
         '403':
@@ -4318,15 +4251,15 @@ paths:
                 properties:
                   errors:
                     type: string
-                    example: Inbox is not active or you have insufficient permissions
+                    example: Account access forbidden
         '404':
           $ref: '#/components/responses/NOT_FOUND'
-      operationId: getInboxMessageAttachments
+      operationId: getSandboxMessageAttachments
       x-codeSamples:
         - lang: shell
           label: 'cURL'
           source: |
-            curl -X GET https://mailtrap.io/api/accounts/{account_id}/inboxes/{inbox_id}/messages/{message_id}/attachments \
+            curl -X GET https://mailtrap.io/api/sandboxes/{sandbox_id}/messages/{message_id}/attachments \
               -H 'Authorization: Bearer YOUR_API_KEY'
         - lang: javascript
           label: Node.js
@@ -4407,10 +4340,9 @@ paths:
             
             var attachments = client.testingApi().attachments().getAttachments(accountId, inboxId, messageId, null);
     parameters:
-      - $ref: '#/components/parameters/account_id'
-      - $ref: '#/components/parameters/inbox_id'
+      - $ref: '#/components/parameters/sandbox_id'
       - $ref: '#/components/parameters/message_id'
-  '/api/accounts/{account_id}/inboxes/{inbox_id}/messages/{message_id}/attachments/{attachment_id}':
+  '/api/sandboxes/{sandbox_id}/messages/{message_id}/attachments/{attachment_id}':
     get:
       summary: Get single attachment
       description: Get message single attachment by id.
@@ -4462,7 +4394,7 @@ paths:
                 created_at: '2022-06-02T19:25:55.687Z'
                 updated_at: '2022-06-02T19:25:55.687Z'
                 attachment_human_size: 0 Bytes
-                download_path: /api/accounts/3838/inboxes/4401/messages/460/attachments/70/download
+                download_path: /api/accounts/3838/sandboxes/4401/messages/460/attachments/70/download
         '401':
           $ref: '#/components/responses/UNAUTHENTICATED'
         '403':
@@ -4474,15 +4406,15 @@ paths:
                 properties:
                   errors:
                     type: string
-                    example: Inbox is not active or you have insufficient permissions
+                    example: Account access forbidden
         '404':
           $ref: '#/components/responses/NOT_FOUND'
-      operationId: getInboxMessageAttachment
+      operationId: getSandboxMessageAttachment
       x-codeSamples:
         - lang: shell
           label: 'cURL'
           source: |
-            curl -X GET https://mailtrap.io/api/accounts/{account_id}/inboxes/{inbox_id}/messages/{message_id}/attachments/{attachment_id} \
+            curl -X GET https://mailtrap.io/api/sandboxes/{sandbox_id}/messages/{message_id}/attachments/{attachment_id} \
               -H 'Authorization: Bearer YOUR_API_KEY'
         - lang: javascript
           label: Node.js
@@ -4565,19 +4497,21 @@ paths:
             var client = MailtrapClientFactory.createMailtrapClient(config);
             var attachment = client.testingApi().attachments().getSingleAttachment(accountId, inboxId, messageId, attachmentId);
     parameters:
-      - $ref: '#/components/parameters/account_id'
-      - $ref: '#/components/parameters/inbox_id'
+      - $ref: '#/components/parameters/sandbox_id'
       - $ref: '#/components/parameters/message_id'
       - $ref: '#/components/parameters/attachment_id'
 components:
   schemas:
-    InboxMessageWithoutBlacklistsReportInfo:
-      title: Message without blacklists report
+    SandboxMessage:
+      title: Sandbox message
       type: object
+      description: |
+        Email message captured in a Sandbox. Body URLs are often under `/api/testing_message_parts/...` rather than nested under `/api/accounts/.../messages/...`.
+        `blacklists_report_info` may contain only `result` or the full report. `template_variables` is set when the message was sent from a template.
       properties:
         id:
           type: integer
-        inbox_id:
+        sandbox_id:
           type: integer
         subject:
           type: string
@@ -4599,64 +4533,12 @@ components:
           type: string
         updated_at:
           type: string
-        html_body_size:
+        template_id:
           type: integer
-        text_body_size:
-          type: integer
-        human_size:
-          type: string
-        html_path:
-          type: string
-        txt_path:
-          type: string
-        raw_path:
-          type: string
-        download_path:
-          type: string
-        html_source_path:
-          type: string
-        blacklists_report_info:
-          type: boolean
-        smtp_information:
+        template_variables:
           type: object
-          properties:
-            ok:
-              type: boolean
-            data:
-              type: object
-              properties:
-                mail_from_addr:
-                  type: string
-                client_ip:
-                  type: string
-    InboxMessageWithBlacklistsReportInfo:
-      title: Message with blacklists report
-      type: object
-      properties:
-        id:
-          type: integer
-        inbox_id:
-          type: integer
-        subject:
-          type: string
-        sent_at:
-          type: string
-        from_email:
-          type: string
-        from_name:
-          type: string
-        to_email:
-          type: string
-        to_name:
-          type: string
-        email_size:
-          type: integer
-        is_read:
-          type: boolean
-        created_at:
-          type: string
-        updated_at:
-          type: string
+          nullable: true
+          additionalProperties: true
         html_body_size:
           type: integer
         text_body_size:
@@ -4709,6 +4591,10 @@ components:
                   type: string
                 client_ip:
                   type: string
+                rcpt_to_addrs:
+                  type: array
+                  items:
+                    type: string
     Project:
       title: Testing Project
       type: object
@@ -4724,11 +4610,11 @@ components:
               type: string
             viewer:
               type: string
-        inboxes:
+        sandboxes:
           type: array
           items:
             nullable: true
-            $ref: '#/components/schemas/TestingInbox'
+            $ref: '#/components/schemas/TestingSandbox'
         permissions:
           type: object
           properties:
@@ -4746,7 +4632,7 @@ components:
         share_links:
           admin: 'https://localhost/projects/2388/share/QEVuQwEAS-hQfYV1hqw15p7p9VcsuCrASDQUkcuV_N5G-zdVBPrd58V8Ce09AUl-JGFEJsQbt-K6IzRIMhjpU7zxAnIo9QpB8mJwuOqBiottfwdDhgKO-ab7t7WDCyyoGeG5dLK_'
           viewer: 'https://localhost/projects/2388/share/QEVuQwEAS-hQfYV1hqw15p7p9VcsuCrASDQUkcuV_N5G-zdVBPrd58V8Ce09AUl-JGFEJsQbHDFqI6Mk2wRVlVSxLNMgI-3LnWpSSSyCSbjqkQRAMPVoTPYF7WcXfw4H_CwkAc4e'
-        inboxes: []
+        sandboxes: []
         permissions:
           can_read: true
           can_update: true
@@ -4760,6 +4646,8 @@ components:
           type: string
           description: Error message
           example: Not Found
+      example:
+        error: Not Found
     PermissionsDeniedResponse:
       title: PermissionsDeniedResponse
       type: object
@@ -4767,9 +4655,11 @@ components:
         errors:
           type: string
           description: Error message
-          example: Access forbidden
-    TestingInbox:
-      title: Testing Inbox
+          example: Account access forbidden
+      example:
+        errors: Account access forbidden
+    TestingSandbox:
+      title: Testing Sandbox
       type: object
       properties:
         id:
@@ -4781,7 +4671,7 @@ components:
         password:
           type: string
           nullable: true
-          description: Password is only available if you have admin permissions for the inbox.
+          description: Password is only available if you have admin permissions for the sandbox.
         max_size:
           type: integer
         status:
@@ -4842,7 +4732,7 @@ components:
               type: boolean
       example:
         id: 3538
-        name: Admin Inbox
+        name: Admin Sandbox
         username: b3a87978452ae1
         password: 6be9fcfc613a7c
         max_size: 0
@@ -4883,13 +4773,15 @@ components:
           type: string
           description: Error message
           example: Incorrect API token
+      example:
+        error: Incorrect API token
   examples:
     Projects:
       summary: List of projects
       value:
         - id: 2435
           name: Viewer Project
-          inboxes: []
+          sandboxes: []
           permissions:
             can_read: true
             can_update: false
@@ -4900,9 +4792,9 @@ components:
           share_links:
             admin: 'https://localhost/projects/2436/share/QEVuQwEAYWN-NIhmrB8qX6ZWzToqdOE9dw1ylIfOQ-_fKwYAD_CCkhRzmAanker219x25PM75TBaHgx1I4dsv058hghY_Ewaa3Vt7ET1aeg3ufVcit919V4baPLzxV9JaRzXWSjK'
             viewer: 'https://localhost/projects/2436/share/QEVuQwEAYWN-NIhmrB8qX6ZWzToqdOE9dw1ylIfOQ-_fKwYAD_CCkhRzmAanker219x25PM7YSu12_li4QtOGl363syqCpKX7vlXvIub7b_V1BU2qypVHfspL7qfSIja0edd7hSh'
-          inboxes:
+          sandboxes:
             - id: 3874
-              name: Admin Inbox
+              name: Admin Sandbox
               username: f796d276ca4d13
               password: 293caeb0f100e4
               max_size: 0
@@ -4940,16 +4832,16 @@ components:
             can_destroy: true
             can_leave: true
     Project:
-      summary: Project with inbox
+      summary: Project with sandbox
       value:
         id: 2436
         name: Admin Project
         share_links:
           admin: 'https://localhost/projects/2436/share/QEVuQwEAYWN-NIhmrB8qX6ZWzToqdOE9dw1ylIfOQ-_fKwYAD_CCkhRzmAanker219x25PM75TBaHgx1I4dsv058hghY_Ewaa3Vt7ET1aeg3ufVcit919V4baPLzxV9JaRzXWSjK'
           viewer: 'https://localhost/projects/2436/share/QEVuQwEAYWN-NIhmrB8qX6ZWzToqdOE9dw1ylIfOQ-_fKwYAD_CCkhRzmAanker219x25PM7YSu12_li4QtOGl363syqCpKX7vlXvIub7b_V1BU2qypVHfspL7qfSIja0edd7hSh'
-        inboxes:
+        sandboxes:
           - id: 3874
-            name: Admin Inbox
+            name: Admin Sandbox
             username: f796d276ca4d13
             password: 293caeb0f100e4
             max_size: 0
@@ -4986,11 +4878,11 @@ components:
           can_update: true
           can_destroy: true
           can_leave: true
-    Inboxes:
-      summary: List of inboxes
+    Sandboxes:
+      summary: List of sandboxes
       value:
         - id: 3538
-          name: Admin Inbox
+          name: Admin Sandbox
           username: b3a87978452ae1
           password: 6be9fcfc613a7c
           max_size: 0
@@ -5023,7 +4915,7 @@ components:
             can_destroy: true
             can_leave: true
         - id: 4089
-          name: Viewer Inbox
+          name: Viewer Sandbox
           username: 1d0aa0282f7712
           password: 5667a20f611ae7
           max_size: 0
@@ -5072,18 +4964,24 @@ components:
         application/json:
           schema:
             $ref: '#/components/schemas/UnauthenticatedResponse'
+          example:
+            error: Incorrect API token
     PERMISSION_DENIED:
       description: Returns forbidden error message. Check your permissions.
       content:
         application/json:
           schema:
             $ref: '#/components/schemas/PermissionsDeniedResponse'
+          example:
+            errors: Account access forbidden
     NOT_FOUND:
       description: Returns not found error message
       content:
         application/json:
           schema:
             $ref: '#/components/schemas/NotFoundResponse'
+          example:
+            error: Not Found
     ProjectsResponse:
       description: |-
         Lists project attributes and inboxes of this project with their attributes.
@@ -5112,41 +5010,31 @@ components:
           examples:
             Project:
               $ref: '#/components/examples/Project'
-    InboxesResponse:
+    SandboxesResponse:
       description: |-
-        Returns the list of inboxes in the account to which the API token has access.
-        - **permissions** returns the permissions of the token for the inbox.
+        Returns the list of sandboxes in the account to which the API token has access.
+        - **permissions** returns the permissions of the token for the sandbox.
       content:
         application/json:
           schema:
             type: array
             items:
-              $ref: '#/components/schemas/TestingInbox'
+              $ref: '#/components/schemas/TestingSandbox'
           examples:
-            InboxesList:
-              $ref: '#/components/examples/Inboxes'
-    InboxResponse:
+            SandboxesList:
+              $ref: '#/components/examples/Sandboxes'
+    SandboxResponse:
       description: |-
-        Returns attributes of the inbox.
-        - **permissions** returns the permissions of the token for the inbox.
+        Returns attributes of the sandbox.
+        - **permissions** returns the permissions of the token for the sandbox.
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/TestingInbox'
+            $ref: '#/components/schemas/TestingSandbox'
   parameters:
-    account_id:
-      description: Unique account ID
-      name: account_id
-      in: path
-      required: true
-      schema:
-        type: integer
-        format: int64
-        minimum: 1
-        example: 3229
-    inbox_id:
-      description: Unique inbox ID
-      name: inbox_id
+    sandbox_id:
+      description: Unique sandbox ID
+      name: sandbox_id
       in: path
       required: true
       schema:

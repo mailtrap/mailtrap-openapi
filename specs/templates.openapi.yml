@@ -28,7 +28,7 @@ tags:
     description: Create and manage reusable email templates with dynamic content.
 
 paths:
-  /api/accounts/{account_id}/email_templates:
+  /api/email_templates:
     get:
       description: Get all email templates existing in your account
       operationId: emailTemplates
@@ -39,7 +39,7 @@ paths:
         - lang: shell
           label: 'cURL'
           source: |
-            curl -X GET "https://mailtrap.io/api/accounts/{account_id}/email_templates" \
+            curl -X GET "https://mailtrap.io/api/email_templates" \
               -H "Api-Token: YOUR_API_KEY"
         - lang: javascript
           label: Node.js
@@ -130,7 +130,7 @@ paths:
         - lang: shell
           label: 'cURL'
           source: |
-            curl -X POST "https://mailtrap.io/api/accounts/{account_id}/email_templates" \
+            curl -X POST "https://mailtrap.io/api/email_templates" \
               -H "Api-Token: YOUR_API_KEY" \
               -H "Content-Type: application/json" \
               -d '{
@@ -264,10 +264,8 @@ paths:
           $ref: '#/components/responses/Forbidden'
         '422':
           $ref: '#/components/responses/UnprocessableEntity'
-    parameters:
-      - $ref: '#/components/parameters/account_id'
 
-  /api/accounts/{account_id}/email_templates/{email_template_id}:
+  /api/email_templates/{email_template_id}:
     get:
       description: Get an email template by ID
       operationId: getEmailTemplate
@@ -278,7 +276,7 @@ paths:
         - lang: shell
           label: 'cURL'
           source: |
-            curl -X GET "https://mailtrap.io/api/accounts/{account_id}/email_templates/{email_template_id}" \
+            curl -X GET "https://mailtrap.io/api/email_templates/{email_template_id}" \
               -H "Api-Token: YOUR_API_KEY"
         - lang: javascript
           label: Node.js
@@ -356,7 +354,7 @@ paths:
         - lang: shell
           label: 'cURL'
           source: |
-            curl -X PATCH "https://mailtrap.io/api/accounts/{account_id}/email_templates/{email_template_id}" \
+            curl -X PATCH "https://mailtrap.io/api/email_templates/{email_template_id}" \
               -H "Api-Token: YOUR_API_KEY" \
               -H "Content-Type: application/json" \
               -d '{
@@ -465,7 +463,7 @@ paths:
         - lang: shell
           label: 'cURL'
           source: |
-            curl -X DELETE "https://mailtrap.io/api/accounts/{account_id}/email_templates/{email_template_id}" \
+            curl -X DELETE "https://mailtrap.io/api/email_templates/{email_template_id}" \
               -H "Api-Token: YOUR_API_KEY"
         - lang: javascript
           label: Node.js
@@ -529,7 +527,6 @@ paths:
         '404':
           $ref: '#/components/responses/NotFound'
     parameters:
-      - $ref: '#/components/parameters/account_id'
       - $ref: '#/components/parameters/email_template_id'
 
 components:
@@ -546,15 +543,6 @@ components:
       description: Bearer token authentication
 
   parameters:
-    account_id:
-      name: account_id
-      in: path
-      required: true
-      description: Account ID
-      schema:
-        type: integer
-        example: 1
-
     email_template_id:
       name: email_template_id
       in: path
@@ -562,7 +550,8 @@ components:
       description: Email template ID
       schema:
         type: integer
-        example: 1
+        format: int64
+        example: 60927
 
   schemas:
     UnprocessableEntity:
@@ -574,6 +563,44 @@ components:
             type: array
             items:
               type: string
+      example:
+        errors:
+          category:
+            - can't be blank
+          subject:
+            - can't be blank
+
+    UnauthenticatedResponse:
+      title: UnauthenticatedResponse
+      type: object
+      properties:
+        error:
+          type: string
+          description: Error message
+          example: Incorrect API token
+      example:
+        error: Incorrect API token
+
+    PermissionsDeniedResponse:
+      title: PermissionsDeniedResponse
+      type: object
+      properties:
+        errors:
+          type: string
+          example: Account access forbidden
+      example:
+        errors: Account access forbidden
+
+    NotFoundResponse:
+      title: NotFoundResponse
+      type: object
+      properties:
+        error:
+          type: string
+          description: Error message
+          example: Not Found
+      example:
+        error: Not Found
 
     EmailTemplateRequest:
       title: EmailTemplateRequest
@@ -643,7 +670,7 @@ components:
           format: date-time
       example:
         id: 26730
-        uuid: 018dd5e3-f6d2-7c00-8f9b-e5c3f2d8a132
+        uuid: '018dd5e3-f6d2-7c00-8f9b-e5c3f2d8a132'
         name: My Email Template
         subject: Promotional Email
         category: Promotional
@@ -652,51 +679,33 @@ components:
         created_at: '2021-01-01T00:00:00Z'
         updated_at: '2021-01-01T00:00:00Z'
 
-    ErrorResponse:
-      type: object
-      properties:
-        success:
-          type: boolean
-          example: false
-        errors:
-          type: array
-          items:
-            type: string
-            example: Invalid request
-
   responses:
     Unauthorized:
-      description: Unauthorized. Check your API credentials.
+      description: Returns unauthorized error message. Check your credentials.
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/ErrorResponse'
+            $ref: '#/components/schemas/UnauthenticatedResponse'
           example:
-            success: false
-            errors:
-              - "Unauthorized"
+            error: Incorrect API token
 
     Forbidden:
-      description: Forbidden. Verify domain or check permissions.
+      description: Returns forbidden error message. Check your permissions.
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/ErrorResponse'
+            $ref: '#/components/schemas/PermissionsDeniedResponse'
           example:
-            success: false
-            errors:
-              - "Forbidden"
+            errors: Account access forbidden
 
     NotFound:
       description: Resource not found
       content:
         application/json:
           schema:
-            type: object
-            properties:
-              error:
-                type: string
-                example: Resource not found
+            $ref: '#/components/schemas/NotFoundResponse'
+          example:
+            error: Not Found
 
     UnprocessableEntity:
       description: Validation errors
@@ -704,3 +713,9 @@ components:
         application/json:
           schema:
             $ref: '#/components/schemas/UnprocessableEntity'
+          example:
+            errors:
+              category:
+                - can't be blank
+              subject:
+                - can't be blank
