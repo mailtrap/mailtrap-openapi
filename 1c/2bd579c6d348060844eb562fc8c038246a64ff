@@ -1,0 +1,28 @@
+specs/account-management.openapi.yml
+  s_6582f5f62a7d20::t_c4a774a9ce69aa 1218-1219
+  s_6582f5f62a7d20::t_f1eb11b62ba001 175
+  s_6582f5f62a7d20::t_826fd9356a0135 560
+  s_6582f5f62a7d20::t_99a1da50ee62ba 1443-1444
+  s_6582f5f62a7d20::t_29067d7f2631b1 594
+  s_6582f5f62a7d20::t_1c9313bfce0b4c 684-685
+  s_6582f5f62a7d20::t_def3405adea5b0 1384-1385
+  s_6582f5f62a7d20::t_f77cb0f48c9d77 1121-1122
+  s_6582f5f62a7d20::t_f50a6f6f83d379 538-539
+  s_6582f5f62a7d20::t_7728e7c8df860f 265-266
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.8",
+  "base_commit_sha": "1c2bd579c6d348060844eb562fc8c038246a64ff",
+  "prompts": {},
+  "sessions": {
+    "s_6582f5f62a7d20": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "adb14487-8632-41cb-82fa-96a9eab27f79",
+        "model": "claude-opus-4-7"
+      },
+      "human_author": "Ivan Yurchanka <vanya.yu@gmail.com>"
+    }
+  }
+}
