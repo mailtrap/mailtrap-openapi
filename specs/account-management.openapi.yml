@@ -172,7 +172,7 @@ paths:
         Get list of account accesses for which `specifier_type` is `User` or `Invite`. You have to have
         account admin/owner permissions for this endpoint to work.
 
-        If you specify `project_ids`, `inbox_ids` or `domain_ids`, the endpoint will return account
+        If you specify `project_ids`, `sandbox_ids` or `domain_ids`, the endpoint will return account
         accesses for these resources.
       tags:
         - Account Accesses
@@ -262,8 +262,8 @@ paths:
               type: string
             example:
               - '3938'
-        - name: inbox_ids
-          description: The identifiers of the inboxes for which to include the results
+        - name: sandbox_ids
+          description: The identifiers of the sandboxes for which to include the results
           in: query
           schema:
             type: array
@@ -535,8 +535,8 @@ paths:
                           - account
                           - billing
                           - project
-                          - inbox
-                          - sending_domain
+                          - sandbox
+                          - domain
                           - email_campaign_permission_scope
                       access_level:
                         type: string
@@ -557,7 +557,7 @@ paths:
                   resource_type: account
                   access_level: viewer
                 - resource_id: '3809'
-                  resource_type: inbox
+                  resource_type: sandbox
                   _destroy: true
       responses:
         '200':
@@ -591,7 +591,7 @@ paths:
     get:
       operationId: getResources
       summary: Get resources
-      description: 'Get all resources in your account (Inboxes, Projects, Domains, Email Campaigns, Billing and Account itself) to which the token has admin access.'
+      description: 'Get all resources in your account (Sandboxes, Projects, Domains, Email Campaigns, Billing and Account itself) to which the token has admin access.'
       tags:
         - Permissions
       x-codeSamples:
@@ -681,8 +681,8 @@ paths:
                       access_level: 100
                       resources:
                         - id: 4117907
-                          name: My Inbox
-                          type: inbox
+                          name: My Sandbox
+                          type: sandbox
                           access_level: 100
                           resources: []
         '401':
@@ -1118,8 +1118,8 @@ components:
     PermissionResourceNode:
       title: Permission resource node
       description: |
-        Nested resource tree for permission management. `type` values include `account`, `project`, `inbox`,
-        `sending_domain`, `email_template_permission_scope`, `email_campaign_permission_scope`, and others.
+        Nested resource tree for permission management. `type` values include `account`, `project`, `sandbox`,
+        `domain`, `email_template_permission_scope`, `email_campaign_permission_scope`, and others.
       type: object
       properties:
         id:
@@ -1215,8 +1215,8 @@ components:
                   - billing
                   - organization
                   - project
-                  - inbox
-                  - sending_domain
+                  - sandbox
+                  - domain
                   - email_campaign_permission_scope
               access_level:
                 type: integer
@@ -1381,8 +1381,8 @@ components:
           enum:
             - account
             - project
-            - inbox
-            - sending_domain
+            - sandbox
+            - domain
           description: Resource type for this permission
         resource_id:
           oneOf:
@@ -1440,8 +1440,8 @@ components:
       enum:
         - account
         - project
-        - inbox
-        - sending_domain
+        - sandbox
+        - domain
       description: Resource type for API token permissions.
       example: account
     AccessLevel:
