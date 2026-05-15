@@ -1,0 +1,887 @@
+openapi: 3.1.0
+info:
+  title: Inbound
+  version: 2.0.0
+  description: |
+    Receive and inspect inbound email in Mailtrap. Inboxes are organized into
+    folders and accept messages at their generated inbound address. Use the
+    Messages endpoints to list, fetch, and delete received mail, and pair them
+    with an `inbound_receiving` webhook to be notified the moment a new
+    message arrives.
+
+    For a complete guide, see [Inbound](https://docs.mailtrap.io/inbound).
+  contact:
+    name: Mailtrap Support
+    url: "https://docs.mailtrap.io"
+    email: support@mailtrap.io
+  license:
+    name: Creative Commons Attribution-ShareAlike 4.0 International (CC BY-SA 4.0)
+    url: "https://creativecommons.org/licenses/by-sa/4.0/"
+  x-logo:
+    url: "https://mailtrap.io/wp-content/uploads/2021/04/mailtrap-logo.svg"
+
+servers:
+  - description: Mailtrap API
+    url: "https://mailtrap.io"
+
+security:
+  - HeaderAuth: []
+  - BearerAuth: []
+
+tags:
+  - name: folders
+    x-page-title: Folders
+    x-page-description: Organize inbound inboxes
+    description: |
+      Folders group inbound inboxes within an account. Every inbox belongs to
+      exactly one folder.
+
+  - name: inboxes
+    x-page-title: Inboxes
+    x-page-description: Receive inbound email
+    description: |
+      An inbox is the destination for inbound email. Each inbox is created
+      inside a folder and gets a unique generated address that can receive
+      mail from any sender.
+
+  - name: messages
+    x-page-title: Messages
+    x-page-description: List and inspect received messages
+    description: |
+      Inbound messages are the emails delivered to an inbox. Use these
+      endpoints to page through recent messages, fetch the full body and
+      attachments, or delete a message you no longer need.
+
+      ### Pagination
+
+      List responses use cursor pagination. When more results are available
+      the response includes a `last_id`; pass it back as the `last_id` query
+      parameter to get the next page. When `last_id` is `null` you have
+      reached the end.
+
+paths:
+  /api/inbound/folders:
+    get:
+      operationId: listInboundFolders
+      summary: List folders
+      description: Returns all inbound folders in the account.
+      tags:
+        - folders
+      x-codeSamples:
+        - lang: shell
+          label: "cURL"
+          source: |
+            curl -X GET https://mailtrap.io/api/inbound/folders \
+              -H 'Authorization: Bearer YOUR_API_KEY'
+      responses:
+        "200":
+          description: List of folders
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Folder"
+              example:
+                - id: 1
+                  name: Support
+                - id: 2
+                  name: Sales
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+
+    post:
+      operationId: createInboundFolder
+      summary: Create a folder
+      description: Create a new inbound folder.
+      tags:
+        - folders
+      x-codeSamples:
+        - lang: shell
+          label: "cURL"
+          source: |
+            curl -X POST https://mailtrap.io/api/inbound/folders \
+              -H 'Authorization: Bearer YOUR_API_KEY' \
+              -H 'Content-Type: application/json' \
+              -d '{ "name": "Support" }'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/FolderInput"
+      responses:
+        "201":
+          description: Folder created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Folder"
+              example:
+                id: 1
+                name: Support
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "422":
+          $ref: "#/components/responses/UnprocessableEntity"
+
+  /api/inbound/folders/{folder_id}:
+    get:
+      operationId: getInboundFolder
+      summary: Get a folder
+      description: Returns a single inbound folder.
+      tags:
+        - folders
+      parameters:
+        - $ref: "#/components/parameters/folder_id"
+      x-codeSamples:
+        - lang: shell
+          label: "cURL"
+          source: |
+            curl -X GET https://mailtrap.io/api/inbound/folders/{folder_id} \
+              -H 'Authorization: Bearer YOUR_API_KEY'
+      responses:
+        "200":
+          description: Folder details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Folder"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+    patch:
+      operationId: updateInboundFolder
+      summary: Update a folder
+      description: Update an inbound folder.
+      tags:
+        - folders
+      parameters:
+        - $ref: "#/components/parameters/folder_id"
+      x-codeSamples:
+        - lang: shell
+          label: "cURL"
+          source: |
+            curl -X PATCH https://mailtrap.io/api/inbound/folders/{folder_id} \
+              -H 'Authorization: Bearer YOUR_API_KEY' \
+              -H 'Content-Type: application/json' \
+              -d '{ "name": "Customer Success" }'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/FolderInput"
+      responses:
+        "200":
+          description: Folder updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Folder"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "422":
+          $ref: "#/components/responses/UnprocessableEntity"
+
+    delete:
+      operationId: deleteInboundFolder
+      summary: Delete a folder
+      description: |
+        Permanently delete an inbound folder along with all of its inboxes.
+      tags:
+        - folders
+      parameters:
+        - $ref: "#/components/parameters/folder_id"
+      x-codeSamples:
+        - lang: shell
+          label: "cURL"
+          source: |
+            curl -X DELETE https://mailtrap.io/api/inbound/folders/{folder_id} \
+              -H 'Authorization: Bearer YOUR_API_KEY'
+      responses:
+        "204":
+          description: Folder deleted
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  /api/inbound/folders/{folder_id}/inboxes:
+    get:
+      operationId: listInboundInboxes
+      summary: List inboxes
+      description: Returns all inboxes in a folder.
+      tags:
+        - inboxes
+      parameters:
+        - $ref: "#/components/parameters/folder_id"
+      x-codeSamples:
+        - lang: shell
+          label: "cURL"
+          source: |
+            curl -X GET https://mailtrap.io/api/inbound/folders/{folder_id}/inboxes \
+              -H 'Authorization: Bearer YOUR_API_KEY'
+      responses:
+        "200":
+          description: List of inboxes
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Inbox"
+              example:
+                - id: 1
+                  name: Support tickets
+                  address: "support-tickets-1a2b3c4d@inbound.mailtrap.io"
+                - id: 2
+                  name: Replies
+                  address: "replies-5e6f7a8b@inbound.mailtrap.io"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+    post:
+      operationId: createInboundInbox
+      summary: Create an inbox
+      description: |
+        Create a new inbox in a folder. Mailtrap generates the inbox `address`
+        automatically based on the `name`.
+      tags:
+        - inboxes
+      parameters:
+        - $ref: "#/components/parameters/folder_id"
+      x-codeSamples:
+        - lang: shell
+          label: "cURL"
+          source: |
+            curl -X POST https://mailtrap.io/api/inbound/folders/{folder_id}/inboxes \
+              -H 'Authorization: Bearer YOUR_API_KEY' \
+              -H 'Content-Type: application/json' \
+              -d '{ "name": "Support tickets" }'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/InboxInput"
+      responses:
+        "201":
+          description: Inbox created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Inbox"
+              example:
+                id: 1
+                name: Support tickets
+                address: "support-tickets-1a2b3c4d@inbound.mailtrap.io"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "422":
+          $ref: "#/components/responses/UnprocessableEntity"
+
+  /api/inbound/folders/{folder_id}/inboxes/{inbox_id}:
+    get:
+      operationId: getInboundInbox
+      summary: Get an inbox
+      description: Returns a single inbox.
+      tags:
+        - inboxes
+      parameters:
+        - $ref: "#/components/parameters/folder_id"
+        - $ref: "#/components/parameters/inbox_id"
+      x-codeSamples:
+        - lang: shell
+          label: "cURL"
+          source: |
+            curl -X GET https://mailtrap.io/api/inbound/folders/{folder_id}/inboxes/{inbox_id} \
+              -H 'Authorization: Bearer YOUR_API_KEY'
+      responses:
+        "200":
+          description: Inbox details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Inbox"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+    patch:
+      operationId: updateInboundInbox
+      summary: Update an inbox
+      description: |
+        Rename an inbox. The generated `address` does not change.
+      tags:
+        - inboxes
+      parameters:
+        - $ref: "#/components/parameters/folder_id"
+        - $ref: "#/components/parameters/inbox_id"
+      x-codeSamples:
+        - lang: shell
+          label: "cURL"
+          source: |
+            curl -X PATCH https://mailtrap.io/api/inbound/folders/{folder_id}/inboxes/{inbox_id} \
+              -H 'Authorization: Bearer YOUR_API_KEY' \
+              -H 'Content-Type: application/json' \
+              -d '{ "name": "Support tickets v2" }'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/InboxInput"
+      responses:
+        "200":
+          description: Inbox updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Inbox"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "422":
+          $ref: "#/components/responses/UnprocessableEntity"
+
+    delete:
+      operationId: deleteInboundInbox
+      summary: Delete an inbox
+      description: |
+        Permanently delete an inbox and all its received messages.
+      tags:
+        - inboxes
+      parameters:
+        - $ref: "#/components/parameters/folder_id"
+        - $ref: "#/components/parameters/inbox_id"
+      x-codeSamples:
+        - lang: shell
+          label: "cURL"
+          source: |
+            curl -X DELETE https://mailtrap.io/api/inbound/folders/{folder_id}/inboxes/{inbox_id} \
+              -H 'Authorization: Bearer YOUR_API_KEY'
+      responses:
+        "204":
+          description: Inbox deleted
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  /api/inbound/inboxes/{inbox_id}/messages:
+    get:
+      operationId: listInboundMessages
+      summary: List messages
+      description: |
+        Returns inbound messages received by the inbox, ordered by
+        `received_at` descending. Use the `last_id` cursor for pagination.
+      tags:
+        - messages
+      parameters:
+        - $ref: "#/components/parameters/inbox_id"
+        - name: last_id
+          in: query
+          required: false
+          description: |
+            ID of the last message from the previous page. Pass the `last_id`
+            value returned by the previous response to fetch the next page.
+            Omit on the first request.
+          schema:
+            type: integer
+            example: 1700000000000123
+      x-codeSamples:
+        - lang: shell
+          label: "cURL"
+          source: |
+            curl -X GET 'https://mailtrap.io/api/inbound/inboxes/{inbox_id}/messages' \
+              -H 'Authorization: Bearer YOUR_API_KEY'
+      responses:
+        "200":
+          description: List of messages
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MessagesListResponse"
+              example:
+                data:
+                  - id: 1700000000000123
+                    inbox_id: 1
+                    from: "sender@example.com"
+                    to:
+                      - "support-tickets-1a2b3c4d@inbound.mailtrap.io"
+                    cc: []
+                    bcc: []
+                    reply_to: null
+                    subject: Hello
+                    message_id: "<abc@sender.example>"
+                    in_reply_to: null
+                    references: []
+                    headers:
+                      mime-version: "1.0"
+                    size: 4096
+                    html_size: 512
+                    text_size: 128
+                    received_at: "2026-05-08T10:30:00.000Z"
+                    attachments:
+                      - attachment_id: att-1
+                        size: 1024
+                        filename: logo.png
+                        content_type: image/png
+                        content_disposition: inline
+                        content_id: "logo@example.com"
+                total_count: 1
+                last_id: null
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  /api/inbound/inboxes/{inbox_id}/messages/{id}:
+    get:
+      operationId: getInboundMessage
+      summary: Get a message
+      description: |
+        Returns a single inbound message together with presigned URLs for the
+        raw `.eml` file and for each attachment, plus the decoded HTML and
+        plain-text bodies. Presigned URLs expire after one hour.
+      tags:
+        - messages
+      parameters:
+        - $ref: "#/components/parameters/inbox_id"
+        - $ref: "#/components/parameters/message_id"
+      x-codeSamples:
+        - lang: shell
+          label: "cURL"
+          source: |
+            curl -X GET https://mailtrap.io/api/inbound/inboxes/{inbox_id}/messages/{id} \
+              -H 'Authorization: Bearer YOUR_API_KEY'
+      responses:
+        "200":
+          description: Message details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MessageDetails"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+    delete:
+      operationId: deleteInboundMessage
+      summary: Delete a message
+      description: |
+        Permanently delete an inbound message and its stored body and
+        attachments.
+      tags:
+        - messages
+      parameters:
+        - $ref: "#/components/parameters/inbox_id"
+        - $ref: "#/components/parameters/message_id"
+      x-codeSamples:
+        - lang: shell
+          label: "cURL"
+          source: |
+            curl -X DELETE https://mailtrap.io/api/inbound/inboxes/{inbox_id}/messages/{id} \
+              -H 'Authorization: Bearer YOUR_API_KEY'
+      responses:
+        "204":
+          description: Message deleted
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+components:
+  securitySchemes:
+    HeaderAuth:
+      type: apiKey
+      description: API token in Api-Token header
+      in: header
+      name: Api-Token
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: Bearer token authentication
+
+  parameters:
+    folder_id:
+      name: folder_id
+      in: path
+      required: true
+      description: Inbound folder ID
+      schema:
+        type: integer
+        example: 1
+
+    inbox_id:
+      name: inbox_id
+      in: path
+      required: true
+      description: Inbound inbox ID
+      schema:
+        type: integer
+        example: 1
+
+    message_id:
+      name: id
+      in: path
+      required: true
+      description: Inbound message ID
+      schema:
+        type: integer
+        example: 1700000000000123
+
+  schemas:
+    Folder:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        name:
+          type: string
+          example: Support
+
+    FolderInput:
+      type: object
+      required:
+        - name
+      properties:
+        name:
+          type: string
+          maxLength: 100
+          example: Support
+
+    Inbox:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        name:
+          type: string
+          example: Support tickets
+        address:
+          type: string
+          format: email
+          description: |
+            Generated inbound address. Mail sent to this address is delivered
+            to the inbox.
+          example: "support-tickets-1a2b3c4d@inbound.mailtrap.io"
+
+    InboxInput:
+      type: object
+      required:
+        - name
+      properties:
+        name:
+          type: string
+          maxLength: 100
+          example: Support tickets
+
+    Attachment:
+      type: object
+      properties:
+        attachment_id:
+          type: string
+          example: att-1
+        size:
+          type:
+            - integer
+            - "null"
+          example: 1024
+        filename:
+          type:
+            - string
+            - "null"
+          example: logo.png
+        content_type:
+          type:
+            - string
+            - "null"
+          example: image/png
+        content_disposition:
+          type:
+            - string
+            - "null"
+          enum:
+            - attachment
+            - inline
+            - null
+          example: inline
+        content_id:
+          type:
+            - string
+            - "null"
+          description: |
+            `Content-ID` header value, used to reference inline attachments
+            from the HTML body.
+          example: "logo@example.com"
+
+    AttachmentWithDownloadUrl:
+      allOf:
+        - $ref: "#/components/schemas/Attachment"
+        - type: object
+          properties:
+            download_url:
+              type:
+                - string
+                - "null"
+              format: uri
+              description: Presigned URL to download the attachment. Expires after one hour.
+              example: "https://s3.amazonaws.com/inbound-mail/att-1?X-Amz-Signature=..."
+            download_url_expires_at:
+              type:
+                - string
+                - "null"
+              format: date-time
+              example: "2026-05-08T11:30:00.000Z"
+
+    Message:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: Message ID. Stable, monotonically increasing within an inbox.
+          example: 1700000000000123
+        inbox_id:
+          type: integer
+          example: 1
+        from:
+          type:
+            - string
+            - "null"
+          example: "sender@example.com"
+        to:
+          type: array
+          items:
+            type: string
+          example:
+            - "support-tickets-1a2b3c4d@inbound.mailtrap.io"
+        cc:
+          type: array
+          items:
+            type: string
+          example: []
+        bcc:
+          type: array
+          items:
+            type: string
+          example: []
+        reply_to:
+          type:
+            - string
+            - "null"
+          example: null
+        subject:
+          type:
+            - string
+            - "null"
+          example: Hello
+        message_id:
+          type:
+            - string
+            - "null"
+          description: Value of the original `Message-ID` header.
+          example: "<abc@sender.example>"
+        in_reply_to:
+          type:
+            - string
+            - "null"
+          example: null
+        references:
+          type: array
+          items:
+            type: string
+          example: []
+        headers:
+          type:
+            - object
+            - "null"
+          additionalProperties:
+            type: string
+          description: |
+            Selected headers from the original message, lowercased.
+          example:
+            mime-version: "1.0"
+            return-path: "<sender@example.com>"
+        size:
+          type:
+            - integer
+            - "null"
+          description: Total size of the raw message in bytes.
+          example: 4096
+        html_size:
+          type:
+            - integer
+            - "null"
+          description: Size of the HTML body in bytes. Zero if the message has no HTML part.
+          example: 512
+        text_size:
+          type:
+            - integer
+            - "null"
+          description: Size of the plain-text body in bytes. Zero if the message has no text part.
+          example: 128
+        received_at:
+          type: string
+          format: date-time
+          example: "2026-05-08T10:30:00.000Z"
+        attachments:
+          type: array
+          items:
+            $ref: "#/components/schemas/Attachment"
+
+    MessageDetails:
+      allOf:
+        - $ref: "#/components/schemas/Message"
+        - type: object
+          properties:
+            attachments:
+              type: array
+              items:
+                $ref: "#/components/schemas/AttachmentWithDownloadUrl"
+            raw_message_url:
+              type:
+                - string
+                - "null"
+              format: uri
+              description: |
+                Presigned URL to download the raw `.eml` file. Expires after
+                one hour.
+              example: "https://s3.amazonaws.com/inbound-mail/raw.eml?X-Amz-Signature=..."
+            raw_message_expires_at:
+              type:
+                - string
+                - "null"
+              format: date-time
+              example: "2026-05-08T11:30:00.000Z"
+            html_body:
+              type:
+                - string
+                - "null"
+              description: Decoded HTML body. `null` when the message has no HTML part.
+              example: "<html><body>Hello</body></html>"
+            text_body:
+              type:
+                - string
+                - "null"
+              description: Decoded plain-text body. `null` when the message has no text part.
+              example: "Hello"
+
+    MessagesListResponse:
+      type: object
+      required:
+        - data
+        - total_count
+        - last_id
+      properties:
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/Message"
+        total_count:
+          type: integer
+          description: Total number of messages within the retention window.
+          example: 1
+        last_id:
+          type:
+            - integer
+            - "null"
+          description: |
+            Cursor for the next page. `null` when there are no more results.
+          example: null
+
+    UnprocessableEntity:
+      type: object
+      properties:
+        errors:
+          type: object
+          additionalProperties:
+            type: array
+            items:
+              type: string
+
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+
+  responses:
+    Unauthorized:
+      description: Unauthorized
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+          example:
+            error: Incorrect API token
+
+    Forbidden:
+      description: Forbidden
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+          example:
+            error: Access forbidden
+
+    NotFound:
+      description: Not found
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+          example:
+            error: Not Found
+
+    UnprocessableEntity:
+      description: Validation error
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/UnprocessableEntity"
+          example:
+            errors:
+              name:
+                - has already been taken
