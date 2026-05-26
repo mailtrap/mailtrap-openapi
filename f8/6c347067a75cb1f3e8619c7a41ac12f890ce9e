@@ -1,0 +1,19 @@
+.spectral.yaml
+  s_7be0bec77ec05b::t_3c1752916e97eb 8-12
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "f86c347067a75cb1f3e8619c7a41ac12f890ce9e",
+  "prompts": {},
+  "sessions": {
+    "s_7be0bec77ec05b": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "57b5cfa0-7d39-49f3-b2f7-b3309ecae94f",
+        "model": "claude-opus-4-7"
+      },
+      "human_author": "Piotr Bednarz <piotr.bednarz@railsware.com>"
+    }
+  }
+}
