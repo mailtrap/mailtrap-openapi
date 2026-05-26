@@ -1,0 +1,14 @@
+specs/inbound.openapi.yml
+  h_3075e3cb809e55 251,254,296,442,609,699
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "24d8e08e5766acdad786834ba00f8da618b1bafa",
+  "prompts": {},
+  "humans": {
+    "h_3075e3cb809e55": {
+      "author": "Piotr Bednarz <piotr.bednarz@railsware.com>"
+    }
+  }
+}
