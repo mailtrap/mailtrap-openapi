@@ -1,0 +1,31 @@
+specs/inbound.openapi.yml
+  s_7082f87858c1b9::t_071ec7ae6a4d6c 682
+  s_1af5c1ba33597a::t_d2946ca95e606f 56,67,98,125,138,166,205,217,230,269,299,313,343,383,395,425,470,487,518
+  s_7082f87858c1b9::t_c3255aa7f1e2a3 401-406
+  s_1af5c1ba33597a::t_fc12e0b3dbb341 1-55,57-66,68-97,99-124,126-137,139-165,167-204,206-216,218-229,231-268,270-298,300-312,314-342,344-382,384-394,396-400,407-424,426-469,471-474,476,478-486,488-517,519-681,683-885
+  s_7082f87858c1b9::t_70aada04eb9683 475,477
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "3cff831a99e29dafa957d23b46468991e297c9a4",
+  "prompts": {},
+  "sessions": {
+    "s_1af5c1ba33597a": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "a1a161d0-b0c7-4a04-8177-07a36c3d2ad6",
+        "model": "claude-opus-4-7"
+      },
+      "human_author": "Piotr Bednarz <piotr.bednarz@railsware.com>"
+    },
+    "s_7082f87858c1b9": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "aa4942c7-314b-40b9-a50e-ae425a449500",
+        "model": "claude-opus-4-7"
+      },
+      "human_author": null
+    }
+  }
+}
