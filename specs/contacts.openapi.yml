@@ -812,6 +812,7 @@ paths:
           label: Python
           source: |
             import mailtrap as mt
+            
             client = mt.MailtrapClient(token="YOUR_API_KEY", account_id="YOUR_ACCOUNT_ID")
             export_job = client.contacts_api.contact_exports.create(
                 filters=[
