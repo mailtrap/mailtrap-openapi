@@ -1,0 +1,14 @@
+specs/contacts.openapi.yml
+  h_32e79f74e8df76 815
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "44ce59a16e9270b2978158d855875fb2862c6f1f",
+  "prompts": {},
+  "humans": {
+    "h_32e79f74e8df76": {
+      "author": "Igor Dobryn <igor.dobryn@railsware.com>"
+    }
+  }
+}
