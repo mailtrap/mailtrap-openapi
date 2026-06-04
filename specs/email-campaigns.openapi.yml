@@ -5,35 +5,29 @@ info:
   title: Email Campaigns
   contact:
     name: Mailtrap
-    url: 'https://docs.mailtrap.io'
+    url: "https://docs.mailtrap.io"
     email: support@mailtrap.io
   license:
     name: Creative Commons Attribution-ShareAlike 4.0 International (CC BY-SA 4.0)
-    url: 'https://creativecommons.org/licenses/by-sa/4.0/'
+    url: "https://creativecommons.org/licenses/by-sa/4.0/"
 security:
   - HeaderAuth: []
   - BearerAuth: []
 servers:
   - description: Mailtrap API
-    url: 'https://mailtrap.io'
+    url: "https://mailtrap.io"
 tags:
-  - name: email-campaigns
-    x-page-title: Email Campaigns
-    x-page-description: Manage email marketing campaigns and their statistics
-
   - name: Email Campaigns
-    x-parent: email-campaigns
     x-page-title: Email Campaigns
     x-page-description: List, create, retrieve, and delete email campaigns
     description: Manage email campaigns
 
   - name: Campaign Stats
-    x-parent: email-campaigns
     x-page-title: Campaign Stats
     x-page-description: Retrieve aggregated performance metrics for a campaign
     description: Retrieve campaign statistics
 paths:
-  '/api/email_campaigns':
+  "/api/email_campaigns":
     get:
       operationId: getEmailCampaigns
       summary: Get a list of email campaigns
@@ -46,19 +40,19 @@ paths:
       tags:
         - Email Campaigns
       parameters:
-        - $ref: '#/components/parameters/token'
-        - $ref: '#/components/parameters/per_page'
-        - $ref: '#/components/parameters/search'
+        - $ref: "#/components/parameters/token"
+        - $ref: "#/components/parameters/per_page"
+        - $ref: "#/components/parameters/search"
       responses:
-        '200':
-          $ref: '#/components/responses/EmailCampaignsResponse'
-        '401':
-          $ref: '#/components/responses/UNAUTHENTICATED'
-        '403':
-          $ref: '#/components/responses/PERMISSION_DENIED'
+        "200":
+          $ref: "#/components/responses/EmailCampaignsResponse"
+        "401":
+          $ref: "#/components/responses/UNAUTHENTICATED"
+        "403":
+          $ref: "#/components/responses/PERMISSION_DENIED"
       x-codeSamples:
         - lang: shell
-          label: 'cURL'
+          label: "cURL"
           source: |
             curl -X GET "https://mailtrap.io/api/email_campaigns?per_page=50&token=1" \
               -H 'Api-Token: YOUR_API_TOKEN'
@@ -76,19 +70,19 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/EmailCampaignCreateRequest'
+              $ref: "#/components/schemas/EmailCampaignCreateRequest"
       responses:
-        '200':
-          $ref: '#/components/responses/EmailCampaignResponse'
-        '401':
-          $ref: '#/components/responses/UNAUTHENTICATED'
-        '403':
-          $ref: '#/components/responses/PERMISSION_DENIED'
-        '422':
-          $ref: '#/components/responses/VALIDATION_ERROR'
+        "200":
+          $ref: "#/components/responses/EmailCampaignResponse"
+        "401":
+          $ref: "#/components/responses/UNAUTHENTICATED"
+        "403":
+          $ref: "#/components/responses/PERMISSION_DENIED"
+        "422":
+          $ref: "#/components/responses/VALIDATION_ERROR"
       x-codeSamples:
         - lang: shell
-          label: 'cURL'
+          label: "cURL"
           source: |
             curl -X POST "https://mailtrap.io/api/email_campaigns" \
               -H 'Api-Token: YOUR_API_TOKEN' \
@@ -107,7 +101,7 @@ paths:
                   "template_attributes": { "subject": "Spring is here — 30% off" }
                 }
               }'
-  '/api/email_campaigns/{email_campaign_id}':
+  "/api/email_campaigns/{email_campaign_id}":
     get:
       operationId: getEmailCampaign
       summary: Get an email campaign by ID
@@ -115,19 +109,19 @@ paths:
       tags:
         - Email Campaigns
       parameters:
-        - $ref: '#/components/parameters/email_campaign_id'
+        - $ref: "#/components/parameters/email_campaign_id"
       responses:
-        '200':
-          $ref: '#/components/responses/EmailCampaignResponse'
-        '401':
-          $ref: '#/components/responses/UNAUTHENTICATED'
-        '403':
-          $ref: '#/components/responses/PERMISSION_DENIED'
-        '404':
-          $ref: '#/components/responses/NOT_FOUND'
+        "200":
+          $ref: "#/components/responses/EmailCampaignResponse"
+        "401":
+          $ref: "#/components/responses/UNAUTHENTICATED"
+        "403":
+          $ref: "#/components/responses/PERMISSION_DENIED"
+        "404":
+          $ref: "#/components/responses/NOT_FOUND"
       x-codeSamples:
         - lang: shell
-          label: 'cURL'
+          label: "cURL"
           source: |
             curl -X GET "https://mailtrap.io/api/email_campaigns/4567" \
               -H 'Api-Token: YOUR_API_TOKEN'
@@ -141,27 +135,27 @@ paths:
       tags:
         - Email Campaigns
       parameters:
-        - $ref: '#/components/parameters/email_campaign_id'
+        - $ref: "#/components/parameters/email_campaign_id"
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/EmailCampaignUpdateRequest'
+              $ref: "#/components/schemas/EmailCampaignUpdateRequest"
       responses:
-        '200':
-          $ref: '#/components/responses/EmailCampaignResponse'
-        '401':
-          $ref: '#/components/responses/UNAUTHENTICATED'
-        '403':
-          $ref: '#/components/responses/PERMISSION_DENIED'
-        '404':
-          $ref: '#/components/responses/NOT_FOUND'
-        '422':
-          $ref: '#/components/responses/VALIDATION_ERROR'
+        "200":
+          $ref: "#/components/responses/EmailCampaignResponse"
+        "401":
+          $ref: "#/components/responses/UNAUTHENTICATED"
+        "403":
+          $ref: "#/components/responses/PERMISSION_DENIED"
+        "404":
+          $ref: "#/components/responses/NOT_FOUND"
+        "422":
+          $ref: "#/components/responses/VALIDATION_ERROR"
       x-codeSamples:
         - lang: shell
-          label: 'cURL'
+          label: "cURL"
           source: |
             curl -X PATCH "https://mailtrap.io/api/email_campaigns/4567" \
               -H 'Api-Token: YOUR_API_TOKEN' \
@@ -181,25 +175,25 @@ paths:
       tags:
         - Email Campaigns
       parameters:
-        - $ref: '#/components/parameters/email_campaign_id'
+        - $ref: "#/components/parameters/email_campaign_id"
       responses:
-        '200':
-          $ref: '#/components/responses/EmailCampaignResponse'
-        '401':
-          $ref: '#/components/responses/UNAUTHENTICATED'
-        '403':
-          $ref: '#/components/responses/PERMISSION_DENIED'
-        '404':
-          $ref: '#/components/responses/NOT_FOUND'
-        '422':
-          $ref: '#/components/responses/VALIDATION_ERROR'
+        "200":
+          $ref: "#/components/responses/EmailCampaignResponse"
+        "401":
+          $ref: "#/components/responses/UNAUTHENTICATED"
+        "403":
+          $ref: "#/components/responses/PERMISSION_DENIED"
+        "404":
+          $ref: "#/components/responses/NOT_FOUND"
+        "422":
+          $ref: "#/components/responses/VALIDATION_ERROR"
       x-codeSamples:
         - lang: shell
-          label: 'cURL'
+          label: "cURL"
           source: |
             curl -X DELETE "https://mailtrap.io/api/email_campaigns/4567" \
               -H 'Api-Token: YOUR_API_TOKEN'
-  '/api/email_campaigns/{email_campaign_id}/stats':
+  "/api/email_campaigns/{email_campaign_id}/stats":
     get:
       operationId: getEmailCampaignStats
       summary: Get email campaign statistics
@@ -213,19 +207,19 @@ paths:
       tags:
         - Campaign Stats
       parameters:
-        - $ref: '#/components/parameters/email_campaign_id'
+        - $ref: "#/components/parameters/email_campaign_id"
       responses:
-        '200':
-          $ref: '#/components/responses/EmailCampaignStatsResponse'
-        '401':
-          $ref: '#/components/responses/UNAUTHENTICATED'
-        '403':
-          $ref: '#/components/responses/PERMISSION_DENIED'
-        '404':
-          $ref: '#/components/responses/NOT_FOUND'
+        "200":
+          $ref: "#/components/responses/EmailCampaignStatsResponse"
+        "401":
+          $ref: "#/components/responses/UNAUTHENTICATED"
+        "403":
+          $ref: "#/components/responses/PERMISSION_DENIED"
+        "404":
+          $ref: "#/components/responses/NOT_FOUND"
       x-codeSamples:
         - lang: shell
-          label: 'cURL'
+          label: "cURL"
           source: |
             curl -X GET "https://mailtrap.io/api/email_campaigns/4567/stats" \
               -H 'Api-Token: YOUR_API_TOKEN'
@@ -287,7 +281,7 @@ components:
         - email_campaign
       properties:
         email_campaign:
-          $ref: '#/components/schemas/EmailCampaignCreateAttributes'
+          $ref: "#/components/schemas/EmailCampaignCreateAttributes"
     EmailCampaignCreateAttributes:
       type: object
       required:
@@ -312,21 +306,21 @@ components:
           description: Local part (before the @) of the From address.
           example: news
         reply_to:
-          $ref: '#/components/schemas/ReplyTo'
+          $ref: "#/components/schemas/ReplyTo"
         template_attributes:
           type: object
           properties:
             subject:
               type: string
               description: Email subject line.
-              example: 'Spring is here — 30% off'
+              example: "Spring is here — 30% off"
     EmailCampaignUpdateRequest:
       type: object
       required:
         - email_campaign
       properties:
         email_campaign:
-          $ref: '#/components/schemas/EmailCampaignUpdateAttributes'
+          $ref: "#/components/schemas/EmailCampaignUpdateAttributes"
     EmailCampaignUpdateAttributes:
       type: object
       description: Attributes to update. All fields are optional; only provided fields are changed.
@@ -352,19 +346,19 @@ components:
             - immediate
             - scheduled
         scheduled_for:
-          type: [string, 'null']
+          type: [string, "null"]
           format: date-time
           description: When to send the campaign (required when `delivery_mode` is `scheduled`).
-          example: '2026-06-01T09:00:00.000Z'
+          example: "2026-06-01T09:00:00.000Z"
         delivery_options:
           type: object
           description: Delivery throttling options.
           properties:
             emails_per_hour:
-              type: [integer, 'null']
+              type: [integer, "null"]
               example: 1000
         reply_to:
-          $ref: '#/components/schemas/ReplyTo'
+          $ref: "#/components/schemas/ReplyTo"
         template_attributes:
           type: object
           description: Pass the existing template `id` to update it instead of creating a new one.
@@ -376,7 +370,7 @@ components:
             subject:
               type: string
               description: Email subject line.
-              example: 'New subject'
+              example: "New subject"
     ReplyTo:
       type: object
       description: Reply-To address parts.
@@ -418,7 +412,7 @@ components:
           type: string
           example: Acme Marketing
         reply_to:
-          $ref: '#/components/schemas/ReplyTo'
+          $ref: "#/components/schemas/ReplyTo"
         current_state:
           type: string
           description: Current state of the campaign in its lifecycle.
@@ -447,20 +441,20 @@ components:
         created_at:
           type: string
           format: date-time
-          example: '2026-05-01T10:15:00.000Z'
+          example: "2026-05-01T10:15:00.000Z"
         updated_at:
           type: string
           format: date-time
-          example: '2026-05-02T09:00:00.000Z'
+          example: "2026-05-02T09:00:00.000Z"
         last_started_at:
-          type: [string, 'null']
+          type: [string, "null"]
           format: date-time
-          example: '2026-05-03T12:00:00.000Z'
+          example: "2026-05-03T12:00:00.000Z"
         last_started_at_date:
           type: string
           format: date
           description: Date the campaign was last started. Present only when the campaign has been started.
-          example: '2026-05-03'
+          example: "2026-05-03"
         recipient_total_count:
           type: integer
           example: 1500
@@ -476,10 +470,10 @@ components:
           description: Delivery throttling options.
           properties:
             emails_per_hour:
-              type: [integer, 'null']
+              type: [integer, "null"]
               example: 1000
         scheduled_for:
-          type: [string, 'null']
+          type: [string, "null"]
           format: date-time
           example: null
         audience_defined:
@@ -489,7 +483,7 @@ components:
         stats:
           description: Aggregated statistics. Present only when the campaign carries stats.
           oneOf:
-            - $ref: '#/components/schemas/EmailCampaignStats'
+            - $ref: "#/components/schemas/EmailCampaignStats"
         template:
           type: object
           properties:
@@ -499,7 +493,7 @@ components:
               example: 789
             subject:
               type: string
-              example: 'Spring is here — 30% off'
+              example: "Spring is here — 30% off"
     EmailCampaignStats:
       type: object
       description: Aggregated campaign performance metrics. Counts and rates are `0` when the campaign has not been started.
@@ -565,29 +559,29 @@ components:
           description: Current page number.
           example: 1
         prev_token:
-          type: [integer, 'null']
+          type: [integer, "null"]
           description: Previous page number, or `null` on the first page.
           example: null
         next_token:
-          type: [integer, 'null']
+          type: [integer, "null"]
           description: Next page number, or `null` on the last page.
           example: 2
         first_url:
           type: string
           format: uri
-          example: 'https://mailtrap.io/api/email_campaigns?per_page=50&token=1'
+          example: "https://mailtrap.io/api/email_campaigns?per_page=50&token=1"
         prev_url:
-          type: [string, 'null']
+          type: [string, "null"]
           format: uri
           example: null
         current_url:
           type: string
           format: uri
-          example: 'https://mailtrap.io/api/email_campaigns?per_page=50&token=1'
+          example: "https://mailtrap.io/api/email_campaigns?per_page=50&token=1"
         next_url:
-          type: [string, 'null']
+          type: [string, "null"]
           format: uri
-          example: 'https://mailtrap.io/api/email_campaigns?per_page=50&token=2'
+          example: "https://mailtrap.io/api/email_campaigns?per_page=50&token=2"
     UnauthenticatedResponse:
       type: object
       properties:
@@ -629,42 +623,42 @@ components:
               data:
                 type: array
                 items:
-                  $ref: '#/components/schemas/EmailCampaign'
+                  $ref: "#/components/schemas/EmailCampaign"
               pagination:
-                $ref: '#/components/schemas/Pagination'
+                $ref: "#/components/schemas/Pagination"
     EmailCampaignResponse:
       description: A single email campaign.
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/EmailCampaign'
+            $ref: "#/components/schemas/EmailCampaign"
     EmailCampaignStatsResponse:
       description: Aggregated campaign statistics.
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/EmailCampaignStats'
+            $ref: "#/components/schemas/EmailCampaignStats"
     UNAUTHENTICATED:
       description: Authentication failed — missing or invalid API token.
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/UnauthenticatedResponse'
+            $ref: "#/components/schemas/UnauthenticatedResponse"
     PERMISSION_DENIED:
       description: The API token does not have permission to access this resource.
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/PermissionDeniedResponse'
+            $ref: "#/components/schemas/PermissionDeniedResponse"
     NOT_FOUND:
       description: The requested email campaign was not found.
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/NotFoundResponse'
+            $ref: "#/components/schemas/NotFoundResponse"
     VALIDATION_ERROR:
       description: The request was rejected due to validation errors.
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/ValidationErrorResponse'
+            $ref: "#/components/schemas/ValidationErrorResponse"
