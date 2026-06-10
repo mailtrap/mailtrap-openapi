@@ -5,3 +5,8 @@ rules:
   # because Spectral tries to parse them as JSON and fails on multi-line/concatenated JSON
   oas3-valid-media-example: off
 
+  # Disable due to upstream regression in @stoplight/spectral-rulesets >= 1.22.3
+  # (released 2026-05-21): the rule's JSONPath crashes nimma when traversing
+  # past `null` values in examples ("Cannot read properties of null").
+  duplicated-entry-in-enum: off
+
