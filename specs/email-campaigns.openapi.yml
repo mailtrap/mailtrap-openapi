@@ -1,0 +1,664 @@
+openapi: 3.1.0
+info:
+  description: Manage email marketing campaigns and retrieve their performance statistics
+  version: 2.0.0
+  title: Email Campaigns
+  contact:
+    name: Mailtrap
+    url: "https://docs.mailtrap.io"
+    email: support@mailtrap.io
+  license:
+    name: Creative Commons Attribution-ShareAlike 4.0 International (CC BY-SA 4.0)
+    url: "https://creativecommons.org/licenses/by-sa/4.0/"
+security:
+  - HeaderAuth: []
+  - BearerAuth: []
+servers:
+  - description: Mailtrap API
+    url: "https://mailtrap.io"
+tags:
+  - name: Email Campaigns
+    x-page-title: Email Campaigns
+    x-page-description: List, create, retrieve, and delete email campaigns
+    description: Manage email campaigns
+
+  - name: Campaign Stats
+    x-page-title: Campaign Stats
+    x-page-description: Retrieve aggregated performance metrics for a campaign
+    description: Retrieve campaign statistics
+paths:
+  "/api/email_campaigns":
+    get:
+      operationId: getEmailCampaigns
+      summary: Get a list of email campaigns
+      description: |-
+        Returns a paginated list of the account's email campaigns, newest first.
+
+        Pagination is page-token based. Use the `token` query parameter together with the
+        `token`, `next_token`, and `prev_token` values returned in the `pagination` object to
+        navigate between pages.
+      tags:
+        - Email Campaigns
+      parameters:
+        - $ref: "#/components/parameters/token"
+        - $ref: "#/components/parameters/per_page"
+        - $ref: "#/components/parameters/search"
+      responses:
+        "200":
+          $ref: "#/components/responses/EmailCampaignsResponse"
+        "401":
+          $ref: "#/components/responses/UNAUTHENTICATED"
+        "403":
+          $ref: "#/components/responses/PERMISSION_DENIED"
+      x-codeSamples:
+        - lang: shell
+          label: "cURL"
+          source: |
+            curl -X GET "https://mailtrap.io/api/email_campaigns?per_page=50&token=1" \
+              -H 'Api-Token: YOUR_API_TOKEN'
+    post:
+      operationId: createEmailCampaign
+      summary: Create an email campaign
+      description: |-
+        Creates a new email campaign in the `draft` state. The campaign must reference an
+        existing sending domain via `mailsend_domain_id`. A `template` with a `subject` can be
+        provided inline.
+      tags:
+        - Email Campaigns
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/EmailCampaignCreateRequest"
+      responses:
+        "200":
+          $ref: "#/components/responses/EmailCampaignResponse"
+        "401":
+          $ref: "#/components/responses/UNAUTHENTICATED"
+        "403":
+          $ref: "#/components/responses/PERMISSION_DENIED"
+        "422":
+          $ref: "#/components/responses/VALIDATION_ERROR"
+      x-codeSamples:
+        - lang: shell
+          label: "cURL"
+          source: |
+            curl -X POST "https://mailtrap.io/api/email_campaigns" \
+              -H 'Api-Token: YOUR_API_TOKEN' \
+              -H 'Content-Type: application/json' \
+              -d '{
+                "email_campaign": {
+                  "name": "Spring Sale",
+                  "mailsend_domain_id": 123,
+                  "from_display_name": "Acme Marketing",
+                  "from_local_part": "news",
+                  "reply_to": {
+                    "display_name": "Acme Support",
+                    "local_part": "support",
+                    "domain": "acme.com"
+                  },
+                  "template_attributes": { "subject": "Spring is here — 30% off" }
+                }
+              }'
+  "/api/email_campaigns/{email_campaign_id}":
+    get:
+      operationId: getEmailCampaign
+      summary: Get an email campaign by ID
+      description: Returns a single email campaign.
+      tags:
+        - Email Campaigns
+      parameters:
+        - $ref: "#/components/parameters/email_campaign_id"
+      responses:
+        "200":
+          $ref: "#/components/responses/EmailCampaignResponse"
+        "401":
+          $ref: "#/components/responses/UNAUTHENTICATED"
+        "403":
+          $ref: "#/components/responses/PERMISSION_DENIED"
+        "404":
+          $ref: "#/components/responses/NOT_FOUND"
+      x-codeSamples:
+        - lang: shell
+          label: "cURL"
+          source: |
+            curl -X GET "https://mailtrap.io/api/email_campaigns/4567" \
+              -H 'Api-Token: YOUR_API_TOKEN'
+    patch:
+      operationId: updateEmailCampaign
+      summary: Update an email campaign
+      description: |-
+        Updates an existing email campaign. The campaign must not be in a sending state. Only the
+        provided attributes are changed. To update the campaign's subject, include
+        `template_attributes` with the existing template `id`.
+      tags:
+        - Email Campaigns
+      parameters:
+        - $ref: "#/components/parameters/email_campaign_id"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/EmailCampaignUpdateRequest"
+      responses:
+        "200":
+          $ref: "#/components/responses/EmailCampaignResponse"
+        "401":
+          $ref: "#/components/responses/UNAUTHENTICATED"
+        "403":
+          $ref: "#/components/responses/PERMISSION_DENIED"
+        "404":
+          $ref: "#/components/responses/NOT_FOUND"
+        "422":
+          $ref: "#/components/responses/VALIDATION_ERROR"
+      x-codeSamples:
+        - lang: shell
+          label: "cURL"
+          source: |
+            curl -X PATCH "https://mailtrap.io/api/email_campaigns/4567" \
+              -H 'Api-Token: YOUR_API_TOKEN' \
+              -H 'Content-Type: application/json' \
+              -d '{
+                "email_campaign": {
+                  "name": "Spring Sale (updated)",
+                  "template_attributes": { "id": 789, "subject": "New subject" }
+                }
+              }'
+    delete:
+      operationId: deleteEmailCampaign
+      summary: Delete an email campaign
+      description: |-
+        Soft-deletes an email campaign. The campaign must not be in a sending state. The deleted
+        campaign object is returned in the response.
+      tags:
+        - Email Campaigns
+      parameters:
+        - $ref: "#/components/parameters/email_campaign_id"
+      responses:
+        "200":
+          $ref: "#/components/responses/EmailCampaignResponse"
+        "401":
+          $ref: "#/components/responses/UNAUTHENTICATED"
+        "403":
+          $ref: "#/components/responses/PERMISSION_DENIED"
+        "404":
+          $ref: "#/components/responses/NOT_FOUND"
+        "422":
+          $ref: "#/components/responses/VALIDATION_ERROR"
+      x-codeSamples:
+        - lang: shell
+          label: "cURL"
+          source: |
+            curl -X DELETE "https://mailtrap.io/api/email_campaigns/4567" \
+              -H 'Api-Token: YOUR_API_TOKEN'
+  "/api/email_campaigns/{email_campaign_id}/stats":
+    get:
+      operationId: getEmailCampaignStats
+      summary: Get email campaign statistics
+      description: |-
+        Returns aggregated performance metrics for a single campaign: counts and rates for
+        deliveries, opens, clicks, bounces, spam complaints, and unsubscriptions.
+
+        If the campaign has never been started, all counts and rates are returned as `0`.
+        Statistics are aggregated asynchronously and may be slightly delayed for recently sent
+        campaigns.
+      tags:
+        - Campaign Stats
+      parameters:
+        - $ref: "#/components/parameters/email_campaign_id"
+      responses:
+        "200":
+          $ref: "#/components/responses/EmailCampaignStatsResponse"
+        "401":
+          $ref: "#/components/responses/UNAUTHENTICATED"
+        "403":
+          $ref: "#/components/responses/PERMISSION_DENIED"
+        "404":
+          $ref: "#/components/responses/NOT_FOUND"
+      x-codeSamples:
+        - lang: shell
+          label: "cURL"
+          source: |
+            curl -X GET "https://mailtrap.io/api/email_campaigns/4567/stats" \
+              -H 'Api-Token: YOUR_API_TOKEN'
+components:
+  securitySchemes:
+    HeaderAuth:
+      type: apiKey
+      description: Pass the API token in the Api-Token header
+      in: header
+      name: Api-Token
+    BearerAuth:
+      type: http
+      description: Pass the API token as a Bearer token in the Authorization header
+      scheme: bearer
+  parameters:
+    email_campaign_id:
+      name: email_campaign_id
+      description: Unique identifier of the email campaign
+      in: path
+      required: true
+      schema:
+        type: integer
+        format: int64
+        minimum: 1
+        example: 4567
+    token:
+      name: token
+      description: Page number to retrieve (page-token pagination). Defaults to `1`.
+      in: query
+      required: false
+      schema:
+        type: integer
+        minimum: 1
+        default: 1
+        example: 1
+    per_page:
+      name: per_page
+      description: Number of campaigns per page. Defaults to `50`, maximum `100`.
+      in: query
+      required: false
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 100
+        default: 50
+        example: 50
+    search:
+      name: search
+      description: Filter campaigns by name (case-insensitive partial match).
+      in: query
+      required: false
+      schema:
+        type: string
+        example: spring
+  schemas:
+    EmailCampaignCreateRequest:
+      type: object
+      required:
+        - email_campaign
+      properties:
+        email_campaign:
+          $ref: "#/components/schemas/EmailCampaignCreateAttributes"
+    EmailCampaignCreateAttributes:
+      type: object
+      required:
+        - name
+        - mailsend_domain_id
+      properties:
+        name:
+          type: string
+          description: Campaign name.
+          example: Spring Sale
+        mailsend_domain_id:
+          type: integer
+          format: int64
+          description: ID of the verified sending domain used for the campaign.
+          example: 123
+        from_display_name:
+          type: string
+          description: Display name shown in the From header.
+          example: Acme Marketing
+        from_local_part:
+          type: string
+          description: Local part (before the @) of the From address.
+          example: news
+        reply_to:
+          $ref: "#/components/schemas/ReplyTo"
+        template_attributes:
+          type: object
+          properties:
+            subject:
+              type: string
+              description: Email subject line.
+              example: "Spring is here — 30% off"
+    EmailCampaignUpdateRequest:
+      type: object
+      required:
+        - email_campaign
+      properties:
+        email_campaign:
+          $ref: "#/components/schemas/EmailCampaignUpdateAttributes"
+    EmailCampaignUpdateAttributes:
+      type: object
+      description: Attributes to update. All fields are optional; only provided fields are changed.
+      properties:
+        name:
+          type: string
+          example: Spring Sale (updated)
+        mailsend_domain_id:
+          type: integer
+          format: int64
+          example: 123
+        from_display_name:
+          type: string
+          example: Acme Marketing
+        from_local_part:
+          type: string
+          example: news
+        delivery_mode:
+          type: string
+          description: How the campaign is delivered.
+          example: immediate
+          enum:
+            - immediate
+            - scheduled
+        scheduled_for:
+          type: [string, "null"]
+          format: date-time
+          description: When to send the campaign (required when `delivery_mode` is `scheduled`).
+          example: "2026-06-01T09:00:00.000Z"
+        delivery_options:
+          type: object
+          description: Delivery throttling options.
+          properties:
+            emails_per_hour:
+              type: [integer, "null"]
+              example: 1000
+        reply_to:
+          $ref: "#/components/schemas/ReplyTo"
+        template_attributes:
+          type: object
+          description: Pass the existing template `id` to update it instead of creating a new one.
+          properties:
+            id:
+              type: integer
+              format: int64
+              example: 789
+            subject:
+              type: string
+              description: Email subject line.
+              example: "New subject"
+    ReplyTo:
+      type: object
+      description: Reply-To address parts.
+      properties:
+        display_name:
+          type: string
+          example: Acme Support
+        local_part:
+          type: string
+          example: support
+        domain:
+          type: string
+          example: acme.com
+    EmailCampaign:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          example: 4567
+        type:
+          type: string
+          description: Resource type discriminator.
+          example: EmailCampaign
+        mailsend_domain_id:
+          type: integer
+          format: int64
+          example: 123
+        mailsend_domain_name:
+          type: string
+          example: acme.com
+        name:
+          type: string
+          example: Spring Sale
+        from_local_part:
+          type: string
+          example: news
+        from_display_name:
+          type: string
+          example: Acme Marketing
+        reply_to:
+          $ref: "#/components/schemas/ReplyTo"
+        current_state:
+          type: string
+          description: Current state of the campaign in its lifecycle.
+          example: draft
+          enum:
+            - draft
+            - scheduled
+            - sending
+            - sent
+            - terminated
+        current_state_metadata:
+          type: object
+          description: Metadata about the most recent state transition.
+          properties:
+            reason:
+              type: string
+            error:
+              type: string
+            errors:
+              type: array
+              items:
+                type: string
+            scheduled_at:
+              type: string
+              format: date-time
+        created_at:
+          type: string
+          format: date-time
+          example: "2026-05-01T10:15:00.000Z"
+        updated_at:
+          type: string
+          format: date-time
+          example: "2026-05-02T09:00:00.000Z"
+        last_started_at:
+          type: [string, "null"]
+          format: date-time
+          example: "2026-05-03T12:00:00.000Z"
+        last_started_at_date:
+          type: string
+          format: date
+          description: Date the campaign was last started. Present only when the campaign has been started.
+          example: "2026-05-03"
+        recipient_total_count:
+          type: integer
+          example: 1500
+        delivery_mode:
+          type: string
+          description: How the campaign is delivered.
+          example: immediate
+          enum:
+            - immediate
+            - scheduled
+        delivery_options:
+          type: object
+          description: Delivery throttling options.
+          properties:
+            emails_per_hour:
+              type: [integer, "null"]
+              example: 1000
+        scheduled_for:
+          type: [string, "null"]
+          format: date-time
+          example: null
+        audience_defined:
+          type: boolean
+          description: Whether the campaign has recipients defined. Omitted from list items.
+          example: true
+        stats:
+          description: Aggregated statistics. Present only when the campaign carries stats.
+          oneOf:
+            - $ref: "#/components/schemas/EmailCampaignStats"
+        template:
+          type: object
+          properties:
+            id:
+              type: integer
+              format: int64
+              example: 789
+            subject:
+              type: string
+              example: "Spring is here — 30% off"
+    EmailCampaignStats:
+      type: object
+      description: Aggregated campaign performance metrics. Counts and rates are `0` when the campaign has not been started.
+      properties:
+        delivery_count:
+          type: integer
+          example: 1450
+        open_count:
+          type: integer
+          example: 820
+        click_count:
+          type: integer
+          example: 310
+        bounce_count:
+          type: integer
+          example: 30
+        unsubscription_count:
+          type: integer
+          example: 12
+        sent_count:
+          type: integer
+          example: 1500
+        spam_count:
+          type: integer
+          example: 5
+        message_count:
+          type: integer
+          example: 1500
+        reject_count:
+          type: integer
+          example: 20
+        delivery_rate:
+          type: number
+          format: float
+          description: Share of sent messages that were delivered (0–1).
+          example: 0.9667
+        open_rate:
+          type: number
+          format: float
+          example: 0.5655
+        click_rate:
+          type: number
+          format: float
+          example: 0.2138
+        bounce_rate:
+          type: number
+          format: float
+          example: 0.02
+        spam_rate:
+          type: number
+          format: float
+          example: 0.0033
+        unsubscription_rate:
+          type: number
+          format: float
+          example: 0.0083
+    Pagination:
+      type: object
+      description: Page-token pagination metadata.
+      properties:
+        token:
+          type: integer
+          description: Current page number.
+          example: 1
+        prev_token:
+          type: [integer, "null"]
+          description: Previous page number, or `null` on the first page.
+          example: null
+        next_token:
+          type: [integer, "null"]
+          description: Next page number, or `null` on the last page.
+          example: 2
+        first_url:
+          type: string
+          format: uri
+          example: "https://mailtrap.io/api/email_campaigns?per_page=50&token=1"
+        prev_url:
+          type: [string, "null"]
+          format: uri
+          example: null
+        current_url:
+          type: string
+          format: uri
+          example: "https://mailtrap.io/api/email_campaigns?per_page=50&token=1"
+        next_url:
+          type: [string, "null"]
+          format: uri
+          example: "https://mailtrap.io/api/email_campaigns?per_page=50&token=2"
+    UnauthenticatedResponse:
+      type: object
+      properties:
+        error:
+          type: string
+          example: Incorrect API token
+    PermissionDeniedResponse:
+      type: object
+      properties:
+        errors:
+          type: string
+          example: Account access forbidden
+    NotFoundResponse:
+      type: object
+      properties:
+        error:
+          type: string
+          example: Not Found
+    ValidationErrorResponse:
+      type: object
+      properties:
+        errors:
+          type: object
+          additionalProperties:
+            type: array
+            items:
+              type: string
+          example:
+            mailsend_domain_id:
+              - can't be blank
+  responses:
+    EmailCampaignsResponse:
+      description: A paginated list of email campaigns.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              data:
+                type: array
+                items:
+                  $ref: "#/components/schemas/EmailCampaign"
+              pagination:
+                $ref: "#/components/schemas/Pagination"
+    EmailCampaignResponse:
+      description: A single email campaign.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/EmailCampaign"
+    EmailCampaignStatsResponse:
+      description: Aggregated campaign statistics.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/EmailCampaignStats"
+    UNAUTHENTICATED:
+      description: Authentication failed — missing or invalid API token.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/UnauthenticatedResponse"
+    PERMISSION_DENIED:
+      description: The API token does not have permission to access this resource.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/PermissionDeniedResponse"
+    NOT_FOUND:
+      description: The requested email campaign was not found.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/NotFoundResponse"
+    VALIDATION_ERROR:
+      description: The request was rejected due to validation errors.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ValidationErrorResponse"
