@@ -838,7 +838,7 @@ paths:
     get:
       operationId: getAccountBillingUsage
       summary: Get current billing cycle usage
-      description: Get current billing cycle usage for Email Sandbox and Email Sending (Email API/SMTP).
+      description: Get current billing cycle usage for Email Sandbox, Email Sending (Email API/SMTP), and Email Marketing.
       tags:
         - Billing
       x-codeSamples:
@@ -910,7 +910,7 @@ paths:
             var response = client.generalApi().billing().getCurrentBillingCycleUsage(accountId);
       responses:
         '200':
-          description: Returns an object with current billing cycle usage for Sandbox and Email Sending (Email API/SMTP) if available.
+          description: Returns an object with current billing cycle usage for Sandbox, Email Sending (Email API/SMTP), and Email Marketing if available.
           content:
             application/json:
               schema:
@@ -968,6 +968,24 @@ paths:
                                 type: integer
                               limit:
                                 type: integer
+                  marketing:
+                    type: object
+                    properties:
+                      plan:
+                        type: object
+                        properties:
+                          name:
+                            type: string
+                      usage:
+                        type: object
+                        properties:
+                          sent_messages_count:
+                            type: object
+                            properties:
+                              current:
+                                type: integer
+                              limit:
+                                type: integer
               example:
                 billing:
                   cycle_start: '2024-02-15T21:11:59.624Z'
@@ -988,6 +1006,13 @@ paths:
                   usage:
                     sent_messages_count:
                       current: 6789
+                      limit: 10000
+                marketing:
+                  plan:
+                    name: Marketing Pro
+                  usage:
+                    sent_messages_count:
+                      current: 1500
                       limit: 10000
         '401':
           $ref: '#/components/responses/UNAUTHENTICATED'
