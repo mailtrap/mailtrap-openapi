@@ -50,6 +50,8 @@ paths:
           $ref: "#/components/responses/UNAUTHENTICATED"
         "403":
           $ref: "#/components/responses/PERMISSION_DENIED"
+        "429":
+          $ref: "#/components/responses/RATE_LIMITED"
       x-codeSamples:
         - lang: shell
           label: "cURL"
@@ -72,7 +74,7 @@ paths:
             schema:
               $ref: "#/components/schemas/EmailCampaignCreateRequest"
       responses:
-        "200":
+        "201":
           $ref: "#/components/responses/EmailCampaignResponse"
         "401":
           $ref: "#/components/responses/UNAUTHENTICATED"
@@ -80,6 +82,8 @@ paths:
           $ref: "#/components/responses/PERMISSION_DENIED"
         "422":
           $ref: "#/components/responses/VALIDATION_ERROR"
+        "429":
+          $ref: "#/components/responses/RATE_LIMITED"
       x-codeSamples:
         - lang: shell
           label: "cURL"
@@ -88,18 +92,16 @@ paths:
               -H 'Api-Token: YOUR_API_TOKEN' \
               -H 'Content-Type: application/json' \
               -d '{
-                "email_campaign": {
-                  "name": "Spring Sale",
-                  "mailsend_domain_id": 123,
-                  "from_display_name": "Acme Marketing",
-                  "from_local_part": "news",
-                  "reply_to": {
-                    "display_name": "Acme Support",
-                    "local_part": "support",
-                    "domain": "acme.com"
-                  },
-                  "template_attributes": { "subject": "Spring is here — 30% off" }
-                }
+                "name": "Spring Sale",
+                "mailsend_domain_id": 123,
+                "from_display_name": "Acme Marketing",
+                "from_local_part": "news",
+                "reply_to": {
+                  "display_name": "Acme Support",
+                  "local_part": "support",
+                  "domain": "acme.com"
+                },
+                "template_attributes": { "subject": "Spring is here — 30% off" }
               }'
   "/api/email_campaigns/{email_campaign_id}":
     get:
@@ -119,6 +121,8 @@ paths:
           $ref: "#/components/responses/PERMISSION_DENIED"
         "404":
           $ref: "#/components/responses/NOT_FOUND"
+        "429":
+          $ref: "#/components/responses/RATE_LIMITED"
       x-codeSamples:
         - lang: shell
           label: "cURL"
@@ -153,6 +157,8 @@ paths:
           $ref: "#/components/responses/NOT_FOUND"
         "422":
           $ref: "#/components/responses/VALIDATION_ERROR"
+        "429":
+          $ref: "#/components/responses/RATE_LIMITED"
       x-codeSamples:
         - lang: shell
           label: "cURL"
@@ -161,24 +167,22 @@ paths:
               -H 'Api-Token: YOUR_API_TOKEN' \
               -H 'Content-Type: application/json' \
               -d '{
-                "email_campaign": {
-                  "name": "Spring Sale (updated)",
-                  "template_attributes": { "id": 789, "subject": "New subject" }
-                }
+                "name": "Spring Sale (updated)",
+                "template_attributes": { "id": 789, "subject": "New subject" }
               }'
     delete:
       operationId: deleteEmailCampaign
       summary: Delete an email campaign
       description: |-
-        Soft-deletes an email campaign. The campaign must not be in a sending state. The deleted
-        campaign object is returned in the response.
+        Soft-deletes an email campaign. The campaign must not be in a sending state.
+        Returns `204 No Content` on success.
       tags:
         - Email Campaigns
       parameters:
         - $ref: "#/components/parameters/email_campaign_id"
       responses:
-        "200":
-          $ref: "#/components/responses/EmailCampaignResponse"
+        "204":
+          description: The email campaign was deleted. No response body.
         "401":
           $ref: "#/components/responses/UNAUTHENTICATED"
         "403":
@@ -187,6 +191,8 @@ paths:
           $ref: "#/components/responses/NOT_FOUND"
         "422":
           $ref: "#/components/responses/VALIDATION_ERROR"
+        "429":
+          $ref: "#/components/responses/RATE_LIMITED"
       x-codeSamples:
         - lang: shell
           label: "cURL"
@@ -204,10 +210,16 @@ paths:
         If the campaign has never been started, all counts and rates are returned as `0`.
         Statistics are aggregated asynchronously and may be slightly delayed for recently sent
         campaigns.
+
+        By default, statistics are aggregated over the whole period since the campaign was last
+        started. Use the optional `start_date` and `end_date` query parameters to narrow the
+        aggregation window.
       tags:
         - Campaign Stats
       parameters:
         - $ref: "#/components/parameters/email_campaign_id"
+        - $ref: "#/components/parameters/start_date"
+        - $ref: "#/components/parameters/end_date"
       responses:
         "200":
           $ref: "#/components/responses/EmailCampaignStatsResponse"
@@ -217,11 +229,13 @@ paths:
           $ref: "#/components/responses/PERMISSION_DENIED"
         "404":
           $ref: "#/components/responses/NOT_FOUND"
+        "429":
+          $ref: "#/components/responses/RATE_LIMITED"
       x-codeSamples:
         - lang: shell
           label: "cURL"
           source: |
-            curl -X GET "https://mailtrap.io/api/email_campaigns/4567/stats" \
+            curl -X GET "https://mailtrap.io/api/email_campaigns/4567/stats?start_date=2026-05-01&end_date=2026-05-31" \
               -H 'Api-Token: YOUR_API_TOKEN'
 components:
   securitySchemes:
@@ -274,19 +288,36 @@ components:
       schema:
         type: string
         example: spring
+    start_date:
+      name: start_date
+      description: |-
+        Start of the aggregation window (inclusive), in `YYYY-MM-DD` format. Defaults to the day
+        the campaign was last started. Values earlier than the account creation date are clamped
+        to it.
+      in: query
+      required: false
+      schema:
+        type: string
+        format: date
+        example: "2026-05-01"
+    end_date:
+      name: end_date
+      description: End of the aggregation window (inclusive), in `YYYY-MM-DD` format. Defaults to the current date.
+      in: query
+      required: false
+      schema:
+        type: string
+        format: date
+        example: "2026-05-31"
   schemas:
     EmailCampaignCreateRequest:
       type: object
-      required:
-        - email_campaign
-      properties:
-        email_campaign:
-          $ref: "#/components/schemas/EmailCampaignCreateAttributes"
-    EmailCampaignCreateAttributes:
-      type: object
+      description: Campaign attributes.
       required:
         - name
         - mailsend_domain_id
+        - from_local_part
+        - template_attributes
       properties:
         name:
           type: string
@@ -309,6 +340,8 @@ components:
           $ref: "#/components/schemas/ReplyTo"
         template_attributes:
           type: object
+          required:
+            - subject
           properties:
             subject:
               type: string
@@ -316,14 +349,7 @@ components:
               example: "Spring is here — 30% off"
     EmailCampaignUpdateRequest:
       type: object
-      required:
-        - email_campaign
-      properties:
-        email_campaign:
-          $ref: "#/components/schemas/EmailCampaignUpdateAttributes"
-    EmailCampaignUpdateAttributes:
-      type: object
-      description: Attributes to update. All fields are optional; only provided fields are changed.
+      description: Attributes to update. All fields optional; only provided fields change.
       properties:
         name:
           type: string
@@ -340,19 +366,21 @@ components:
           example: news
         delivery_mode:
           type: string
-          description: How the campaign is delivered.
-          example: immediate
+          description: |-
+            How the campaign is delivered. `rapid` sends as fast as possible; `gradual` throttles
+            sending to `delivery_options.emails_per_hour`.
+          example: rapid
           enum:
-            - immediate
-            - scheduled
+            - rapid
+            - gradual
         scheduled_for:
           type: [string, "null"]
           format: date-time
-          description: When to send the campaign (required when `delivery_mode` is `scheduled`).
+          description: When to send the campaign. Set to `null` to send immediately on start.
           example: "2026-06-01T09:00:00.000Z"
         delivery_options:
           type: object
-          description: Delivery throttling options.
+          description: Delivery throttling options. Applies when `delivery_mode` is `gradual`.
           properties:
             emails_per_hour:
               type: [integer, "null"]
@@ -393,8 +421,13 @@ components:
           example: 4567
         type:
           type: string
-          description: Resource type discriminator.
-          example: EmailCampaign
+          description: |-
+            Resource type discriminator. `ContactsEmailCampaign` targets contact lists/segments;
+            `RecipientsEmailCampaign` targets an uploaded recipients list.
+          example: ContactsEmailCampaign
+          enum:
+            - ContactsEmailCampaign
+            - RecipientsEmailCampaign
         mailsend_domain_id:
           type: integer
           format: int64
@@ -420,24 +453,40 @@ components:
           enum:
             - draft
             - scheduled
-            - sending
-            - sent
-            - terminated
+            - started
+            - queued
+            - paused
+            - terminating
+            - under_review
+            - finished
+            - failed
+            - failed_immediately
         current_state_metadata:
           type: object
-          description: Metadata about the most recent state transition.
+          description: Metadata about the most recent state transition. Which keys are present depends on the state.
           properties:
             reason:
               type: string
             error:
               type: string
+              description: Last error message recorded for a failed campaign.
             errors:
               type: array
+              description: Per-recipient errors recorded when sending failed.
               items:
-                type: string
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Invalid recipient address
+                  rcpt_index:
+                    type: integer
+                    example: 0
             scheduled_at:
               type: string
               format: date-time
+              description: When the campaign is scheduled to send (ISO 8601). Present in the `scheduled` state.
+              example: "2026-06-01T09:00:00.000Z"
         created_at:
           type: string
           format: date-time
@@ -456,18 +505,21 @@ components:
           description: Date the campaign was last started. Present only when the campaign has been started.
           example: "2026-05-03"
         recipient_total_count:
-          type: integer
+          type: [integer, "null"]
+          description: Total number of recipients targeted by the campaign. `null` until the audience is resolved.
           example: 1500
         delivery_mode:
           type: string
-          description: How the campaign is delivered.
-          example: immediate
+          description: |-
+            How the campaign is delivered. `rapid` sends as fast as possible; `gradual` throttles
+            sending to `delivery_options.emails_per_hour`.
+          example: rapid
           enum:
-            - immediate
-            - scheduled
+            - rapid
+            - gradual
         delivery_options:
           type: object
-          description: Delivery throttling options.
+          description: Delivery throttling options. Applies when `delivery_mode` is `gradual`.
           properties:
             emails_per_hour:
               type: [integer, "null"]
@@ -475,15 +527,8 @@ components:
         scheduled_for:
           type: [string, "null"]
           format: date-time
+          description: When the campaign is scheduled to be sent, or `null` when not scheduled.
           example: null
-        audience_defined:
-          type: boolean
-          description: Whether the campaign has recipients defined. Omitted from list items.
-          example: true
-        stats:
-          description: Aggregated statistics. Present only when the campaign carries stats.
-          oneOf:
-            - $ref: "#/components/schemas/EmailCampaignStats"
         template:
           type: object
           properties:
@@ -582,6 +627,14 @@ components:
           type: [string, "null"]
           format: uri
           example: "https://mailtrap.io/api/email_campaigns?per_page=50&token=2"
+    RateLimitedResponse:
+      type: object
+      # NOTE: the shared global throttle (Rack::Attack) returns the legacy singular `error` key.
+      # This diverges from the plural-`errors` convention; kept here to match the real response.
+      properties:
+        error:
+          type: string
+          example: Throttled
     UnauthenticatedResponse:
       type: object
       properties:
@@ -610,7 +663,11 @@ components:
             items:
               type: string
           example:
-            mailsend_domain_id:
+            name:
+              - can't be blank
+            from_local_part:
+              - can't be blank
+            template.subject:
               - can't be blank
   responses:
     EmailCampaignsResponse:
@@ -631,13 +688,19 @@ components:
       content:
         application/json:
           schema:
-            $ref: "#/components/schemas/EmailCampaign"
+            type: object
+            properties:
+              data:
+                $ref: "#/components/schemas/EmailCampaign"
     EmailCampaignStatsResponse:
       description: Aggregated campaign statistics.
       content:
         application/json:
           schema:
-            $ref: "#/components/schemas/EmailCampaignStats"
+            type: object
+            properties:
+              data:
+                $ref: "#/components/schemas/EmailCampaignStats"
     UNAUTHENTICATED:
       description: Authentication failed — missing or invalid API token.
       content:
@@ -662,3 +725,28 @@ components:
         application/json:
           schema:
             $ref: "#/components/schemas/ValidationErrorResponse"
+    RATE_LIMITED:
+      description: |-
+        Too many requests. The public API is rate limited to 150 requests per 10 seconds per
+        API token. Retry after the window resets (see the `x-ratelimit-reset` header).
+      headers:
+        x-ratelimit-limit:
+          description: Maximum number of requests allowed within the window.
+          schema:
+            type: integer
+            example: 150
+        x-ratelimit-remaining:
+          description: Requests remaining in the current window.
+          schema:
+            type: integer
+            example: 0
+        x-ratelimit-reset:
+          description: ISO 8601 timestamp when the current rate-limit window resets.
+          schema:
+            type: string
+            format: date-time
+            example: "2026-06-15T10:00:10.000000Z"
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/RateLimitedResponse"
