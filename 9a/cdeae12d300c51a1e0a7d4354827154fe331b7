@@ -1,0 +1,55 @@
+specs/email-campaigns.openapi.yml
+  s_3d3a573205af0d::t_391ea976213f25 369,372,374-375,379,383
+  s_239d54e8874ab2::t_de0cbb1af7a4fd 177-178,184-185,194-195
+  s_3d3a573205af0d::t_7ea3941757bc00 666-670
+  s_239d54e8874ab2::t_78f3e8fddc09e2 691-694,700-703
+  s_3d3a573205af0d::t_98a090f98f5107 343-344
+  s_3d3a573205af0d::t_d1ed26143734dd 456-463
+  s_239d54e8874ab2::t_e63472176826a6 77,85-86,95-104
+  s_239d54e8874ab2::t_164d5a49e20dca 315,352
+  s_3d3a573205af0d::t_8786ba2a22d200 508-509
+  h_c750c91773bbc1 370-371,514-515
+  s_3d3a573205af0d::t_0c9ba30f3cf724 424-430
+  s_239d54e8874ab2::t_b552c364f81686 124-125
+  s_3d3a573205af0d::t_b662b764070c76 488-489
+  s_239d54e8874ab2::t_65944d7faac80a 160-161,170-171
+  s_3d3a573205af0d::t_c861dc57709f5a 466,472,475,477-484
+  s_3d3a573205af0d::t_bf54fd7c0d5e47 513,516,518-519,522,530
+  s_239d54e8874ab2::t_cde4e0953482fa 728-752
+  s_239d54e8874ab2::t_e59d9cf7af0aae 53-54
+  s_3d3a573205af0d::t_16dd022342925b 213-216,221-222,238
+  s_239d54e8874ab2::t_c7efeaf0b06b9a 232-233
+  s_3d3a573205af0d::t_ed78f7bf072463 291-311
+  s_3d3a573205af0d::t_6879a5e92b90a6 319-320
+  s_239d54e8874ab2::t_fc78dbb0bd686d 632-637
+  s_239d54e8874ab2::t_8123a8812691ce 630
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.8",
+  "base_commit_sha": "9acdeae12d300c51a1e0a7d4354827154fe331b7",
+  "prompts": {},
+  "humans": {
+    "h_c750c91773bbc1": {
+      "author": "Maciej Walusiak <maciej.walusiak@railsware.com>"
+    }
+  },
+  "sessions": {
+    "s_239d54e8874ab2": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "c3e476cd-d421-4990-a73f-95ca8661c2a3",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Maciej Walusiak <maciej.walusiak@railsware.com>"
+    },
+    "s_3d3a573205af0d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "8df41ba2-97ed-434d-a549-cf1bc3905497",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": null
+    }
+  }
+}
