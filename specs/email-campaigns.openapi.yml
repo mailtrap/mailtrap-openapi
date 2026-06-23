@@ -62,9 +62,13 @@ paths:
       operationId: createEmailCampaign
       summary: Create an email campaign
       description: |-
-        Creates a new email campaign in the `draft` state. The campaign must reference an
-        existing sending domain via `mailsend_domain_id`. A `template` with a `subject` can be
-        provided inline.
+        Creates a new email campaign. The campaign must reference an existing sending domain via
+        `mailsend_domain_id`, and a `template` with a `subject` provided inline.
+
+        Create accepts the same fields as update, so a single request can fully configure a
+        campaign — pick the audience with `contact_list_ids`/`contact_segment_ids`, set delivery
+        options, and use `status` to schedule or start sending. A campaign created without a
+        `status` (or with `status: "draft"`) stays in the `draft` state.
       tags:
         - Email Campaigns
       requestBody:
@@ -86,7 +90,7 @@ paths:
           $ref: "#/components/responses/RATE_LIMITED"
       x-codeSamples:
         - lang: shell
-          label: "cURL"
+          label: "cURL — create a draft"
           source: |
             curl -X POST "https://mailtrap.io/api/email_campaigns" \
               -H 'Api-Token: YOUR_API_TOKEN' \
@@ -102,6 +106,21 @@ paths:
                   "domain": "acme.com"
                 },
                 "template_attributes": { "subject": "Spring is here — 30% off" }
+              }'
+        - lang: shell
+          label: "cURL — create and schedule in one request"
+          source: |
+            curl -X POST "https://mailtrap.io/api/email_campaigns" \
+              -H 'Api-Token: YOUR_API_TOKEN' \
+              -H 'Content-Type: application/json' \
+              -d '{
+                "name": "Spring Sale",
+                "mailsend_domain_id": 123,
+                "from_local_part": "news",
+                "template_attributes": { "subject": "Spring is here — 30% off" },
+                "contact_list_ids": [55, 56],
+                "status": "scheduled",
+                "scheduled_for": "2026-06-01T09:00:00.000Z"
               }'
   "/api/email_campaigns/{email_campaign_id}":
     get:
@@ -133,9 +152,12 @@ paths:
       operationId: updateEmailCampaign
       summary: Update an email campaign
       description: |-
-        Updates an existing email campaign. The campaign must not be in a sending state. Only the
-        provided attributes are changed. To update the campaign's subject, include
-        `template_attributes` with the existing template `id`.
+        Updates an existing `draft` campaign. Only the provided attributes are changed. To update
+        the campaign's subject, include `template_attributes` with the existing template `id`.
+
+        Update accepts the same fields as create, including the audience
+        (`contact_list_ids`/`contact_segment_ids`) and a target `status` — so you can configure
+        and schedule (or start) a draft in one request.
       tags:
         - Email Campaigns
       parameters:
@@ -161,7 +183,7 @@ paths:
           $ref: "#/components/responses/RATE_LIMITED"
       x-codeSamples:
         - lang: shell
-          label: "cURL"
+          label: "cURL — edit a draft"
           source: |
             curl -X PATCH "https://mailtrap.io/api/email_campaigns/4567" \
               -H 'Api-Token: YOUR_API_TOKEN' \
@@ -169,6 +191,17 @@ paths:
               -d '{
                 "name": "Spring Sale (updated)",
                 "template_attributes": { "id": 789, "subject": "New subject" }
+              }'
+        - lang: shell
+          label: "cURL — schedule a draft"
+          source: |
+            curl -X PATCH "https://mailtrap.io/api/email_campaigns/4567" \
+              -H 'Api-Token: YOUR_API_TOKEN' \
+              -H 'Content-Type: application/json' \
+              -d '{
+                "contact_list_ids": [55, 56],
+                "status": "scheduled",
+                "scheduled_for": "2026-06-01T09:00:00.000Z"
               }'
     delete:
       operationId: deleteEmailCampaign
@@ -310,14 +343,12 @@ components:
         format: date
         example: "2026-05-31"
   schemas:
-    EmailCampaignCreateRequest:
+    EmailCampaignWritableAttributes:
       type: object
-      description: Campaign attributes.
-      required:
-        - name
-        - mailsend_domain_id
-        - from_local_part
-        - template_attributes
+      description: |-
+        Campaign attributes. Both create and update accept the same fields, so a single request
+        can fully configure a campaign — set its audience and use `status` to schedule or start
+        sending — instead of separate create, edit, and schedule calls.
       properties:
         name:
           type: string
@@ -340,30 +371,18 @@ components:
           $ref: "#/components/schemas/ReplyTo"
         template_attributes:
           type: object
-          required:
-            - subject
+          description: |-
+            Inline email template. On create, a template is created from the given `subject`. On
+            update, pass the existing template `id` to modify it instead of creating a new one.
           properties:
+            id:
+              type: integer
+              format: int64
+              example: 789
             subject:
               type: string
               description: Email subject line.
               example: "Spring is here — 30% off"
-    EmailCampaignUpdateRequest:
-      type: object
-      description: Attributes to update. All fields optional; only provided fields change.
-      properties:
-        name:
-          type: string
-          example: Spring Sale (updated)
-        mailsend_domain_id:
-          type: integer
-          format: int64
-          example: 123
-        from_display_name:
-          type: string
-          example: Acme Marketing
-        from_local_part:
-          type: string
-          example: news
         delivery_mode:
           type: string
           description: |-
@@ -373,11 +392,6 @@ components:
           enum:
             - rapid
             - gradual
-        scheduled_for:
-          type: [string, "null"]
-          format: date-time
-          description: When to send the campaign. Set to `null` to send immediately on start.
-          example: "2026-06-01T09:00:00.000Z"
         delivery_options:
           type: object
           description: Delivery throttling options. Applies when `delivery_mode` is `gradual`.
@@ -385,20 +399,62 @@ components:
             emails_per_hour:
               type: [integer, "null"]
               example: 1000
-        reply_to:
-          $ref: "#/components/schemas/ReplyTo"
-        template_attributes:
-          type: object
-          description: Pass the existing template `id` to update it instead of creating a new one.
+        scheduled_for:
+          type: [string, "null"]
+          format: date-time
+          description: When to send the campaign. Required when `status` is `scheduled`; ignored for other statuses.
+          example: "2026-06-01T09:00:00.000Z"
+        contact_list_ids:
+          type: array
+          description: |-
+            IDs of contact lists to send to. Treated as the full set of included lists — lists not
+            listed are removed. Combine with `contact_segment_ids` to target both.
+          items:
+            type: integer
+            format: int64
+          example: [55, 56]
+        contact_segment_ids:
+          type: array
+          description: IDs of contact segments to send to. Treated as the full set of included segments.
+          items:
+            type: integer
+            format: int64
+          example: [12]
+        status:
+          type: string
+          description: |-
+            Target lifecycle state, letting you configure and send a campaign in one request:
+              * `draft` (default) — save attributes only; the campaign is not sent.
+              * `scheduled` — schedule sending for `scheduled_for` (which becomes required).
+              * `sending` — start sending immediately.
+
+            Moving to `scheduled` or `sending` runs full sending validation (audience, template,
+            verified domain, billing limits). If it fails, the request is rejected with `422` and
+            nothing is persisted — the campaign is never left half-configured.
+          example: scheduled
+          enum:
+            - draft
+            - scheduled
+            - sending
+    EmailCampaignCreateRequest:
+      description: Campaign attributes. `name`, `mailsend_domain_id`, `from_local_part` and a template `subject` are required.
+      allOf:
+        - $ref: "#/components/schemas/EmailCampaignWritableAttributes"
+        - type: object
+          required:
+            - name
+            - mailsend_domain_id
+            - from_local_part
+            - template_attributes
           properties:
-            id:
-              type: integer
-              format: int64
-              example: 789
-            subject:
-              type: string
-              description: Email subject line.
-              example: "New subject"
+            template_attributes:
+              type: object
+              required:
+                - subject
+    EmailCampaignUpdateRequest:
+      description: Attributes to update. All fields optional; only provided fields change.
+      allOf:
+        - $ref: "#/components/schemas/EmailCampaignWritableAttributes"
     ReplyTo:
       type: object
       description: Reply-To address parts.
@@ -508,6 +564,20 @@ components:
           type: [integer, "null"]
           description: Total number of recipients targeted by the campaign. `null` until the audience is resolved.
           example: 1500
+        contact_list_ids:
+          type: array
+          description: IDs of the contact lists included in the campaign's audience.
+          items:
+            type: integer
+            format: int64
+          example: [55, 56]
+        contact_segment_ids:
+          type: array
+          description: IDs of the contact segments included in the campaign's audience.
+          items:
+            type: integer
+            format: int64
+          example: [12]
         delivery_mode:
           type: string
           description: |-
