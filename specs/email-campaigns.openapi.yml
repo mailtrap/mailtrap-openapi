@@ -69,6 +69,11 @@ paths:
         campaign — pick the audience with `contact_list_ids`/`contact_segment_ids`, set delivery
         options, and use `status` to schedule or start sending. A campaign created without a
         `status` (or with `status: "draft"`) stays in the `draft` state.
+
+        **To schedule or start in the same request** (`status: "scheduled"`/`"sending"`), the
+        template must include `body_html` (the design) — otherwise the request is rejected with
+        `422` (`"Campaign design can't be blank"`) and nothing is persisted. A `draft` needs only a
+        `subject`; the design can be added later via update.
       tags:
         - Email Campaigns
       requestBody:
@@ -97,7 +102,7 @@ paths:
               -H 'Content-Type: application/json' \
               -d '{
                 "name": "Spring Sale",
-                "mailsend_domain_id": 123,
+                "mailsend_domain_id": "d2313359-acb4-4b87-bce6-f5774f6a1e37",
                 "from_display_name": "Acme Marketing",
                 "from_local_part": "news",
                 "reply_to": {
@@ -115,9 +120,13 @@ paths:
               -H 'Content-Type: application/json' \
               -d '{
                 "name": "Spring Sale",
-                "mailsend_domain_id": 123,
+                "mailsend_domain_id": "d2313359-acb4-4b87-bce6-f5774f6a1e37",
                 "from_local_part": "news",
-                "template_attributes": { "subject": "Spring is here — 30% off" },
+                "template_attributes": {
+                  "subject": "Hi {{first_name}}, spring is here — 30% off",
+                  "body_html": "<html><body><h1>Hi {{first_name}}!</h1><p>30% off everything.</p><p><a href=\"__unsubscribe_url__\">Unsubscribe</a></p></body></html>",
+                  "merge_tags": ["first_name"]
+                },
                 "contact_list_ids": [55, 56],
                 "status": "scheduled",
                 "scheduled_for": "2026-06-01T09:00:00.000Z"
@@ -152,12 +161,21 @@ paths:
       operationId: updateEmailCampaign
       summary: Update an email campaign
       description: |-
-        Updates an existing `draft` campaign. Only the provided attributes are changed. To update
-        the campaign's subject, include `template_attributes` with the existing template `id`.
+        Updates an existing `draft` campaign. Only the provided attributes are changed. To edit the
+        template (subject or design), include `template_attributes` with the existing template `id`
+        so it is modified in place rather than replaced.
 
         Update accepts the same fields as create, including the audience
-        (`contact_list_ids`/`contact_segment_ids`) and a target `status` — so you can configure
-        and schedule (or start) a draft in one request.
+        (`contact_list_ids`/`contact_segment_ids`) and a target `status`. **Setting `status` on
+        update transitions the draft**: `scheduled` schedules it for `scheduled_for` (and enqueues
+        the send), `sending` starts it immediately. This is the typical flow — create a draft, add
+        its design and audience over one or more updates, then flip `status` to `scheduled`/`sending`
+        in the final update. That transition runs full sending validation (the template must have a
+        `body_html` design, the audience and verified domain must be set, billing within limits); on
+        failure the request returns `422` and the campaign stays a `draft`.
+
+        Only `draft` campaigns can be updated — editing a campaign that is already scheduled/sending
+        returns `422`.
       tags:
         - Email Campaigns
       parameters:
@@ -183,18 +201,23 @@ paths:
           $ref: "#/components/responses/RATE_LIMITED"
       x-codeSamples:
         - lang: shell
-          label: "cURL — edit a draft"
+          label: "cURL — edit a draft (subject + design)"
           source: |
             curl -X PATCH "https://mailtrap.io/api/email_campaigns/4567" \
               -H 'Api-Token: YOUR_API_TOKEN' \
               -H 'Content-Type: application/json' \
               -d '{
                 "name": "Spring Sale (updated)",
-                "template_attributes": { "id": 789, "subject": "New subject" }
+                "template_attributes": {
+                  "id": 789,
+                  "subject": "New subject",
+                  "body_html": "<html><body><h1>Hi {{first_name}}!</h1><p><a href=\"__unsubscribe_url__\">Unsubscribe</a></p></body></html>"
+                }
               }'
         - lang: shell
           label: "cURL — schedule a draft"
           source: |
+            # The draft's template must already have a body_html design, otherwise this returns 422.
             curl -X PATCH "https://mailtrap.io/api/email_campaigns/4567" \
               -H 'Api-Token: YOUR_API_TOKEN' \
               -H 'Content-Type: application/json' \
@@ -355,10 +378,10 @@ components:
           description: Campaign name.
           example: Spring Sale
         mailsend_domain_id:
-          type: integer
-          format: int64
-          description: ID of the verified sending domain used for the campaign.
-          example: 123
+          type: string
+          format: uuid
+          description: UUID of the verified sending domain used for the campaign.
+          example: "d2313359-acb4-4b87-bce6-f5774f6a1e37"
         from_display_name:
           type: string
           description: Display name shown in the From header.
@@ -372,17 +395,43 @@ components:
         template_attributes:
           type: object
           description: |-
-            Inline email template. On create, a template is created from the given `subject`. On
-            update, pass the existing template `id` to modify it instead of creating a new one.
+            Inline email template — subject and design. On create, a new template is built from
+            these fields (any `id` is ignored). On update, pass the existing template `id` so the
+            template is edited in place instead of replaced.
+
+            `body_html` holds the campaign design and is **required before the campaign can be
+            scheduled or started**: a `scheduled`/`sending` request whose template has no
+            `body_html` is rejected with `422` (`"Campaign design can't be blank"`). Add an
+            unsubscribe link by placing the `__unsubscribe_url__` placeholder in an anchor `href`,
+            and personalize content with merge tags written as `{{tag_name}}`.
           properties:
             id:
               type: integer
               format: int64
+              description: Existing template ID. Pass on update to edit the template in place; ignored on create.
               example: 789
             subject:
               type: string
-              description: Email subject line.
+              description: Email subject line. Supports merge tags, e.g. `Hi {{first_name}}`.
               example: "Spring is here — 30% off"
+            body_html:
+              type: string
+              description: |-
+                HTML body of the email (the design). Required before the campaign can be scheduled
+                or started. Include an unsubscribe link via the `__unsubscribe_url__` placeholder.
+              example: "<html><body><h1>Hi {{first_name}}!</h1><p><a href=\"__unsubscribe_url__\">Unsubscribe</a></p></body></html>"
+            body_text:
+              type: [string, "null"]
+              description: Optional plain-text alternative of the email body.
+              example: "Hi {{first_name}}! Unsubscribe: __unsubscribe_url__"
+            merge_tags:
+              type: array
+              description: |-
+                Bare names of the merge tags referenced in the subject/body (without the `{{ }}`
+                delimiters), used for personalization tracking. Defaults to an empty array.
+              items:
+                type: string
+              example: ["first_name"]
         delivery_mode:
           type: string
           description: |-
@@ -402,7 +451,10 @@ components:
         scheduled_for:
           type: [string, "null"]
           format: date-time
-          description: When to send the campaign. Required when `status` is `scheduled`; ignored for other statuses.
+          description: |-
+            When to send the campaign (ISO 8601). Required when `status` is `scheduled`; ignored for
+            other statuses. Must be in the future and no more than 1 month ahead. Once scheduled, it
+            is echoed back in both `scheduled_for` and `current_state_metadata.scheduled_at`.
           example: "2026-06-01T09:00:00.000Z"
         contact_list_ids:
           type: array
@@ -485,9 +537,9 @@ components:
             - ContactsEmailCampaign
             - RecipientsEmailCampaign
         mailsend_domain_id:
-          type: integer
-          format: int64
-          example: 123
+          type: string
+          format: uuid
+          example: "d2313359-acb4-4b87-bce6-f5774f6a1e37"
         mailsend_domain_name:
           type: string
           example: acme.com
@@ -601,6 +653,10 @@ components:
           example: null
         template:
           type: object
+          description: |-
+            The campaign's template. `body_html` and `body_text` are returned only on
+            single-campaign responses (create, update, get-by-ID); the list endpoint omits them to
+            keep the payload small.
           properties:
             id:
               type: integer
@@ -609,6 +665,19 @@ components:
             subject:
               type: string
               example: "Spring is here — 30% off"
+            merge_tags:
+              type: array
+              items:
+                type: string
+              example: ["first_name"]
+            body_html:
+              type: [string, "null"]
+              description: HTML body (the design). Returned only on single-campaign responses.
+              example: "<html><body><h1>Hi {{first_name}}!</h1><p><a href=\"__unsubscribe_url__\">Unsubscribe</a></p></body></html>"
+            body_text:
+              type: [string, "null"]
+              description: Plain-text body. Returned only on single-campaign responses.
+              example: null
     EmailCampaignStats:
       type: object
       description: Aggregated campaign performance metrics. Counts and rates are `0` when the campaign has not been started.
