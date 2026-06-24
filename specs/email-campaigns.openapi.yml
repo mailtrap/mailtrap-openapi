@@ -70,7 +70,7 @@ paths:
         options, and use `status` to schedule or start sending. A campaign created without a
         `status` (or with `status: "draft"`) stays in the `draft` state.
 
-        **To schedule or start in the same request** (`status: "scheduled"`/`"sending"`), the
+        **To schedule or start in the same request** (`status: "scheduled"`/`"started"`), the
         template must include `body_html` (the design) — otherwise the request is rejected with
         `422` (`"Campaign design can't be blank"`) and nothing is persisted. A `draft` needs only a
         `subject`; the design can be added later via update.
@@ -168,8 +168,8 @@ paths:
         Update accepts the same fields as create, including the audience
         (`contact_list_ids`/`contact_segment_ids`) and a target `status`. **Setting `status` on
         update transitions the draft**: `scheduled` schedules it for `scheduled_for` (and enqueues
-        the send), `sending` starts it immediately. This is the typical flow — create a draft, add
-        its design and audience over one or more updates, then flip `status` to `scheduled`/`sending`
+        the send), `started` starts it immediately. This is the typical flow — create a draft, add
+        its design and audience over one or more updates, then flip `status` to `scheduled`/`started`
         in the final update. That transition runs full sending validation (the template must have a
         `body_html` design, the audience and verified domain must be set, billing within limits); on
         failure the request returns `422` and the campaign stays a `draft`.
@@ -400,7 +400,7 @@ components:
             template is edited in place instead of replaced.
 
             `body_html` holds the campaign design and is **required before the campaign can be
-            scheduled or started**: a `scheduled`/`sending` request whose template has no
+            scheduled or started**: a `scheduled`/`started` request whose template has no
             `body_html` is rejected with `422` (`"Campaign design can't be blank"`). Add an
             unsubscribe link by placing the `__unsubscribe_url__` placeholder in an anchor `href`,
             and personalize content with merge tags written as `{{tag_name}}`.
@@ -478,16 +478,16 @@ components:
             Target lifecycle state, letting you configure and send a campaign in one request:
               * `draft` (default) — save attributes only; the campaign is not sent.
               * `scheduled` — schedule sending for `scheduled_for` (which becomes required).
-              * `sending` — start sending immediately.
+              * `started` — start sending immediately.
 
-            Moving to `scheduled` or `sending` runs full sending validation (audience, template,
+            Moving to `scheduled` or `started` runs full sending validation (audience, template,
             verified domain, billing limits). If it fails, the request is rejected with `422` and
             nothing is persisted — the campaign is never left half-configured.
           example: scheduled
           enum:
             - draft
             - scheduled
-            - sending
+            - started
     EmailCampaignCreateRequest:
       description: Campaign attributes. `name`, `mailsend_domain_id`, `from_local_part` and a template `subject` are required.
       allOf:
