@@ -1230,11 +1230,23 @@ paths:
       summary: Get all Contact Lists
       tags:
         - Contact Lists
+      parameters:
+        - schema:
+            type: string
+            example: news
+          in: query
+          name: search
+          required: false
+          description: Filter contact lists by name (case-insensitive prefix match).
       x-codeSamples:
         - lang: shell
           label: 'cURL'
           source: |
             curl -X GET https://mailtrap.io/api/contacts/lists \
+              -H 'Authorization: Bearer YOUR_API_TOKEN'
+
+            # Filter lists by name (case-insensitive prefix match)
+            curl -X GET 'https://mailtrap.io/api/contacts/lists?search=news' \
               -H 'Authorization: Bearer YOUR_API_TOKEN'
         - lang: javascript
           label: Node.js
