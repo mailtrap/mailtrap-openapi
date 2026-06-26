@@ -65,15 +65,10 @@ paths:
         Creates a new email campaign. The campaign must reference an existing sending domain via
         `mailsend_domain_id`, and a `template` with a `subject` provided inline.
 
-        Create accepts the same fields as update, so a single request can fully configure a
-        campaign — pick the audience with `contact_list_ids`/`contact_segment_ids`, set delivery
-        options, and use `status` to schedule or start sending. A campaign created without a
-        `status` (or with `status: "draft"`) stays in the `draft` state.
-
-        **To schedule or start in the same request** (`status: "scheduled"`/`"started"`), the
-        template must include `body_html` (the design) — otherwise the request is rejected with
-        `422` (`"Campaign design can't be blank"`) and nothing is persisted. A `draft` needs only a
-        `subject`; the design can be added later via update.
+        Create accepts the same fields as update — pick the audience with
+        `contact_list_ids`/`contact_segment_ids`, set delivery options, and add the design via
+        `template_attributes.body_html`. The campaign is always created in the `draft` state;
+        scheduling and starting are separate actions (see the `schedule` and `start` endpoints).
       tags:
         - Email Campaigns
       requestBody:
@@ -112,25 +107,6 @@ paths:
                 },
                 "template_attributes": { "subject": "Spring is here — 30% off" }
               }'
-        - lang: shell
-          label: "cURL — create and schedule in one request"
-          source: |
-            curl -X POST "https://mailtrap.io/api/email_campaigns" \
-              -H 'Api-Token: YOUR_API_TOKEN' \
-              -H 'Content-Type: application/json' \
-              -d '{
-                "name": "Spring Sale",
-                "mailsend_domain_id": "d2313359-acb4-4b87-bce6-f5774f6a1e37",
-                "from_local_part": "news",
-                "template_attributes": {
-                  "subject": "Hi {{first_name}}, spring is here — 30% off",
-                  "body_html": "<html><body><h1>Hi {{first_name}}!</h1><p>30% off everything.</p><p><a href=\"__unsubscribe_url__\">Unsubscribe</a></p></body></html>",
-                  "merge_tags": ["first_name"]
-                },
-                "contact_list_ids": [55, 56],
-                "status": "scheduled",
-                "scheduled_for": "2026-06-01T09:00:00.000Z"
-              }'
   "/api/email_campaigns/{email_campaign_id}":
     get:
       operationId: getEmailCampaign
@@ -166,13 +142,9 @@ paths:
         so it is modified in place rather than replaced.
 
         Update accepts the same fields as create, including the audience
-        (`contact_list_ids`/`contact_segment_ids`) and a target `status`. **Setting `status` on
-        update transitions the draft**: `scheduled` schedules it for `scheduled_for` (and enqueues
-        the send), `started` starts it immediately. This is the typical flow — create a draft, add
-        its design and audience over one or more updates, then flip `status` to `scheduled`/`started`
-        in the final update. That transition runs full sending validation (the template must have a
-        `body_html` design, the audience and verified domain must be set, billing within limits); on
-        failure the request returns `422` and the campaign stays a `draft`.
+        (`contact_list_ids`/`contact_segment_ids`). The typical flow is to create a draft, add its
+        design and audience over one or more updates, then schedule or start it via the dedicated
+        `schedule`/`start` action endpoints.
 
         Only `draft` campaigns can be updated — editing a campaign that is already scheduled/sending
         returns `422`.
@@ -214,18 +186,6 @@ paths:
                   "body_html": "<html><body><h1>Hi {{first_name}}!</h1><p><a href=\"__unsubscribe_url__\">Unsubscribe</a></p></body></html>"
                 }
               }'
-        - lang: shell
-          label: "cURL — schedule a draft"
-          source: |
-            # The draft's template must already have a body_html design, otherwise this returns 422.
-            curl -X PATCH "https://mailtrap.io/api/email_campaigns/4567" \
-              -H 'Api-Token: YOUR_API_TOKEN' \
-              -H 'Content-Type: application/json' \
-              -d '{
-                "contact_list_ids": [55, 56],
-                "status": "scheduled",
-                "scheduled_for": "2026-06-01T09:00:00.000Z"
-              }'
     delete:
       operationId: deleteEmailCampaign
       summary: Delete an email campaign
@@ -254,6 +214,174 @@ paths:
           label: "cURL"
           source: |
             curl -X DELETE "https://mailtrap.io/api/email_campaigns/4567" \
+              -H 'Api-Token: YOUR_API_TOKEN'
+  "/api/email_campaigns/{email_campaign_id}/start":
+    post:
+      operationId: startEmailCampaign
+      summary: Start an email campaign
+      description: |-
+        Starts sending a `draft` campaign immediately. Runs full sending validation (the template
+        must have a `body_html` design, the audience and verified sending domain must be set,
+        billing within limits); on failure the request returns `422` and the campaign stays a
+        `draft`. The campaign must be in the `draft` state — starting from any other state returns
+        `422`.
+      tags:
+        - Email Campaigns
+      parameters:
+        - $ref: "#/components/parameters/email_campaign_id"
+      responses:
+        "200":
+          $ref: "#/components/responses/EmailCampaignResponse"
+        "401":
+          $ref: "#/components/responses/UNAUTHENTICATED"
+        "403":
+          $ref: "#/components/responses/PERMISSION_DENIED"
+        "404":
+          $ref: "#/components/responses/NOT_FOUND"
+        "422":
+          $ref: "#/components/responses/ACTION_VALIDATION_ERROR"
+        "429":
+          $ref: "#/components/responses/RATE_LIMITED"
+      x-codeSamples:
+        - lang: shell
+          label: "cURL"
+          source: |
+            curl -X POST "https://mailtrap.io/api/email_campaigns/4567/start" \
+              -H 'Api-Token: YOUR_API_TOKEN'
+  "/api/email_campaigns/{email_campaign_id}/schedule":
+    post:
+      operationId: scheduleEmailCampaign
+      summary: Schedule an email campaign
+      description: |-
+        Schedules a `draft` campaign to start sending at a future time. Runs full sending validation
+        (the template must have a `body_html` design, the audience and verified sending domain must
+        be set, billing within limits); on failure the request returns `422` and the campaign stays
+        a `draft`. The campaign must be in the `draft` state — scheduling from any other state
+        returns `422`. After scheduling, the time is reported back in
+        `current_state_metadata.scheduled_at`.
+      tags:
+        - Email Campaigns
+      parameters:
+        - $ref: "#/components/parameters/email_campaign_id"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/EmailCampaignScheduleRequest"
+      responses:
+        "200":
+          $ref: "#/components/responses/EmailCampaignResponse"
+        "401":
+          $ref: "#/components/responses/UNAUTHENTICATED"
+        "403":
+          $ref: "#/components/responses/PERMISSION_DENIED"
+        "404":
+          $ref: "#/components/responses/NOT_FOUND"
+        "422":
+          $ref: "#/components/responses/ACTION_VALIDATION_ERROR"
+        "429":
+          $ref: "#/components/responses/RATE_LIMITED"
+      x-codeSamples:
+        - lang: shell
+          label: "cURL"
+          source: |
+            curl -X POST "https://mailtrap.io/api/email_campaigns/4567/schedule" \
+              -H 'Api-Token: YOUR_API_TOKEN' \
+              -H 'Content-Type: application/json' \
+              -d '{ "datetime": "2026-06-01T09:00:00.000Z" }'
+  "/api/email_campaigns/{email_campaign_id}/cancel":
+    post:
+      operationId: cancelEmailCampaign
+      summary: Cancel a scheduled email campaign
+      description: |-
+        Cancels a scheduled campaign, removing the pending send job and returning the campaign to
+        the `draft` state. The campaign must be in the `scheduled` state — cancelling from any other
+        state returns `422` (`"Campaign is not scheduled"`).
+      tags:
+        - Email Campaigns
+      parameters:
+        - $ref: "#/components/parameters/email_campaign_id"
+      responses:
+        "200":
+          $ref: "#/components/responses/EmailCampaignResponse"
+        "401":
+          $ref: "#/components/responses/UNAUTHENTICATED"
+        "403":
+          $ref: "#/components/responses/PERMISSION_DENIED"
+        "404":
+          $ref: "#/components/responses/NOT_FOUND"
+        "422":
+          $ref: "#/components/responses/ACTION_VALIDATION_ERROR"
+        "429":
+          $ref: "#/components/responses/RATE_LIMITED"
+      x-codeSamples:
+        - lang: shell
+          label: "cURL"
+          source: |
+            curl -X POST "https://mailtrap.io/api/email_campaigns/4567/cancel" \
+              -H 'Api-Token: YOUR_API_TOKEN'
+  "/api/email_campaigns/{email_campaign_id}/terminate":
+    post:
+      operationId: terminateEmailCampaign
+      summary: Terminate a sending email campaign
+      description: |-
+        Terminates a campaign that is currently sending, aborting the in-flight send. The campaign
+        must be in a sending state (`started`, `queued`, or `paused`) — terminating from any other
+        state returns `422`.
+      tags:
+        - Email Campaigns
+      parameters:
+        - $ref: "#/components/parameters/email_campaign_id"
+      responses:
+        "200":
+          $ref: "#/components/responses/EmailCampaignResponse"
+        "401":
+          $ref: "#/components/responses/UNAUTHENTICATED"
+        "403":
+          $ref: "#/components/responses/PERMISSION_DENIED"
+        "404":
+          $ref: "#/components/responses/NOT_FOUND"
+        "422":
+          $ref: "#/components/responses/ACTION_VALIDATION_ERROR"
+        "429":
+          $ref: "#/components/responses/RATE_LIMITED"
+      x-codeSamples:
+        - lang: shell
+          label: "cURL"
+          source: |
+            curl -X POST "https://mailtrap.io/api/email_campaigns/4567/terminate" \
+              -H 'Api-Token: YOUR_API_TOKEN'
+  "/api/email_campaigns/{email_campaign_id}/reset":
+    post:
+      operationId: resetEmailCampaign
+      summary: Reset an email campaign to draft
+      description: |-
+        Resets a campaign back to the `draft` state. Allowed from states that permit a transition
+        back to `draft` (e.g. `scheduled`, `failed`); resetting from a state that does not allow it
+        (e.g. a sending or terminal state) returns `422`.
+      tags:
+        - Email Campaigns
+      parameters:
+        - $ref: "#/components/parameters/email_campaign_id"
+      responses:
+        "200":
+          $ref: "#/components/responses/EmailCampaignResponse"
+        "401":
+          $ref: "#/components/responses/UNAUTHENTICATED"
+        "403":
+          $ref: "#/components/responses/PERMISSION_DENIED"
+        "404":
+          $ref: "#/components/responses/NOT_FOUND"
+        "422":
+          $ref: "#/components/responses/ACTION_VALIDATION_ERROR"
+        "429":
+          $ref: "#/components/responses/RATE_LIMITED"
+      x-codeSamples:
+        - lang: shell
+          label: "cURL"
+          source: |
+            curl -X POST "https://mailtrap.io/api/email_campaigns/4567/reset" \
               -H 'Api-Token: YOUR_API_TOKEN'
   "/api/email_campaigns/{email_campaign_id}/stats":
     get:
@@ -369,9 +497,9 @@ components:
     EmailCampaignWritableAttributes:
       type: object
       description: |-
-        Campaign attributes. Both create and update accept the same fields, so a single request
-        can fully configure a campaign — set its audience and use `status` to schedule or start
-        sending — instead of separate create, edit, and schedule calls.
+        Campaign attributes. Both create and update accept the same fields. Create and update only
+        manage attributes and audience — the campaign always stays in `draft`; scheduling and
+        starting are performed via the dedicated lifecycle action endpoints.
       properties:
         name:
           type: string
@@ -400,10 +528,10 @@ components:
             template is edited in place instead of replaced.
 
             `body_html` holds the campaign design and is **required before the campaign can be
-            scheduled or started**: a `scheduled`/`started` request whose template has no
-            `body_html` is rejected with `422` (`"Campaign design can't be blank"`). Add an
-            unsubscribe link by placing the `__unsubscribe_url__` placeholder in an anchor `href`,
-            and personalize content with merge tags written as `{{tag_name}}`.
+            scheduled or started** via the `schedule`/`start` action endpoints (those return `422`
+            (`"Campaign design can't be blank"`) when it is missing). Add an unsubscribe link by
+            placing the `__unsubscribe_url__` placeholder in an anchor `href`, and personalize
+            content with merge tags written as `{{tag_name}}`.
           properties:
             id:
               type: integer
@@ -448,14 +576,6 @@ components:
             emails_per_hour:
               type: [integer, "null"]
               example: 1000
-        scheduled_for:
-          type: [string, "null"]
-          format: date-time
-          description: |-
-            When to send the campaign (ISO 8601). Required when `status` is `scheduled`; ignored for
-            other statuses. Must be in the future and no more than 1 month ahead. Once scheduled, it
-            is echoed back in both `scheduled_for` and `current_state_metadata.scheduled_at`.
-          example: "2026-06-01T09:00:00.000Z"
         contact_list_ids:
           type: array
           description: |-
@@ -472,22 +592,6 @@ components:
             type: integer
             format: int64
           example: [12]
-        status:
-          type: string
-          description: |-
-            Target lifecycle state, letting you configure and send a campaign in one request:
-              * `draft` (default) — save attributes only; the campaign is not sent.
-              * `scheduled` — schedule sending for `scheduled_for` (which becomes required).
-              * `started` — start sending immediately.
-
-            Moving to `scheduled` or `started` runs full sending validation (audience, template,
-            verified domain, billing limits). If it fails, the request is rejected with `422` and
-            nothing is persisted — the campaign is never left half-configured.
-          example: scheduled
-          enum:
-            - draft
-            - scheduled
-            - started
     EmailCampaignCreateRequest:
       description: Campaign attributes. `name`, `mailsend_domain_id`, `from_local_part` and a template `subject` are required.
       allOf:
@@ -507,6 +611,19 @@ components:
       description: Attributes to update. All fields optional; only provided fields change.
       allOf:
         - $ref: "#/components/schemas/EmailCampaignWritableAttributes"
+    EmailCampaignScheduleRequest:
+      type: object
+      description: When to start sending the campaign.
+      required:
+        - datetime
+      properties:
+        datetime:
+          type: string
+          format: date-time
+          description: |-
+            When to send the campaign (ISO 8601). Must be in the future and no more than 1 month
+            ahead, otherwise the request is rejected with `422`.
+          example: "2026-06-01T09:00:00.000Z"
     ReplyTo:
       type: object
       description: Reply-To address parts.
@@ -646,11 +763,6 @@ components:
             emails_per_hour:
               type: [integer, "null"]
               example: 1000
-        scheduled_for:
-          type: [string, "null"]
-          format: date-time
-          description: When the campaign is scheduled to be sent, or `null` when not scheduled.
-          example: null
         template:
           type: object
           description: |-
@@ -808,6 +920,22 @@ components:
               - can't be blank
             template.subject:
               - can't be blank
+    ActionValidationErrorResponse:
+      type: object
+      description: |-
+        Validation error returned by the lifecycle action endpoints. `errors` is either a single
+        message (an invalid state transition or an invalid `datetime`) or a list of messages
+        (sending-validation failures).
+      properties:
+        errors:
+          oneOf:
+            - type: string
+              example: "Cannot transition from 'started' to 'scheduled'"
+            - type: array
+              items:
+                type: string
+              example:
+                - Campaign design can't be blank
   responses:
     EmailCampaignsResponse:
       description: A paginated list of email campaigns.
@@ -864,6 +992,14 @@ components:
         application/json:
           schema:
             $ref: "#/components/schemas/ValidationErrorResponse"
+    ACTION_VALIDATION_ERROR:
+      description: |-
+        The lifecycle action was rejected — the campaign was in a state that does not allow the
+        action, the `datetime` was invalid, or sending validation failed.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ActionValidationErrorResponse"
     RATE_LIMITED:
       description: |-
         Too many requests. The public API is rate limited to 150 requests per 10 seconds per
