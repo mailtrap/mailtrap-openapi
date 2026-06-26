@@ -1,0 +1,32 @@
+specs/email-sending.openapi.yml
+  s_4efb6148df9dd3::t_1bc22482c0efdf 601
+  s_4efb6148df9dd3::t_56aa4eccacdd63 3839-3864
+  s_4efb6148df9dd3::t_58f04c57eef421 6
+  s_4efb6148df9dd3::t_8f1ce267d01214 19
+  s_4efb6148df9dd3::t_4fb34192bafc9d 1302-1346,1349-1351,1354-1356,1369-1486
+  s_4efb6148df9dd3::t_6deb0356849e0e 1359-1368
+  s_4efb6148df9dd3::t_a0da6832ee96e4 40-45
+  s_4efb6148df9dd3::t_a20dc55bbb6c06 2230-2239
+  s_4efb6148df9dd3::t_65c1f8a4b47771 580
+  s_4efb6148df9dd3::t_3403c1c6d5fa46 1347-1348,1352-1353,1357-1358
+  s_4efb6148df9dd3::t_8e64744e639af0 2425-2429
+  s_4efb6148df9dd3::t_23aa0624783b27 2754-2770
+  s_4efb6148df9dd3::t_f425ed2c333630 2517-2521
+  s_4efb6148df9dd3::t_ea53d94373aa6e 2497
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.3",
+  "base_commit_sha": "a3286eb91cdd8200dc6d9b1ab35ad086c4d696c4",
+  "prompts": {},
+  "sessions": {
+    "s_4efb6148df9dd3": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "c052c781-4db5-4acf-9353-eb9cdb885aa9",
+        "model": "default"
+      },
+      "human_author": "Leonid Shevtsov <leonid@shevtsov.me>"
+    }
+  }
+}
