@@ -3,7 +3,7 @@ info:
   title: Email Sending
   version: 2.0.0
   description: |
-    Manage domains, suppressions, and email sending logs for your Mailtrap account.
+    Manage domains, suppressions, tracking opt-outs, and email sending logs for your Mailtrap account.
   contact:
     name: Mailtrap Support
     url: 'https://docs.mailtrap.io'
@@ -16,7 +16,7 @@ info:
 
 servers:
   - description: |
-      Mailtrap account API (`mailtrap.io`) for domains, suppressions, stats, and email logs.
+      Mailtrap account API (`mailtrap.io`) for domains, suppressions, tracking opt-outs, stats, and email logs.
       Error JSON matches other account endpoints (`error` or string `errors`), not the `send.api` / `bulk.api` sending shape (`success` + `errors` array).
     url: 'https://mailtrap.io'
 
@@ -36,6 +36,13 @@ tags:
     x-page-description: Manage suppressed email addresses
     description: |
       Control which email addresses should not receive emails from your account.
+
+  - name: tracking-opt-outs
+    x-page-title: Tracking Opt-Outs
+    x-page-description: Manage tracking opt-outs
+    description: |
+      Manage email addresses that have opted out of open and click tracking.
+      Tracking opt-outs are always scoped to a sending domain.
 
   - name: stats
     x-page-title: Stats
@@ -571,6 +578,7 @@ paths:
                 "domain": {
                   "open_tracking_enabled": true,
                   "click_tracking_enabled": true,
+                  "tracking_opt_out_enabled": true,
                   "auto_unsubscribe_link_enabled": false
                 }
               }'
@@ -591,6 +599,7 @@ paths:
               domain:
                 open_tracking_enabled: true
                 click_tracking_enabled: true
+                tracking_opt_out_enabled: true
                 auto_unsubscribe_link_enabled: false
       responses:
         '200':
@@ -1284,6 +1293,154 @@ paths:
       responses:
         '200':
           $ref: '#/components/responses/DeleteSuppressionResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /api/tracking_opt_outs:
+    get:
+      summary: List tracking opt-outs
+      description: |
+        List email addresses that have opted out of open and click tracking for your sending domains.
+        Each record includes the domain it applies to.
+
+        Returns up to 1000 records per request. When the response includes a non-null `last_id`, pass it as the `last_id` query parameter to fetch the next page.
+
+        Rate limit: 10 requests per minute per account.
+      operationId: getTrackingOptOuts
+      tags:
+        - tracking-opt-outs
+      x-codeSamples:
+        - lang: shell
+          label: 'cURL'
+          source: |
+            # Get all tracking opt-outs
+            curl -X GET https://mailtrap.io/api/tracking_opt_outs \
+              -H 'Authorization: Bearer YOUR_API_KEY'
+
+            # Search for specific email
+            curl -X GET 'https://mailtrap.io/api/tracking_opt_outs?email=tracked@example.com' \
+              -H 'Authorization: Bearer YOUR_API_KEY'
+      parameters:
+        - name: email
+          in: query
+          description: Filter tracking opt-outs by exact email address (case-insensitive).
+          schema:
+            type: string
+            format: email
+            example: tracked@example.com
+        - name: start_time
+          in: query
+          description: Filter tracking opt-outs created at or after this timestamp (ISO 8601 format).
+          schema:
+            type: string
+            format: date-time
+            example: '2025-01-01T00:00:00Z'
+        - name: end_time
+          in: query
+          description: Filter tracking opt-outs created at or before this timestamp (ISO 8601 format).
+          schema:
+            type: string
+            format: date-time
+            example: '2025-12-31T23:59:59Z'
+        - name: last_id
+          in: query
+          description: The tracking opt-out UUID from the last record of the previous response. Returns records after this opt-out, enabling cursor-based pagination through large lists.
+          schema:
+            type: string
+            format: uuid
+            example: 64d71bf3-1276-417b-86e1-8e66f138acfe
+      responses:
+        '200':
+          $ref: '#/components/responses/GetTrackingOptOutsResponse'
+        '400':
+          $ref: '#/components/responses/BAD_REQUEST'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '429':
+          $ref: '#/components/responses/LIMIT_EXCEEDED'
+    post:
+      summary: Create tracking opt-out
+      description: |
+        Add an email address to the tracking opt-out list for a sending domain.
+        Opted-out addresses are excluded from open and click tracking on that domain.
+
+        {% hint style="warning" %}
+        This endpoint requires admin-level access.
+        {% endhint %}
+
+        Rate limit: 10 requests per minute per account.
+      operationId: createTrackingOptOut
+      tags:
+        - tracking-opt-outs
+      x-codeSamples:
+        - lang: shell
+          label: 'cURL'
+          source: |
+            curl -X POST https://mailtrap.io/api/tracking_opt_outs \
+              -H 'Authorization: Bearer YOUR_API_KEY' \
+              -H 'Content-Type: application/json' \
+              -d '{
+                "email": "tracked@example.com",
+                "domain_id": 12345
+              }'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, domain_id]
+              properties:
+                email:
+                  type: string
+                  format: email
+                  description: Email address to opt out of tracking
+                  example: tracked@example.com
+                domain_id:
+                  type: integer
+                  description: ID of the sending domain this tracking opt-out applies to
+                  example: 12345
+      responses:
+        '201':
+          $ref: '#/components/responses/CreateTrackingOptOutResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+        '429':
+          $ref: '#/components/responses/LIMIT_EXCEEDED'
+
+  /api/tracking_opt_outs/{tracking_opt_out_id}:
+    delete:
+      summary: Delete tracking opt-out
+      description: |
+        Remove an email address from the tracking opt-out list so open and click tracking can apply again.
+
+        {% hint style="warning" %}
+        This endpoint requires admin-level access.
+        {% endhint %}
+      operationId: deleteTrackingOptOut
+      tags:
+        - tracking-opt-outs
+      x-codeSamples:
+        - lang: shell
+          label: 'cURL'
+          source: |
+            curl -X DELETE https://mailtrap.io/api/tracking_opt_outs/{tracking_opt_out_id} \
+              -H 'Authorization: Bearer YOUR_API_KEY'
+      parameters:
+        - $ref: '#/components/parameters/tracking_opt_out_id'
+      responses:
+        '200':
+          $ref: '#/components/responses/DeleteTrackingOptOutResponse'
         '401':
           $ref: '#/components/responses/Unauthorized'
         '403':
@@ -2034,6 +2191,16 @@ components:
         format: uuid
         example: 64d71bf3-1276-417b-86e1-8e66f138acfe
 
+    tracking_opt_out_id:
+      name: tracking_opt_out_id
+      in: path
+      required: true
+      description: The tracking opt-out UUID
+      schema:
+        type: string
+        format: uuid
+        example: 64d71bf3-1276-417b-86e1-8e66f138acfe
+
     sending_message_id:
       name: sending_message_id
       in: path
@@ -2219,6 +2386,11 @@ components:
           type: boolean
         click_tracking_enabled:
           type: boolean
+        tracking_opt_out_enabled:
+          type: boolean
+          description: |
+            When enabled, recipients can opt out of open and click tracking via a link in tracked emails.
+            Requires open or click tracking to be enabled.
         auto_unsubscribe_link_enabled:
           type: boolean
         custom_domain_tracking_enabled:
@@ -2286,6 +2458,7 @@ components:
             name: mt-link
         open_tracking_enabled: true
         click_tracking_enabled: true
+        tracking_opt_out_enabled: false
         auto_unsubscribe_link_enabled: true
         custom_domain_tracking_enabled: true
         health_alerts_enabled: true
@@ -2305,6 +2478,11 @@ components:
         click_tracking_enabled:
           type: boolean
           description: Enable click tracking for links in emails sent from this domain
+        tracking_opt_out_enabled:
+          type: boolean
+          description: |
+            Enable the tracking opt-out link in tracked emails sent from this domain.
+            Requires open or click tracking to be enabled.
         auto_unsubscribe_link_enabled:
           type: boolean
           description: Automatically add an unsubscribe link to emails sent from this domain
@@ -2536,6 +2714,27 @@ components:
           type: [string, 'null']
         message_subject:
           type: [string, 'null']
+
+    TrackingOptOut:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: The tracking opt-out UUID
+          example: 64d71bf3-1276-417b-86e1-8e66f138acfe
+        email:
+          type: string
+          format: email
+          example: tracked@example.com
+        created_at:
+          type: string
+          format: date-time
+          example: '2025-01-15T10:30:00Z'
+        domain_name:
+          type: string
+          description: Sending domain this tracking opt-out applies to
+          example: example.com
 
     Webhook:
       type: object
@@ -3605,3 +3804,41 @@ components:
             properties:
               data:
                 $ref: '#/components/schemas/Suppression'
+
+    GetTrackingOptOutsResponse:
+      description: List of tracking opt-outs
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              data:
+                type: array
+                items:
+                  $ref: '#/components/schemas/TrackingOptOut'
+              last_id:
+                type:
+                  - string
+                  - 'null'
+                format: uuid
+                description: |
+                  Cursor for the next page. Present when the response is a full page (1000 records);
+                  pass this value as the `last_id` query parameter to continue. `null` when there are no more pages.
+                example: 64d71bf3-1276-417b-86e1-8e66f138acfe
+
+    DeleteTrackingOptOutResponse:
+      description: Tracking opt-out deleted
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/TrackingOptOut'
+
+    CreateTrackingOptOutResponse:
+      description: Tracking opt-out created
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              data:
+                $ref: '#/components/schemas/TrackingOptOut'
