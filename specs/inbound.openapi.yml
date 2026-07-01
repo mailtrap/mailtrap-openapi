@@ -416,8 +416,8 @@ paths:
             value returned by the previous response to fetch the next page.
             Omit on the first request.
           schema:
-            type: integer
-            example: 1700000000000123
+            type: string
+            example: "1700000000000123"
       x-codeSamples:
         - lang: shell
           label: "cURL"
@@ -433,7 +433,7 @@ paths:
                 $ref: "#/components/schemas/MessagesListResponse"
               example:
                 data:
-                  - id: 1700000000000123
+                  - id: "1700000000000123"
                     inbox_id: 1
                     from: "sender@example.com"
                     to:
@@ -565,8 +565,8 @@ components:
       required: true
       description: Inbound message ID
       schema:
-        type: integer
-        example: 1700000000000123
+        type: string
+        example: "1700000000000123"
 
   schemas:
     Folder:
@@ -678,9 +678,9 @@ components:
       type: object
       properties:
         id:
-          type: integer
+          type: string
           description: Mailtrap object ID for the message (not the `Message-ID` header value).
-          example: 1700000000000123
+          example: "1700000000000123"
         inbox_id:
           type: integer
           example: 1
@@ -823,7 +823,7 @@ components:
           example: 1
         last_id:
           type:
-            - integer
+            - string
             - "null"
           description: |
             Cursor for the next page. `null` when there are no more results.
@@ -845,6 +845,12 @@ components:
         error:
           type: string
 
+    ForbiddenError:
+      type: object
+      properties:
+        errors:
+          type: string
+
   responses:
     Unauthorized:
       description: Unauthorized
@@ -860,9 +866,9 @@ components:
       content:
         application/json:
           schema:
-            $ref: "#/components/schemas/ErrorResponse"
+            $ref: "#/components/schemas/ForbiddenError"
           example:
-            error: Access forbidden
+            errors: Access forbidden
 
     NotFound:
       description: Not found
