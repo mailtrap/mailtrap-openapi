@@ -242,9 +242,11 @@ paths:
                 - id: 1
                   name: Support tickets
                   address: "support-tickets-1a2b3c4d@inbound-mailtrap.io"
+                  domain_id: 892
                 - id: 2
                   name: Replies
-                  address: "replies-5e6f7a8b@inbound-mailtrap.io"
+                  address: "*@your-domain.com"
+                  domain_id: 894
         "401":
           $ref: "#/components/responses/Unauthorized"
         "403":
@@ -256,8 +258,13 @@ paths:
       operationId: createInboundInbox
       summary: Create an inbox
       description: |
-        Create a new inbox in a folder. Mailtrap generates the inbox `address`
-        automatically based on the `name`.
+        Create a new inbox in a folder. By default Mailtrap generates the
+        inbox `address` automatically based on the `name`.
+
+        To create a catch-all inbox on your own domain, pass `domain_id` — the
+        ID of a verified custom sending domain with inbound enabled. The inbox
+        then receives mail sent to any address on that domain, and its `address`
+        is returned as `*@your-domain.com`.
       tags:
         - inboxes
       parameters:
@@ -275,7 +282,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/InboxInput"
+              $ref: "#/components/schemas/InboxCreateInput"
       responses:
         "201":
           description: Inbox created
@@ -283,10 +290,21 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Inbox"
-              example:
-                id: 1
-                name: Support tickets
-                address: "support-tickets-1a2b3c4d@inbound-mailtrap.io"
+              examples:
+                mailtrapHosted:
+                  summary: Mailtrap-hosted inbox
+                  value:
+                    id: 1
+                    name: Support tickets
+                    address: "support-tickets-1a2b3c4d@inbound-mailtrap.io"
+                    domain_id: 892
+                customDomain:
+                  summary: Custom-domain (catch-all) inbox
+                  value:
+                    id: 2
+                    name: Support tickets
+                    address: "*@your-domain.com"
+                    domain_id: 894
         "401":
           $ref: "#/components/responses/Unauthorized"
         "403":
@@ -600,11 +618,18 @@ components:
           example: Support tickets
         address:
           type: string
-          format: email
           description: |
-            Generated inbound address. Mail sent to this address is delivered
-            to the inbox.
+            The inbox's inbound address. For a standard Mailtrap-hosted inbox
+            this is a unique generated address. For a custom-domain inbox it is
+            the catch-all form `*@your-domain.com`, which receives mail sent to
+            any address on that domain.
           example: "support-tickets-1a2b3c4d@inbound-mailtrap.io"
+        domain_id:
+          type: integer
+          description: |
+            ID of the sending domain the inbox is attached to. Returned when the
+            custom domains feature is enabled for the account.
+          example: 892
 
     InboxInput:
       type: object
@@ -615,6 +640,24 @@ components:
           type: string
           maxLength: 100
           example: Support tickets
+
+    InboxCreateInput:
+      type: object
+      required:
+        - name
+      properties:
+        name:
+          type: string
+          maxLength: 100
+          example: Support tickets
+        domain_id:
+          type: integer
+          description: |
+            Attach the inbox to a verified custom sending domain (one with
+            inbound enabled), creating a catch-all inbox that receives mail for
+            any address on that domain. Omit to create a standard Mailtrap-hosted
+            inbox. Requires the custom domains feature.
+          example: 894
 
     Attachment:
       type: object
