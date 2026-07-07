@@ -1,0 +1,17 @@
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "06714840ae5213d43fd35fe41cb480c03b6f7d8e",
+  "prompts": {},
+  "sessions": {
+    "s_92ccbbde00fa8c": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "b484460c-bf91-4b3a-bd22-b264904502e5",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Piotr Bednarz <piotr.bednarz@railsware.com>"
+    }
+  }
+}
