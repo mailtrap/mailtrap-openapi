@@ -53,6 +53,15 @@ tags:
       attachments, reply to or forward a message, or delete one you no longer
       need.
 
+  - name: threads
+    x-page-title: Threads
+    x-page-description: Group related messages into conversations
+    description: |
+      A thread groups the inbound and outbound messages that belong to the
+      same conversation. Use these endpoints to page through an inbox's
+      threads, fetch a single thread with its messages embedded, or delete a
+      thread.
+
 paths:
   /api/inbound/folders:
     get:
@@ -692,6 +701,233 @@ paths:
         "429":
           $ref: "#/components/responses/TooManyRequests"
 
+  /api/inbound/inboxes/{inbox_id}/threads:
+    get:
+      operationId: listInboundThreads
+      summary: List threads
+      description: |
+        Returns the inbox's conversation threads, ordered by most recent
+        activity first.
+
+        Only threads and messages within your plan's retention window are
+        included; the per-thread aggregates (message count, size, senders,
+        recipients, attachments) are computed over those accessible messages.
+
+        Results use cursor pagination. Pass the `next_token` from the previous
+        response's `pagination` block as the `token` query parameter to fetch
+        the next page; when `next_token` is `null` you have reached the end.
+        Use `per_page` to control the page size.
+      tags:
+        - threads
+      parameters:
+        - $ref: "#/components/parameters/inbox_id"
+        - name: token
+          in: query
+          required: false
+          description: |
+            Pagination cursor from the previous response's
+            `pagination.next_token`. Omit on the first request.
+          schema:
+            type: string
+            example: "eyJsYXN0X2FjdGl2aXR5X2F0IjoxNzQ2NzAwMjAwMDAwLCJpZCI6IjE3MDAwMDAwMDAwMDAxMjMifQ"
+        - name: per_page
+          in: query
+          required: false
+          description: Number of threads per page.
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 100
+      x-codeSamples:
+        - lang: shell
+          label: "cURL"
+          source: |
+            curl -X GET 'https://mailtrap.io/api/inbound/inboxes/{inbox_id}/threads' \
+              -H 'Authorization: Bearer YOUR_API_KEY'
+      responses:
+        "200":
+          description: List of threads
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ThreadsListResponse"
+              example:
+                data:
+                  - id: "1700000000000123"
+                    subject: "Support request"
+                    message_count: 3
+                    size: 24576
+                    first_message_at: "2026-05-08T10:30:00.000Z"
+                    last_received_at: "2026-05-08T12:05:00.000Z"
+                    last_sent_at: "2026-05-08T11:40:00.000Z"
+                    last_activity_at: "2026-05-08T12:05:00.000Z"
+                    last_message_id: "1700000000000789"
+                    senders:
+                      - "customer@example.com"
+                      - "support-tickets-1a2b3c4d@inbound-mailtrap.io"
+                    recipients:
+                      - "support-tickets-1a2b3c4d@inbound-mailtrap.io"
+                      - "customer@example.com"
+                    attachments:
+                      - attachment_id: att-1
+                        filename: invoice.pdf
+                        size: 20480
+                        content_type: application/pdf
+                        content_disposition: attachment
+                        content_id: null
+                        download_url: "https://s3.amazonaws.com/inbound-mail/att-1?X-Amz-Signature=..."
+                        download_url_expires_at: "2026-05-08T13:05:00.000Z"
+                pagination:
+                  token: null
+                  next_token: null
+                  current_url: "https://mailtrap.io/api/inbound/inboxes/1/threads"
+                  next_url: null
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  /api/inbound/inboxes/{inbox_id}/threads/{id}:
+    get:
+      operationId: getInboundThread
+      summary: Get a thread
+      description: |
+        Returns a single thread with its messages embedded, ordered oldest
+        first.
+
+        Each message carries a `visibility_status`:
+
+        - `available` — the message is within your plan's retention window. The
+          full envelope, subject, RFC headers, decoded bodies, and attachment
+          download URLs are included; outbound messages also carry their
+          delivery lifecycle (`delivery_status`, `delivered_at`, `bounced_at`).
+        - `placeholder` — the message is outside the retention window. Only
+          `visibility_status` and `direction` are returned; every other field is
+          omitted and no attachment download URLs are issued.
+      tags:
+        - threads
+      parameters:
+        - $ref: "#/components/parameters/inbox_id"
+        - $ref: "#/components/parameters/thread_id"
+      x-codeSamples:
+        - lang: shell
+          label: "cURL"
+          source: |
+            curl -X GET https://mailtrap.io/api/inbound/inboxes/{inbox_id}/threads/{id} \
+              -H 'Authorization: Bearer YOUR_API_KEY'
+      responses:
+        "200":
+          description: Thread details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ThreadResponse"
+              example:
+                data:
+                  id: "1700000000000123"
+                  subject: "Support request"
+                  message_count: 3
+                  size: 24576
+                  first_message_at: "2026-05-08T10:30:00.000Z"
+                  last_received_at: "2026-05-08T12:05:00.000Z"
+                  last_sent_at: "2026-05-08T11:40:00.000Z"
+                  last_activity_at: "2026-05-08T12:05:00.000Z"
+                  last_message_id: "1700000000000789"
+                  senders:
+                    - "customer@example.com"
+                    - "support-tickets-1a2b3c4d@inbound-mailtrap.io"
+                  recipients:
+                    - "support-tickets-1a2b3c4d@inbound-mailtrap.io"
+                    - "customer@example.com"
+                  attachments:
+                    - attachment_id: att-1
+                      filename: invoice.pdf
+                      size: 20480
+                      content_type: application/pdf
+                      content_disposition: attachment
+                      content_id: null
+                      download_url: "https://s3.amazonaws.com/inbound-mail/att-1?X-Amz-Signature=..."
+                      download_url_expires_at: "2026-05-08T13:05:00.000Z"
+                  messages:
+                    - visibility_status: available
+                      direction: inbound
+                      id: "1700000000000123"
+                      subject: "Support request"
+                      message_id: "<abc@customer.example>"
+                      in_reply_to: null
+                      references: []
+                      from: "customer@example.com"
+                      to:
+                        - "support-tickets-1a2b3c4d@inbound-mailtrap.io"
+                      cc: []
+                      bcc: []
+                      reply_to: null
+                      created_at: "2026-05-08T10:30:00.000Z"
+                      email_size: 8192
+                      text_body: "I need help with my order."
+                      html_body: "<p>I need help with my order.</p>"
+                      attachments: []
+                    - visibility_status: available
+                      direction: outbound
+                      id: "1a2b3c4d-5e6f-7a8b-9c0d-1e2f3a4b5c6d"
+                      subject: "Re: Support request"
+                      message_id: "<def@send.example>"
+                      in_reply_to: "<abc@customer.example>"
+                      references:
+                        - "<abc@customer.example>"
+                      from: "support-tickets-1a2b3c4d@inbound-mailtrap.io"
+                      to:
+                        - "customer@example.com"
+                      cc: []
+                      bcc: []
+                      reply_to: null
+                      created_at: "2026-05-08T11:40:00.000Z"
+                      email_size: 8192
+                      text_body: "Happy to help — could you share your order ID?"
+                      html_body: "<p>Happy to help — could you share your order ID?</p>"
+                      attachments: []
+                      delivery_status: delivered
+                      delivered_at: "2026-05-08T11:40:05.000Z"
+                      bounced_at: null
+                    - visibility_status: placeholder
+                      direction: inbound
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+    delete:
+      operationId: deleteInboundThread
+      summary: Delete a thread
+      description: |
+        Delete a thread. Inbound messages in the thread are removed; outbound
+        (sent) messages are preserved.
+      tags:
+        - threads
+      parameters:
+        - $ref: "#/components/parameters/inbox_id"
+        - $ref: "#/components/parameters/thread_id"
+      x-codeSamples:
+        - lang: shell
+          label: "cURL"
+          source: |
+            curl -X DELETE https://mailtrap.io/api/inbound/inboxes/{inbox_id}/threads/{id} \
+              -H 'Authorization: Bearer YOUR_API_KEY'
+      responses:
+        "204":
+          description: Thread deleted
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
 components:
   securitySchemes:
     HeaderAuth:
@@ -729,6 +965,15 @@ components:
       in: path
       required: true
       description: Inbound message ID
+      schema:
+        type: string
+        example: "1700000000000123"
+
+    thread_id:
+      name: id
+      in: path
+      required: true
+      description: Inbound thread ID
       schema:
         type: string
         example: "1700000000000123"
@@ -830,7 +1075,7 @@ components:
                 - string
                 - "null"
               format: uri
-              description: Presigned URL to download the attachment. Expires after one hour.
+              description: URL to download the attachment. Expires after one hour.
               example: "https://s3.amazonaws.com/inbound-mail/att-1?X-Amz-Signature=..."
             download_url_expires_at:
               type:
@@ -949,8 +1194,7 @@ components:
                 - "null"
               format: uri
               description: |
-                Presigned URL to download the raw `.eml` file. Expires after
-                one hour.
+                URL to download the raw `.eml` file. Expires after one hour.
               example: "https://s3.amazonaws.com/inbound-mail/raw.eml?X-Amz-Signature=..."
             raw_message_expires_at:
               type:
@@ -1131,6 +1375,263 @@ components:
             - type: array
               items:
                 type: string
+
+    ThreadSummary:
+      type: object
+      description: |
+        Summary of a thread. All aggregates are computed over the messages you
+        can still access (those within the plan's retention window).
+      properties:
+        id:
+          type: string
+          example: "1700000000000123"
+        subject:
+          type:
+            - string
+            - "null"
+          description: Subject of the thread's root message.
+          example: "Support request"
+        message_count:
+          type: integer
+          description: |
+            Number of accessible messages in the thread. Messages sent together
+            (reply-all fan-out) count once.
+          example: 3
+        size:
+          type: integer
+          description: Combined size of the accessible messages, in bytes.
+          example: 24576
+        first_message_at:
+          type: string
+          format: date-time
+          example: "2026-05-08T10:30:00.000Z"
+        last_received_at:
+          type:
+            - string
+            - "null"
+          format: date-time
+          description: When the most recent inbound message arrived, if any.
+          example: "2026-05-08T12:05:00.000Z"
+        last_sent_at:
+          type:
+            - string
+            - "null"
+          format: date-time
+          description: When the most recent outbound message was sent, if any.
+          example: "2026-05-08T11:40:00.000Z"
+        last_activity_at:
+          type: string
+          format: date-time
+          description: Timestamp of the most recent message in either direction.
+          example: "2026-05-08T12:05:00.000Z"
+        last_message_id:
+          type:
+            - string
+            - "null"
+          description: ID of the most recent accessible message in the thread.
+          example: "1700000000000789"
+        senders:
+          type: array
+          description: Distinct `from` addresses across the accessible messages.
+          items:
+            type: string
+          example:
+            - "customer@example.com"
+            - "support-tickets-1a2b3c4d@inbound-mailtrap.io"
+        recipients:
+          type: array
+          description: Distinct `to`/`cc`/`bcc` addresses across the accessible messages.
+          items:
+            type: string
+          example:
+            - "support-tickets-1a2b3c4d@inbound-mailtrap.io"
+            - "customer@example.com"
+        attachments:
+          type: array
+          description: Attachments across the accessible messages, with download URLs.
+          items:
+            $ref: "#/components/schemas/AttachmentWithDownloadUrl"
+
+    ThreadMessage:
+      type: object
+      description: |
+        A message in a thread. `placeholder` entries (outside the retention
+        window) carry only `visibility_status` and `direction`. `available`
+        entries add the full envelope, subject, RFC headers, bodies, and
+        attachments; `available` outbound entries additionally carry the
+        delivery lifecycle.
+      required:
+        - visibility_status
+        - direction
+      properties:
+        visibility_status:
+          type: string
+          enum:
+            - available
+            - placeholder
+          example: available
+        direction:
+          type: string
+          enum:
+            - inbound
+            - outbound
+          example: inbound
+        id:
+          type: string
+          description: |
+            For inbound messages, the Mailtrap object ID. For outbound messages,
+            the Email Sending API message UUID.
+          example: "1700000000000123"
+        subject:
+          type:
+            - string
+            - "null"
+          example: "Support request"
+        message_id:
+          type:
+            - string
+            - "null"
+          description: Value of the `Message-ID` header.
+          example: "<abc@customer.example>"
+        in_reply_to:
+          type:
+            - string
+            - "null"
+          example: null
+        references:
+          type: array
+          items:
+            type: string
+          example: []
+        from:
+          type:
+            - string
+            - "null"
+          example: "customer@example.com"
+        to:
+          type: array
+          items:
+            type: string
+          example:
+            - "support-tickets-1a2b3c4d@inbound-mailtrap.io"
+        cc:
+          type: array
+          items:
+            type: string
+          example: []
+        bcc:
+          type: array
+          items:
+            type: string
+          example: []
+        reply_to:
+          type:
+            - string
+            - "null"
+          example: null
+        created_at:
+          type: string
+          format: date-time
+          example: "2026-05-08T10:30:00.000Z"
+        email_size:
+          type: integer
+          description: Size of the message in bytes.
+          example: 8192
+        text_body:
+          type:
+            - string
+            - "null"
+          description: Decoded plain-text body. `null` when the message has no text part.
+          example: "I need help with my order."
+        html_body:
+          type:
+            - string
+            - "null"
+          description: Decoded HTML body. `null` when the message has no HTML part.
+          example: "<p>I need help with my order.</p>"
+        attachments:
+          type: array
+          items:
+            $ref: "#/components/schemas/AttachmentWithDownloadUrl"
+        delivery_status:
+          type:
+            - string
+            - "null"
+          description: Delivery status of the sent message. Outbound messages only.
+          example: delivered
+        delivered_at:
+          type:
+            - string
+            - "null"
+          format: date-time
+          description: When the message was delivered. Outbound messages only.
+          example: "2026-05-08T11:40:05.000Z"
+        bounced_at:
+          type:
+            - string
+            - "null"
+          format: date-time
+          description: When the message hard-bounced, if it did. Outbound messages only.
+          example: null
+
+    Thread:
+      allOf:
+        - $ref: "#/components/schemas/ThreadSummary"
+        - type: object
+          properties:
+            messages:
+              type: array
+              description: The thread's messages, ordered oldest first.
+              items:
+                $ref: "#/components/schemas/ThreadMessage"
+
+    ThreadPagination:
+      type: object
+      properties:
+        token:
+          type:
+            - string
+            - "null"
+          description: Cursor applied to the current page. `null` on the first page.
+          example: null
+        next_token:
+          type:
+            - string
+            - "null"
+          description: Cursor for the next page. `null` when there are no more results.
+          example: null
+        current_url:
+          type: string
+          format: uri
+          example: "https://mailtrap.io/api/inbound/inboxes/1/threads"
+        next_url:
+          type:
+            - string
+            - "null"
+          format: uri
+          description: URL of the next page. `null` when there are no more results.
+          example: null
+
+    ThreadsListResponse:
+      type: object
+      required:
+        - data
+        - pagination
+      properties:
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/ThreadSummary"
+        pagination:
+          $ref: "#/components/schemas/ThreadPagination"
+
+    ThreadResponse:
+      type: object
+      required:
+        - data
+      properties:
+        data:
+          $ref: "#/components/schemas/Thread"
 
     UnprocessableEntity:
       type: object
