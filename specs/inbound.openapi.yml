@@ -461,6 +461,7 @@ paths:
                     html_size: 512
                     text_size: 128
                     received_at: "2026-05-08T10:30:00.000Z"
+                    thread_id: "1700000000000124"
                     attachments:
                       - attachment_id: att-1
                         size: 1024
@@ -1174,6 +1175,14 @@ components:
           type: string
           format: date-time
           example: "2026-05-08T10:30:00.000Z"
+        thread_id:
+          type:
+            - string
+            - "null"
+          description: |
+            ID of the thread this message belongs to. Use it with the Threads
+            endpoints to fetch the full conversation.
+          example: "1700000000000124"
         attachments:
           type: array
           items:
