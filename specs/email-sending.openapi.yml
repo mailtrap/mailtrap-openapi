@@ -52,7 +52,7 @@ tags:
     x-page-description: Manage webhook endpoints
     description: |
       Configure webhooks to receive real-time notifications about events in
-      your Mailtrap account. For a complete guide, see 
+      your Mailtrap account. For a complete guide, see
       [Webhooks](https://docs.mailtrap.io/email-api-smtp/advanced/webhooks).
 paths:
   /api/domains:
@@ -1684,6 +1684,7 @@ paths:
                         - email_sending
                         - campaigns
                         - audit_log
+                        - inbound_receiving
                       example: email_sending
                     active:
                       type: boolean
@@ -1732,6 +1733,13 @@ paths:
                         domains if omitted. Applicable only for `email_sending`
                         and `campaigns` webhooks.
                       example: 435
+                    inbound_inbox_id:
+                      type: integer
+                      description: |
+                        ID of the inbound inbox the webhook is linked to.
+                        Required for `inbound_receiving` webhooks; must not be
+                        set for any other webhook type.
+                      example: 1
       responses:
         '200':
           description: Webhook created successfully
@@ -1917,6 +1925,12 @@ paths:
                         - delivery
                         - bounce
                         - unsubscribe
+                    inbound_inbox_id:
+                      type: integer
+                      description: |
+                        ID of the inbound inbox the webhook is linked to.
+                        Applicable only for `inbound_receiving` webhooks.
+                      example: 1
       responses:
         '200':
           description: Webhook updated successfully
@@ -2542,6 +2556,7 @@ components:
             - email_sending
             - campaigns
             - audit_log
+            - inbound_receiving
           example: email_sending
         payload_format:
           type: string
@@ -2570,6 +2585,14 @@ components:
             omitted. Applicable only for `email_sending` and `campaigns`
             webhooks.
           example: 435
+        inbound_inbox_id:
+          type:
+            - integer
+            - 'null'
+          description: |
+            ID of the inbound inbox the webhook is linked to. Applicable only
+            for `inbound_receiving` webhooks.
+          example: 1
         event_types:
           type: array
           description: |
