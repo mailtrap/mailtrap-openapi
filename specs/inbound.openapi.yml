@@ -1491,6 +1491,16 @@ components:
             For inbound messages, the Mailtrap object ID. For outbound messages,
             the Email Sending API message UUID.
           example: "1700000000000123"
+        message_group_id:
+          type:
+            - string
+            - "null"
+          description: |
+            Groups the copies of one logical message that was fanned out to
+            multiple recipients (e.g. a reply-all). Messages sharing a
+            `message_group_id` count once toward the thread's `message_count`.
+            `null` for a standalone message.
+          example: null
         subject:
           type:
             - string
