@@ -1,0 +1,27 @@
+specs/email-sending.openapi.yml
+  s_92ccbbde00fa8c::t_1acf3ced5be973 574-575,596
+  s_92ccbbde00fa8c::t_c97a713142111a 2236-2243
+  s_92ccbbde00fa8c::t_cd9ae882f0bce9 2323-2328
+  s_92ccbbde00fa8c::t_077620e117827b 2304-2305
+specs/inbound.openapi.yml
+  s_92ccbbde00fa8c::t_45f04d19dc20d0 245,248-249
+  s_92ccbbde00fa8c::t_5bfc70379efaeb 261-267,285,293-307
+  s_92ccbbde00fa8c::t_1c9404b9c12cbf 622-625,627-632,644-660
+  s_92ccbbde00fa8c::t_24c04b529325e4 661
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "a0ee7435d55a88500eb5eda00a2306414918770f",
+  "prompts": {},
+  "sessions": {
+    "s_92ccbbde00fa8c": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "b484460c-bf91-4b3a-bd22-b264904502e5",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Piotr Bednarz <piotr.bednarz@railsware.com>"
+    }
+  }
+}
