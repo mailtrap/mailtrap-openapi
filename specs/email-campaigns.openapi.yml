@@ -521,59 +521,7 @@ components:
         reply_to:
           $ref: "#/components/schemas/ReplyTo"
         template_attributes:
-          type: object
-          description: |-
-            Inline email template — the campaign's subject and design. Each campaign has exactly
-            one template, created together with it.
-
-            **On create**, a new template is built from these fields. `subject` is required —
-            omitting it returns `422` with `{ "errors": { "template.subject": ["can't be blank"] } }`.
-            Any `id` is ignored.
-
-            **On update**, the campaign's template is always edited in place.
-            Updates are partial: only the sub-fields you provide change; sub-fields that
-            are omitted or sent as `null` keep their current value.
-
-            `body_html` holds the campaign design. It is optional while the campaign is a draft but
-            **required before the campaign can be scheduled or started** via the `schedule`/`start`
-            action endpoints (those return `422` (`"Campaign design can't be blank"`) when it is
-            missing). Add an unsubscribe link by placing the `__unsubscribe_url__` placeholder in
-            an anchor `href`, and personalize content with merge tags written as `{{tag_name}}`.
-          properties:
-            subject:
-              type: string
-              maxLength: 255
-              description: |-
-                Email subject line. Required when creating a campaign.
-                Supports merge tags, e.g. `Hi {{first_name}}`.
-              example: "Spring is here — 30% off"
-            body_html:
-              type: string
-              maxLength: 10000000
-              description: |-
-                HTML body of the email (the design). Optional for a draft; required before the
-                campaign can be scheduled or started. Include an unsubscribe link via an anchor
-                whose `href` contains the `__unsubscribe_url__` placeholder — a design without one
-                is accepted, but flagged with an "Unsubscribe link is missing" warning in the
-                Mailtrap UI. Supports `{{tag_name}}` merge tags.
-              example: '<html><body><h1>Hi {{first_name}}!</h1><p><a href="__unsubscribe_url__">Unsubscribe</a></p></body></html>'
-            body_text:
-              type: [string, "null"]
-              maxLength: 10000000
-              description: |-
-                Optional plain-text alternative of the email body. Supports the same
-                `__unsubscribe_url__` placeholder and `{{tag_name}}` merge tags as `body_html`.
-              example: "Hi {{first_name}}! Unsubscribe: __unsubscribe_url__"
-            merge_tags:
-              type: array
-              description: |-
-                Bare names of the merge tags referenced in the subject/body, without the `{{ }}`
-                delimiters — e.g. `["first_name"]` when the content contains `{{first_name}}`.
-                Lets Mailtrap track which contact fields the campaign uses. Replaced as a whole
-                when provided; defaults to an empty array.
-              items:
-                type: string
-              example: ["first_name"]
+          $ref: "#/components/schemas/TemplateAttributes"
         delivery_mode:
           type: string
           description: |-
@@ -651,6 +599,49 @@ components:
         domain:
           type: string
           example: acme.com
+    TemplateAttributes:
+      type: object
+      description: |-
+        Inline email template — the campaign's subject and design. Each campaign has exactly
+        one template, created together with it using the `template_attributes` fields.
+        On update, the campaign's template is always edited in place.
+        Updates are partial: only the sub-fields you provide change; sub-fields that
+        are omitted or sent as `null` keep their current value.
+      properties:
+        subject:
+          type: string
+          maxLength: 255
+          description: |-
+            Email subject line. Required when creating a campaign.
+            Supports merge tags, e.g. `Hi {{first_name}}`.
+          example: "Spring is here — 30% off"
+        body_html:
+          type: string
+          maxLength: 10000000
+          description: |-
+            HTML body of the email (the design). Optional for a draft; required before the
+            campaign can be scheduled or started. Include an unsubscribe link via an anchor
+            whose `href` contains the `__unsubscribe_url__` placeholder — a design without one
+            is accepted, but flagged with an "Unsubscribe link is missing" warning in the
+            Mailtrap UI. Supports `{{tag_name}}` merge tags.
+          example: '<html><body><h1>Hi {{first_name}}!</h1><p><a href="__unsubscribe_url__">Unsubscribe</a></p></body></html>'
+        body_text:
+          type: [string, "null"]
+          maxLength: 10000000
+          description: |-
+            Optional plain-text alternative of the email body. Supports the same
+            `__unsubscribe_url__` placeholder and `{{tag_name}}` merge tags as `body_html`.
+          example: "Hi {{first_name}}! Unsubscribe: __unsubscribe_url__"
+        merge_tags:
+          type: array
+          description: |-
+            Bare names of the merge tags referenced in the subject/body, without the `{{ }}`
+            delimiters — e.g. `["first_name"]` when the content contains `{{first_name}}`.
+            Lets Mailtrap track which contact fields the campaign uses. Replaced as a whole
+            when provided; defaults to an empty array.
+          items:
+            type: string
+          example: ["first_name"]
     EmailCampaign:
       type: object
       properties:
