@@ -1,0 +1,41 @@
+specs/email-sending.openapi.yml
+  s_4efb6148df9dd3::t_58f04c57eef421 6
+  s_4efb6148df9dd3::t_28f72992eacae1 2734-2735,2737
+  s_4efb6148df9dd3::t_ea53d94373aa6e 2461
+  s_4efb6148df9dd3::t_033feb3f4d8fb1 3813-3827
+  s_4efb6148df9dd3::t_56aa4eccacdd63 3807-3812,3828-3844
+  s_4efb6148df9dd3::t_4fb34192bafc9d 1303-1306,1312-1369,1372-1388,1391-1397,1399-1404,1409-1450
+  s_4efb6148df9dd3::t_173a4b06a0fb1b 45
+  s_4efb6148df9dd3::t_17afbbc6fbb8de 1308
+  s_4efb6148df9dd3::t_a20dc55bbb6c06 2194-2203
+  s_4efb6148df9dd3::t_41899d32cddacf 2736
+  s_4efb6148df9dd3::t_b81bf047ef68ae 1370,1389-1390,1398,1405-1406,1408
+  s_4efb6148df9dd3::t_a0da6832ee96e4 40-44
+  s_4efb6148df9dd3::t_f015e65c4e3dde 1371
+  s_4efb6148df9dd3::t_b030a3ace40e6d 46
+  s_4efb6148df9dd3::t_8f1ce267d01214 19
+  s_4efb6148df9dd3::t_38e00755c9b905 1307,1309-1310
+  s_4efb6148df9dd3::t_b1a227afea7e15 1407
+  s_4efb6148df9dd3::t_65c1f8a4b47771 581
+  s_4efb6148df9dd3::t_23aa0624783b27 2718-2733,2738
+  s_4efb6148df9dd3::t_1bc22482c0efdf 602
+  s_4efb6148df9dd3::t_8e64744e639af0 2389-2393
+  s_4efb6148df9dd3::t_f425ed2c333630 2481-2485
+  s_4efb6148df9dd3::t_81f0aa3deaf0bd 1311
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.14",
+  "base_commit_sha": "2a395ff47a92c5df032a082770c8ee19fad897f9",
+  "prompts": {},
+  "sessions": {
+    "s_4efb6148df9dd3": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "c052c781-4db5-4acf-9353-eb9cdb885aa9",
+        "model": "default"
+      },
+      "human_author": null
+    }
+  }
+}
