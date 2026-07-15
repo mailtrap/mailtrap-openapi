@@ -357,9 +357,8 @@ paths:
       operationId: resetEmailCampaign
       summary: Reset an email campaign to draft
       description: |-
-        Resets a campaign back to the `draft` state. Allowed from states that permit a transition
-        back to `draft` (e.g. `scheduled`, `failed`); resetting from a state that does not allow it
-        (e.g. a sending or terminal state) returns `422`.
+        Resets a campaign back to the `draft` state. Allowed only from the `scheduled` state;
+        resetting from any other state (e.g. a sending or terminal state) returns `422`.
       tags:
         - Email Campaigns
       parameters:
