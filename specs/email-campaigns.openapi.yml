@@ -1,0 +1,1031 @@
+openapi: 3.1.0
+info:
+  description: Manage email marketing campaigns and retrieve their performance statistics
+  version: 2.0.0
+  title: Email Campaigns
+  contact:
+    name: Mailtrap
+    url: "https://docs.mailtrap.io"
+    email: support@mailtrap.io
+  license:
+    name: Creative Commons Attribution-ShareAlike 4.0 International (CC BY-SA 4.0)
+    url: "https://creativecommons.org/licenses/by-sa/4.0/"
+security:
+  - HeaderAuth: []
+  - BearerAuth: []
+servers:
+  - description: Mailtrap API
+    url: "https://mailtrap.io"
+tags:
+  - name: Email Campaigns
+    x-page-title: Email Campaigns
+    x-page-description: List, create, retrieve, and delete email campaigns
+    description: Manage email campaigns
+
+  - name: Campaign Stats
+    x-page-title: Campaign Stats
+    x-page-description: Retrieve aggregated performance metrics for a campaign
+    description: Retrieve campaign statistics
+paths:
+  "/api/email_campaigns":
+    get:
+      operationId: getEmailCampaigns
+      summary: Get a list of email campaigns
+      description: |-
+        Returns a paginated list of the account's email campaigns, newest first.
+
+        Pagination is page-token based. Use the `token` query parameter together with the
+        `token`, `next_token`, and `prev_token` values returned in the `pagination` object to
+        navigate between pages.
+      tags:
+        - Email Campaigns
+      parameters:
+        - $ref: "#/components/parameters/token"
+        - $ref: "#/components/parameters/per_page"
+        - $ref: "#/components/parameters/search"
+      responses:
+        "200":
+          $ref: "#/components/responses/EmailCampaignsResponse"
+        "401":
+          $ref: "#/components/responses/UNAUTHENTICATED"
+        "403":
+          $ref: "#/components/responses/PERMISSION_DENIED"
+        "429":
+          $ref: "#/components/responses/RATE_LIMITED"
+      x-codeSamples:
+        - lang: shell
+          label: "cURL"
+          source: |
+            curl -X GET "https://mailtrap.io/api/email_campaigns?per_page=50&token=1" \
+              -H 'Api-Token: YOUR_API_TOKEN'
+    post:
+      operationId: createEmailCampaign
+      summary: Create an email campaign
+      description: |-
+        Creates a new email campaign. The campaign must reference an existing sending domain via
+        `mailsend_domain_id`, and include a template `subject` within `template_attributes`.
+
+        Create accepts the same fields as update — pick the audience with
+        `contact_list_ids`/`contact_segment_ids`, set delivery options, and add the design via
+        `template_attributes.body_html`. The campaign is always created in the `draft` state;
+        scheduling and starting are separate actions (see the `schedule` and `start` endpoints).
+      tags:
+        - Email Campaigns
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/EmailCampaignCreateRequest"
+      responses:
+        "201":
+          $ref: "#/components/responses/EmailCampaignResponse"
+        "401":
+          $ref: "#/components/responses/UNAUTHENTICATED"
+        "403":
+          $ref: "#/components/responses/PERMISSION_DENIED"
+        "422":
+          $ref: "#/components/responses/VALIDATION_ERROR"
+        "429":
+          $ref: "#/components/responses/RATE_LIMITED"
+      x-codeSamples:
+        - lang: shell
+          label: "cURL — create a draft"
+          source: |
+            curl -X POST "https://mailtrap.io/api/email_campaigns" \
+              -H 'Api-Token: YOUR_API_TOKEN' \
+              -H 'Content-Type: application/json' \
+              -d '{
+                "name": "Spring Sale",
+                "mailsend_domain_id": "d2313359-acb4-4b87-bce6-f5774f6a1e37",
+                "from_display_name": "Acme Marketing",
+                "from_local_part": "news",
+                "reply_to": {
+                  "display_name": "Acme Support",
+                  "local_part": "support",
+                  "domain": "acme.com"
+                },
+                "template_attributes": { "subject": "Spring is here — 30% off" }
+              }'
+  "/api/email_campaigns/{email_campaign_id}":
+    get:
+      operationId: getEmailCampaign
+      summary: Get an email campaign by ID
+      description: Returns a single email campaign.
+      tags:
+        - Email Campaigns
+      parameters:
+        - $ref: "#/components/parameters/email_campaign_id"
+      responses:
+        "200":
+          $ref: "#/components/responses/EmailCampaignResponse"
+        "401":
+          $ref: "#/components/responses/UNAUTHENTICATED"
+        "403":
+          $ref: "#/components/responses/PERMISSION_DENIED"
+        "404":
+          $ref: "#/components/responses/NOT_FOUND"
+        "429":
+          $ref: "#/components/responses/RATE_LIMITED"
+      x-codeSamples:
+        - lang: shell
+          label: "cURL"
+          source: |
+            curl -X GET "https://mailtrap.io/api/email_campaigns/4567" \
+              -H 'Api-Token: YOUR_API_TOKEN'
+    patch:
+      operationId: updateEmailCampaign
+      summary: Update an email campaign
+      description: |-
+        Updates an existing `draft` campaign. Only the provided attributes are changed. To edit the
+        template (subject or design), pass `template_attributes` — the campaign's template is
+        always edited in place, and only the template sub-fields you provide change (see the
+        `template_attributes` schema for the partial-update rules).
+
+        Update accepts the same fields as create, including the audience
+        (`contact_list_ids`/`contact_segment_ids`). The typical flow is to create a draft, add its
+        design and audience over one or more updates, then schedule or start it via the dedicated
+        `schedule`/`start` action endpoints.
+
+        Only `draft` campaigns can be updated — editing a campaign that is already scheduled/sending
+        returns `422`.
+      tags:
+        - Email Campaigns
+      parameters:
+        - $ref: "#/components/parameters/email_campaign_id"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/EmailCampaignUpdateRequest"
+      responses:
+        "200":
+          $ref: "#/components/responses/EmailCampaignResponse"
+        "401":
+          $ref: "#/components/responses/UNAUTHENTICATED"
+        "403":
+          $ref: "#/components/responses/PERMISSION_DENIED"
+        "404":
+          $ref: "#/components/responses/NOT_FOUND"
+        "422":
+          $ref: "#/components/responses/VALIDATION_ERROR"
+        "429":
+          $ref: "#/components/responses/RATE_LIMITED"
+      x-codeSamples:
+        - lang: shell
+          label: "cURL — edit a draft (subject + design)"
+          source: |
+            curl -X PATCH "https://mailtrap.io/api/email_campaigns/4567" \
+              -H 'Api-Token: YOUR_API_TOKEN' \
+              -H 'Content-Type: application/json' \
+              -d '{
+                "name": "Spring Sale (updated)",
+                "template_attributes": {
+                  "subject": "New subject",
+                  "body_html": "<html><body><h1>Hi {{first_name}}!</h1><p><a href=\"__unsubscribe_url__\">Unsubscribe</a></p></body></html>"
+                }
+              }'
+    delete:
+      operationId: deleteEmailCampaign
+      summary: Delete an email campaign
+      description: |-
+        Soft-deletes an email campaign. The campaign must not be in a sending state.
+        Returns `204 No Content` on success.
+      tags:
+        - Email Campaigns
+      parameters:
+        - $ref: "#/components/parameters/email_campaign_id"
+      responses:
+        "204":
+          description: The email campaign was deleted. No response body.
+        "401":
+          $ref: "#/components/responses/UNAUTHENTICATED"
+        "403":
+          $ref: "#/components/responses/PERMISSION_DENIED"
+        "404":
+          $ref: "#/components/responses/NOT_FOUND"
+        "422":
+          $ref: "#/components/responses/VALIDATION_ERROR"
+        "429":
+          $ref: "#/components/responses/RATE_LIMITED"
+      x-codeSamples:
+        - lang: shell
+          label: "cURL"
+          source: |
+            curl -X DELETE "https://mailtrap.io/api/email_campaigns/4567" \
+              -H 'Api-Token: YOUR_API_TOKEN'
+  "/api/email_campaigns/{email_campaign_id}/start":
+    post:
+      operationId: startEmailCampaign
+      summary: Start an email campaign
+      description: |-
+        Starts sending a `draft` campaign immediately. Runs full sending validation (the template
+        must have a `body_html` design, the audience and verified sending domain must be set,
+        billing within limits); on failure the request returns `422` and the campaign stays a
+        `draft`. The campaign must be in the `draft` state — starting from any other state returns
+        `422`.
+      tags:
+        - Email Campaigns
+      parameters:
+        - $ref: "#/components/parameters/email_campaign_id"
+      responses:
+        "200":
+          $ref: "#/components/responses/EmailCampaignResponse"
+        "401":
+          $ref: "#/components/responses/UNAUTHENTICATED"
+        "403":
+          $ref: "#/components/responses/PERMISSION_DENIED"
+        "404":
+          $ref: "#/components/responses/NOT_FOUND"
+        "422":
+          $ref: "#/components/responses/ACTION_VALIDATION_ERROR"
+        "429":
+          $ref: "#/components/responses/RATE_LIMITED"
+      x-codeSamples:
+        - lang: shell
+          label: "cURL"
+          source: |
+            curl -X POST "https://mailtrap.io/api/email_campaigns/4567/start" \
+              -H 'Api-Token: YOUR_API_TOKEN'
+  "/api/email_campaigns/{email_campaign_id}/schedule":
+    post:
+      operationId: scheduleEmailCampaign
+      summary: Schedule an email campaign
+      description: |-
+        Schedules a `draft` campaign to start sending at a future time. Runs full sending validation
+        (the template must have a `body_html` design, the audience and verified sending domain must
+        be set, billing within limits); on failure the request returns `422` and the campaign stays
+        a `draft`. The campaign must be in the `draft` state — scheduling from any other state
+        returns `422`. After scheduling, the time is reported back in
+        `current_state_metadata.scheduled_at`.
+      tags:
+        - Email Campaigns
+      parameters:
+        - $ref: "#/components/parameters/email_campaign_id"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/EmailCampaignScheduleRequest"
+      responses:
+        "200":
+          $ref: "#/components/responses/EmailCampaignResponse"
+        "401":
+          $ref: "#/components/responses/UNAUTHENTICATED"
+        "403":
+          $ref: "#/components/responses/PERMISSION_DENIED"
+        "404":
+          $ref: "#/components/responses/NOT_FOUND"
+        "422":
+          $ref: "#/components/responses/ACTION_VALIDATION_ERROR"
+        "429":
+          $ref: "#/components/responses/RATE_LIMITED"
+      x-codeSamples:
+        - lang: shell
+          label: "cURL"
+          source: |
+            curl -X POST "https://mailtrap.io/api/email_campaigns/4567/schedule" \
+              -H 'Api-Token: YOUR_API_TOKEN' \
+              -H 'Content-Type: application/json' \
+              -d '{ "datetime": "2026-06-01T09:00:00.000Z" }'
+  "/api/email_campaigns/{email_campaign_id}/cancel":
+    post:
+      operationId: cancelEmailCampaign
+      summary: Cancel a scheduled email campaign
+      description: |-
+        Cancels a scheduled campaign, removing the pending send job and returning the campaign to
+        the `draft` state. The campaign must be in the `scheduled` state — cancelling from any other
+        state returns `422` (`"Campaign is not scheduled"`).
+      tags:
+        - Email Campaigns
+      parameters:
+        - $ref: "#/components/parameters/email_campaign_id"
+      responses:
+        "200":
+          $ref: "#/components/responses/EmailCampaignResponse"
+        "401":
+          $ref: "#/components/responses/UNAUTHENTICATED"
+        "403":
+          $ref: "#/components/responses/PERMISSION_DENIED"
+        "404":
+          $ref: "#/components/responses/NOT_FOUND"
+        "422":
+          $ref: "#/components/responses/ACTION_VALIDATION_ERROR"
+        "429":
+          $ref: "#/components/responses/RATE_LIMITED"
+      x-codeSamples:
+        - lang: shell
+          label: "cURL"
+          source: |
+            curl -X POST "https://mailtrap.io/api/email_campaigns/4567/cancel" \
+              -H 'Api-Token: YOUR_API_TOKEN'
+  "/api/email_campaigns/{email_campaign_id}/terminate":
+    post:
+      operationId: terminateEmailCampaign
+      summary: Terminate a sending email campaign
+      description: |-
+        Terminates a campaign that is currently sending, aborting the in-flight send. The campaign
+        must be in a sending state (`started`, `queued`, or `paused`) — terminating from any other
+        state returns `422`.
+      tags:
+        - Email Campaigns
+      parameters:
+        - $ref: "#/components/parameters/email_campaign_id"
+      responses:
+        "200":
+          $ref: "#/components/responses/EmailCampaignResponse"
+        "401":
+          $ref: "#/components/responses/UNAUTHENTICATED"
+        "403":
+          $ref: "#/components/responses/PERMISSION_DENIED"
+        "404":
+          $ref: "#/components/responses/NOT_FOUND"
+        "422":
+          $ref: "#/components/responses/ACTION_VALIDATION_ERROR"
+        "429":
+          $ref: "#/components/responses/RATE_LIMITED"
+      x-codeSamples:
+        - lang: shell
+          label: "cURL"
+          source: |
+            curl -X POST "https://mailtrap.io/api/email_campaigns/4567/terminate" \
+              -H 'Api-Token: YOUR_API_TOKEN'
+  "/api/email_campaigns/{email_campaign_id}/reset":
+    post:
+      operationId: resetEmailCampaign
+      summary: Reset an email campaign to draft
+      description: |-
+        Resets a campaign back to the `draft` state. Allowed only from the `scheduled` state;
+        resetting from any other state (e.g. a sending or terminal state) returns `422`.
+      tags:
+        - Email Campaigns
+      parameters:
+        - $ref: "#/components/parameters/email_campaign_id"
+      responses:
+        "200":
+          $ref: "#/components/responses/EmailCampaignResponse"
+        "401":
+          $ref: "#/components/responses/UNAUTHENTICATED"
+        "403":
+          $ref: "#/components/responses/PERMISSION_DENIED"
+        "404":
+          $ref: "#/components/responses/NOT_FOUND"
+        "422":
+          $ref: "#/components/responses/ACTION_VALIDATION_ERROR"
+        "429":
+          $ref: "#/components/responses/RATE_LIMITED"
+      x-codeSamples:
+        - lang: shell
+          label: "cURL"
+          source: |
+            curl -X POST "https://mailtrap.io/api/email_campaigns/4567/reset" \
+              -H 'Api-Token: YOUR_API_TOKEN'
+  "/api/email_campaigns/{email_campaign_id}/stats":
+    get:
+      operationId: getEmailCampaignStats
+      summary: Get email campaign statistics
+      description: |-
+        Returns aggregated performance metrics for a single campaign: counts and rates for
+        deliveries, opens, clicks, bounces, spam complaints, and unsubscriptions.
+
+        If the campaign has never been started, all counts and rates are returned as `0`.
+        Statistics are aggregated asynchronously and may be slightly delayed for recently sent
+        campaigns.
+
+        By default, statistics are aggregated over the whole period since the campaign was last
+        started. Use the optional `start_date` and `end_date` query parameters to narrow the
+        aggregation window.
+      tags:
+        - Campaign Stats
+      parameters:
+        - $ref: "#/components/parameters/email_campaign_id"
+        - $ref: "#/components/parameters/start_date"
+        - $ref: "#/components/parameters/end_date"
+      responses:
+        "200":
+          $ref: "#/components/responses/EmailCampaignStatsResponse"
+        "401":
+          $ref: "#/components/responses/UNAUTHENTICATED"
+        "403":
+          $ref: "#/components/responses/PERMISSION_DENIED"
+        "404":
+          $ref: "#/components/responses/NOT_FOUND"
+        "429":
+          $ref: "#/components/responses/RATE_LIMITED"
+      x-codeSamples:
+        - lang: shell
+          label: "cURL"
+          source: |
+            curl -X GET "https://mailtrap.io/api/email_campaigns/4567/stats?start_date=2026-05-01&end_date=2026-05-31" \
+              -H 'Api-Token: YOUR_API_TOKEN'
+components:
+  securitySchemes:
+    HeaderAuth:
+      type: apiKey
+      description: Pass the API token in the Api-Token header
+      in: header
+      name: Api-Token
+    BearerAuth:
+      type: http
+      description: Pass the API token as a Bearer token in the Authorization header
+      scheme: bearer
+  parameters:
+    email_campaign_id:
+      name: email_campaign_id
+      description: Unique identifier of the email campaign
+      in: path
+      required: true
+      schema:
+        type: integer
+        format: int64
+        minimum: 1
+        example: 4567
+    token:
+      name: token
+      description: Page number to retrieve (page-token pagination). Defaults to `1`.
+      in: query
+      required: false
+      schema:
+        type: integer
+        minimum: 1
+        default: 1
+        example: 1
+    per_page:
+      name: per_page
+      description: Number of campaigns per page. Defaults to `50`, maximum `100`.
+      in: query
+      required: false
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 100
+        default: 50
+        example: 50
+    search:
+      name: search
+      description: Filter campaigns by name (case-insensitive partial match).
+      in: query
+      required: false
+      schema:
+        type: string
+        example: spring
+    start_date:
+      name: start_date
+      description: |-
+        Start of the aggregation window (inclusive), in `YYYY-MM-DD` format. Defaults to the day
+        the campaign was last started. Values earlier than the account creation date are clamped
+        to it.
+      in: query
+      required: false
+      schema:
+        type: string
+        format: date
+        example: "2026-05-01"
+    end_date:
+      name: end_date
+      description: End of the aggregation window (inclusive), in `YYYY-MM-DD` format. Defaults to the current date.
+      in: query
+      required: false
+      schema:
+        type: string
+        format: date
+        example: "2026-05-31"
+  schemas:
+    EmailCampaignWritableAttributes:
+      type: object
+      description: |-
+        Campaign attributes. Both create and update accept the same fields. Create and update only
+        manage attributes and audience — the campaign always stays in `draft`; scheduling and
+        starting are performed via the dedicated lifecycle action endpoints.
+      properties:
+        name:
+          type: string
+          description: Campaign name.
+          example: Spring Sale
+        mailsend_domain_id:
+          type: string
+          format: uuid
+          description: UUID of the verified sending domain used for the campaign.
+          example: "d2313359-acb4-4b87-bce6-f5774f6a1e37"
+        from_display_name:
+          type: string
+          description: Display name shown in the From header.
+          example: Acme Marketing
+        from_local_part:
+          type: string
+          description: Local part (before the @) of the From address.
+          example: news
+        reply_to:
+          $ref: "#/components/schemas/ReplyTo"
+        template_attributes:
+          $ref: "#/components/schemas/TemplateAttributes"
+        delivery_mode:
+          type: string
+          description: |-
+            How the campaign is delivered. `rapid` sends as fast as possible; `gradual` throttles
+            sending to `delivery_options.emails_per_hour`.
+          example: rapid
+          enum:
+            - rapid
+            - gradual
+        delivery_options:
+          type: object
+          description: Delivery throttling options. Applies when `delivery_mode` is `gradual`.
+          properties:
+            emails_per_hour:
+              type: [integer, "null"]
+              example: 1000
+        contact_list_ids:
+          type: array
+          description: |-
+            IDs of contact lists to send to. Treated as the full set of included lists — lists not
+            listed are removed. Combine with `contact_segment_ids` to target both.
+          items:
+            type: integer
+            format: int64
+          example: [55, 56]
+        contact_segment_ids:
+          type: array
+          description: IDs of contact segments to send to. Treated as the full set of included segments.
+          items:
+            type: integer
+            format: int64
+          example: [12]
+    EmailCampaignCreateRequest:
+      description: Campaign attributes. `name`, `mailsend_domain_id`, `from_local_part` and a template `subject` are required.
+      allOf:
+        - $ref: "#/components/schemas/EmailCampaignWritableAttributes"
+        - type: object
+          required:
+            - name
+            - mailsend_domain_id
+            - from_local_part
+            - template_attributes
+          properties:
+            template_attributes:
+              type: object
+              required:
+                - subject
+    EmailCampaignUpdateRequest:
+      description: Attributes to update. All fields optional; only provided fields change.
+      allOf:
+        - $ref: "#/components/schemas/EmailCampaignWritableAttributes"
+    EmailCampaignScheduleRequest:
+      type: object
+      description: When to start sending the campaign.
+      required:
+        - datetime
+      properties:
+        datetime:
+          type: string
+          format: date-time
+          description: |-
+            When to send the campaign (ISO 8601). Must be in the future and no more than 1 month
+            ahead, otherwise the request is rejected with `422`.
+          example: "2026-06-01T09:00:00.000Z"
+    ReplyTo:
+      type: object
+      description: Reply-To address parts.
+      properties:
+        display_name:
+          type: string
+          example: Acme Support
+        local_part:
+          type: string
+          example: support
+        domain:
+          type: string
+          example: acme.com
+    TemplateAttributes:
+      type: object
+      description: |-
+        Inline email template — the campaign's subject and design. Each campaign has exactly
+        one template, created together with it using the `template_attributes` fields.
+        On update, the campaign's template is always edited in place.
+        Updates are partial: only the sub-fields you provide change; sub-fields that
+        are omitted or sent as `null` keep their current value.
+      properties:
+        subject:
+          type: string
+          maxLength: 255
+          description: |-
+            Email subject line. Required when creating a campaign.
+            Supports merge tags, e.g. `Hi {{first_name}}`.
+          example: "Spring is here — 30% off"
+        body_html:
+          type: string
+          maxLength: 10000000
+          description: |-
+            HTML body of the email (the design). Optional for a draft; required before the
+            campaign can be scheduled or started. Include an unsubscribe link via an anchor
+            whose `href` contains the `__unsubscribe_url__` placeholder — a design without one
+            is accepted, but flagged with an "Unsubscribe link is missing" warning in the
+            Mailtrap UI. Supports `{{tag_name}}` merge tags.
+          example: '<html><body><h1>Hi {{first_name}}!</h1><p><a href="__unsubscribe_url__">Unsubscribe</a></p></body></html>'
+        body_text:
+          type: [string, "null"]
+          maxLength: 10000000
+          description: |-
+            Optional plain-text alternative of the email body. Supports the same
+            `__unsubscribe_url__` placeholder and `{{tag_name}}` merge tags as `body_html`.
+          example: "Hi {{first_name}}! Unsubscribe: __unsubscribe_url__"
+        merge_tags:
+          type: array
+          description: |-
+            Bare names of the merge tags referenced in the subject/body, without the `{{ }}`
+            delimiters — e.g. `["first_name"]` when the content contains `{{first_name}}`.
+            Lets Mailtrap track which contact fields the campaign uses. Replaced as a whole
+            when provided; defaults to an empty array.
+          items:
+            type: string
+          example: ["first_name"]
+    EmailCampaign:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          example: 4567
+        type:
+          type: string
+          description: |-
+            Resource type discriminator. `ContactsEmailCampaign` targets contact lists/segments;
+            `RecipientsEmailCampaign` targets an uploaded recipients list.
+          example: ContactsEmailCampaign
+          enum:
+            - ContactsEmailCampaign
+            - RecipientsEmailCampaign
+        mailsend_domain_id:
+          type: string
+          format: uuid
+          example: "d2313359-acb4-4b87-bce6-f5774f6a1e37"
+        mailsend_domain_name:
+          type: string
+          example: acme.com
+        name:
+          type: string
+          example: Spring Sale
+        from_local_part:
+          type: string
+          example: news
+        from_display_name:
+          type: string
+          example: Acme Marketing
+        reply_to:
+          $ref: "#/components/schemas/ReplyTo"
+        current_state:
+          type: string
+          description: Current state of the campaign in its lifecycle.
+          example: draft
+          enum:
+            - draft
+            - scheduled
+            - started
+            - queued
+            - paused
+            - terminating
+            - under_review
+            - finished
+            - failed
+            - failed_immediately
+        current_state_metadata:
+          type: object
+          description: Metadata about the most recent state transition. Which keys are present depends on the state.
+          properties:
+            reason:
+              type: string
+            error:
+              type: string
+              description: Last error message recorded for a failed campaign.
+            errors:
+              type: array
+              description: Per-recipient errors recorded when sending failed.
+              items:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Invalid recipient address
+                  rcpt_index:
+                    type: integer
+                    example: 0
+            scheduled_at:
+              type: string
+              format: date-time
+              description: When the campaign is scheduled to send (ISO 8601). Present in the `scheduled` state.
+              example: "2026-06-01T09:00:00.000Z"
+        created_at:
+          type: string
+          format: date-time
+          example: "2026-05-01T10:15:00.000Z"
+        updated_at:
+          type: string
+          format: date-time
+          example: "2026-05-02T09:00:00.000Z"
+        last_started_at:
+          type: [string, "null"]
+          format: date-time
+          example: "2026-05-03T12:00:00.000Z"
+        last_started_at_date:
+          type: string
+          format: date
+          description: Date the campaign was last started. Present only when the campaign has been started.
+          example: "2026-05-03"
+        recipient_total_count:
+          type: [integer, "null"]
+          description: Total number of recipients targeted by the campaign. `null` until the audience is resolved.
+          example: 1500
+        contact_list_ids:
+          type: array
+          description: IDs of the contact lists included in the campaign's audience.
+          items:
+            type: integer
+            format: int64
+          example: [55, 56]
+        contact_segment_ids:
+          type: array
+          description: IDs of the contact segments included in the campaign's audience.
+          items:
+            type: integer
+            format: int64
+          example: [12]
+        delivery_mode:
+          type: string
+          description: |-
+            How the campaign is delivered. `rapid` sends as fast as possible; `gradual` throttles
+            sending to `delivery_options.emails_per_hour`.
+          example: rapid
+          enum:
+            - rapid
+            - gradual
+        delivery_options:
+          type: object
+          description: Delivery throttling options. Applies when `delivery_mode` is `gradual`.
+          properties:
+            emails_per_hour:
+              type: [integer, "null"]
+              example: 1000
+        template:
+          type: object
+          description: |-
+            The campaign's template. `body_html` and `body_text` are returned only on
+            single-campaign responses (create, update, get-by-ID); the list endpoint omits them to
+            keep the payload small.
+          properties:
+            id:
+              type: integer
+              format: int64
+              example: 789
+            subject:
+              type: string
+              example: "Spring is here — 30% off"
+            merge_tags:
+              type: array
+              items:
+                type: string
+              example: ["first_name"]
+            body_html:
+              type: [string, "null"]
+              description: HTML body (the design). Returned only on single-campaign responses.
+              example: '<html><body><h1>Hi {{first_name}}!</h1><p><a href="__unsubscribe_url__">Unsubscribe</a></p></body></html>'
+            body_text:
+              type: [string, "null"]
+              description: Plain-text body. Returned only on single-campaign responses.
+              example: null
+    EmailCampaignStats:
+      type: object
+      description: Aggregated campaign performance metrics. Counts and rates are `0` when the campaign has not been started.
+      properties:
+        delivery_count:
+          type: integer
+          example: 1450
+        open_count:
+          type: integer
+          example: 820
+        click_count:
+          type: integer
+          example: 310
+        bounce_count:
+          type: integer
+          example: 30
+        unsubscription_count:
+          type: integer
+          example: 12
+        sent_count:
+          type: integer
+          example: 1500
+        spam_count:
+          type: integer
+          example: 5
+        message_count:
+          type: integer
+          example: 1500
+        reject_count:
+          type: integer
+          example: 20
+        delivery_rate:
+          type: number
+          format: float
+          description: Share of sent messages that were delivered (0–1).
+          example: 0.9667
+        open_rate:
+          type: number
+          format: float
+          example: 0.5655
+        click_rate:
+          type: number
+          format: float
+          example: 0.2138
+        bounce_rate:
+          type: number
+          format: float
+          example: 0.02
+        spam_rate:
+          type: number
+          format: float
+          example: 0.0033
+        unsubscription_rate:
+          type: number
+          format: float
+          example: 0.0083
+    Pagination:
+      type: object
+      description: Page-token pagination metadata.
+      properties:
+        token:
+          type: integer
+          description: Current page number.
+          example: 1
+        prev_token:
+          type: [integer, "null"]
+          description: Previous page number, or `null` on the first page.
+          example: null
+        next_token:
+          type: [integer, "null"]
+          description: Next page number, or `null` on the last page.
+          example: 2
+        first_url:
+          type: string
+          format: uri
+          example: "https://mailtrap.io/api/email_campaigns?per_page=50&token=1"
+        prev_url:
+          type: [string, "null"]
+          format: uri
+          example: null
+        current_url:
+          type: string
+          format: uri
+          example: "https://mailtrap.io/api/email_campaigns?per_page=50&token=1"
+        next_url:
+          type: [string, "null"]
+          format: uri
+          example: "https://mailtrap.io/api/email_campaigns?per_page=50&token=2"
+    RateLimitedResponse:
+      type: object
+      # NOTE: the shared global throttle (Rack::Attack) returns the legacy singular `error` key.
+      # This diverges from the plural-`errors` convention; kept here to match the real response.
+      properties:
+        error:
+          type: string
+          example: Throttled
+    UnauthenticatedResponse:
+      type: object
+      properties:
+        error:
+          type: string
+          example: Incorrect API token
+    PermissionDeniedResponse:
+      type: object
+      properties:
+        errors:
+          type: string
+          example: Account access forbidden
+    NotFoundResponse:
+      type: object
+      properties:
+        error:
+          type: string
+          example: Not Found
+    ValidationErrorResponse:
+      type: object
+      properties:
+        errors:
+          type: object
+          additionalProperties:
+            type: array
+            items:
+              type: string
+          example:
+            name:
+              - can't be blank
+            from_local_part:
+              - can't be blank
+            template.subject:
+              - can't be blank
+    ActionValidationErrorResponse:
+      type: object
+      description: |-
+        Validation error returned by the lifecycle action endpoints. `errors` is either a single
+        message (an invalid state transition or an invalid `datetime`) or a list of messages
+        (sending-validation failures).
+      properties:
+        errors:
+          oneOf:
+            - type: string
+              example: "Cannot transition from 'started' to 'scheduled'"
+            - type: array
+              items:
+                type: string
+              example:
+                - Campaign design can't be blank
+  responses:
+    EmailCampaignsResponse:
+      description: A paginated list of email campaigns.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              data:
+                type: array
+                items:
+                  $ref: "#/components/schemas/EmailCampaign"
+              pagination:
+                $ref: "#/components/schemas/Pagination"
+    EmailCampaignResponse:
+      description: A single email campaign.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              data:
+                $ref: "#/components/schemas/EmailCampaign"
+    EmailCampaignStatsResponse:
+      description: Aggregated campaign statistics.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              data:
+                $ref: "#/components/schemas/EmailCampaignStats"
+    UNAUTHENTICATED:
+      description: Authentication failed — missing or invalid API token.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/UnauthenticatedResponse"
+    PERMISSION_DENIED:
+      description: The API token does not have permission to access this resource.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/PermissionDeniedResponse"
+    NOT_FOUND:
+      description: The requested email campaign was not found.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/NotFoundResponse"
+    VALIDATION_ERROR:
+      description: The request was rejected due to validation errors.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ValidationErrorResponse"
+    ACTION_VALIDATION_ERROR:
+      description: |-
+        The lifecycle action was rejected — the campaign was in a state that does not allow the
+        action, the `datetime` was invalid, or sending validation failed.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ActionValidationErrorResponse"
+    RATE_LIMITED:
+      description: |-
+        Too many requests. The public API is rate limited to 150 requests per 10 seconds per
+        API token. Retry after the window resets (see the `x-ratelimit-reset` header).
+      headers:
+        x-ratelimit-limit:
+          description: Maximum number of requests allowed within the window.
+          schema:
+            type: integer
+            example: 150
+        x-ratelimit-remaining:
+          description: Requests remaining in the current window.
+          schema:
+            type: integer
+            example: 0
+        x-ratelimit-reset:
+          description: ISO 8601 timestamp when the current rate-limit window resets.
+          schema:
+            type: string
+            format: date-time
+            example: "2026-06-15T10:00:10.000000Z"
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/RateLimitedResponse"
