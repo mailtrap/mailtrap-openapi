@@ -579,7 +579,8 @@ paths:
                   "open_tracking_enabled": true,
                   "click_tracking_enabled": true,
                   "tracking_opt_out_enabled": true,
-                  "auto_unsubscribe_link_enabled": false
+                  "auto_unsubscribe_link_enabled": false,
+                  "inbound_enabled": true
                 }
               }'
       parameters:
@@ -601,6 +602,7 @@ paths:
                 click_tracking_enabled: true
                 tracking_opt_out_enabled: true
                 auto_unsubscribe_link_enabled: false
+                inbound_enabled: true
       responses:
         '200':
           $ref: '#/components/responses/DomainResponse'
@@ -2403,6 +2405,17 @@ components:
           type:
             - string
             - 'null'
+        inbound_enabled:
+          type: boolean
+          description: |
+            Whether inbound email is enabled for this domain. When enabled, an
+            `MX` record (`key: inbound_mx`) is added to `dns_records` for inbound
+            mail; see `inbound_verified`.
+        inbound_verified:
+          type: boolean
+          description: |
+            Whether the domain's inbound MX records have been verified. Inbound
+            mail is only accepted once this is `true`.
         permissions:
           type: object
           properties:
@@ -2456,6 +2469,12 @@ components:
             value: t.mailtrap.live
             status: pass
             name: mt-link
+          - key: inbound_mx
+            domain: mailtrap.io
+            type: MX
+            value: inbound-mailtrap.io
+            status: pass
+            name: '@'
         open_tracking_enabled: true
         click_tracking_enabled: true
         tracking_opt_out_enabled: false
@@ -2464,6 +2483,8 @@ components:
         health_alerts_enabled: true
         critical_alerts_enabled: true
         alert_recipient_email: john.doe@mailtrap.io
+        inbound_enabled: true
+        inbound_verified: true
         permissions:
           can_read: true
           can_update: true
@@ -2486,6 +2507,12 @@ components:
         auto_unsubscribe_link_enabled:
           type: boolean
           description: Automatically add an unsubscribe link to emails sent from this domain
+        inbound_enabled:
+          type: boolean
+          description: |
+            Enable inbound email for this domain so it can be attached to an
+            inbound inbox as a catch-all. The domain's inbound MX records must
+            be verified before inbound mail is accepted (see `inbound_verified`).
 
     CompanyInfo:
       type: object
