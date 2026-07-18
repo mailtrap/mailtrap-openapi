@@ -1,5 +1,6 @@
 specs/inbound.openapi.yml
   s_576b7c7847dbe9::t_62cbb93910f832 464,1165-1172,1481-1490
+  s_611db716a72058::t_c7108720d9c00a 1481-1490
 ---
 {
   "schema_version": "authorship/3.0.0",
@@ -14,6 +15,14 @@ specs/inbound.openapi.yml
         "model": "claude-opus-4-8"
       },
       "human_author": "Marcin Klocek <marcin.klocek@railsware.com>"
+    },
+    "s_611db716a72058": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "8b363991-aa1f-4c6a-94a2-76a03db5c2d4",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Piotr Bednarz <piotr.bednarz@railsware.com>"
     }
   }
 }
