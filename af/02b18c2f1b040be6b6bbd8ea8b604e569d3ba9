@@ -8,12 +8,25 @@ specs/inbound.openapi.yml
   s_576b7c7847dbe9::t_d0d421cc04b659 1595
   s_576b7c7847dbe9::t_e059c21287c347 1597
   s_576b7c7847dbe9::t_45759b27756a29 1589
+  s_92ccbbde00fa8c::t_636b5b1a2785a9 704-715,720-723,725-727,730-732,733-771,774-814,816,884-917
+  s_92ccbbde00fa8c::t_f255e4177c0ac3 56-64
+  s_92ccbbde00fa8c::t_afeb36fdf58ba5 1184
+  s_92ccbbde00fa8c::t_837b469b0cde21 1065
+  s_92ccbbde00fa8c::t_13fc4c9a288f74 1366-1437,1439,1441-1541,1543-1574,1575-1578,1581-1585,1597
+  s_92ccbbde00fa8c::t_2429ab44c50ff1 959-967
+  s_92ccbbde00fa8c::t_dbeb3199f8a7b3 1438
+  s_92ccbbde00fa8c::t_2595fbf78d8881 1440,1542
 ---
 {
   "schema_version": "authorship/3.0.0",
   "git_ai_version": "1.6.14",
   "base_commit_sha": "af02b18c2f1b040be6b6bbd8ea8b604e569d3ba9",
   "prompts": {},
+  "humans": {
+    "h_3075e3cb809e55": {
+      "author": "Piotr Bednarz <piotr.bednarz@railsware.com>"
+    }
+  },
   "sessions": {
     "s_576b7c7847dbe9": {
       "agent_id": {
@@ -22,6 +35,14 @@ specs/inbound.openapi.yml
         "model": "claude-opus-4-8"
       },
       "human_author": "Marcin Klocek <marcin.klocek@railsware.com>"
+    },
+    "s_92ccbbde00fa8c": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "b484460c-bf91-4b3a-bd22-b264904502e5",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": null
     }
   }
 }
