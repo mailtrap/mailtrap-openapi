@@ -2961,6 +2961,26 @@ components:
               subject:
                 type: string
                 nullable: true
+              rfc_message_id:
+                type: string
+                nullable: true
+                description: Value of the RFC 5322 `Message-ID` header.
+              in_reply_to:
+                type: string
+                nullable: true
+                description: Value of the RFC 5322 `In-Reply-To` header.
+              references:
+                type: array
+                items:
+                  type: string
+                description: Values of the RFC 5322 `References` header.
+              thread_id:
+                type: string
+                nullable: true
+                description: |
+                  ID of the inbound thread this message belongs to, or null if
+                  the message is not part of one. Use it with the Inbound
+                  Threads endpoints to fetch the full conversation.
               from:
                 type: string
               to:
@@ -3045,6 +3065,26 @@ components:
         subject:
           type: string
           nullable: true
+        rfc_message_id:
+          type: string
+          nullable: true
+          description: Value of the RFC 5322 `Message-ID` header.
+        in_reply_to:
+          type: string
+          nullable: true
+          description: Value of the RFC 5322 `In-Reply-To` header.
+        references:
+          type: array
+          items:
+            type: string
+          description: Values of the RFC 5322 `References` header.
+        thread_id:
+          type: string
+          nullable: true
+          description: |
+            ID of the inbound thread this message belongs to, or null if the
+            message is not part of one. Use it with the Inbound Threads
+            endpoints to fetch the full conversation.
         from:
           type: string
         to:
