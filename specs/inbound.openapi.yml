@@ -452,7 +452,7 @@ paths:
                     bcc: []
                     reply_to: null
                     subject: Hello
-                    message_id: "<abc@sender.example>"
+                    rfc_message_id: "<abc@sender.example>"
                     in_reply_to: null
                     references: []
                     headers:
@@ -842,7 +842,7 @@ paths:
                     direction: inbound
                     id: "1700000000000123"
                     subject: "Support request"
-                    message_id: "<abc@customer.example>"
+                    rfc_message_id: "<abc@customer.example>"
                     in_reply_to: null
                     references: []
                     from: "customer@example.com"
@@ -860,7 +860,7 @@ paths:
                     direction: outbound
                     id: "1a2b3c4d-5e6f-7a8b-9c0d-1e2f3a4b5c6d"
                     subject: "Re: Support request"
-                    message_id: "<def@send.example>"
+                    rfc_message_id: "<def@send.example>"
                     in_reply_to: "<abc@customer.example>"
                     references:
                       - "<abc@customer.example>"
@@ -1111,7 +1111,7 @@ components:
             - string
             - "null"
           example: Hello
-        message_id:
+        rfc_message_id:
           type:
             - string
             - "null"
@@ -1488,7 +1488,7 @@ components:
             - string
             - "null"
           example: "Support request"
-        message_id:
+        rfc_message_id:
           type:
             - string
             - "null"
