@@ -2439,12 +2439,6 @@ components:
             value: smtp.mailtrap.live
             status: pass
             name: ve6wza2rbpe60x7z
-          - key: spf
-            domain: mailtrap.io
-            type: TXT
-            value: 'v=spf1 include:_spf.smtp.mailtrap.live ~all'
-            status: pass
-            name: ''
           - key: dkim1
             domain: rwmt1._domainkey.mailtrap.io
             type: CNAME
