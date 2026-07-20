@@ -1,0 +1,24 @@
+specs/email-sending.openapi.yml
+  s_576b7c7847dbe9::t_91f784f1bd1aa7 2472-2477
+  s_576b7c7847dbe9::t_d40237560686de 2486-2487
+  s_576b7c7847dbe9::t_ce26dc38f31ac3 2410-2413,2416,2512
+  s_576b7c7847dbe9::t_49e8a7984c59b2 582-583,605,2408-2409,2414-2415,2417-2418,2510-2511,2513-2515
+specs/inbound.openapi.yml
+  s_576b7c7847dbe9::t_4867ab299febb7 255,258-259,271-277,295,303-317,1018-1021,1023-1028,1040-1057
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.14",
+  "base_commit_sha": "c0850ace0b3c53356763398e8df867f4bd8c5452",
+  "prompts": {},
+  "sessions": {
+    "s_576b7c7847dbe9": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "48d8b14b-0d1c-434e-b1b9-68d02404448f",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Marcin Klocek <marcin.klocek@railsware.com>"
+    }
+  }
+}
