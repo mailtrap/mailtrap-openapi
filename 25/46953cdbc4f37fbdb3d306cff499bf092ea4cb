@@ -1,0 +1,26 @@
+specs/email-sending.openapi.yml
+  s_576b7c7847dbe9::t_588c06e0e780a3 2965-2966,2969-2970,2977-2983
+  s_576b7c7847dbe9::t_d68eb2cd3e84c5 3069-3070,3073-3074,3081-3087
+  s_576b7c7847dbe9::t_175adc0cb56b2e 2964
+  s_576b7c7847dbe9::t_f6ab1b0189fa77 2967-2968
+  s_576b7c7847dbe9::t_57d49dc3abc58b 2971-2976
+  s_576b7c7847dbe9::t_d41891e62c4c33 3068
+  s_576b7c7847dbe9::t_0885bb30920b55 3071-3072
+  s_576b7c7847dbe9::t_6c41ce113cd781 3075-3080
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.15",
+  "base_commit_sha": "2546953cdbc4f37fbdb3d306cff499bf092ea4cb",
+  "prompts": {},
+  "sessions": {
+    "s_576b7c7847dbe9": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "48d8b14b-0d1c-434e-b1b9-68d02404448f",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": null
+    }
+  }
+}
