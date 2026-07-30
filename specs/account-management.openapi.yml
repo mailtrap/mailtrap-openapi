@@ -408,6 +408,7 @@ paths:
         Manage user or token permissions. For this endpoint, you should send an array of objects (in JSON format) as the body of the request.
         If you send a combination of **resource_type** and **resource_id** that already exists, the permission is **updated**.
         If the combination doesn't exist, the permission is **created**.
+        Permissions of an expired API token cannot be updated; such requests are rejected with a 422 error.
       tags:
         - Permissions
       x-codeSamples:
@@ -594,6 +595,8 @@ paths:
           $ref: '#/components/responses/PERMISSION_DENIED'
         '404':
           $ref: '#/components/responses/NOT_FOUND'
+        '422':
+          $ref: '#/components/responses/UNPROCESSABLE_ENTITY'
     parameters:
       - schema:
           type: integer
@@ -810,7 +813,10 @@ paths:
     post:
       operationId: createApiToken
       summary: Create API token
-      description: Creates a new API token for the account with the given name and resource permissions.
+      description: |-
+        Creates a new API token for the account with the given name and resource permissions.
+        Unless `expires_at` is provided, the token expires 1 year after creation.
+        Pass `"expires_at": null` to create a token that never expires.
       tags:
         - API Tokens
       x-codeSamples:
@@ -822,6 +828,7 @@ paths:
               -H 'Content-Type: application/json' \
               -d '{
                 "name": "My API Token",
+                "expires_at": "2027-06-01T00:00:00Z",
                 "resources": [
                   {"resource_type": "account", "resource_id": 3229, "access_level": 100}
                 ]
@@ -1157,7 +1164,9 @@ paths:
         Expires the requested token and creates a new token with the same permissions.
         The old token stops working after a short grace period. The response includes
         the new token value (store it securely; it is only returned once).
-        Only tokens that have not already been reset (no expiration set) can be reset.
+        Unless `expires_at` is provided, the new token expires 1 year after the reset.
+        Pass `"expires_at": null` to create a token that never expires.
+        Tokens that have already expired cannot be reset (returns a 422 error).
       tags:
         - API Tokens
       x-codeSamples:
@@ -1165,7 +1174,9 @@ paths:
           label: cURL
           source: |
             curl -X POST https://mailtrap.io/api/api_tokens/{id}/reset \
-              -H 'Authorization: Bearer YOUR_API_KEY'
+              -H 'Authorization: Bearer YOUR_API_KEY' \
+              -H 'Content-Type: application/json' \
+              -d '{"expires_at": "2027-06-01T00:00:00Z"}'
         - lang: javascript
           label: Node.js
           source: |
@@ -1246,6 +1257,24 @@ paths:
             System.out.println(token);
       parameters:
         - $ref: '#/components/parameters/api_token_id'
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                expires_at:
+                  type: string
+                  format: date-time
+                  nullable: true
+                  description: |-
+                    When the new token expires (ISO 8601 date-time, must be in the future).
+                    If omitted, the new token expires 1 year after the reset.
+                    Pass null to create a token that never expires.
+                    Past or unparseable values are rejected with a 422 error.
+            example:
+              expires_at: '2027-06-01T00:00:00Z'
       responses:
         '200':
           description: New API token (includes full token value once)
@@ -1790,9 +1819,9 @@ components:
                   type: string
                   description: Describes the origin of the token
                   example: System
-                token:
+                masked_token:
                   type: string
-                  description: The token value
+                  description: The token value with all but the last characters masked
                 expires_at:
                   type: string
                   format: date-time
@@ -2006,6 +2035,15 @@ components:
         name:
           type: string
           description: Display name for the token
+        expires_at:
+          type: string
+          format: date-time
+          nullable: true
+          description: |-
+            When the token expires (ISO 8601 date-time, must be in the future).
+            If omitted, the token expires 1 year after creation.
+            Pass null to create a token that never expires.
+            Past or unparseable values are rejected with a 422 error.
         resources:
           type: array
           description: Permissions to assign to the token
@@ -2013,6 +2051,7 @@ components:
             $ref: '#/components/schemas/ResourcePermissionInput'
       example:
         name: My API Token
+        expires_at: '2027-06-01T00:00:00Z'
         resources:
           - resource_type: account
             resource_id: 3229
