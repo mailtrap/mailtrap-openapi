@@ -1,0 +1,42 @@
+specs/inbound.openapi.yml
+  s_576b7c7847dbe9::t_5b69e780f2fbbc 1026-1028
+  s_576b7c7847dbe9::t_4867ab299febb7 255,258-259,271-277,295,303-317,1018-1021,1023-1025,1029,1041-1058
+specs/email-sending.openapi.yml
+  s_90da0c2e8c77a3::t_c8331138acaec8 2487
+  s_4efb6148df9dd3::t_ea53d94373aa6e 2474
+  s_576b7c7847dbe9::t_ce26dc38f31ac3 2410-2413,2416
+  s_576b7c7847dbe9::t_49e8a7984c59b2 582-583,605,2408-2409,2414-2415,2417-2418
+  s_576b7c7847dbe9::t_70def351dfbb5d 2472-2473,2475-2477,2486,2510-2515
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.15",
+  "base_commit_sha": "fa08fb064e45c3fa446ef2595d92e7ba2383124d",
+  "prompts": {},
+  "sessions": {
+    "s_4efb6148df9dd3": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "c052c781-4db5-4acf-9353-eb9cdb885aa9",
+        "model": "default"
+      },
+      "human_author": null
+    },
+    "s_576b7c7847dbe9": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "48d8b14b-0d1c-434e-b1b9-68d02404448f",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": null
+    },
+    "s_90da0c2e8c77a3": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "839312d7-ef96-490f-a515-80c475b8f7a6",
+        "model": "claude-opus-4-7"
+      },
+      "human_author": "Ivan Yurchanka <vanya.yu@gmail.com>"
+    }
+  }
+}

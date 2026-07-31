@@ -1,0 +1,20 @@
+specs/email-sending.openapi.yml
+  s_576b7c7847dbe9::t_202d589a976ead 2955-2967
+  s_576b7c7847dbe9::t_9f665d3b76120b 3052-3064
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.14",
+  "base_commit_sha": "a61973201a96ecc3301897f566cbf903c12056ec",
+  "prompts": {},
+  "sessions": {
+    "s_576b7c7847dbe9": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "48d8b14b-0d1c-434e-b1b9-68d02404448f",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Marcin Klocek <marcin.klocek@railsware.com>"
+    }
+  }
+}

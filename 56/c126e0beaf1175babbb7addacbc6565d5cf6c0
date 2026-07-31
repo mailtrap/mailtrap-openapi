@@ -1,0 +1,22 @@
+specs/inbound.openapi.yml
+  s_576b7c7847dbe9::t_93e5608689ce23 1465
+  s_576b7c7847dbe9::t_05133411c86488 1462-1464
+  s_576b7c7847dbe9::t_0d34ad8c10424c 1466-1468
+  s_576b7c7847dbe9::t_2d8a99dbb6b3e3 56-64,702-915,957-965,1063,1182,1361-1461,1469-1592
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.15",
+  "base_commit_sha": "56c126e0beaf1175babbb7addacbc6565d5cf6c0",
+  "prompts": {},
+  "sessions": {
+    "s_576b7c7847dbe9": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "48d8b14b-0d1c-434e-b1b9-68d02404448f",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Marcin Klocek <marcin.klocek@railsware.com>"
+    }
+  }
+}

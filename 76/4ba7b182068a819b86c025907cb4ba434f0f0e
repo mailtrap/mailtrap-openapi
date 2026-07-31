@@ -1,0 +1,32 @@
+specs/inbound.openapi.yml
+  s_92ccbbde00fa8c::t_ea83b82a13f3f3 995,1050,1059,1064,1069,1071
+  s_92ccbbde00fa8c::t_c7498f3d74d991 996-1007,1009-1029,1031-1041,1045-1049,1051-1056,1058,1060-1061,1063,1065-1066,1068,1070,1072-1081,1083-1087,1089-1097,1100-1129
+  s_92ccbbde00fa8c::t_6c32c4c4d00cff 1042-1044,1057,1062,1067,1082,1098-1099
+  s_92ccbbde00fa8c::t_3b6812177657c6 1190-1246
+  s_92ccbbde00fa8c::t_2c64f4451c3a33 49,53-54
+  s_92ccbbde00fa8c::t_25ba09c5bfa192 532-554,556-568,570-588,590-604,606-617,619-637,639-656,658-672,674-692
+  s_92ccbbde00fa8c::t_017970e38fcfa2 531,555,569,589,605,618,638,657,673
+  s_92ccbbde00fa8c::t_9d45b594942aca 1008,1088
+  s_92ccbbde00fa8c::t_a1beed1fb6c578 1030
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.14",
+  "base_commit_sha": "764ba7b182068a819b86c025907cb4ba434f0f0e",
+  "prompts": {},
+  "humans": {
+    "h_3075e3cb809e55": {
+      "author": "Piotr Bednarz <piotr.bednarz@railsware.com>"
+    }
+  },
+  "sessions": {
+    "s_92ccbbde00fa8c": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "b484460c-bf91-4b3a-bd22-b264904502e5",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Piotr Bednarz <piotr.bednarz@railsware.com>"
+    }
+  }
+}
