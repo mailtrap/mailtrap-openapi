@@ -1896,8 +1896,9 @@ paths:
                       type: integer
                       description: |
                         ID of the inbound inbox the webhook is linked to.
-                        Required for `inbound_receiving` webhooks; must not be
-                        set for any other webhook type.
+                        Optional for `inbound_receiving` webhooks — omit to
+                        apply the webhook to all inboxes in the account. Not
+                        applicable to any other webhook type.
                       example: 1
       responses:
         '200':
