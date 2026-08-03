@@ -793,52 +793,49 @@ components:
         delivery_count:
           type: integer
           example: 1450
-        open_count:
-          type: integer
-          example: 820
-        click_count:
-          type: integer
-          example: 310
-        bounce_count:
-          type: integer
-          example: 30
-        unsubscription_count:
-          type: integer
-          example: 12
-        sent_count:
-          type: integer
-          example: 1500
-        spam_count:
-          type: integer
-          example: 5
-        message_count:
-          type: integer
-          example: 1500
         delivery_rate:
           type: number
           format: float
           description: Share of sent messages that were delivered (0–1).
           example: 0.9667
-        open_rate:
-          type: number
-          format: float
-          example: 0.5655
-        click_rate:
-          type: number
-          format: float
-          example: 0.2138
+        bounce_count:
+          type: integer
+          example: 30
         bounce_rate:
           type: number
           format: float
           example: 0.02
+        open_count:
+          type: integer
+          example: 820
+        open_rate:
+          type: number
+          format: float
+          example: 0.5655
+        click_count:
+          type: integer
+          example: 310
+        click_rate:
+          type: number
+          format: float
+          example: 0.2138
+        spam_count:
+          type: integer
+          example: 5
         spam_rate:
           type: number
           format: float
           example: 0.0033
+        unsubscription_count:
+          type: integer
+          example: 12
         unsubscription_rate:
           type: number
           format: float
           example: 0.0083
+        sent_count:
+          type: integer
+          example: 1500
     Pagination:
       type: object
       description: Page-token pagination metadata.
