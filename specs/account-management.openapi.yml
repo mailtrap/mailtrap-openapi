@@ -1270,6 +1270,7 @@ paths:
                   nullable: true
                   description: |-
                     When the new token expires (ISO 8601 date-time, must be in the future).
+                    Must be no more than 5 years in the future.
                     If omitted, the new token expires 1 year after the reset.
                     Pass null to create a token that never expires.
                     Past or unparseable values are rejected with a 422 error.
@@ -2041,6 +2042,7 @@ components:
           nullable: true
           description: |-
             When the token expires (ISO 8601 date-time, must be in the future).
+            Must be no more than 5 years in the future.
             If omitted, the token expires 1 year after creation.
             Pass null to create a token that never expires.
             Past or unparseable values are rejected with a 422 error.
