@@ -51,7 +51,7 @@ paths:
             import { MailtrapClient } from "mailtrap";
 
             const client = new MailtrapClient({
-              token: "YOUR_API_TOKEN",
+              token: "YOUR_API_KEY",
               testInboxId: TEST_INBOX_ID,
               sandbox: true
             });
@@ -100,7 +100,7 @@ paths:
             inbox_id = 123456
 
             client = mt.MailtrapClient(
-                token="YOUR_API_TOKEN",
+                token="YOUR_API_KEY",
                 sandbox=True,
                 inbox_id=inbox_id
             )
@@ -119,7 +119,7 @@ paths:
           source: |
             require 'mailtrap'
 
-            client = Mailtrap::Client.new(api_key: 'YOUR_API_TOKEN', sandbox: true, inbox_id: TEST_INBOX_ID)
+            client = Mailtrap::Client.new(api_key: 'YOUR_API_KEY', sandbox: true, inbox_id: TEST_INBOX_ID)
 
             mail = Mailtrap::Mail.new(
               from: { email: 'test@example.com', name: 'Test Sender' },
@@ -170,7 +170,7 @@ paths:
             import java.util.List;
 
             var config = new MailtrapConfig.Builder()
-                .token("YOUR_API_TOKEN")
+                .token("YOUR_API_KEY")
                 .inboxId(TEST_INBOX_ID)
                 .build();
 

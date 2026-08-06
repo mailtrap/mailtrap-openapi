@@ -48,14 +48,14 @@ paths:
           label: 'cURL'
           source: |
             curl -X GET https://mailtrap.io/api/accounts \
-              -H 'Authorization: Bearer YOUR_API_TOKEN'
+              -H 'Authorization: Bearer YOUR_API_KEY'
         - lang: javascript
           label: Node.js
           source: |
             import { MailtrapClient } from "mailtrap";
 
             const client = new MailtrapClient({
-              token: "YOUR_API_TOKEN"
+              token: "YOUR_API_KEY"
             });
 
             async function listAccounts() {
@@ -81,7 +81,7 @@ paths:
           source: |
             import mailtrap as mt
 
-            client = mt.MailtrapClient(token="YOUR_API_TOKEN")
+            client = mt.MailtrapClient(token="YOUR_API_KEY")
 
             accounts = client.general_api.accounts.get_list()
 
@@ -123,7 +123,7 @@ paths:
             import io.mailtrap.factory.MailtrapClientFactory;
 
             var config = new MailtrapConfig.Builder()
-                .token("YOUR_API_TOKEN")
+                .token("YOUR_API_KEY")
                 .build();
 
             var client = MailtrapClientFactory.createMailtrapClient(config);
@@ -181,7 +181,7 @@ paths:
           label: 'cURL'
           source: |
             curl -X GET https://mailtrap.io/api/account_accesses \
-              -H 'Authorization: Bearer YOUR_API_TOKEN'
+              -H 'Authorization: Bearer YOUR_API_KEY'
         - lang: javascript
           label: Node.js
           source: |
@@ -310,7 +310,7 @@ paths:
           label: 'cURL'
           source: |
             curl -X DELETE https://mailtrap.io/api/account_accesses/{account_access_id} \
-              -H 'Authorization: Bearer YOUR_API_TOKEN'
+              -H 'Authorization: Bearer YOUR_API_KEY'
         - lang: javascript
           label: Node.js
           source: |
@@ -415,7 +415,7 @@ paths:
           label: 'cURL'
           source: |
             curl -X PUT https://mailtrap.io/api/account_accesses/{account_access_id}/permissions/bulk \
-              -H 'Authorization: Bearer YOUR_API_TOKEN' \
+              -H 'Authorization: Bearer YOUR_API_KEY' \
               -H 'Content-Type: application/json' \
               -d '{
                 "permissions": [
@@ -599,7 +599,7 @@ paths:
           label: 'cURL'
           source: |
             curl -X GET https://mailtrap.io/api/permissions/resources \
-              -H 'Authorization: Bearer YOUR_API_TOKEN'
+              -H 'Authorization: Bearer YOUR_API_KEY'
         - lang: javascript
           label: Node.js
           source: |
@@ -701,7 +701,7 @@ paths:
           label: cURL
           source: |
             curl -X GET https://mailtrap.io/api/api_tokens \
-              -H 'Authorization: Bearer YOUR_API_TOKEN'
+              -H 'Authorization: Bearer YOUR_API_KEY'
       responses:
         '200':
           description: List of API tokens
@@ -724,7 +724,7 @@ paths:
           label: cURL
           source: |
             curl -X POST https://mailtrap.io/api/api_tokens \
-              -H 'Authorization: Bearer YOUR_API_TOKEN' \
+              -H 'Authorization: Bearer YOUR_API_KEY' \
               -H 'Content-Type: application/json' \
               -d '{
                 "name": "My API Token",
@@ -763,7 +763,7 @@ paths:
           label: cURL
           source: |
             curl -X GET https://mailtrap.io/api/api_tokens/{id} \
-              -H 'Authorization: Bearer YOUR_API_TOKEN'
+              -H 'Authorization: Bearer YOUR_API_KEY'
       parameters:
         - $ref: '#/components/parameters/api_token_id'
       responses:
@@ -788,7 +788,7 @@ paths:
           label: cURL
           source: |
             curl -X DELETE https://mailtrap.io/api/api_tokens/{id} \
-              -H 'Authorization: Bearer YOUR_API_TOKEN'
+              -H 'Authorization: Bearer YOUR_API_KEY'
       parameters:
         - $ref: '#/components/parameters/api_token_id'
       responses:
@@ -816,7 +816,7 @@ paths:
           label: cURL
           source: |
             curl -X POST https://mailtrap.io/api/api_tokens/{id}/reset \
-              -H 'Authorization: Bearer YOUR_API_TOKEN'
+              -H 'Authorization: Bearer YOUR_API_KEY'
       parameters:
         - $ref: '#/components/parameters/api_token_id'
       responses:
@@ -846,7 +846,7 @@ paths:
           label: 'cURL'
           source: |
             curl -X GET https://mailtrap.io/api/billing/usage \
-              -H 'Authorization: Bearer YOUR_API_TOKEN'
+              -H 'Authorization: Bearer YOUR_API_KEY'
         - lang: javascript
           label: Node.js
           source: |
@@ -1030,7 +1030,7 @@ paths:
           label: 'cURL'
           source: |
             curl -X GET https://mailtrap.io/api/organizations/{organization_id}/sub_accounts \
-              -H 'Authorization: Bearer YOUR_API_TOKEN'
+              -H 'Authorization: Bearer YOUR_API_KEY'
       responses:
         '200':
           description: Returns the list of sub accounts belonging to the organization.
@@ -1066,7 +1066,7 @@ paths:
           label: 'cURL'
           source: |
             curl -X POST https://mailtrap.io/api/organizations/{organization_id}/sub_accounts \
-              -H 'Authorization: Bearer YOUR_API_TOKEN' \
+              -H 'Authorization: Bearer YOUR_API_KEY' \
               -H 'Content-Type: application/json' \
               -d '{
                 "account": {
