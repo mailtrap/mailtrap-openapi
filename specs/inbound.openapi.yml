@@ -76,6 +76,67 @@ paths:
           source: |
             curl -X GET https://mailtrap.io/api/inbound/folders \
               -H 'Authorization: Bearer YOUR_API_KEY'
+        - lang: javascript
+          label: Node.js
+          source: |
+            import { MailtrapClient } from "mailtrap";
+
+            const client = new MailtrapClient({ token: "YOUR_API_KEY" });
+
+            const folders = await client.inbound.folders.getList();
+            console.log(folders);
+        - lang: php
+          label: PHP
+          source: |
+            <?php
+            use Mailtrap\Config;
+            use Mailtrap\Helper\ResponseHelper;
+            use Mailtrap\MailtrapInboundClient;
+
+            $config = new Config($_ENV['MAILTRAP_API_KEY']);
+            $folders = (new MailtrapInboundClient($config))->folders();
+
+            $response = $folders->getList();
+            var_dump(ResponseHelper::toArray($response));
+        - lang: python
+          label: Python
+          source: |
+            import mailtrap as mt
+
+            client = mt.MailtrapClient(token="YOUR_API_KEY")
+
+            folders = client.inbound_api.folders.get_list()
+            print(folders)
+        - lang: ruby
+          label: Ruby
+          source: |
+            require 'mailtrap'
+
+            client = Mailtrap::Client.new(api_key: 'YOUR_API_KEY')
+            folders = Mailtrap::InboundFoldersAPI.new(client)
+
+            puts folders.list
+        - lang: csharp
+          label: .NET
+          source: |
+            using Mailtrap;
+
+            using var mailtrapFactory = new MailtrapClientFactory("YOUR_API_KEY");
+            var client = mailtrapFactory.CreateClient();
+
+            var folders = await client.Inbound().Folders().GetAll();
+            Console.WriteLine(folders.Count);
+        - lang: java
+          label: Java
+          source: |
+            import io.mailtrap.config.MailtrapConfig;
+            import io.mailtrap.factory.MailtrapClientFactory;
+
+            var config = new MailtrapConfig.Builder().token("YOUR_API_KEY").build();
+            var client = MailtrapClientFactory.createMailtrapClient(config);
+
+            var folders = client.inboundApi().folders().getList();
+            System.out.println(folders);
       responses:
         "200":
           description: List of folders
@@ -109,6 +170,75 @@ paths:
               -H 'Authorization: Bearer YOUR_API_KEY' \
               -H 'Content-Type: application/json' \
               -d '{ "name": "Support" }'
+        - lang: javascript
+          label: Node.js
+          source: |
+            import { MailtrapClient } from "mailtrap";
+
+            const client = new MailtrapClient({ token: "YOUR_API_KEY" });
+
+            const folder = await client.inbound.folders.create({ name: "Support" });
+            console.log(folder);
+        - lang: php
+          label: PHP
+          source: |
+            <?php
+            use Mailtrap\Config;
+            use Mailtrap\DTO\Request\Inbound\CreateInboundFolder;
+            use Mailtrap\Helper\ResponseHelper;
+            use Mailtrap\MailtrapInboundClient;
+
+            $config = new Config($_ENV['MAILTRAP_API_KEY']);
+            $folders = (new MailtrapInboundClient($config))->folders();
+
+            $response = $folders->create(new CreateInboundFolder('Support'));
+            var_dump(ResponseHelper::toArray($response));
+        - lang: python
+          label: Python
+          source: |
+            import mailtrap as mt
+
+            client = mt.MailtrapClient(token="YOUR_API_KEY")
+
+            folder = client.inbound_api.folders.create(
+                mt.CreateInboundFolderParams(name="Support")
+            )
+            print(folder)
+        - lang: ruby
+          label: Ruby
+          source: |
+            require 'mailtrap'
+
+            client = Mailtrap::Client.new(api_key: 'YOUR_API_KEY')
+            folders = Mailtrap::InboundFoldersAPI.new(client)
+
+            folder = folders.create(name: 'Support')
+            puts folder
+        - lang: csharp
+          label: .NET
+          source: |
+            using Mailtrap;
+            using Mailtrap.Inbound.Requests;
+
+            using var mailtrapFactory = new MailtrapClientFactory("YOUR_API_KEY");
+            var client = mailtrapFactory.CreateClient();
+
+            var folder = await client.Inbound().Folders()
+                .Create(new CreateInboundFolderRequest { Name = "Support" });
+            Console.WriteLine(folder.Id);
+        - lang: java
+          label: Java
+          source: |
+            import io.mailtrap.config.MailtrapConfig;
+            import io.mailtrap.factory.MailtrapClientFactory;
+            import io.mailtrap.model.request.inbound.CreateInboundFolderRequest;
+
+            var config = new MailtrapConfig.Builder().token("YOUR_API_KEY").build();
+            var client = MailtrapClientFactory.createMailtrapClient(config);
+
+            var folder = client.inboundApi().folders()
+                .create(CreateInboundFolderRequest.builder().name("Support").build());
+            System.out.println(folder);
       requestBody:
         required: true
         content:
@@ -147,6 +277,73 @@ paths:
           source: |
             curl -X GET https://mailtrap.io/api/inbound/folders/{folder_id} \
               -H 'Authorization: Bearer YOUR_API_KEY'
+        - lang: javascript
+          label: Node.js
+          source: |
+            import { MailtrapClient } from "mailtrap";
+
+            const client = new MailtrapClient({ token: "YOUR_API_KEY" });
+
+            const folderId = 1;
+            const folder = await client.inbound.folders.get(folderId);
+            console.log(folder);
+        - lang: php
+          label: PHP
+          source: |
+            <?php
+            use Mailtrap\Config;
+            use Mailtrap\Helper\ResponseHelper;
+            use Mailtrap\MailtrapInboundClient;
+
+            $config = new Config($_ENV['MAILTRAP_API_KEY']);
+            $folders = (new MailtrapInboundClient($config))->folders();
+
+            $folderId = $_ENV['MAILTRAP_INBOUND_FOLDER_ID'];
+            $response = $folders->getById($folderId);
+            var_dump(ResponseHelper::toArray($response));
+        - lang: python
+          label: Python
+          source: |
+            import mailtrap as mt
+
+            client = mt.MailtrapClient(token="YOUR_API_KEY")
+
+            folder_id = 1
+            folder = client.inbound_api.folders.get_by_id(folder_id)
+            print(folder)
+        - lang: ruby
+          label: Ruby
+          source: |
+            require 'mailtrap'
+
+            client = Mailtrap::Client.new(api_key: 'YOUR_API_KEY')
+            folders = Mailtrap::InboundFoldersAPI.new(client)
+
+            folder_id = 1
+            puts folders.get(folder_id)
+        - lang: csharp
+          label: .NET
+          source: |
+            using Mailtrap;
+
+            using var mailtrapFactory = new MailtrapClientFactory("YOUR_API_KEY");
+            var client = mailtrapFactory.CreateClient();
+
+            var folderId = 1;
+            var folder = await client.Inbound().Folder(folderId).GetDetails();
+            Console.WriteLine(folder.Name);
+        - lang: java
+          label: Java
+          source: |
+            import io.mailtrap.config.MailtrapConfig;
+            import io.mailtrap.factory.MailtrapClientFactory;
+
+            var config = new MailtrapConfig.Builder().token("YOUR_API_KEY").build();
+            var client = MailtrapClientFactory.createMailtrapClient(config);
+
+            long folderId = 1L;
+            var folder = client.inboundApi().folders().getById(folderId);
+            System.out.println(folder);
       responses:
         "200":
           description: Folder details
@@ -177,6 +374,80 @@ paths:
               -H 'Authorization: Bearer YOUR_API_KEY' \
               -H 'Content-Type: application/json' \
               -d '{ "name": "Customer Success" }'
+        - lang: javascript
+          label: Node.js
+          source: |
+            import { MailtrapClient } from "mailtrap";
+
+            const client = new MailtrapClient({ token: "YOUR_API_KEY" });
+
+            const folderId = 1;
+            const folder = await client.inbound.folders.update(folderId, { name: "Customer Success" });
+            console.log(folder);
+        - lang: php
+          label: PHP
+          source: |
+            <?php
+            use Mailtrap\Config;
+            use Mailtrap\DTO\Request\Inbound\UpdateInboundFolder;
+            use Mailtrap\Helper\ResponseHelper;
+            use Mailtrap\MailtrapInboundClient;
+
+            $config = new Config($_ENV['MAILTRAP_API_KEY']);
+            $folders = (new MailtrapInboundClient($config))->folders();
+
+            $folderId = $_ENV['MAILTRAP_INBOUND_FOLDER_ID'];
+            $response = $folders->update($folderId, new UpdateInboundFolder('Customer Success'));
+            var_dump(ResponseHelper::toArray($response));
+        - lang: python
+          label: Python
+          source: |
+            import mailtrap as mt
+
+            client = mt.MailtrapClient(token="YOUR_API_KEY")
+
+            folder_id = 1
+            folder = client.inbound_api.folders.update(
+                folder_id, mt.UpdateInboundFolderParams(name="Customer Success")
+            )
+            print(folder)
+        - lang: ruby
+          label: Ruby
+          source: |
+            require 'mailtrap'
+
+            client = Mailtrap::Client.new(api_key: 'YOUR_API_KEY')
+            folders = Mailtrap::InboundFoldersAPI.new(client)
+
+            folder_id = 1
+            puts folders.update(folder_id, name: 'Customer Success')
+        - lang: csharp
+          label: .NET
+          source: |
+            using Mailtrap;
+            using Mailtrap.Inbound.Requests;
+
+            using var mailtrapFactory = new MailtrapClientFactory("YOUR_API_KEY");
+            var client = mailtrapFactory.CreateClient();
+
+            var folderId = 1;
+            var folder = await client.Inbound().Folder(folderId)
+                .Update(new UpdateInboundFolderRequest { Name = "Customer Success" });
+            Console.WriteLine(folder.Name);
+        - lang: java
+          label: Java
+          source: |
+            import io.mailtrap.config.MailtrapConfig;
+            import io.mailtrap.factory.MailtrapClientFactory;
+            import io.mailtrap.model.request.inbound.UpdateInboundFolderRequest;
+
+            var config = new MailtrapConfig.Builder().token("YOUR_API_KEY").build();
+            var client = MailtrapClientFactory.createMailtrapClient(config);
+
+            long folderId = 1L;
+            var folder = client.inboundApi().folders()
+                .update(folderId, UpdateInboundFolderRequest.builder().name("Customer Success").build());
+            System.out.println(folder);
       requestBody:
         required: true
         content:
@@ -214,6 +485,68 @@ paths:
           source: |
             curl -X DELETE https://mailtrap.io/api/inbound/folders/{folder_id} \
               -H 'Authorization: Bearer YOUR_API_KEY'
+        - lang: javascript
+          label: Node.js
+          source: |
+            import { MailtrapClient } from "mailtrap";
+
+            const client = new MailtrapClient({ token: "YOUR_API_KEY" });
+
+            const folderId = 1;
+            await client.inbound.folders.delete(folderId);
+        - lang: php
+          label: PHP
+          source: |
+            <?php
+            use Mailtrap\Config;
+            use Mailtrap\MailtrapInboundClient;
+
+            $config = new Config($_ENV['MAILTRAP_API_KEY']);
+            $folders = (new MailtrapInboundClient($config))->folders();
+
+            $folderId = $_ENV['MAILTRAP_INBOUND_FOLDER_ID'];
+            $response = $folders->delete($folderId);
+            echo $response->getStatusCode(); // 204
+        - lang: python
+          label: Python
+          source: |
+            import mailtrap as mt
+
+            client = mt.MailtrapClient(token="YOUR_API_KEY")
+
+            folder_id = 1
+            client.inbound_api.folders.delete(folder_id)
+        - lang: ruby
+          label: Ruby
+          source: |
+            require 'mailtrap'
+
+            client = Mailtrap::Client.new(api_key: 'YOUR_API_KEY')
+            folders = Mailtrap::InboundFoldersAPI.new(client)
+
+            folder_id = 1
+            folders.delete(folder_id)
+        - lang: csharp
+          label: .NET
+          source: |
+            using Mailtrap;
+
+            using var mailtrapFactory = new MailtrapClientFactory("YOUR_API_KEY");
+            var client = mailtrapFactory.CreateClient();
+
+            var folderId = 1;
+            await client.Inbound().Folder(folderId).Delete();
+        - lang: java
+          label: Java
+          source: |
+            import io.mailtrap.config.MailtrapConfig;
+            import io.mailtrap.factory.MailtrapClientFactory;
+
+            var config = new MailtrapConfig.Builder().token("YOUR_API_KEY").build();
+            var client = MailtrapClientFactory.createMailtrapClient(config);
+
+            long folderId = 1L;
+            client.inboundApi().folders().delete(folderId);
       responses:
         "204":
           description: Folder deleted
@@ -239,6 +572,73 @@ paths:
           source: |
             curl -X GET https://mailtrap.io/api/inbound/folders/{folder_id}/inboxes \
               -H 'Authorization: Bearer YOUR_API_KEY'
+        - lang: javascript
+          label: Node.js
+          source: |
+            import { MailtrapClient } from "mailtrap";
+
+            const client = new MailtrapClient({ token: "YOUR_API_KEY" });
+
+            const folderId = 1;
+            const inboxes = await client.inbound.inboxes.getList(folderId);
+            console.log(inboxes);
+        - lang: php
+          label: PHP
+          source: |
+            <?php
+            use Mailtrap\Config;
+            use Mailtrap\Helper\ResponseHelper;
+            use Mailtrap\MailtrapInboundClient;
+
+            $config = new Config($_ENV['MAILTRAP_API_KEY']);
+            $folderId = $_ENV['MAILTRAP_INBOUND_FOLDER_ID'];
+            $inboxes = (new MailtrapInboundClient($config))->inboxes($folderId);
+
+            $response = $inboxes->getList();
+            var_dump(ResponseHelper::toArray($response));
+        - lang: python
+          label: Python
+          source: |
+            import mailtrap as mt
+
+            client = mt.MailtrapClient(token="YOUR_API_KEY")
+
+            folder_id = 1
+            inboxes = client.inbound_api.inboxes.get_list(folder_id)
+            print(inboxes)
+        - lang: ruby
+          label: Ruby
+          source: |
+            require 'mailtrap'
+
+            client = Mailtrap::Client.new(api_key: 'YOUR_API_KEY')
+            inboxes = Mailtrap::InboundInboxesAPI.new(client)
+
+            folder_id = 1
+            puts inboxes.list(folder_id)
+        - lang: csharp
+          label: .NET
+          source: |
+            using Mailtrap;
+
+            using var mailtrapFactory = new MailtrapClientFactory("YOUR_API_KEY");
+            var client = mailtrapFactory.CreateClient();
+
+            var folderId = 1;
+            var inboxes = await client.Inbound().Folder(folderId).Inboxes().GetAll();
+            Console.WriteLine(inboxes.Count);
+        - lang: java
+          label: Java
+          source: |
+            import io.mailtrap.config.MailtrapConfig;
+            import io.mailtrap.factory.MailtrapClientFactory;
+
+            var config = new MailtrapConfig.Builder().token("YOUR_API_KEY").build();
+            var client = MailtrapClientFactory.createMailtrapClient(config);
+
+            long folderId = 1L;
+            var inboxes = client.inboundApi().inboxes().getList(folderId);
+            System.out.println(inboxes);
       responses:
         "200":
           description: List of inboxes
@@ -287,6 +687,87 @@ paths:
               -H 'Authorization: Bearer YOUR_API_KEY' \
               -H 'Content-Type: application/json' \
               -d '{ "name": "Support tickets" }'
+        - lang: javascript
+          label: Node.js
+          source: |
+            import { MailtrapClient } from "mailtrap";
+
+            const client = new MailtrapClient({ token: "YOUR_API_KEY" });
+
+            // Omit domain_id for a Mailtrap-hosted inbox; pass it for a custom-domain inbox.
+            const folderId = 1;
+            const inbox = await client.inbound.inboxes.create(folderId, { name: "Support tickets" });
+            console.log(inbox);
+        - lang: php
+          label: PHP
+          source: |
+            <?php
+            use Mailtrap\Config;
+            use Mailtrap\DTO\Request\Inbound\CreateInboundInbox;
+            use Mailtrap\Helper\ResponseHelper;
+            use Mailtrap\MailtrapInboundClient;
+
+            $config = new Config($_ENV['MAILTRAP_API_KEY']);
+            $folderId = $_ENV['MAILTRAP_INBOUND_FOLDER_ID'];
+            $inboxes = (new MailtrapInboundClient($config))->inboxes($folderId);
+
+            // Omit the domain id for a Mailtrap-hosted inbox; pass it for a custom-domain inbox.
+            $response = $inboxes->create(new CreateInboundInbox('Support tickets'));
+            var_dump(ResponseHelper::toArray($response));
+        - lang: python
+          label: Python
+          source: |
+            import mailtrap as mt
+
+            client = mt.MailtrapClient(token="YOUR_API_KEY")
+
+            # Omit domain_id for a Mailtrap-hosted inbox; pass it for a custom-domain inbox.
+            folder_id = 1
+            inbox = client.inbound_api.inboxes.create(
+                folder_id, mt.CreateInboundInboxParams(name="Support tickets")
+            )
+            print(inbox)
+        - lang: ruby
+          label: Ruby
+          source: |
+            require 'mailtrap'
+
+            client = Mailtrap::Client.new(api_key: 'YOUR_API_KEY')
+            inboxes = Mailtrap::InboundInboxesAPI.new(client)
+
+            # Omit domain_id for a Mailtrap-hosted inbox; pass it for a custom-domain inbox.
+            folder_id = 1
+            inbox = inboxes.create(folder_id, name: 'Support tickets')
+            puts inbox
+        - lang: csharp
+          label: .NET
+          source: |
+            using Mailtrap;
+            using Mailtrap.Inbound.Requests;
+
+            using var mailtrapFactory = new MailtrapClientFactory("YOUR_API_KEY");
+            var client = mailtrapFactory.CreateClient();
+
+            // Omit DomainId for a Mailtrap-hosted inbox; set it for a custom-domain inbox.
+            var folderId = 1;
+            var inbox = await client.Inbound().Folder(folderId).Inboxes()
+                .Create(new CreateInboundInboxRequest { Name = "Support tickets" });
+            Console.WriteLine(inbox.Id);
+        - lang: java
+          label: Java
+          source: |
+            import io.mailtrap.config.MailtrapConfig;
+            import io.mailtrap.factory.MailtrapClientFactory;
+            import io.mailtrap.model.request.inbound.CreateInboundInboxRequest;
+
+            var config = new MailtrapConfig.Builder().token("YOUR_API_KEY").build();
+            var client = MailtrapClientFactory.createMailtrapClient(config);
+
+            // Omit domainId for a Mailtrap-hosted inbox; set it for a custom-domain inbox.
+            long folderId = 1L;
+            var inbox = client.inboundApi().inboxes()
+                .create(folderId, CreateInboundInboxRequest.builder().name("Support tickets").build());
+            System.out.println(inbox);
       requestBody:
         required: true
         content:
@@ -340,6 +821,79 @@ paths:
           source: |
             curl -X GET https://mailtrap.io/api/inbound/folders/{folder_id}/inboxes/{inbox_id} \
               -H 'Authorization: Bearer YOUR_API_KEY'
+        - lang: javascript
+          label: Node.js
+          source: |
+            import { MailtrapClient } from "mailtrap";
+
+            const client = new MailtrapClient({ token: "YOUR_API_KEY" });
+
+            const folderId = 1;
+            const inboxId = 42;
+            const inbox = await client.inbound.inboxes.get(folderId, inboxId);
+            console.log(inbox);
+        - lang: php
+          label: PHP
+          source: |
+            <?php
+            use Mailtrap\Config;
+            use Mailtrap\Helper\ResponseHelper;
+            use Mailtrap\MailtrapInboundClient;
+
+            $config = new Config($_ENV['MAILTRAP_API_KEY']);
+            $folderId = $_ENV['MAILTRAP_INBOUND_FOLDER_ID'];
+            $inboxes = (new MailtrapInboundClient($config))->inboxes($folderId);
+
+            $inboxId = $_ENV['MAILTRAP_INBOUND_INBOX_ID'];
+            $response = $inboxes->getById($inboxId);
+            var_dump(ResponseHelper::toArray($response));
+        - lang: python
+          label: Python
+          source: |
+            import mailtrap as mt
+
+            client = mt.MailtrapClient(token="YOUR_API_KEY")
+
+            folder_id = 1
+            inbox_id = 42
+            inbox = client.inbound_api.inboxes.get_by_id(folder_id, inbox_id)
+            print(inbox)
+        - lang: ruby
+          label: Ruby
+          source: |
+            require 'mailtrap'
+
+            client = Mailtrap::Client.new(api_key: 'YOUR_API_KEY')
+            inboxes = Mailtrap::InboundInboxesAPI.new(client)
+
+            folder_id = 1
+            inbox_id = 42
+            puts inboxes.get(folder_id, inbox_id)
+        - lang: csharp
+          label: .NET
+          source: |
+            using Mailtrap;
+
+            using var mailtrapFactory = new MailtrapClientFactory("YOUR_API_KEY");
+            var client = mailtrapFactory.CreateClient();
+
+            var folderId = 1;
+            var inboxId = 42;
+            var inbox = await client.Inbound().Folder(folderId).Inbox(inboxId).GetDetails();
+            Console.WriteLine(inbox.Address);
+        - lang: java
+          label: Java
+          source: |
+            import io.mailtrap.config.MailtrapConfig;
+            import io.mailtrap.factory.MailtrapClientFactory;
+
+            var config = new MailtrapConfig.Builder().token("YOUR_API_KEY").build();
+            var client = MailtrapClientFactory.createMailtrapClient(config);
+
+            long folderId = 1L;
+            long inboxId = 42L;
+            var inbox = client.inboundApi().inboxes().getById(folderId, inboxId);
+            System.out.println(inbox);
       responses:
         "200":
           description: Inbox details
@@ -372,6 +926,86 @@ paths:
               -H 'Authorization: Bearer YOUR_API_KEY' \
               -H 'Content-Type: application/json' \
               -d '{ "name": "Support tickets v2" }'
+        - lang: javascript
+          label: Node.js
+          source: |
+            import { MailtrapClient } from "mailtrap";
+
+            const client = new MailtrapClient({ token: "YOUR_API_KEY" });
+
+            const folderId = 1;
+            const inboxId = 42;
+            const inbox = await client.inbound.inboxes.update(folderId, inboxId, { name: "Support tickets v2" });
+            console.log(inbox);
+        - lang: php
+          label: PHP
+          source: |
+            <?php
+            use Mailtrap\Config;
+            use Mailtrap\DTO\Request\Inbound\UpdateInboundInbox;
+            use Mailtrap\Helper\ResponseHelper;
+            use Mailtrap\MailtrapInboundClient;
+
+            $config = new Config($_ENV['MAILTRAP_API_KEY']);
+            $folderId = $_ENV['MAILTRAP_INBOUND_FOLDER_ID'];
+            $inboxes = (new MailtrapInboundClient($config))->inboxes($folderId);
+
+            $inboxId = $_ENV['MAILTRAP_INBOUND_INBOX_ID'];
+            $response = $inboxes->update($inboxId, new UpdateInboundInbox('Support tickets v2'));
+            var_dump(ResponseHelper::toArray($response));
+        - lang: python
+          label: Python
+          source: |
+            import mailtrap as mt
+
+            client = mt.MailtrapClient(token="YOUR_API_KEY")
+
+            folder_id = 1
+            inbox_id = 42
+            inbox = client.inbound_api.inboxes.update(
+                folder_id, inbox_id, mt.UpdateInboundInboxParams(name="Support tickets v2")
+            )
+            print(inbox)
+        - lang: ruby
+          label: Ruby
+          source: |
+            require 'mailtrap'
+
+            client = Mailtrap::Client.new(api_key: 'YOUR_API_KEY')
+            inboxes = Mailtrap::InboundInboxesAPI.new(client)
+
+            folder_id = 1
+            inbox_id = 42
+            puts inboxes.update(folder_id, inbox_id, name: 'Support tickets v2')
+        - lang: csharp
+          label: .NET
+          source: |
+            using Mailtrap;
+            using Mailtrap.Inbound.Requests;
+
+            using var mailtrapFactory = new MailtrapClientFactory("YOUR_API_KEY");
+            var client = mailtrapFactory.CreateClient();
+
+            var folderId = 1;
+            var inboxId = 42;
+            var inbox = await client.Inbound().Folder(folderId).Inbox(inboxId)
+                .Update(new UpdateInboundInboxRequest { Name = "Support tickets v2" });
+            Console.WriteLine(inbox.Name);
+        - lang: java
+          label: Java
+          source: |
+            import io.mailtrap.config.MailtrapConfig;
+            import io.mailtrap.factory.MailtrapClientFactory;
+            import io.mailtrap.model.request.inbound.UpdateInboundInboxRequest;
+
+            var config = new MailtrapConfig.Builder().token("YOUR_API_KEY").build();
+            var client = MailtrapClientFactory.createMailtrapClient(config);
+
+            long folderId = 1L;
+            long inboxId = 42L;
+            var inbox = client.inboundApi().inboxes()
+                .update(folderId, inboxId, UpdateInboundInboxRequest.builder().name("Support tickets v2").build());
+            System.out.println(inbox);
       requestBody:
         required: true
         content:
@@ -410,6 +1044,74 @@ paths:
           source: |
             curl -X DELETE https://mailtrap.io/api/inbound/folders/{folder_id}/inboxes/{inbox_id} \
               -H 'Authorization: Bearer YOUR_API_KEY'
+        - lang: javascript
+          label: Node.js
+          source: |
+            import { MailtrapClient } from "mailtrap";
+
+            const client = new MailtrapClient({ token: "YOUR_API_KEY" });
+
+            const folderId = 1;
+            const inboxId = 42;
+            await client.inbound.inboxes.delete(folderId, inboxId);
+        - lang: php
+          label: PHP
+          source: |
+            <?php
+            use Mailtrap\Config;
+            use Mailtrap\MailtrapInboundClient;
+
+            $config = new Config($_ENV['MAILTRAP_API_KEY']);
+            $folderId = $_ENV['MAILTRAP_INBOUND_FOLDER_ID'];
+            $inboxes = (new MailtrapInboundClient($config))->inboxes($folderId);
+
+            $inboxId = $_ENV['MAILTRAP_INBOUND_INBOX_ID'];
+            $response = $inboxes->delete($inboxId);
+            echo $response->getStatusCode(); // 204
+        - lang: python
+          label: Python
+          source: |
+            import mailtrap as mt
+
+            client = mt.MailtrapClient(token="YOUR_API_KEY")
+
+            folder_id = 1
+            inbox_id = 42
+            client.inbound_api.inboxes.delete(folder_id, inbox_id)
+        - lang: ruby
+          label: Ruby
+          source: |
+            require 'mailtrap'
+
+            client = Mailtrap::Client.new(api_key: 'YOUR_API_KEY')
+            inboxes = Mailtrap::InboundInboxesAPI.new(client)
+
+            folder_id = 1
+            inbox_id = 42
+            inboxes.delete(folder_id, inbox_id)
+        - lang: csharp
+          label: .NET
+          source: |
+            using Mailtrap;
+
+            using var mailtrapFactory = new MailtrapClientFactory("YOUR_API_KEY");
+            var client = mailtrapFactory.CreateClient();
+
+            var folderId = 1;
+            var inboxId = 42;
+            await client.Inbound().Folder(folderId).Inbox(inboxId).Delete();
+        - lang: java
+          label: Java
+          source: |
+            import io.mailtrap.config.MailtrapConfig;
+            import io.mailtrap.factory.MailtrapClientFactory;
+
+            var config = new MailtrapConfig.Builder().token("YOUR_API_KEY").build();
+            var client = MailtrapClientFactory.createMailtrapClient(config);
+
+            long folderId = 1L;
+            long inboxId = 42L;
+            client.inboundApi().inboxes().delete(folderId, inboxId);
       responses:
         "204":
           description: Inbox deleted
@@ -452,6 +1154,79 @@ paths:
           source: |
             curl -X GET 'https://mailtrap.io/api/inbound/inboxes/{inbox_id}/messages' \
               -H 'Authorization: Bearer YOUR_API_KEY'
+        - lang: javascript
+          label: Node.js
+          source: |
+            import { MailtrapClient } from "mailtrap";
+
+            const client = new MailtrapClient({ token: "YOUR_API_KEY" });
+
+            // Pass { last_id: page.last_id } to fetch the next page.
+            const inboxId = 42;
+            const page = await client.inbound.messages.getList(inboxId);
+            console.log(page.data, page.total_count, page.last_id);
+        - lang: php
+          label: PHP
+          source: |
+            <?php
+            use Mailtrap\Config;
+            use Mailtrap\Helper\ResponseHelper;
+            use Mailtrap\MailtrapInboundClient;
+
+            $config = new Config($_ENV['MAILTRAP_API_KEY']);
+            $inboxId = $_ENV['MAILTRAP_INBOUND_INBOX_ID'];
+            $messages = (new MailtrapInboundClient($config))->messages($inboxId);
+
+            // Pass a last_id string to fetch the next page.
+            $response = $messages->getList();
+            var_dump(ResponseHelper::toArray($response));
+        - lang: python
+          label: Python
+          source: |
+            import mailtrap as mt
+
+            client = mt.MailtrapClient(token="YOUR_API_KEY")
+
+            # Pass last_id=page.last_id to fetch the next page.
+            inbox_id = 42
+            page = client.inbound_api.messages.get_list(inbox_id)
+            print(page.data, page.total_count, page.last_id)
+        - lang: ruby
+          label: Ruby
+          source: |
+            require 'mailtrap'
+
+            client = Mailtrap::Client.new(api_key: 'YOUR_API_KEY')
+            messages = Mailtrap::InboundMessagesAPI.new(client)
+
+            # Pass last_id: page.last_id to fetch the next page.
+            inbox_id = 42
+            page = messages.list(inbox_id)
+            puts page.total_count
+        - lang: csharp
+          label: .NET
+          source: |
+            using Mailtrap;
+
+            using var mailtrapFactory = new MailtrapClientFactory("YOUR_API_KEY");
+            var client = mailtrapFactory.CreateClient();
+
+            var inboxId = 42;
+            var page = await client.Inbound().Inbox(inboxId).Messages().List();
+            Console.WriteLine(page.TotalCount);
+        - lang: java
+          label: Java
+          source: |
+            import io.mailtrap.config.MailtrapConfig;
+            import io.mailtrap.factory.MailtrapClientFactory;
+
+            var config = new MailtrapConfig.Builder().token("YOUR_API_KEY").build();
+            var client = MailtrapClientFactory.createMailtrapClient(config);
+
+            // Pass the previous page's last id to paginate (null for the first page).
+            long inboxId = 42L;
+            var page = client.inboundApi().messages().list(inboxId, null);
+            System.out.println(page.getTotalCount());
       responses:
         "200":
           description: List of messages
@@ -515,6 +1290,79 @@ paths:
           source: |
             curl -X GET https://mailtrap.io/api/inbound/inboxes/{inbox_id}/messages/{id} \
               -H 'Authorization: Bearer YOUR_API_KEY'
+        - lang: javascript
+          label: Node.js
+          source: |
+            import { MailtrapClient } from "mailtrap";
+
+            const client = new MailtrapClient({ token: "YOUR_API_KEY" });
+
+            const inboxId = 42;
+            const messageId = "1700000000000123";
+            const message = await client.inbound.messages.get(inboxId, messageId);
+            console.log(message.subject);
+        - lang: php
+          label: PHP
+          source: |
+            <?php
+            use Mailtrap\Config;
+            use Mailtrap\Helper\ResponseHelper;
+            use Mailtrap\MailtrapInboundClient;
+
+            $config = new Config($_ENV['MAILTRAP_API_KEY']);
+            $inboxId = $_ENV['MAILTRAP_INBOUND_INBOX_ID'];
+            $messages = (new MailtrapInboundClient($config))->messages($inboxId);
+
+            $messageId = $_ENV['MAILTRAP_INBOUND_MESSAGE_ID'];
+            $response = $messages->getById($messageId);
+            var_dump(ResponseHelper::toArray($response));
+        - lang: python
+          label: Python
+          source: |
+            import mailtrap as mt
+
+            client = mt.MailtrapClient(token="YOUR_API_KEY")
+
+            inbox_id = 42
+            message_id = "1700000000000123"
+            message = client.inbound_api.messages.get_by_id(inbox_id, message_id)
+            print(message.subject)
+        - lang: ruby
+          label: Ruby
+          source: |
+            require 'mailtrap'
+
+            client = Mailtrap::Client.new(api_key: 'YOUR_API_KEY')
+            messages = Mailtrap::InboundMessagesAPI.new(client)
+
+            inbox_id = 42
+            message_id = '1700000000000123'
+            puts messages.get(inbox_id, message_id)
+        - lang: csharp
+          label: .NET
+          source: |
+            using Mailtrap;
+
+            using var mailtrapFactory = new MailtrapClientFactory("YOUR_API_KEY");
+            var client = mailtrapFactory.CreateClient();
+
+            var inboxId = 42;
+            var messageId = "1700000000000123";
+            var message = await client.Inbound().Inbox(inboxId).Message(messageId).GetDetails();
+            Console.WriteLine(message.Subject);
+        - lang: java
+          label: Java
+          source: |
+            import io.mailtrap.config.MailtrapConfig;
+            import io.mailtrap.factory.MailtrapClientFactory;
+
+            var config = new MailtrapConfig.Builder().token("YOUR_API_KEY").build();
+            var client = MailtrapClientFactory.createMailtrapClient(config);
+
+            long inboxId = 42L;
+            String messageId = "1700000000000123";
+            var message = client.inboundApi().messages().get(inboxId, messageId);
+            System.out.println(message.getSubject());
       responses:
         "200":
           description: Message details
@@ -546,6 +1394,74 @@ paths:
           source: |
             curl -X DELETE https://mailtrap.io/api/inbound/inboxes/{inbox_id}/messages/{id} \
               -H 'Authorization: Bearer YOUR_API_KEY'
+        - lang: javascript
+          label: Node.js
+          source: |
+            import { MailtrapClient } from "mailtrap";
+
+            const client = new MailtrapClient({ token: "YOUR_API_KEY" });
+
+            const inboxId = 42;
+            const messageId = "1700000000000123";
+            await client.inbound.messages.delete(inboxId, messageId);
+        - lang: php
+          label: PHP
+          source: |
+            <?php
+            use Mailtrap\Config;
+            use Mailtrap\MailtrapInboundClient;
+
+            $config = new Config($_ENV['MAILTRAP_API_KEY']);
+            $inboxId = $_ENV['MAILTRAP_INBOUND_INBOX_ID'];
+            $messages = (new MailtrapInboundClient($config))->messages($inboxId);
+
+            $messageId = $_ENV['MAILTRAP_INBOUND_MESSAGE_ID'];
+            $response = $messages->delete($messageId);
+            echo $response->getStatusCode(); // 204
+        - lang: python
+          label: Python
+          source: |
+            import mailtrap as mt
+
+            client = mt.MailtrapClient(token="YOUR_API_KEY")
+
+            inbox_id = 42
+            message_id = "1700000000000123"
+            client.inbound_api.messages.delete(inbox_id, message_id)
+        - lang: ruby
+          label: Ruby
+          source: |
+            require 'mailtrap'
+
+            client = Mailtrap::Client.new(api_key: 'YOUR_API_KEY')
+            messages = Mailtrap::InboundMessagesAPI.new(client)
+
+            inbox_id = 42
+            message_id = '1700000000000123'
+            messages.delete(inbox_id, message_id)
+        - lang: csharp
+          label: .NET
+          source: |
+            using Mailtrap;
+
+            using var mailtrapFactory = new MailtrapClientFactory("YOUR_API_KEY");
+            var client = mailtrapFactory.CreateClient();
+
+            var inboxId = 42;
+            var messageId = "1700000000000123";
+            await client.Inbound().Inbox(inboxId).Message(messageId).Delete();
+        - lang: java
+          label: Java
+          source: |
+            import io.mailtrap.config.MailtrapConfig;
+            import io.mailtrap.factory.MailtrapClientFactory;
+
+            var config = new MailtrapConfig.Builder().token("YOUR_API_KEY").build();
+            var client = MailtrapClientFactory.createMailtrapClient(config);
+
+            long inboxId = 42L;
+            String messageId = "1700000000000123";
+            client.inboundApi().messages().delete(inboxId, messageId);
       responses:
         "204":
           description: Message deleted
@@ -598,6 +1514,110 @@ paths:
               -H 'Authorization: Bearer YOUR_API_KEY' \
               -H 'Content-Type: application/json' \
               -d '{ "text": "Thanks for reaching out. We are looking into it." }'
+        - lang: javascript
+          label: Node.js
+          source: |
+            import { MailtrapClient } from "mailtrap";
+
+            const client = new MailtrapClient({ token: "YOUR_API_KEY" });
+
+            const inboxId = 42;
+            const messageId = "1700000000000123";
+            const result = await client.inbound.messages.reply(inboxId, messageId, {
+              text: "Thanks for reaching out. We are looking into it.",
+              html: "<p>Thanks for reaching out. We are looking into it.</p>",
+            });
+            console.log(result.message_ids);
+        - lang: php
+          label: PHP
+          source: |
+            <?php
+            use Mailtrap\Config;
+            use Mailtrap\Helper\ResponseHelper;
+            use Mailtrap\MailtrapInboundClient;
+            use Symfony\Component\Mime\Email;
+
+            $config = new Config($_ENV['MAILTRAP_API_KEY']);
+            $inboxId = $_ENV['MAILTRAP_INBOUND_INBOX_ID'];
+            $messages = (new MailtrapInboundClient($config))->messages($inboxId);
+
+            $email = (new Email())
+                ->text('Thanks for reaching out. We are looking into it.')
+                ->html('<p>Thanks for reaching out. We are looking into it.</p>');
+
+            $messageId = $_ENV['MAILTRAP_INBOUND_MESSAGE_ID'];
+            $response = $messages->reply($messageId, $email);
+            var_dump(ResponseHelper::toArray($response));
+        - lang: python
+          label: Python
+          source: |
+            import mailtrap as mt
+
+            client = mt.MailtrapClient(token="YOUR_API_KEY")
+
+            inbox_id = 42
+            message_id = "1700000000000123"
+            result = client.inbound_api.messages.reply(
+                inbox_id,
+                message_id,
+                mt.ReplyInboundMessageParams(
+                    text="Thanks for reaching out. We are looking into it.",
+                    html="<p>Thanks for reaching out. We are looking into it.</p>",
+                ),
+            )
+            print(result.message_ids)
+        - lang: ruby
+          label: Ruby
+          source: |
+            require 'mailtrap'
+
+            client = Mailtrap::Client.new(api_key: 'YOUR_API_KEY')
+            messages = Mailtrap::InboundMessagesAPI.new(client)
+
+            inbox_id = 42
+            message_id = '1700000000000123'
+            result = messages.reply(
+              inbox_id, message_id,
+              text: 'Thanks for reaching out. We are looking into it.',
+              html: '<p>Thanks for reaching out. We are looking into it.</p>'
+            )
+            puts result.message_ids
+        - lang: csharp
+          label: .NET
+          source: |
+            using Mailtrap;
+            using Mailtrap.Inbound.Requests;
+
+            using var mailtrapFactory = new MailtrapClientFactory("YOUR_API_KEY");
+            var client = mailtrapFactory.CreateClient();
+
+            var inboxId = 42;
+            var messageId = "1700000000000123";
+            var result = await client.Inbound().Inbox(inboxId).Message(messageId)
+                .Reply(new ReplyInboundMessageRequest
+                {
+                    Text = "Thanks for reaching out. We are looking into it.",
+                    Html = "<p>Thanks for reaching out. We are looking into it.</p>",
+                });
+            Console.WriteLine(string.Join(",", result.MessageIds));
+        - lang: java
+          label: Java
+          source: |
+            import io.mailtrap.config.MailtrapConfig;
+            import io.mailtrap.factory.MailtrapClientFactory;
+            import io.mailtrap.model.request.inbound.InboundReplyRequest;
+
+            var config = new MailtrapConfig.Builder().token("YOUR_API_KEY").build();
+            var client = MailtrapClientFactory.createMailtrapClient(config);
+
+            long inboxId = 42L;
+            String messageId = "1700000000000123";
+            var result = client.inboundApi().messages().reply(inboxId, messageId,
+                InboundReplyRequest.builder()
+                    .text("Thanks for reaching out. We are looking into it.")
+                    .html("<p>Thanks for reaching out. We are looking into it.</p>")
+                    .build());
+            System.out.println(result);
       responses:
         "201":
           $ref: "#/components/responses/SendMessageAccepted"
@@ -647,6 +1667,98 @@ paths:
               -H 'Authorization: Bearer YOUR_API_KEY' \
               -H 'Content-Type: application/json' \
               -d '{ "text": "Thanks all. Adding my colleague to the thread." }'
+        - lang: javascript
+          label: Node.js
+          source: |
+            import { MailtrapClient } from "mailtrap";
+
+            const client = new MailtrapClient({ token: "YOUR_API_KEY" });
+
+            const inboxId = 42;
+            const messageId = "1700000000000123";
+            const result = await client.inbound.messages.replyAll(inboxId, messageId, {
+              text: "Thanks all. Adding my colleague to the thread.",
+            });
+            console.log(result.message_ids);
+        - lang: php
+          label: PHP
+          source: |
+            <?php
+            use Mailtrap\Config;
+            use Mailtrap\Helper\ResponseHelper;
+            use Mailtrap\MailtrapInboundClient;
+            use Symfony\Component\Mime\Email;
+
+            $config = new Config($_ENV['MAILTRAP_API_KEY']);
+            $inboxId = $_ENV['MAILTRAP_INBOUND_INBOX_ID'];
+            $messages = (new MailtrapInboundClient($config))->messages($inboxId);
+
+            $email = (new Email())->text('Thanks all. Adding my colleague to the thread.');
+
+            $messageId = $_ENV['MAILTRAP_INBOUND_MESSAGE_ID'];
+            $response = $messages->replyAll($messageId, $email);
+            var_dump(ResponseHelper::toArray($response));
+        - lang: python
+          label: Python
+          source: |
+            import mailtrap as mt
+
+            client = mt.MailtrapClient(token="YOUR_API_KEY")
+
+            inbox_id = 42
+            message_id = "1700000000000123"
+            result = client.inbound_api.messages.reply_all(
+                inbox_id,
+                message_id,
+                mt.ReplyInboundMessageParams(text="Thanks all. Adding my colleague to the thread."),
+            )
+            print(result.message_ids)
+        - lang: ruby
+          label: Ruby
+          source: |
+            require 'mailtrap'
+
+            client = Mailtrap::Client.new(api_key: 'YOUR_API_KEY')
+            messages = Mailtrap::InboundMessagesAPI.new(client)
+
+            inbox_id = 42
+            message_id = '1700000000000123'
+            result = messages.reply_all(inbox_id, message_id, text: 'Thanks all. Adding my colleague to the thread.')
+            puts result.message_ids
+        - lang: csharp
+          label: .NET
+          source: |
+            using Mailtrap;
+            using Mailtrap.Inbound.Requests;
+
+            using var mailtrapFactory = new MailtrapClientFactory("YOUR_API_KEY");
+            var client = mailtrapFactory.CreateClient();
+
+            var inboxId = 42;
+            var messageId = "1700000000000123";
+            var result = await client.Inbound().Inbox(inboxId).Message(messageId)
+                .ReplyAll(new ReplyInboundMessageRequest
+                {
+                    Text = "Thanks all. Adding my colleague to the thread.",
+                });
+            Console.WriteLine(string.Join(",", result.MessageIds));
+        - lang: java
+          label: Java
+          source: |
+            import io.mailtrap.config.MailtrapConfig;
+            import io.mailtrap.factory.MailtrapClientFactory;
+            import io.mailtrap.model.request.inbound.InboundReplyRequest;
+
+            var config = new MailtrapConfig.Builder().token("YOUR_API_KEY").build();
+            var client = MailtrapClientFactory.createMailtrapClient(config);
+
+            long inboxId = 42L;
+            String messageId = "1700000000000123";
+            var result = client.inboundApi().messages().replyAll(inboxId, messageId,
+                InboundReplyRequest.builder()
+                    .text("Thanks all. Adding my colleague to the thread.")
+                    .build());
+            System.out.println(result);
       responses:
         "201":
           $ref: "#/components/responses/SendMessageAccepted"
@@ -702,6 +1814,114 @@ paths:
               -H 'Authorization: Bearer YOUR_API_KEY' \
               -H 'Content-Type: application/json' \
               -d '{ "to": [{ "email": "colleague@example.com" }], "text": "Please take a look at the message below." }'
+        - lang: javascript
+          label: Node.js
+          source: |
+            import { MailtrapClient } from "mailtrap";
+
+            const client = new MailtrapClient({ token: "YOUR_API_KEY" });
+
+            const inboxId = 42;
+            const messageId = "1700000000000123";
+            const result = await client.inbound.messages.forward(inboxId, messageId, {
+              to: [{ email: "colleague@example.com" }],
+              text: "Please take a look at the message below.",
+            });
+            console.log(result.message_ids);
+        - lang: php
+          label: PHP
+          source: |
+            <?php
+            use Mailtrap\Config;
+            use Mailtrap\Helper\ResponseHelper;
+            use Mailtrap\MailtrapInboundClient;
+            use Symfony\Component\Mime\Address;
+            use Symfony\Component\Mime\Email;
+
+            $config = new Config($_ENV['MAILTRAP_API_KEY']);
+            $inboxId = $_ENV['MAILTRAP_INBOUND_INBOX_ID'];
+            $messages = (new MailtrapInboundClient($config))->messages($inboxId);
+
+            $email = (new Email())
+                ->to(new Address('colleague@example.com'))
+                ->text('Please take a look at the message below.');
+
+            $messageId = $_ENV['MAILTRAP_INBOUND_MESSAGE_ID'];
+            $response = $messages->forward($messageId, $email);
+            var_dump(ResponseHelper::toArray($response));
+        - lang: python
+          label: Python
+          source: |
+            import mailtrap as mt
+
+            client = mt.MailtrapClient(token="YOUR_API_KEY")
+
+            inbox_id = 42
+            message_id = "1700000000000123"
+            result = client.inbound_api.messages.forward(
+                inbox_id,
+                message_id,
+                mt.ForwardInboundMessageParams(
+                    to=[mt.Address(email="colleague@example.com")],
+                    text="Please take a look at the message below.",
+                ),
+            )
+            print(result.message_ids)
+        - lang: ruby
+          label: Ruby
+          source: |
+            require 'mailtrap'
+
+            client = Mailtrap::Client.new(api_key: 'YOUR_API_KEY')
+            messages = Mailtrap::InboundMessagesAPI.new(client)
+
+            inbox_id = 42
+            message_id = '1700000000000123'
+            result = messages.forward(
+              inbox_id, message_id,
+              to: [{ email: 'colleague@example.com' }],
+              text: 'Please take a look at the message below.'
+            )
+            puts result.message_ids
+        - lang: csharp
+          label: .NET
+          source: |
+            using Mailtrap;
+            using Mailtrap.Emails.Models;
+            using Mailtrap.Inbound.Requests;
+
+            using var mailtrapFactory = new MailtrapClientFactory("YOUR_API_KEY");
+            var client = mailtrapFactory.CreateClient();
+
+            var inboxId = 42;
+            var messageId = "1700000000000123";
+            var result = await client.Inbound().Inbox(inboxId).Message(messageId)
+                .Forward(new ForwardInboundMessageRequest
+                {
+                    To = [new EmailAddress("colleague@example.com")],
+                    Text = "Please take a look at the message below.",
+                });
+            Console.WriteLine(string.Join(",", result.MessageIds));
+        - lang: java
+          label: Java
+          source: |
+            import io.mailtrap.config.MailtrapConfig;
+            import io.mailtrap.factory.MailtrapClientFactory;
+            import io.mailtrap.model.request.emails.Address;
+            import io.mailtrap.model.request.inbound.InboundForwardRequest;
+            import java.util.List;
+
+            var config = new MailtrapConfig.Builder().token("YOUR_API_KEY").build();
+            var client = MailtrapClientFactory.createMailtrapClient(config);
+
+            long inboxId = 42L;
+            String messageId = "1700000000000123";
+            var result = client.inboundApi().messages().forward(inboxId, messageId,
+                InboundForwardRequest.builder()
+                    .to(List.of(new Address("colleague@example.com")))
+                    .text("Please take a look at the message below.")
+                    .build());
+            System.out.println(result);
       responses:
         "201":
           $ref: "#/components/responses/SendMessageAccepted"
@@ -753,6 +1973,79 @@ paths:
           source: |
             curl -X GET 'https://mailtrap.io/api/inbound/inboxes/{inbox_id}/threads' \
               -H 'Authorization: Bearer YOUR_API_KEY'
+        - lang: javascript
+          label: Node.js
+          source: |
+            import { MailtrapClient } from "mailtrap";
+
+            const client = new MailtrapClient({ token: "YOUR_API_KEY" });
+
+            // Pass { last_id: page.last_id } to fetch the next page.
+            const inboxId = 42;
+            const page = await client.inbound.threads.getList(inboxId);
+            console.log(page.data, page.total_count, page.last_id);
+        - lang: php
+          label: PHP
+          source: |
+            <?php
+            use Mailtrap\Config;
+            use Mailtrap\Helper\ResponseHelper;
+            use Mailtrap\MailtrapInboundClient;
+
+            $config = new Config($_ENV['MAILTRAP_API_KEY']);
+            $inboxId = $_ENV['MAILTRAP_INBOUND_INBOX_ID'];
+            $threads = (new MailtrapInboundClient($config))->threads($inboxId);
+
+            // Pass a last_id string to fetch the next page.
+            $response = $threads->getList();
+            var_dump(ResponseHelper::toArray($response));
+        - lang: python
+          label: Python
+          source: |
+            import mailtrap as mt
+
+            client = mt.MailtrapClient(token="YOUR_API_KEY")
+
+            # Pass last_id=page.last_id to fetch the next page.
+            inbox_id = 42
+            page = client.inbound_api.threads.get_list(inbox_id)
+            print(page.data, page.total_count, page.last_id)
+        - lang: ruby
+          label: Ruby
+          source: |
+            require 'mailtrap'
+
+            client = Mailtrap::Client.new(api_key: 'YOUR_API_KEY')
+            threads = Mailtrap::InboundThreadsAPI.new(client)
+
+            # Pass last_id: page.last_id to fetch the next page.
+            inbox_id = 42
+            page = threads.list(inbox_id)
+            puts page.total_count
+        - lang: csharp
+          label: .NET
+          source: |
+            using Mailtrap;
+
+            using var mailtrapFactory = new MailtrapClientFactory("YOUR_API_KEY");
+            var client = mailtrapFactory.CreateClient();
+
+            var inboxId = 42;
+            var page = await client.Inbound().Inbox(inboxId).Threads().List();
+            Console.WriteLine(page.TotalCount);
+        - lang: java
+          label: Java
+          source: |
+            import io.mailtrap.config.MailtrapConfig;
+            import io.mailtrap.factory.MailtrapClientFactory;
+
+            var config = new MailtrapConfig.Builder().token("YOUR_API_KEY").build();
+            var client = MailtrapClientFactory.createMailtrapClient(config);
+
+            // Pass the previous page's last id to paginate (null for the first page).
+            long inboxId = 42L;
+            var page = client.inboundApi().threads().list(inboxId, null);
+            System.out.println(page.getTotalCount());
       responses:
         "200":
           description: List of threads
@@ -823,6 +2116,79 @@ paths:
           source: |
             curl -X GET https://mailtrap.io/api/inbound/inboxes/{inbox_id}/threads/{id} \
               -H 'Authorization: Bearer YOUR_API_KEY'
+        - lang: javascript
+          label: Node.js
+          source: |
+            import { MailtrapClient } from "mailtrap";
+
+            const client = new MailtrapClient({ token: "YOUR_API_KEY" });
+
+            const inboxId = 42;
+            const threadId = "1700000000000124";
+            const thread = await client.inbound.threads.get(inboxId, threadId);
+            console.log(thread);
+        - lang: php
+          label: PHP
+          source: |
+            <?php
+            use Mailtrap\Config;
+            use Mailtrap\Helper\ResponseHelper;
+            use Mailtrap\MailtrapInboundClient;
+
+            $config = new Config($_ENV['MAILTRAP_API_KEY']);
+            $inboxId = $_ENV['MAILTRAP_INBOUND_INBOX_ID'];
+            $threads = (new MailtrapInboundClient($config))->threads($inboxId);
+
+            $threadId = $_ENV['MAILTRAP_INBOUND_THREAD_ID'];
+            $response = $threads->getById($threadId);
+            var_dump(ResponseHelper::toArray($response));
+        - lang: python
+          label: Python
+          source: |
+            import mailtrap as mt
+
+            client = mt.MailtrapClient(token="YOUR_API_KEY")
+
+            inbox_id = 42
+            thread_id = "1700000000000124"
+            thread = client.inbound_api.threads.get_by_id(inbox_id, thread_id)
+            print(thread)
+        - lang: ruby
+          label: Ruby
+          source: |
+            require 'mailtrap'
+
+            client = Mailtrap::Client.new(api_key: 'YOUR_API_KEY')
+            threads = Mailtrap::InboundThreadsAPI.new(client)
+
+            inbox_id = 42
+            thread_id = '1700000000000124'
+            puts threads.get(inbox_id, thread_id)
+        - lang: csharp
+          label: .NET
+          source: |
+            using Mailtrap;
+
+            using var mailtrapFactory = new MailtrapClientFactory("YOUR_API_KEY");
+            var client = mailtrapFactory.CreateClient();
+
+            var inboxId = 42;
+            var threadId = "1700000000000124";
+            var thread = await client.Inbound().Inbox(inboxId).Thread(threadId).GetDetails();
+            Console.WriteLine(thread.Messages.Count);
+        - lang: java
+          label: Java
+          source: |
+            import io.mailtrap.config.MailtrapConfig;
+            import io.mailtrap.factory.MailtrapClientFactory;
+
+            var config = new MailtrapConfig.Builder().token("YOUR_API_KEY").build();
+            var client = MailtrapClientFactory.createMailtrapClient(config);
+
+            long inboxId = 42L;
+            String threadId = "1700000000000124";
+            var thread = client.inboundApi().threads().get(inboxId, threadId);
+            System.out.println(thread);
       responses:
         "200":
           description: Thread details
@@ -922,6 +2288,74 @@ paths:
           source: |
             curl -X DELETE https://mailtrap.io/api/inbound/inboxes/{inbox_id}/threads/{id} \
               -H 'Authorization: Bearer YOUR_API_KEY'
+        - lang: javascript
+          label: Node.js
+          source: |
+            import { MailtrapClient } from "mailtrap";
+
+            const client = new MailtrapClient({ token: "YOUR_API_KEY" });
+
+            const inboxId = 42;
+            const threadId = "1700000000000124";
+            await client.inbound.threads.delete(inboxId, threadId);
+        - lang: php
+          label: PHP
+          source: |
+            <?php
+            use Mailtrap\Config;
+            use Mailtrap\MailtrapInboundClient;
+
+            $config = new Config($_ENV['MAILTRAP_API_KEY']);
+            $inboxId = $_ENV['MAILTRAP_INBOUND_INBOX_ID'];
+            $threads = (new MailtrapInboundClient($config))->threads($inboxId);
+
+            $threadId = $_ENV['MAILTRAP_INBOUND_THREAD_ID'];
+            $response = $threads->delete($threadId);
+            echo $response->getStatusCode(); // 204
+        - lang: python
+          label: Python
+          source: |
+            import mailtrap as mt
+
+            client = mt.MailtrapClient(token="YOUR_API_KEY")
+
+            inbox_id = 42
+            thread_id = "1700000000000124"
+            client.inbound_api.threads.delete(inbox_id, thread_id)
+        - lang: ruby
+          label: Ruby
+          source: |
+            require 'mailtrap'
+
+            client = Mailtrap::Client.new(api_key: 'YOUR_API_KEY')
+            threads = Mailtrap::InboundThreadsAPI.new(client)
+
+            inbox_id = 42
+            thread_id = '1700000000000124'
+            threads.delete(inbox_id, thread_id)
+        - lang: csharp
+          label: .NET
+          source: |
+            using Mailtrap;
+
+            using var mailtrapFactory = new MailtrapClientFactory("YOUR_API_KEY");
+            var client = mailtrapFactory.CreateClient();
+
+            var inboxId = 42;
+            var threadId = "1700000000000124";
+            await client.Inbound().Inbox(inboxId).Thread(threadId).Delete();
+        - lang: java
+          label: Java
+          source: |
+            import io.mailtrap.config.MailtrapConfig;
+            import io.mailtrap.factory.MailtrapClientFactory;
+
+            var config = new MailtrapConfig.Builder().token("YOUR_API_KEY").build();
+            var client = MailtrapClientFactory.createMailtrapClient(config);
+
+            long inboxId = 42L;
+            String threadId = "1700000000000124";
+            client.inboundApi().threads().delete(inboxId, threadId);
       responses:
         "204":
           description: Thread deleted
