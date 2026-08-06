@@ -1,0 +1,27 @@
+specs/account-management.openapi.yml
+  s_576b7c7847dbe9::t_0893b932035641 655-664
+  s_576b7c7847dbe9::t_ecafb605348ff5 1073-1140
+  s_576b7c7847dbe9::t_73fa7deba94254 732-798
+  s_576b7c7847dbe9::t_9964c3e3130696 489-505
+  s_576b7c7847dbe9::t_44c838749ddac2 975-1047
+  s_576b7c7847dbe9::t_c35484f4c0efc6 1169-1246
+  s_576b7c7847dbe9::t_912e232d9be5d9 1461-1528
+  s_576b7c7847dbe9::t_d8a10ba9f6828f 1571-1651
+  s_576b7c7847dbe9::t_b333be6aa6a71f 829-942
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.21",
+  "base_commit_sha": "769133055fc05bce4eb61684332dc0f7b889de23",
+  "prompts": {},
+  "sessions": {
+    "s_576b7c7847dbe9": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "48d8b14b-0d1c-434e-b1b9-68d02404448f",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Marcin Klocek <marcin.klocek@railsware.com>"
+    }
+  }
+}
