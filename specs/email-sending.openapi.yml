@@ -1526,10 +1526,10 @@ paths:
           source: |
             import { MailtrapClient } from "mailtrap";
 
-            const client = new MailtrapClient({ token: "YOUR_API_KEY" });
-
             const accountId = 1000001;
-            const stats = await client.stats(accountId).get({ start_date: "2026-01-01", end_date: "2026-01-31" });
+            const client = new MailtrapClient({ token: "YOUR_API_KEY", accountId });
+
+            const stats = await client.stats.get({ start_date: "2026-01-01", end_date: "2026-01-31" });
             console.log(stats);
         - lang: php
           label: PHP
@@ -1632,10 +1632,10 @@ paths:
           source: |
             import { MailtrapClient } from "mailtrap";
 
-            const client = new MailtrapClient({ token: "YOUR_API_KEY" });
-
             const accountId = 1000001;
-            const stats = await client.stats(accountId).byDomain({ start_date: "2026-01-01", end_date: "2026-01-31" });
+            const client = new MailtrapClient({ token: "YOUR_API_KEY", accountId });
+
+            const stats = await client.stats.byDomain({ start_date: "2026-01-01", end_date: "2026-01-31" });
             console.log(stats);
         - lang: php
           label: PHP
@@ -1753,10 +1753,10 @@ paths:
           source: |
             import { MailtrapClient } from "mailtrap";
 
-            const client = new MailtrapClient({ token: "YOUR_API_KEY" });
-
             const accountId = 1000001;
-            const stats = await client.stats(accountId).byCategory({ start_date: "2026-01-01", end_date: "2026-01-31" });
+            const client = new MailtrapClient({ token: "YOUR_API_KEY", accountId });
+
+            const stats = await client.stats.byCategory({ start_date: "2026-01-01", end_date: "2026-01-31" });
             console.log(stats);
         - lang: php
           label: PHP
@@ -1867,10 +1867,10 @@ paths:
           source: |
             import { MailtrapClient } from "mailtrap";
 
-            const client = new MailtrapClient({ token: "YOUR_API_KEY" });
-
             const accountId = 1000001;
-            const stats = await client.stats(accountId).byEmailServiceProvider({ start_date: "2026-01-01", end_date: "2026-01-31" });
+            const client = new MailtrapClient({ token: "YOUR_API_KEY", accountId });
+
+            const stats = await client.stats.byEmailServiceProvider({ start_date: "2026-01-01", end_date: "2026-01-31" });
             console.log(stats);
         - lang: php
           label: PHP
@@ -1981,10 +1981,10 @@ paths:
           source: |
             import { MailtrapClient } from "mailtrap";
 
-            const client = new MailtrapClient({ token: "YOUR_API_KEY" });
-
             const accountId = 1000001;
-            const stats = await client.stats(accountId).byDate({ start_date: "2026-01-01", end_date: "2026-01-31" });
+            const client = new MailtrapClient({ token: "YOUR_API_KEY", accountId });
+
+            const stats = await client.stats.byDate({ start_date: "2026-01-01", end_date: "2026-01-31" });
             console.log(stats);
         - lang: php
           label: PHP
@@ -2100,10 +2100,10 @@ paths:
           source: |
             import { MailtrapClient } from "mailtrap";
 
-            const client = new MailtrapClient({ token: "YOUR_API_KEY" });
-
             const accountId = 1000001;
-            const page = await client.emailLogs(accountId).getList();
+            const client = new MailtrapClient({ token: "YOUR_API_KEY", accountId });
+
+            const page = await client.emailLogs.getList();
             console.log(page);
         - lang: php
           label: PHP
@@ -2214,11 +2214,11 @@ paths:
           source: |
             import { MailtrapClient } from "mailtrap";
 
-            const client = new MailtrapClient({ token: "YOUR_API_KEY" });
-
             const accountId = 1000001;
+            const client = new MailtrapClient({ token: "YOUR_API_KEY", accountId });
+
             const messageId = "a1b2c3d4-5e6f-7a8b-9c0d-1e2f3a4b5c6d";
-            const message = await client.emailLogs(accountId).get(messageId);
+            const message = await client.emailLogs.get(messageId);
             console.log(message.subject);
         - lang: php
           label: PHP
@@ -2328,11 +2328,11 @@ paths:
           source: |
             import { MailtrapClient } from "mailtrap";
 
-            const client = new MailtrapClient({ token: "YOUR_API_KEY" });
-
             const accountId = 1000001;
+            const client = new MailtrapClient({ token: "YOUR_API_KEY", accountId });
+
             // The signing secret is returned only on creation — store it securely.
-            const webhook = await client.webhooks(accountId).create({
+            const webhook = await client.webhooks.create({
               url: "https://example.com/mailtrap/webhooks",
               webhook_type: "email_sending",
               payload_format: "json",
@@ -2581,10 +2581,10 @@ paths:
           source: |
             import { MailtrapClient } from "mailtrap";
 
-            const client = new MailtrapClient({ token: "YOUR_API_KEY" });
-
             const accountId = 1000001;
-            const webhooks = await client.webhooks(accountId).getList();
+            const client = new MailtrapClient({ token: "YOUR_API_KEY", accountId });
+
+            const webhooks = await client.webhooks.getList();
             console.log(webhooks);
         - lang: php
           label: PHP
@@ -2694,11 +2694,11 @@ paths:
           source: |
             import { MailtrapClient } from "mailtrap";
 
-            const client = new MailtrapClient({ token: "YOUR_API_KEY" });
-
             const accountId = 1000001;
+            const client = new MailtrapClient({ token: "YOUR_API_KEY", accountId });
+
             const webhookId = 123;
-            const webhook = await client.webhooks(accountId).get(webhookId);
+            const webhook = await client.webhooks.get(webhookId);
             console.log(webhook);
         - lang: php
           label: PHP
@@ -2816,11 +2816,11 @@ paths:
           source: |
             import { MailtrapClient } from "mailtrap";
 
-            const client = new MailtrapClient({ token: "YOUR_API_KEY" });
-
             const accountId = 1000001;
+            const client = new MailtrapClient({ token: "YOUR_API_KEY", accountId });
+
             const webhookId = 123;
-            const webhook = await client.webhooks(accountId).update(webhookId, { active: false });
+            const webhook = await client.webhooks.update(webhookId, { active: false });
             console.log(webhook);
         - lang: php
           label: PHP
@@ -2995,11 +2995,11 @@ paths:
           source: |
             import { MailtrapClient } from "mailtrap";
 
-            const client = new MailtrapClient({ token: "YOUR_API_KEY" });
-
             const accountId = 1000001;
+            const client = new MailtrapClient({ token: "YOUR_API_KEY", accountId });
+
             const webhookId = 123;
-            await client.webhooks(accountId).delete(webhookId);
+            await client.webhooks.delete(webhookId);
         - lang: php
           label: PHP
           source: |

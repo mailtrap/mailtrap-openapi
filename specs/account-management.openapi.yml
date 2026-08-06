@@ -734,10 +734,10 @@ paths:
           source: |
             import { MailtrapClient } from "mailtrap";
 
-            const client = new MailtrapClient({ token: "YOUR_API_KEY" });
-
             const accountId = 1000001;
-            const tokens = await client.general(accountId).apiTokens.getList();
+            const client = new MailtrapClient({ token: "YOUR_API_KEY", accountId });
+
+            const tokens = await client.general.apiTokens.getList();
             console.log(tokens);
         - lang: php
           label: PHP
@@ -831,11 +831,11 @@ paths:
           source: |
             import { MailtrapClient } from "mailtrap";
 
-            const client = new MailtrapClient({ token: "YOUR_API_KEY" });
-
             const accountId = 1000001;
+            const client = new MailtrapClient({ token: "YOUR_API_KEY", accountId });
+
             // The full token value is returned only once — store it securely.
-            const token = await client.general(accountId).apiTokens.create({
+            const token = await client.general.apiTokens.create({
               name: "My API Token",
               resources: [
                 { resource_type: "account", resource_id: accountId, access_level: 100 },
@@ -977,11 +977,11 @@ paths:
           source: |
             import { MailtrapClient } from "mailtrap";
 
-            const client = new MailtrapClient({ token: "YOUR_API_KEY" });
-
             const accountId = 1000001;
+            const client = new MailtrapClient({ token: "YOUR_API_KEY", accountId });
+
             const apiTokenId = 123;
-            const token = await client.general(accountId).apiTokens.get(apiTokenId);
+            const token = await client.general.apiTokens.get(apiTokenId);
             console.log(token);
         - lang: php
           label: PHP
@@ -1075,11 +1075,11 @@ paths:
           source: |
             import { MailtrapClient } from "mailtrap";
 
-            const client = new MailtrapClient({ token: "YOUR_API_KEY" });
-
             const accountId = 1000001;
+            const client = new MailtrapClient({ token: "YOUR_API_KEY", accountId });
+
             const apiTokenId = 123;
-            await client.general(accountId).apiTokens.delete(apiTokenId);
+            await client.general.apiTokens.delete(apiTokenId);
         - lang: php
           label: PHP
           source: |
@@ -1171,12 +1171,12 @@ paths:
           source: |
             import { MailtrapClient } from "mailtrap";
 
-            const client = new MailtrapClient({ token: "YOUR_API_KEY" });
-
             const accountId = 1000001;
+            const client = new MailtrapClient({ token: "YOUR_API_KEY", accountId });
+
             const apiTokenId = 123;
             // The new token value is returned only once — store it securely.
-            const token = await client.general(accountId).apiTokens.reset(apiTokenId);
+            const token = await client.general.apiTokens.reset(apiTokenId);
             console.log(token);
         - lang: php
           label: PHP
@@ -1463,10 +1463,10 @@ paths:
           source: |
             import { MailtrapClient } from "mailtrap";
 
-            const client = new MailtrapClient({ token: "YOUR_API_KEY" });
-
             const organizationId = 2000002;
-            const subAccounts = await client.organizations(organizationId).subAccounts.getList();
+            const client = new MailtrapClient({ token: "YOUR_API_KEY", organizationId });
+
+            const subAccounts = await client.organizations.subAccounts.getList();
             console.log(subAccounts);
         - lang: php
           label: PHP
@@ -1573,10 +1573,10 @@ paths:
           source: |
             import { MailtrapClient } from "mailtrap";
 
-            const client = new MailtrapClient({ token: "YOUR_API_KEY" });
-
             const organizationId = 2000002;
-            const subAccount = await client.organizations(organizationId).subAccounts
+            const client = new MailtrapClient({ token: "YOUR_API_KEY", organizationId });
+
+            const subAccount = await client.organizations.subAccounts
               .create({ name: "New Team Account" });
             console.log(subAccount);
         - lang: php
