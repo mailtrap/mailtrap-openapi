@@ -1784,6 +1784,17 @@ paths:
             result = inboxes_api.enable_email_address(inbox_id)
 
             print(result)
+        - lang: ruby
+          label: Ruby
+          source: |
+            require 'mailtrap'
+
+            client = Mailtrap::Client.new(api_key: 'YOUR_API_KEY')
+            account_id = 1000001
+            inboxes = Mailtrap::InboxesAPI.new(account_id, client)
+
+            inbox_id = 12345
+            puts inboxes.toggle_email_username(inbox_id)
         - lang: csharp
           label: .NET
           source: |
@@ -1891,6 +1902,17 @@ paths:
             result = inboxes_api.reset_email_username(inbox_id)
 
             print(result)
+        - lang: ruby
+          label: Ruby
+          source: |
+            require 'mailtrap'
+
+            client = Mailtrap::Client.new(api_key: 'YOUR_API_KEY')
+            account_id = 1000001
+            inboxes = Mailtrap::InboxesAPI.new(account_id, client)
+
+            inbox_id = 12345
+            puts inboxes.reset_email_username(inbox_id)
         - lang: csharp
           label: .NET
           source: |

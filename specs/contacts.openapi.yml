@@ -701,6 +701,21 @@ paths:
                 )
             )
             print(event)
+        - lang: ruby
+          label: Ruby
+          source: |
+            require 'mailtrap'
+
+            client = Mailtrap::Client.new(api_key: 'YOUR_API_KEY')
+            account_id = 1000001
+            contact_events = Mailtrap::ContactEventsAPI.new(account_id, client)
+
+            event = contact_events.create(
+              'contact_id',
+              name: 'UserLogin',
+              params: { user_id: 101, is_active: true }
+            )
+            puts event
         - lang: csharp
           label: C#
           source: |
@@ -820,6 +835,21 @@ paths:
                 ]
             )
             print(f"Export started: {export_job.id}")
+        - lang: ruby
+          label: Ruby
+          source: |
+            require 'mailtrap'
+
+            client = Mailtrap::Client.new(api_key: 'YOUR_API_KEY')
+            account_id = 1000001
+            contact_exports = Mailtrap::ContactExportsAPI.new(account_id, client)
+
+            export_job = contact_exports.create(
+              filters: [
+                { name: 'list_id', operator: 'equal', value: [1, 2] }
+              ]
+            )
+            puts export_job
         - lang: csharp
           label: C#
           source: |
@@ -929,6 +959,18 @@ paths:
 
             export_status = client.contacts_api.contact_exports.get_by_id(export_id)
             print(f"Status: {export_status.status}, URL: {export_status.url}")
+        - lang: ruby
+          label: Ruby
+          source: |
+            require 'mailtrap'
+
+            client = Mailtrap::Client.new(api_key: 'YOUR_API_KEY')
+            account_id = 1000001
+            contact_exports = Mailtrap::ContactExportsAPI.new(account_id, client)
+
+            export_id = 12345
+            export_status = contact_exports.get(export_id)
+            puts export_status
         - lang: csharp
           label: C#
           source: |

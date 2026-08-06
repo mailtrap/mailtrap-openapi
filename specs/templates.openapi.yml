@@ -331,6 +331,32 @@ paths:
             )
             template = templates.get(template_id)
             puts "Template: #{template}"
+        - lang: csharp
+          label: .NET
+          source: |
+            using Mailtrap;
+
+            using var mailtrapFactory = new MailtrapClientFactory("YOUR_API_KEY");
+            var client = mailtrapFactory.CreateClient();
+
+            var accountId = 1000001;
+            var templateId = 12345;
+            var template = await client.Account(accountId).EmailTemplate(templateId).GetDetails();
+            Console.WriteLine(template.Name);
+        - lang: java
+          label: Java
+          source: |
+            import io.mailtrap.config.MailtrapConfig;
+            import io.mailtrap.factory.MailtrapClientFactory;
+
+            var config = new MailtrapConfig.Builder().token("YOUR_API_KEY").build();
+            var client = MailtrapClientFactory.createMailtrapClient(config);
+
+            long accountId = 1000001L;
+            long templateId = 12345L;
+            var template = client.emailTemplatesApi().emailTemplates()
+                .getEmailTemplate(accountId, templateId);
+            System.out.println(template);
       responses:
         '200':
           description: Returns attributes of the email template.
@@ -433,6 +459,43 @@ paths:
               client
             )
             templates.update(EMAIL_TEMPLATE_ID, name: 'Welcome Updated')
+        - lang: csharp
+          label: .NET
+          source: |
+            using Mailtrap;
+            using Mailtrap.EmailTemplates.Requests;
+
+            using var mailtrapFactory = new MailtrapClientFactory("YOUR_API_KEY");
+            var client = mailtrapFactory.CreateClient();
+
+            var accountId = 1000001;
+            var templateId = 12345;
+            var request = new UpdateEmailTemplateRequest("Updated Welcome Email", "Transactional", "Updated Subject")
+            {
+                BodyHtml = "<div>Updated HTML Body</div>",
+                BodyText = "Updated Text Body",
+            };
+            var template = await client.Account(accountId).EmailTemplate(templateId).Update(request);
+            Console.WriteLine(template.Name);
+        - lang: java
+          label: Java
+          source: |
+            import io.mailtrap.config.MailtrapConfig;
+            import io.mailtrap.factory.MailtrapClientFactory;
+            import io.mailtrap.model.request.emailtemplates.EmailTemplate;
+            import io.mailtrap.model.request.emailtemplates.UpdateEmailTemplateRequest;
+
+            var config = new MailtrapConfig.Builder().token("YOUR_API_KEY").build();
+            var client = MailtrapClientFactory.createMailtrapClient(config);
+
+            long accountId = 1000001L;
+            long templateId = 12345L;
+            var request = new UpdateEmailTemplateRequest(
+                new EmailTemplate("Updated Welcome Email", "Transactional", "Updated Subject",
+                    "Updated Text Body", "<div>Updated HTML Body</div>"));
+            var template = client.emailTemplatesApi().emailTemplates()
+                .updateEmailTemplate(accountId, templateId, request);
+            System.out.println(template);
       requestBody:
         content:
           application/json:
@@ -517,6 +580,29 @@ paths:
               client
             )
             templates.delete(EMAIL_TEMPLATE_ID)
+        - lang: csharp
+          label: .NET
+          source: |
+            using Mailtrap;
+
+            using var mailtrapFactory = new MailtrapClientFactory("YOUR_API_KEY");
+            var client = mailtrapFactory.CreateClient();
+
+            var accountId = 1000001;
+            var templateId = 12345;
+            await client.Account(accountId).EmailTemplate(templateId).Delete();
+        - lang: java
+          label: Java
+          source: |
+            import io.mailtrap.config.MailtrapConfig;
+            import io.mailtrap.factory.MailtrapClientFactory;
+
+            var config = new MailtrapConfig.Builder().token("YOUR_API_KEY").build();
+            var client = MailtrapClientFactory.createMailtrapClient(config);
+
+            long accountId = 1000001L;
+            long templateId = 12345L;
+            client.emailTemplatesApi().emailTemplates().deleteEmailTemplate(accountId, templateId);
       responses:
         '204':
           description: No Content
