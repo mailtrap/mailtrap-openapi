@@ -57,7 +57,7 @@ paths:
           label: "cURL"
           source: |
             curl -X GET "https://mailtrap.io/api/email_campaigns?per_page=50&token=1" \
-              -H 'Api-Token: YOUR_API_TOKEN'
+              -H 'Api-Token: YOUR_API_KEY'
     post:
       operationId: createEmailCampaign
       summary: Create an email campaign
@@ -93,7 +93,7 @@ paths:
           label: "cURL — create a draft"
           source: |
             curl -X POST "https://mailtrap.io/api/email_campaigns" \
-              -H 'Api-Token: YOUR_API_TOKEN' \
+              -H 'Api-Token: YOUR_API_KEY' \
               -H 'Content-Type: application/json' \
               -d '{
                 "name": "Spring Sale",
@@ -132,7 +132,7 @@ paths:
           label: "cURL"
           source: |
             curl -X GET "https://mailtrap.io/api/email_campaigns/4567" \
-              -H 'Api-Token: YOUR_API_TOKEN'
+              -H 'Api-Token: YOUR_API_KEY'
     patch:
       operationId: updateEmailCampaign
       summary: Update an email campaign
@@ -177,7 +177,7 @@ paths:
           label: "cURL — edit a draft (subject + design)"
           source: |
             curl -X PATCH "https://mailtrap.io/api/email_campaigns/4567" \
-              -H 'Api-Token: YOUR_API_TOKEN' \
+              -H 'Api-Token: YOUR_API_KEY' \
               -H 'Content-Type: application/json' \
               -d '{
                 "name": "Spring Sale (updated)",
@@ -214,7 +214,7 @@ paths:
           label: "cURL"
           source: |
             curl -X DELETE "https://mailtrap.io/api/email_campaigns/4567" \
-              -H 'Api-Token: YOUR_API_TOKEN'
+              -H 'Api-Token: YOUR_API_KEY'
   "/api/email_campaigns/{email_campaign_id}/start":
     post:
       operationId: startEmailCampaign
@@ -247,7 +247,7 @@ paths:
           label: "cURL"
           source: |
             curl -X POST "https://mailtrap.io/api/email_campaigns/4567/start" \
-              -H 'Api-Token: YOUR_API_TOKEN'
+              -H 'Api-Token: YOUR_API_KEY'
   "/api/email_campaigns/{email_campaign_id}/schedule":
     post:
       operationId: scheduleEmailCampaign
@@ -287,7 +287,7 @@ paths:
           label: "cURL"
           source: |
             curl -X POST "https://mailtrap.io/api/email_campaigns/4567/schedule" \
-              -H 'Api-Token: YOUR_API_TOKEN' \
+              -H 'Api-Token: YOUR_API_KEY' \
               -H 'Content-Type: application/json' \
               -d '{ "datetime": "2026-06-01T09:00:00.000Z" }'
   "/api/email_campaigns/{email_campaign_id}/cancel":
@@ -320,7 +320,7 @@ paths:
           label: "cURL"
           source: |
             curl -X POST "https://mailtrap.io/api/email_campaigns/4567/cancel" \
-              -H 'Api-Token: YOUR_API_TOKEN'
+              -H 'Api-Token: YOUR_API_KEY'
   "/api/email_campaigns/{email_campaign_id}/terminate":
     post:
       operationId: terminateEmailCampaign
@@ -351,7 +351,7 @@ paths:
           label: "cURL"
           source: |
             curl -X POST "https://mailtrap.io/api/email_campaigns/4567/terminate" \
-              -H 'Api-Token: YOUR_API_TOKEN'
+              -H 'Api-Token: YOUR_API_KEY'
   "/api/email_campaigns/{email_campaign_id}/reset":
     post:
       operationId: resetEmailCampaign
@@ -381,7 +381,7 @@ paths:
           label: "cURL"
           source: |
             curl -X POST "https://mailtrap.io/api/email_campaigns/4567/reset" \
-              -H 'Api-Token: YOUR_API_TOKEN'
+              -H 'Api-Token: YOUR_API_KEY'
   "/api/email_campaigns/{email_campaign_id}/stats":
     get:
       operationId: getEmailCampaignStats
@@ -419,7 +419,7 @@ paths:
           label: "cURL"
           source: |
             curl -X GET "https://mailtrap.io/api/email_campaigns/4567/stats?start_date=2026-05-01&end_date=2026-05-31" \
-              -H 'Api-Token: YOUR_API_TOKEN'
+              -H 'Api-Token: YOUR_API_KEY'
 components:
   securitySchemes:
     HeaderAuth:

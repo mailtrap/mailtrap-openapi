@@ -48,14 +48,14 @@ paths:
           label: 'cURL'
           source: |
             curl -X GET https://mailtrap.io/api/accounts \
-              -H 'Authorization: Bearer YOUR_API_TOKEN'
+              -H 'Authorization: Bearer YOUR_API_KEY'
         - lang: javascript
           label: Node.js
           source: |
             import { MailtrapClient } from "mailtrap";
 
             const client = new MailtrapClient({
-              token: "YOUR_API_TOKEN"
+              token: "YOUR_API_KEY"
             });
 
             async function listAccounts() {
@@ -81,7 +81,7 @@ paths:
           source: |
             import mailtrap as mt
 
-            client = mt.MailtrapClient(token="YOUR_API_TOKEN")
+            client = mt.MailtrapClient(token="YOUR_API_KEY")
 
             accounts = client.general_api.accounts.get_list()
 
@@ -123,7 +123,7 @@ paths:
             import io.mailtrap.factory.MailtrapClientFactory;
 
             var config = new MailtrapConfig.Builder()
-                .token("YOUR_API_TOKEN")
+                .token("YOUR_API_KEY")
                 .build();
 
             var client = MailtrapClientFactory.createMailtrapClient(config);
@@ -181,7 +181,7 @@ paths:
           label: 'cURL'
           source: |
             curl -X GET https://mailtrap.io/api/account_accesses \
-              -H 'Authorization: Bearer YOUR_API_TOKEN'
+              -H 'Authorization: Bearer YOUR_API_KEY'
         - lang: javascript
           label: Node.js
           source: |
@@ -310,7 +310,7 @@ paths:
           label: 'cURL'
           source: |
             curl -X DELETE https://mailtrap.io/api/account_accesses/{account_access_id} \
-              -H 'Authorization: Bearer YOUR_API_TOKEN'
+              -H 'Authorization: Bearer YOUR_API_KEY'
         - lang: javascript
           label: Node.js
           source: |
@@ -415,7 +415,7 @@ paths:
           label: 'cURL'
           source: |
             curl -X PUT https://mailtrap.io/api/account_accesses/{account_access_id}/permissions/bulk \
-              -H 'Authorization: Bearer YOUR_API_TOKEN' \
+              -H 'Authorization: Bearer YOUR_API_KEY' \
               -H 'Content-Type: application/json' \
               -d '{
                 "permissions": [
@@ -485,6 +485,23 @@ paths:
                         resource_id="3281", resource_type="account", access_level="viewer"
                     )
                 ]
+            )
+        - lang: ruby
+          label: Ruby
+          source: |
+            require 'mailtrap'
+
+            client = Mailtrap::Client.new(api_key: 'YOUR_API_KEY')
+            account_id = 1000001
+            permissions = Mailtrap::PermissionsAPI.new(account_id, client)
+
+            account_access_id = 5142
+            permissions.bulk_update(
+              account_access_id,
+              [
+                { resource_id: '3281', resource_type: 'account', access_level: 'viewer' },
+                { resource_id: '3809', resource_type: 'sandbox', _destroy: true }
+              ]
             )
         - lang: csharp
           label: C#
@@ -599,7 +616,7 @@ paths:
           label: 'cURL'
           source: |
             curl -X GET https://mailtrap.io/api/permissions/resources \
-              -H 'Authorization: Bearer YOUR_API_TOKEN'
+              -H 'Authorization: Bearer YOUR_API_KEY'
         - lang: javascript
           label: Node.js
           source: |
@@ -635,6 +652,16 @@ paths:
             client = mt.MailtrapClient(token="YOUR_API_KEY")
             resources = client.general_api.permissions.get_resources(account_id)
             print(resources)
+        - lang: ruby
+          label: Ruby
+          source: |
+            require 'mailtrap'
+
+            client = Mailtrap::Client.new(api_key: 'YOUR_API_KEY')
+            account_id = 1000001
+            permissions = Mailtrap::PermissionsAPI.new(account_id, client)
+
+            puts permissions.resources
         - lang: csharp
           label: C#
           source: |
@@ -701,7 +728,74 @@ paths:
           label: cURL
           source: |
             curl -X GET https://mailtrap.io/api/api_tokens \
-              -H 'Authorization: Bearer YOUR_API_TOKEN'
+              -H 'Authorization: Bearer YOUR_API_KEY'
+        - lang: javascript
+          label: Node.js
+          source: |
+            import { MailtrapClient } from "mailtrap";
+
+            const accountId = 1000001;
+            const client = new MailtrapClient({ token: "YOUR_API_KEY", accountId });
+
+            const tokens = await client.general.apiTokens.getList();
+            console.log(tokens);
+        - lang: php
+          label: PHP
+          source: |
+            <?php
+            use Mailtrap\Config;
+            use Mailtrap\Helper\ResponseHelper;
+            use Mailtrap\MailtrapGeneralClient;
+
+            $config = new Config($_ENV['MAILTRAP_API_KEY']);
+            $accountId = $_ENV['MAILTRAP_ACCOUNT_ID'];
+            $apiTokens = (new MailtrapGeneralClient($config))->apiTokens($accountId);
+
+            $response = $apiTokens->getApiTokens();
+            var_dump(ResponseHelper::toArray($response));
+        - lang: python
+          label: Python
+          source: |
+            import mailtrap as mt
+
+            client = mt.MailtrapClient(token="YOUR_API_KEY")
+
+            account_id = 1000001
+            tokens = client.general_api.api_tokens.get_list(account_id)
+            print(tokens)
+        - lang: ruby
+          label: Ruby
+          source: |
+            require 'mailtrap'
+
+            client = Mailtrap::Client.new(api_key: 'YOUR_API_KEY')
+            account_id = 1000001
+            api_tokens = Mailtrap::ApiTokensAPI.new(account_id, client)
+
+            puts api_tokens.list
+        - lang: csharp
+          label: .NET
+          source: |
+            using Mailtrap;
+
+            using var mailtrapFactory = new MailtrapClientFactory("YOUR_API_KEY");
+            var client = mailtrapFactory.CreateClient();
+
+            var accountId = 1000001;
+            var tokens = await client.Account(accountId).ApiTokens().GetAll();
+            Console.WriteLine(tokens.Count);
+        - lang: java
+          label: Java
+          source: |
+            import io.mailtrap.config.MailtrapConfig;
+            import io.mailtrap.factory.MailtrapClientFactory;
+
+            var config = new MailtrapConfig.Builder().token("YOUR_API_KEY").build();
+            var client = MailtrapClientFactory.createMailtrapClient(config);
+
+            long accountId = 1000001L;
+            var tokens = client.generalApi().apiTokens().getAllApiTokens(accountId);
+            System.out.println(tokens);
       responses:
         '200':
           description: List of API tokens
@@ -724,7 +818,7 @@ paths:
           label: cURL
           source: |
             curl -X POST https://mailtrap.io/api/api_tokens \
-              -H 'Authorization: Bearer YOUR_API_TOKEN' \
+              -H 'Authorization: Bearer YOUR_API_KEY' \
               -H 'Content-Type: application/json' \
               -d '{
                 "name": "My API Token",
@@ -732,6 +826,120 @@ paths:
                   {"resource_type": "account", "resource_id": 3229, "access_level": 100}
                 ]
               }'
+        - lang: javascript
+          label: Node.js
+          source: |
+            import { MailtrapClient } from "mailtrap";
+
+            const accountId = 1000001;
+            const client = new MailtrapClient({ token: "YOUR_API_KEY", accountId });
+
+            // The full token value is returned only once — store it securely.
+            const token = await client.general.apiTokens.create({
+              name: "My API Token",
+              resources: [
+                { resource_type: "account", resource_id: accountId, access_level: 100 },
+              ],
+            });
+            console.log(token);
+        - lang: php
+          label: PHP
+          source: |
+            <?php
+            use Mailtrap\Config;
+            use Mailtrap\DTO\Request\Permission\CreateOrUpdatePermission;
+            use Mailtrap\DTO\Request\Permission\PermissionInterface;
+            use Mailtrap\DTO\Request\Permission\Permissions;
+            use Mailtrap\Helper\ResponseHelper;
+            use Mailtrap\MailtrapGeneralClient;
+
+            $config = new Config($_ENV['MAILTRAP_API_KEY']);
+            $accountId = $_ENV['MAILTRAP_ACCOUNT_ID'];
+            $apiTokens = (new MailtrapGeneralClient($config))->apiTokens($accountId);
+
+            $permissions = new Permissions(
+                new CreateOrUpdatePermission($accountId, PermissionInterface::TYPE_ACCOUNT, 100)
+            );
+
+            $response = $apiTokens->createApiToken('My API Token', $permissions);
+            var_dump(ResponseHelper::toArray($response));
+        - lang: python
+          label: Python
+          source: |
+            import mailtrap as mt
+
+            client = mt.MailtrapClient(token="YOUR_API_KEY")
+
+            account_id = 1000001
+            # The full token value is returned only once — store it securely.
+            token = client.general_api.api_tokens.create(
+                account_id=account_id,
+                token_params=mt.CreateApiTokenParams(
+                    name="My API Token",
+                    resources=[
+                        mt.ApiTokenResource(
+                            resource_type="account", resource_id=account_id, access_level=100
+                        )
+                    ],
+                ),
+            )
+            print(token)
+        - lang: ruby
+          label: Ruby
+          source: |
+            require 'mailtrap'
+
+            client = Mailtrap::Client.new(api_key: 'YOUR_API_KEY')
+            account_id = 1000001
+            api_tokens = Mailtrap::ApiTokensAPI.new(account_id, client)
+
+            # The full token value is returned only once — store it securely.
+            token = api_tokens.create(
+              name: 'My API Token',
+              resources: [
+                { resource_type: 'account', resource_id: account_id, access_level: 100 }
+              ]
+            )
+            puts token
+        - lang: csharp
+          label: .NET
+          source: |
+            using Mailtrap;
+            using Mailtrap.ApiTokens.Requests;
+            using Mailtrap.Core.Models;
+
+            using var mailtrapFactory = new MailtrapClientFactory("YOUR_API_KEY");
+            var client = mailtrapFactory.CreateClient();
+
+            var accountId = 1000001;
+            var request = new CreateApiTokenRequest { Name = "My API Token" };
+            request.Resources.Add(new ApiTokenAccessRequest(ResourceType.Account, accountId, AccessLevel.Admin));
+
+            // The full token value is returned only once — store it securely.
+            var token = await client.Account(accountId).ApiTokens().Create(request);
+            Console.WriteLine(token.Token);
+        - lang: java
+          label: Java
+          source: |
+            import io.mailtrap.config.MailtrapConfig;
+            import io.mailtrap.factory.MailtrapClientFactory;
+            import io.mailtrap.model.AccessLevel;
+            import io.mailtrap.model.ResourceType;
+            import io.mailtrap.model.request.apitokens.ApiTokenResource;
+            import io.mailtrap.model.request.apitokens.CreateApiTokenRequest;
+            import java.util.List;
+
+            var config = new MailtrapConfig.Builder().token("YOUR_API_KEY").build();
+            var client = MailtrapClientFactory.createMailtrapClient(config);
+
+            long accountId = 1000001L;
+            var request = new CreateApiTokenRequest(
+                "My API Token",
+                List.of(new ApiTokenResource(ResourceType.ACCOUNT, accountId, AccessLevel.ADMIN)));
+
+            // The full token value is returned only once — store it securely.
+            var token = client.generalApi().apiTokens().createApiToken(accountId, request);
+            System.out.println(token);
       requestBody:
         required: true
         content:
@@ -763,7 +971,80 @@ paths:
           label: cURL
           source: |
             curl -X GET https://mailtrap.io/api/api_tokens/{id} \
-              -H 'Authorization: Bearer YOUR_API_TOKEN'
+              -H 'Authorization: Bearer YOUR_API_KEY'
+        - lang: javascript
+          label: Node.js
+          source: |
+            import { MailtrapClient } from "mailtrap";
+
+            const accountId = 1000001;
+            const client = new MailtrapClient({ token: "YOUR_API_KEY", accountId });
+
+            const apiTokenId = 123;
+            const token = await client.general.apiTokens.get(apiTokenId);
+            console.log(token);
+        - lang: php
+          label: PHP
+          source: |
+            <?php
+            use Mailtrap\Config;
+            use Mailtrap\Helper\ResponseHelper;
+            use Mailtrap\MailtrapGeneralClient;
+
+            $config = new Config($_ENV['MAILTRAP_API_KEY']);
+            $accountId = $_ENV['MAILTRAP_ACCOUNT_ID'];
+            $apiTokens = (new MailtrapGeneralClient($config))->apiTokens($accountId);
+
+            $apiTokenId = $_ENV['MAILTRAP_API_TOKEN_ID'];
+            $response = $apiTokens->getApiToken($apiTokenId);
+            var_dump(ResponseHelper::toArray($response));
+        - lang: python
+          label: Python
+          source: |
+            import mailtrap as mt
+
+            client = mt.MailtrapClient(token="YOUR_API_KEY")
+
+            account_id = 1000001
+            api_token_id = 123
+            token = client.general_api.api_tokens.get_by_id(account_id, api_token_id)
+            print(token)
+        - lang: ruby
+          label: Ruby
+          source: |
+            require 'mailtrap'
+
+            client = Mailtrap::Client.new(api_key: 'YOUR_API_KEY')
+            account_id = 1000001
+            api_token_id = 123
+            api_tokens = Mailtrap::ApiTokensAPI.new(account_id, client)
+
+            puts api_tokens.get(api_token_id)
+        - lang: csharp
+          label: .NET
+          source: |
+            using Mailtrap;
+
+            using var mailtrapFactory = new MailtrapClientFactory("YOUR_API_KEY");
+            var client = mailtrapFactory.CreateClient();
+
+            var accountId = 1000001;
+            var apiTokenId = 123;
+            var token = await client.Account(accountId).ApiToken(apiTokenId).GetDetails();
+            Console.WriteLine(token.Name);
+        - lang: java
+          label: Java
+          source: |
+            import io.mailtrap.config.MailtrapConfig;
+            import io.mailtrap.factory.MailtrapClientFactory;
+
+            var config = new MailtrapConfig.Builder().token("YOUR_API_KEY").build();
+            var client = MailtrapClientFactory.createMailtrapClient(config);
+
+            long accountId = 1000001L;
+            long apiTokenId = 123L;
+            var token = client.generalApi().apiTokens().getApiToken(accountId, apiTokenId);
+            System.out.println(token);
       parameters:
         - $ref: '#/components/parameters/api_token_id'
       responses:
@@ -788,7 +1069,75 @@ paths:
           label: cURL
           source: |
             curl -X DELETE https://mailtrap.io/api/api_tokens/{id} \
-              -H 'Authorization: Bearer YOUR_API_TOKEN'
+              -H 'Authorization: Bearer YOUR_API_KEY'
+        - lang: javascript
+          label: Node.js
+          source: |
+            import { MailtrapClient } from "mailtrap";
+
+            const accountId = 1000001;
+            const client = new MailtrapClient({ token: "YOUR_API_KEY", accountId });
+
+            const apiTokenId = 123;
+            await client.general.apiTokens.delete(apiTokenId);
+        - lang: php
+          label: PHP
+          source: |
+            <?php
+            use Mailtrap\Config;
+            use Mailtrap\MailtrapGeneralClient;
+
+            $config = new Config($_ENV['MAILTRAP_API_KEY']);
+            $accountId = $_ENV['MAILTRAP_ACCOUNT_ID'];
+            $apiTokens = (new MailtrapGeneralClient($config))->apiTokens($accountId);
+
+            $apiTokenId = $_ENV['MAILTRAP_API_TOKEN_ID'];
+            $response = $apiTokens->deleteApiToken($apiTokenId);
+            echo $response->getStatusCode(); // 204
+        - lang: python
+          label: Python
+          source: |
+            import mailtrap as mt
+
+            client = mt.MailtrapClient(token="YOUR_API_KEY")
+
+            account_id = 1000001
+            api_token_id = 123
+            client.general_api.api_tokens.delete(account_id, api_token_id)
+        - lang: ruby
+          label: Ruby
+          source: |
+            require 'mailtrap'
+
+            client = Mailtrap::Client.new(api_key: 'YOUR_API_KEY')
+            account_id = 1000001
+            api_token_id = 123
+            api_tokens = Mailtrap::ApiTokensAPI.new(account_id, client)
+
+            api_tokens.delete(api_token_id)
+        - lang: csharp
+          label: .NET
+          source: |
+            using Mailtrap;
+
+            using var mailtrapFactory = new MailtrapClientFactory("YOUR_API_KEY");
+            var client = mailtrapFactory.CreateClient();
+
+            var accountId = 1000001;
+            var apiTokenId = 123;
+            await client.Account(accountId).ApiToken(apiTokenId).Delete();
+        - lang: java
+          label: Java
+          source: |
+            import io.mailtrap.config.MailtrapConfig;
+            import io.mailtrap.factory.MailtrapClientFactory;
+
+            var config = new MailtrapConfig.Builder().token("YOUR_API_KEY").build();
+            var client = MailtrapClientFactory.createMailtrapClient(config);
+
+            long accountId = 1000001L;
+            long apiTokenId = 123L;
+            client.generalApi().apiTokens().deleteApiToken(accountId, apiTokenId);
       parameters:
         - $ref: '#/components/parameters/api_token_id'
       responses:
@@ -816,7 +1165,85 @@ paths:
           label: cURL
           source: |
             curl -X POST https://mailtrap.io/api/api_tokens/{id}/reset \
-              -H 'Authorization: Bearer YOUR_API_TOKEN'
+              -H 'Authorization: Bearer YOUR_API_KEY'
+        - lang: javascript
+          label: Node.js
+          source: |
+            import { MailtrapClient } from "mailtrap";
+
+            const accountId = 1000001;
+            const client = new MailtrapClient({ token: "YOUR_API_KEY", accountId });
+
+            const apiTokenId = 123;
+            // The new token value is returned only once — store it securely.
+            const token = await client.general.apiTokens.reset(apiTokenId);
+            console.log(token);
+        - lang: php
+          label: PHP
+          source: |
+            <?php
+            use Mailtrap\Config;
+            use Mailtrap\Helper\ResponseHelper;
+            use Mailtrap\MailtrapGeneralClient;
+
+            $config = new Config($_ENV['MAILTRAP_API_KEY']);
+            $accountId = $_ENV['MAILTRAP_ACCOUNT_ID'];
+            $apiTokens = (new MailtrapGeneralClient($config))->apiTokens($accountId);
+
+            $apiTokenId = $_ENV['MAILTRAP_API_TOKEN_ID'];
+            $response = $apiTokens->resetApiToken($apiTokenId);
+            var_dump(ResponseHelper::toArray($response));
+        - lang: python
+          label: Python
+          source: |
+            import mailtrap as mt
+
+            client = mt.MailtrapClient(token="YOUR_API_KEY")
+
+            account_id = 1000001
+            api_token_id = 123
+            # The new token value is returned only once — store it securely.
+            token = client.general_api.api_tokens.reset(account_id, api_token_id)
+            print(token)
+        - lang: ruby
+          label: Ruby
+          source: |
+            require 'mailtrap'
+
+            client = Mailtrap::Client.new(api_key: 'YOUR_API_KEY')
+            account_id = 1000001
+            api_token_id = 123
+            api_tokens = Mailtrap::ApiTokensAPI.new(account_id, client)
+
+            # The new token value is returned only once — store it securely.
+            puts api_tokens.reset(api_token_id)
+        - lang: csharp
+          label: .NET
+          source: |
+            using Mailtrap;
+
+            using var mailtrapFactory = new MailtrapClientFactory("YOUR_API_KEY");
+            var client = mailtrapFactory.CreateClient();
+
+            var accountId = 1000001;
+            var apiTokenId = 123;
+            // The new token value is returned only once — store it securely.
+            var token = await client.Account(accountId).ApiToken(apiTokenId).Reset();
+            Console.WriteLine(token.Token);
+        - lang: java
+          label: Java
+          source: |
+            import io.mailtrap.config.MailtrapConfig;
+            import io.mailtrap.factory.MailtrapClientFactory;
+
+            var config = new MailtrapConfig.Builder().token("YOUR_API_KEY").build();
+            var client = MailtrapClientFactory.createMailtrapClient(config);
+
+            long accountId = 1000001L;
+            long apiTokenId = 123L;
+            // The new token value is returned only once — store it securely.
+            var token = client.generalApi().apiTokens().resetApiToken(accountId, apiTokenId);
+            System.out.println(token);
       parameters:
         - $ref: '#/components/parameters/api_token_id'
       responses:
@@ -846,7 +1273,7 @@ paths:
           label: 'cURL'
           source: |
             curl -X GET https://mailtrap.io/api/billing/usage \
-              -H 'Authorization: Bearer YOUR_API_TOKEN'
+              -H 'Authorization: Bearer YOUR_API_KEY'
         - lang: javascript
           label: Node.js
           source: |
@@ -1030,7 +1457,75 @@ paths:
           label: 'cURL'
           source: |
             curl -X GET https://mailtrap.io/api/organizations/{organization_id}/sub_accounts \
-              -H 'Authorization: Bearer YOUR_API_TOKEN'
+              -H 'Authorization: Bearer YOUR_API_KEY'
+        - lang: javascript
+          label: Node.js
+          source: |
+            import { MailtrapClient } from "mailtrap";
+
+            const organizationId = 2000002;
+            const client = new MailtrapClient({ token: "YOUR_API_KEY", organizationId });
+
+            const subAccounts = await client.organizations.subAccounts.getList();
+            console.log(subAccounts);
+        - lang: php
+          label: PHP
+          source: |
+            <?php
+            use Mailtrap\Config;
+            use Mailtrap\Helper\ResponseHelper;
+            use Mailtrap\MailtrapGeneralClient;
+
+            $config = new Config($_ENV['MAILTRAP_API_KEY']);
+            $organizationId = $_ENV['MAILTRAP_ORGANIZATION_ID'];
+            $subAccounts = (new MailtrapGeneralClient($config))->organization($organizationId)->subAccounts();
+
+            $response = $subAccounts->getSubAccounts();
+            var_dump(ResponseHelper::toArray($response));
+        - lang: python
+          label: Python
+          source: |
+            import mailtrap as mt
+
+            organization_id = 2000002
+            client = mt.MailtrapClient(token="YOUR_API_KEY", organization_id=organization_id)
+
+            sub_accounts = client.organizations_api.sub_accounts.get_list()
+            print(sub_accounts)
+        - lang: ruby
+          label: Ruby
+          source: |
+            require 'mailtrap'
+
+            client = Mailtrap::Client.new(api_key: 'YOUR_API_KEY')
+            organization_id = 2000002
+            sub_accounts = Mailtrap::SubAccountsAPI.new(organization_id, client)
+
+            puts sub_accounts.list
+        - lang: csharp
+          label: .NET
+          source: |
+            using Mailtrap;
+
+            using var mailtrapFactory = new MailtrapClientFactory("YOUR_API_KEY");
+            // Sub-accounts live under /organizations/{id}, so use the organization client.
+            var client = mailtrapFactory.CreateOrganizationClient();
+
+            var organizationId = 2000002;
+            var subAccounts = await client.Organization(organizationId).SubAccounts().GetAll();
+            Console.WriteLine(subAccounts.Count);
+        - lang: java
+          label: Java
+          source: |
+            import io.mailtrap.config.MailtrapConfig;
+            import io.mailtrap.factory.MailtrapClientFactory;
+
+            var config = new MailtrapConfig.Builder().token("YOUR_API_KEY").build();
+            var client = MailtrapClientFactory.createMailtrapClient(config);
+
+            long organizationId = 2000002L;
+            var subAccounts = client.organizationsApi().subAccounts().getSubAccounts(organizationId);
+            System.out.println(subAccounts);
       responses:
         '200':
           description: Returns the list of sub accounts belonging to the organization.
@@ -1066,13 +1561,94 @@ paths:
           label: 'cURL'
           source: |
             curl -X POST https://mailtrap.io/api/organizations/{organization_id}/sub_accounts \
-              -H 'Authorization: Bearer YOUR_API_TOKEN' \
+              -H 'Authorization: Bearer YOUR_API_KEY' \
               -H 'Content-Type: application/json' \
               -d '{
                 "account": {
                   "name": "New Team Account"
                 }
               }'
+        - lang: javascript
+          label: Node.js
+          source: |
+            import { MailtrapClient } from "mailtrap";
+
+            const organizationId = 2000002;
+            const client = new MailtrapClient({ token: "YOUR_API_KEY", organizationId });
+
+            const subAccount = await client.organizations.subAccounts
+              .create({ name: "New Team Account" });
+            console.log(subAccount);
+        - lang: php
+          label: PHP
+          source: |
+            <?php
+            use Mailtrap\Config;
+            use Mailtrap\Helper\ResponseHelper;
+            use Mailtrap\MailtrapGeneralClient;
+
+            $config = new Config($_ENV['MAILTRAP_API_KEY']);
+            $organizationId = $_ENV['MAILTRAP_ORGANIZATION_ID'];
+            $subAccounts = (new MailtrapGeneralClient($config))->organization($organizationId)->subAccounts();
+
+            $response = $subAccounts->createSubAccount('New Team Account');
+            var_dump(ResponseHelper::toArray($response));
+        - lang: python
+          label: Python
+          source: |
+            import mailtrap as mt
+
+            organization_id = 2000002
+            client = mt.MailtrapClient(token="YOUR_API_KEY", organization_id=organization_id)
+
+            sub_account = client.organizations_api.sub_accounts.create(
+                mt.CreateSubAccountParams(name="New Team Account")
+            )
+            print(sub_account)
+        - lang: ruby
+          label: Ruby
+          source: |
+            require 'mailtrap'
+
+            client = Mailtrap::Client.new(api_key: 'YOUR_API_KEY')
+            organization_id = 2000002
+            sub_accounts = Mailtrap::SubAccountsAPI.new(organization_id, client)
+
+            sub_account = sub_accounts.create(name: 'New Team Account')
+            puts sub_account
+        - lang: csharp
+          label: .NET
+          source: |
+            using Mailtrap;
+            using Mailtrap.Organizations.Requests;
+
+            using var mailtrapFactory = new MailtrapClientFactory("YOUR_API_KEY");
+            // Sub-accounts live under /organizations/{id}, so use the organization client.
+            var client = mailtrapFactory.CreateOrganizationClient();
+
+            var organizationId = 2000002;
+            var request = new CreateSubAccountRequest
+            {
+                Account = new SubAccountAttributes { Name = "New Team Account" },
+            };
+            var subAccount = await client.Organization(organizationId).SubAccounts().Create(request);
+            Console.WriteLine(subAccount.Id);
+        - lang: java
+          label: Java
+          source: |
+            import io.mailtrap.config.MailtrapConfig;
+            import io.mailtrap.factory.MailtrapClientFactory;
+            import io.mailtrap.model.request.subaccounts.CreateSubAccountRequest;
+            import io.mailtrap.model.request.subaccounts.SubAccountInput;
+
+            var config = new MailtrapConfig.Builder().token("YOUR_API_KEY").build();
+            var client = MailtrapClientFactory.createMailtrapClient(config);
+
+            long organizationId = 2000002L;
+            var request = new CreateSubAccountRequest(new SubAccountInput("New Team Account"));
+            var subAccount = client.organizationsApi().subAccounts()
+                .createSubAccount(organizationId, request);
+            System.out.println(subAccount);
       requestBody:
         required: true
         content:

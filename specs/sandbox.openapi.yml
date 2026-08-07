@@ -241,7 +241,7 @@ paths:
             import mailtrap as mt
 
             client = mt.MailtrapClient(
-                token="YOUR_API_TOKEN",
+                token="YOUR_API_KEY",
                 account_id="YOUR_ACCOUNT_ID"
             )
 
@@ -255,7 +255,7 @@ paths:
           source: |
             require 'mailtrap'
 
-            client = Mailtrap::Client.new(api_key: 'YOUR_API_TOKEN')
+            client = Mailtrap::Client.new(api_key: 'YOUR_API_KEY')
             projects = Mailtrap::ProjectsAPI.new(
               YOUR_ACCOUNT_ID,
               client
@@ -289,7 +289,7 @@ paths:
             import io.mailtrap.model.request.projects.ProjectRequest;
 
             var config = new MailtrapConfig.Builder()
-                .token("YOUR_API_TOKEN")
+                .token("YOUR_API_KEY")
                 .build();
 
             var client = MailtrapClientFactory
@@ -328,7 +328,7 @@ paths:
             import { MailtrapClient } from "mailtrap";
 
             const client = new MailtrapClient({
-              token: "YOUR_API_TOKEN",
+              token: "YOUR_API_KEY",
               accountId: ACCOUNT_ID
             });
 
@@ -359,7 +359,7 @@ paths:
             import mailtrap as mt
 
             client = mt.MailtrapClient(
-                token="YOUR_API_TOKEN",
+                token="YOUR_API_KEY",
                 account_id="YOUR_ACCOUNT_ID"
             )
 
@@ -372,7 +372,7 @@ paths:
           source: |
             require 'mailtrap'
 
-            client = Mailtrap::Client.new(api_key: 'YOUR_API_TOKEN')
+            client = Mailtrap::Client.new(api_key: 'YOUR_API_KEY')
             projects = Mailtrap::ProjectsAPI.new(
               YOUR_ACCOUNT_ID,
               client
@@ -407,7 +407,7 @@ paths:
             import io.mailtrap.factory.MailtrapClientFactory;
 
             var config = new MailtrapConfig.Builder()
-                .token("YOUR_API_TOKEN")
+                .token("YOUR_API_KEY")
                 .build();
 
             var client = MailtrapClientFactory
@@ -871,7 +871,7 @@ paths:
           source: |
             import { MailtrapClient } from "mailtrap";
 
-            const TOKEN = "YOUR_API_TOKEN";
+            const TOKEN = "YOUR_API_KEY";
             const ACCOUNT_ID = "YOUR_ACCOUNT_ID";
 
             const client = new MailtrapClient({
@@ -914,7 +914,7 @@ paths:
             import mailtrap as mt
 
             client = mt.MailtrapClient(
-                token="YOUR_API_TOKEN",
+                token="YOUR_API_KEY",
                 account_id="YOUR_ACCOUNT_ID"
             )
             project_id = 12345
@@ -961,7 +961,7 @@ paths:
             import io.mailtrap.model.request.inbox.CreateInboxRequest;
 
             var config = new MailtrapConfig.Builder()
-                .token("YOUR_API_TOKEN")
+                .token("YOUR_API_KEY")
                 .build();
 
             var client = MailtrapClientFactory
@@ -1784,6 +1784,17 @@ paths:
             result = inboxes_api.enable_email_address(inbox_id)
 
             print(result)
+        - lang: ruby
+          label: Ruby
+          source: |
+            require 'mailtrap'
+
+            client = Mailtrap::Client.new(api_key: 'YOUR_API_KEY')
+            account_id = 1000001
+            inboxes = Mailtrap::InboxesAPI.new(account_id, client)
+
+            inbox_id = 12345
+            puts inboxes.toggle_email_username(inbox_id)
         - lang: csharp
           label: .NET
           source: |
@@ -1891,6 +1902,17 @@ paths:
             result = inboxes_api.reset_email_username(inbox_id)
 
             print(result)
+        - lang: ruby
+          label: Ruby
+          source: |
+            require 'mailtrap'
+
+            client = Mailtrap::Client.new(api_key: 'YOUR_API_KEY')
+            account_id = 1000001
+            inboxes = Mailtrap::InboxesAPI.new(account_id, client)
+
+            inbox_id = 12345
+            puts inboxes.reset_email_username(inbox_id)
         - lang: csharp
           label: .NET
           source: |
@@ -2630,7 +2652,7 @@ paths:
             import { MailtrapClient } from "mailtrap";
 
             const client = new MailtrapClient({
-              token: "YOUR_API_TOKEN",
+              token: "YOUR_API_KEY",
               accountId: ACCOUNT_ID
             });
 
@@ -2665,7 +2687,7 @@ paths:
             import mailtrap as mt
 
             client = mt.MailtrapClient(
-                token="YOUR_API_TOKEN",
+                token="YOUR_API_KEY",
                 account_id="YOUR_ACCOUNT_ID"
             )
 

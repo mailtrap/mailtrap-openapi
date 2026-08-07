@@ -583,6 +583,22 @@ paths:
                   "inbound_enabled": true
                 }
               }'
+        - lang: ruby
+          label: Ruby
+          source: |
+            require 'mailtrap'
+
+            client = Mailtrap::Client.new(api_key: 'YOUR_API_KEY')
+            account_id = 1000001
+            sending_domains = Mailtrap::SendingDomainsAPI.new(account_id, client)
+
+            domain_id = 12345
+            puts sending_domains.update(
+              domain_id,
+              open_tracking_enabled: true,
+              click_tracking_enabled: true,
+              auto_unsubscribe_link_enabled: false
+            )
       parameters:
         - $ref: '#/components/parameters/domain_id'
       requestBody:
@@ -786,6 +802,17 @@ paths:
           source: |
             curl -X GET https://mailtrap.io/api/domains/{domain_id}/company_info \
               -H 'Authorization: Bearer YOUR_API_KEY'
+        - lang: ruby
+          label: Ruby
+          source: |
+            require 'mailtrap'
+
+            client = Mailtrap::Client.new(api_key: 'YOUR_API_KEY')
+            account_id = 1000001
+            company_info = Mailtrap::CompanyInfoAPI.new(account_id, client)
+
+            domain_id = 12345
+            puts company_info.get(domain_id)
       parameters:
         - $ref: '#/components/parameters/domain_id'
       responses:
@@ -827,6 +854,26 @@ paths:
                   "info_level": "business"
                 }
               }'
+        - lang: ruby
+          label: Ruby
+          source: |
+            require 'mailtrap'
+
+            client = Mailtrap::Client.new(api_key: 'YOUR_API_KEY')
+            account_id = 1000001
+            company_info = Mailtrap::CompanyInfoAPI.new(account_id, client)
+
+            domain_id = 12345
+            puts company_info.create(
+              domain_id,
+              name: 'Mailtrap',
+              address: '123 Main St',
+              city: 'San Francisco',
+              country: 'US',
+              zip_code: '94105',
+              website_url: 'https://mailtrap.io',
+              info_level: 'business'
+            )
       parameters:
         - $ref: '#/components/parameters/domain_id'
       requestBody:
@@ -885,6 +932,17 @@ paths:
                   "zip_code": "10001"
                 }
               }'
+        - lang: ruby
+          label: Ruby
+          source: |
+            require 'mailtrap'
+
+            client = Mailtrap::Client.new(api_key: 'YOUR_API_KEY')
+            account_id = 1000001
+            company_info = Mailtrap::CompanyInfoAPI.new(account_id, client)
+
+            domain_id = 12345
+            puts company_info.update(domain_id, city: 'New York', zip_code: '10001')
       parameters:
         - $ref: '#/components/parameters/domain_id'
       requestBody:
@@ -1463,6 +1521,41 @@ paths:
           source: |
             curl -X GET 'https://mailtrap.io/api/stats?start_date=2025-01-01&end_date=2025-12-31' \
               -H 'Authorization: Bearer YOUR_API_KEY'
+        - lang: javascript
+          label: Node.js
+          source: |
+            import { MailtrapClient } from "mailtrap";
+
+            const accountId = 1000001;
+            const client = new MailtrapClient({ token: "YOUR_API_KEY", accountId });
+
+            const stats = await client.stats.get({ start_date: "2026-01-01", end_date: "2026-01-31" });
+            console.log(stats);
+        - lang: php
+          label: PHP
+          source: |
+            <?php
+            use Mailtrap\Config;
+            use Mailtrap\Helper\ResponseHelper;
+            use Mailtrap\MailtrapSendingClient;
+
+            $config = new Config($_ENV['MAILTRAP_API_KEY']);
+            $accountId = (int) $_ENV['MAILTRAP_ACCOUNT_ID'];
+            $stats = (new MailtrapSendingClient($config))->stats($accountId);
+
+            $response = $stats->get('2026-01-01', '2026-01-31');
+            var_dump(ResponseHelper::toArray($response));
+        - lang: python
+          label: Python
+          source: |
+            import mailtrap as mt
+
+            client = mt.MailtrapClient(token="YOUR_API_KEY")
+
+            account_id = 1000001
+            params = mt.StatsFilterParams(start_date="2026-01-01", end_date="2026-01-31")
+            stats = client.stats_api.get(account_id=account_id, params=params)
+            print(stats)
         - lang: ruby
           label: Ruby
           source: |
@@ -1472,6 +1565,33 @@ paths:
             stats = Mailtrap::StatsAPI.new(YOUR_ACCOUNT_ID, client)
 
             puts "Stats: #{stats.get(start_date: '2026-01-01', end_date: '2026-01-31')}"
+        - lang: csharp
+          label: .NET
+          source: |
+            using Mailtrap;
+            using Mailtrap.Stats.Models;
+
+            using var mailtrapFactory = new MailtrapClientFactory("YOUR_API_KEY");
+            var client = mailtrapFactory.CreateClient();
+
+            var accountId = 1000001;
+            var filter = new StatsFilter { StartDate = "2026-01-01", EndDate = "2026-01-31" };
+            var stats = await client.Account(accountId).Stats().GetStats(filter);
+            Console.WriteLine(stats);
+        - lang: java
+          label: Java
+          source: |
+            import io.mailtrap.api.stats.StatsFilter;
+            import io.mailtrap.config.MailtrapConfig;
+            import io.mailtrap.factory.MailtrapClientFactory;
+
+            var config = new MailtrapConfig.Builder().token("YOUR_API_KEY").build();
+            var client = MailtrapClientFactory.createMailtrapClient(config);
+
+            long accountId = 1000001L;
+            var filter = StatsFilter.builder().startDate("2026-01-01").endDate("2026-01-31").build();
+            var stats = client.sendingApi().stats().getStats(accountId, filter);
+            System.out.println(stats);
       parameters:
         - $ref: '#/components/parameters/StartDateQueryFilter'
         - $ref: '#/components/parameters/EndDateQueryFilter'
@@ -1507,6 +1627,41 @@ paths:
           source: |
             curl -X GET 'https://mailtrap.io/api/stats/domains?start_date=2025-01-01&end_date=2025-12-31' \
               -H 'Authorization: Bearer YOUR_API_KEY'
+        - lang: javascript
+          label: Node.js
+          source: |
+            import { MailtrapClient } from "mailtrap";
+
+            const accountId = 1000001;
+            const client = new MailtrapClient({ token: "YOUR_API_KEY", accountId });
+
+            const stats = await client.stats.byDomain({ start_date: "2026-01-01", end_date: "2026-01-31" });
+            console.log(stats);
+        - lang: php
+          label: PHP
+          source: |
+            <?php
+            use Mailtrap\Config;
+            use Mailtrap\Helper\ResponseHelper;
+            use Mailtrap\MailtrapSendingClient;
+
+            $config = new Config($_ENV['MAILTRAP_API_KEY']);
+            $accountId = (int) $_ENV['MAILTRAP_ACCOUNT_ID'];
+            $stats = (new MailtrapSendingClient($config))->stats($accountId);
+
+            $response = $stats->byDomain('2026-01-01', '2026-01-31');
+            var_dump(ResponseHelper::toArray($response));
+        - lang: python
+          label: Python
+          source: |
+            import mailtrap as mt
+
+            client = mt.MailtrapClient(token="YOUR_API_KEY")
+
+            account_id = 1000001
+            params = mt.StatsFilterParams(start_date="2026-01-01", end_date="2026-01-31")
+            stats = client.stats_api.by_domain(account_id=account_id, params=params)
+            print(stats)
         - lang: ruby
           label: Ruby
           source: |
@@ -1516,6 +1671,33 @@ paths:
             stats = Mailtrap::StatsAPI.new(YOUR_ACCOUNT_ID, client)
 
             puts "Stats: #{stats.by_domain(start_date: '2026-01-01', end_date: '2026-01-31')}"
+        - lang: csharp
+          label: .NET
+          source: |
+            using Mailtrap;
+            using Mailtrap.Stats.Models;
+
+            using var mailtrapFactory = new MailtrapClientFactory("YOUR_API_KEY");
+            var client = mailtrapFactory.CreateClient();
+
+            var accountId = 1000001;
+            var filter = new StatsFilter { StartDate = "2026-01-01", EndDate = "2026-01-31" };
+            var stats = await client.Account(accountId).Stats().ByDomain(filter);
+            Console.WriteLine(stats.Count);
+        - lang: java
+          label: Java
+          source: |
+            import io.mailtrap.api.stats.StatsFilter;
+            import io.mailtrap.config.MailtrapConfig;
+            import io.mailtrap.factory.MailtrapClientFactory;
+
+            var config = new MailtrapConfig.Builder().token("YOUR_API_KEY").build();
+            var client = MailtrapClientFactory.createMailtrapClient(config);
+
+            long accountId = 1000001L;
+            var filter = StatsFilter.builder().startDate("2026-01-01").endDate("2026-01-31").build();
+            var stats = client.sendingApi().stats().byDomain(accountId, filter);
+            System.out.println(stats);
       parameters:
         - $ref: '#/components/parameters/StartDateQueryFilter'
         - $ref: '#/components/parameters/EndDateQueryFilter'
@@ -1566,6 +1748,41 @@ paths:
           source: |
             curl -X GET 'https://mailtrap.io/api/stats/categories?start_date=2025-01-01&end_date=2025-12-31' \
               -H 'Authorization: Bearer YOUR_API_KEY'
+        - lang: javascript
+          label: Node.js
+          source: |
+            import { MailtrapClient } from "mailtrap";
+
+            const accountId = 1000001;
+            const client = new MailtrapClient({ token: "YOUR_API_KEY", accountId });
+
+            const stats = await client.stats.byCategory({ start_date: "2026-01-01", end_date: "2026-01-31" });
+            console.log(stats);
+        - lang: php
+          label: PHP
+          source: |
+            <?php
+            use Mailtrap\Config;
+            use Mailtrap\Helper\ResponseHelper;
+            use Mailtrap\MailtrapSendingClient;
+
+            $config = new Config($_ENV['MAILTRAP_API_KEY']);
+            $accountId = (int) $_ENV['MAILTRAP_ACCOUNT_ID'];
+            $stats = (new MailtrapSendingClient($config))->stats($accountId);
+
+            $response = $stats->byCategory('2026-01-01', '2026-01-31');
+            var_dump(ResponseHelper::toArray($response));
+        - lang: python
+          label: Python
+          source: |
+            import mailtrap as mt
+
+            client = mt.MailtrapClient(token="YOUR_API_KEY")
+
+            account_id = 1000001
+            params = mt.StatsFilterParams(start_date="2026-01-01", end_date="2026-01-31")
+            stats = client.stats_api.by_category(account_id=account_id, params=params)
+            print(stats)
         - lang: ruby
           label: Ruby
           source: |
@@ -1575,6 +1792,33 @@ paths:
             stats = Mailtrap::StatsAPI.new(YOUR_ACCOUNT_ID, client)
 
             puts "Stats: #{stats.by_category(start_date: '2026-01-01', end_date: '2026-01-31')}"
+        - lang: csharp
+          label: .NET
+          source: |
+            using Mailtrap;
+            using Mailtrap.Stats.Models;
+
+            using var mailtrapFactory = new MailtrapClientFactory("YOUR_API_KEY");
+            var client = mailtrapFactory.CreateClient();
+
+            var accountId = 1000001;
+            var filter = new StatsFilter { StartDate = "2026-01-01", EndDate = "2026-01-31" };
+            var stats = await client.Account(accountId).Stats().ByCategory(filter);
+            Console.WriteLine(stats.Count);
+        - lang: java
+          label: Java
+          source: |
+            import io.mailtrap.api.stats.StatsFilter;
+            import io.mailtrap.config.MailtrapConfig;
+            import io.mailtrap.factory.MailtrapClientFactory;
+
+            var config = new MailtrapConfig.Builder().token("YOUR_API_KEY").build();
+            var client = MailtrapClientFactory.createMailtrapClient(config);
+
+            long accountId = 1000001L;
+            var filter = StatsFilter.builder().startDate("2026-01-01").endDate("2026-01-31").build();
+            var stats = client.sendingApi().stats().byCategory(accountId, filter);
+            System.out.println(stats);
       parameters:
         - $ref: '#/components/parameters/StartDateQueryFilter'
         - $ref: '#/components/parameters/EndDateQueryFilter'
@@ -1618,6 +1862,41 @@ paths:
           source: |
             curl -X GET 'https://mailtrap.io/api/stats/email_service_providers?start_date=2025-01-01&end_date=2025-12-31' \
               -H 'Authorization: Bearer YOUR_API_KEY'
+        - lang: javascript
+          label: Node.js
+          source: |
+            import { MailtrapClient } from "mailtrap";
+
+            const accountId = 1000001;
+            const client = new MailtrapClient({ token: "YOUR_API_KEY", accountId });
+
+            const stats = await client.stats.byEmailServiceProvider({ start_date: "2026-01-01", end_date: "2026-01-31" });
+            console.log(stats);
+        - lang: php
+          label: PHP
+          source: |
+            <?php
+            use Mailtrap\Config;
+            use Mailtrap\Helper\ResponseHelper;
+            use Mailtrap\MailtrapSendingClient;
+
+            $config = new Config($_ENV['MAILTRAP_API_KEY']);
+            $accountId = (int) $_ENV['MAILTRAP_ACCOUNT_ID'];
+            $stats = (new MailtrapSendingClient($config))->stats($accountId);
+
+            $response = $stats->byEmailServiceProvider('2026-01-01', '2026-01-31');
+            var_dump(ResponseHelper::toArray($response));
+        - lang: python
+          label: Python
+          source: |
+            import mailtrap as mt
+
+            client = mt.MailtrapClient(token="YOUR_API_KEY")
+
+            account_id = 1000001
+            params = mt.StatsFilterParams(start_date="2026-01-01", end_date="2026-01-31")
+            stats = client.stats_api.by_email_service_provider(account_id=account_id, params=params)
+            print(stats)
         - lang: ruby
           label: Ruby
           source: |
@@ -1627,6 +1906,33 @@ paths:
             stats = Mailtrap::StatsAPI.new(YOUR_ACCOUNT_ID, client)
 
             puts "Stats: #{stats.by_email_service_provider(start_date: '2026-01-01', end_date: '2026-01-31')}"
+        - lang: csharp
+          label: .NET
+          source: |
+            using Mailtrap;
+            using Mailtrap.Stats.Models;
+
+            using var mailtrapFactory = new MailtrapClientFactory("YOUR_API_KEY");
+            var client = mailtrapFactory.CreateClient();
+
+            var accountId = 1000001;
+            var filter = new StatsFilter { StartDate = "2026-01-01", EndDate = "2026-01-31" };
+            var stats = await client.Account(accountId).Stats().ByEmailServiceProvider(filter);
+            Console.WriteLine(stats.Count);
+        - lang: java
+          label: Java
+          source: |
+            import io.mailtrap.api.stats.StatsFilter;
+            import io.mailtrap.config.MailtrapConfig;
+            import io.mailtrap.factory.MailtrapClientFactory;
+
+            var config = new MailtrapConfig.Builder().token("YOUR_API_KEY").build();
+            var client = MailtrapClientFactory.createMailtrapClient(config);
+
+            long accountId = 1000001L;
+            var filter = StatsFilter.builder().startDate("2026-01-01").endDate("2026-01-31").build();
+            var stats = client.sendingApi().stats().byEmailServiceProvider(accountId, filter);
+            System.out.println(stats);
       parameters:
         - $ref: '#/components/parameters/StartDateQueryFilter'
         - $ref: '#/components/parameters/EndDateQueryFilter'
@@ -1670,6 +1976,41 @@ paths:
           source: |
             curl -X GET 'https://mailtrap.io/api/stats/date?start_date=2025-01-01&end_date=2025-12-31' \
               -H 'Authorization: Bearer YOUR_API_KEY'
+        - lang: javascript
+          label: Node.js
+          source: |
+            import { MailtrapClient } from "mailtrap";
+
+            const accountId = 1000001;
+            const client = new MailtrapClient({ token: "YOUR_API_KEY", accountId });
+
+            const stats = await client.stats.byDate({ start_date: "2026-01-01", end_date: "2026-01-31" });
+            console.log(stats);
+        - lang: php
+          label: PHP
+          source: |
+            <?php
+            use Mailtrap\Config;
+            use Mailtrap\Helper\ResponseHelper;
+            use Mailtrap\MailtrapSendingClient;
+
+            $config = new Config($_ENV['MAILTRAP_API_KEY']);
+            $accountId = (int) $_ENV['MAILTRAP_ACCOUNT_ID'];
+            $stats = (new MailtrapSendingClient($config))->stats($accountId);
+
+            $response = $stats->byDate('2026-01-01', '2026-01-31');
+            var_dump(ResponseHelper::toArray($response));
+        - lang: python
+          label: Python
+          source: |
+            import mailtrap as mt
+
+            client = mt.MailtrapClient(token="YOUR_API_KEY")
+
+            account_id = 1000001
+            params = mt.StatsFilterParams(start_date="2026-01-01", end_date="2026-01-31")
+            stats = client.stats_api.by_date(account_id=account_id, params=params)
+            print(stats)
         - lang: ruby
           label: Ruby
           source: |
@@ -1679,6 +2020,33 @@ paths:
             stats = Mailtrap::StatsAPI.new(YOUR_ACCOUNT_ID, client)
 
             puts "Stats: #{stats.by_date(start_date: '2026-01-01', end_date: '2026-01-31')}"
+        - lang: csharp
+          label: .NET
+          source: |
+            using Mailtrap;
+            using Mailtrap.Stats.Models;
+
+            using var mailtrapFactory = new MailtrapClientFactory("YOUR_API_KEY");
+            var client = mailtrapFactory.CreateClient();
+
+            var accountId = 1000001;
+            var filter = new StatsFilter { StartDate = "2026-01-01", EndDate = "2026-01-31" };
+            var stats = await client.Account(accountId).Stats().ByDate(filter);
+            Console.WriteLine(stats.Count);
+        - lang: java
+          label: Java
+          source: |
+            import io.mailtrap.api.stats.StatsFilter;
+            import io.mailtrap.config.MailtrapConfig;
+            import io.mailtrap.factory.MailtrapClientFactory;
+
+            var config = new MailtrapConfig.Builder().token("YOUR_API_KEY").build();
+            var client = MailtrapClientFactory.createMailtrapClient(config);
+
+            long accountId = 1000001L;
+            var filter = StatsFilter.builder().startDate("2026-01-01").endDate("2026-01-31").build();
+            var stats = client.sendingApi().stats().byDate(accountId, filter);
+            System.out.println(stats);
       parameters:
         - $ref: '#/components/parameters/StartDateQueryFilter'
         - $ref: '#/components/parameters/EndDateQueryFilter'
@@ -1727,6 +2095,74 @@ paths:
           source: |
             curl -X GET -g 'https://mailtrap.io/api/email_logs?filters[sent_after]=2025-01-01T00:00:00Z&filters[sent_before]=2025-01-31T23:59:59Z&filters[to][operator]=ci_equal&filters[to][value]=recipient@example.com&filters[domain_id][operator]=equal&filters[domain_id][value][]=3938&filters[domain_id][value][]=3939' \
               -H 'Authorization: Bearer YOUR_API_KEY'
+        - lang: javascript
+          label: Node.js
+          source: |
+            import { MailtrapClient } from "mailtrap";
+
+            const accountId = 1000001;
+            const client = new MailtrapClient({ token: "YOUR_API_KEY", accountId });
+
+            const page = await client.emailLogs.getList();
+            console.log(page);
+        - lang: php
+          label: PHP
+          source: |
+            <?php
+            use Mailtrap\Config;
+            use Mailtrap\Helper\ResponseHelper;
+            use Mailtrap\MailtrapSendingClient;
+
+            $config = new Config($_ENV['MAILTRAP_API_KEY']);
+            $accountId = (int) $_ENV['MAILTRAP_ACCOUNT_ID'];
+            $emailLogs = (new MailtrapSendingClient($config))->emailLogs($accountId);
+
+            $response = $emailLogs->getList();
+            var_dump(ResponseHelper::toArray($response));
+        - lang: python
+          label: Python
+          source: |
+            import mailtrap as mt
+
+            client = mt.MailtrapClient(token="YOUR_API_KEY", account_id=1000001)
+
+            response = client.email_logs_api.email_logs.get_list()
+            print(response.total_count)
+        - lang: ruby
+          label: Ruby
+          source: |
+            require 'mailtrap'
+
+            client = Mailtrap::Client.new(api_key: 'YOUR_API_KEY')
+            account_id = 1000001
+            email_logs = Mailtrap::EmailLogsAPI.new(account_id, client)
+
+            response = email_logs.list
+            puts response.total_count
+        - lang: csharp
+          label: .NET
+          source: |
+            using Mailtrap;
+            using Mailtrap.EmailLogs.Models;
+
+            using var mailtrapFactory = new MailtrapClientFactory("YOUR_API_KEY");
+            var client = mailtrapFactory.CreateClient();
+
+            var accountId = 1000001;
+            var response = await client.Account(accountId).EmailLogs().List(new EmailLogsListFilter());
+            Console.WriteLine(response.TotalCount);
+        - lang: java
+          label: Java
+          source: |
+            import io.mailtrap.config.MailtrapConfig;
+            import io.mailtrap.factory.MailtrapClientFactory;
+
+            var config = new MailtrapConfig.Builder().token("YOUR_API_KEY").build();
+            var client = MailtrapClientFactory.createMailtrapClient(config);
+
+            long accountId = 1000001L;
+            var response = client.sendingApi().emailLogs().list(accountId, null, null);
+            System.out.println(response.getTotalCount());
       parameters:
         - name: search_after
           in: query
@@ -1773,6 +2209,78 @@ paths:
           source: |
             curl -X GET 'https://mailtrap.io/api/email_logs/{sending_message_id}' \
               -H 'Authorization: Bearer YOUR_API_KEY'
+        - lang: javascript
+          label: Node.js
+          source: |
+            import { MailtrapClient } from "mailtrap";
+
+            const accountId = 1000001;
+            const client = new MailtrapClient({ token: "YOUR_API_KEY", accountId });
+
+            const messageId = "a1b2c3d4-5e6f-7a8b-9c0d-1e2f3a4b5c6d";
+            const message = await client.emailLogs.get(messageId);
+            console.log(message.subject);
+        - lang: php
+          label: PHP
+          source: |
+            <?php
+            use Mailtrap\Config;
+            use Mailtrap\Helper\ResponseHelper;
+            use Mailtrap\MailtrapSendingClient;
+
+            $config = new Config($_ENV['MAILTRAP_API_KEY']);
+            $accountId = (int) $_ENV['MAILTRAP_ACCOUNT_ID'];
+            $emailLogs = (new MailtrapSendingClient($config))->emailLogs($accountId);
+
+            $messageId = $_ENV['MAILTRAP_MESSAGE_ID'];
+            $response = $emailLogs->getMessage($messageId);
+            var_dump(ResponseHelper::toArray($response));
+        - lang: python
+          label: Python
+          source: |
+            import mailtrap as mt
+
+            client = mt.MailtrapClient(token="YOUR_API_KEY", account_id=1000001)
+
+            message_id = "a1b2c3d4-5e6f-7a8b-9c0d-1e2f3a4b5c6d"
+            message = client.email_logs_api.email_logs.get_by_id(message_id)
+            print(message.subject)
+        - lang: ruby
+          label: Ruby
+          source: |
+            require 'mailtrap'
+
+            client = Mailtrap::Client.new(api_key: 'YOUR_API_KEY')
+            account_id = 1000001
+            email_logs = Mailtrap::EmailLogsAPI.new(account_id, client)
+
+            message_id = 'a1b2c3d4-5e6f-7a8b-9c0d-1e2f3a4b5c6d'
+            puts email_logs.get(message_id)
+        - lang: csharp
+          label: .NET
+          source: |
+            using Mailtrap;
+
+            using var mailtrapFactory = new MailtrapClientFactory("YOUR_API_KEY");
+            var client = mailtrapFactory.CreateClient();
+
+            var accountId = 1000001;
+            var messageId = "a1b2c3d4-5e6f-7a8b-9c0d-1e2f3a4b5c6d";
+            var message = await client.Account(accountId).EmailLog(messageId).GetDetails();
+            Console.WriteLine(message.Subject);
+        - lang: java
+          label: Java
+          source: |
+            import io.mailtrap.config.MailtrapConfig;
+            import io.mailtrap.factory.MailtrapClientFactory;
+
+            var config = new MailtrapConfig.Builder().token("YOUR_API_KEY").build();
+            var client = MailtrapClientFactory.createMailtrapClient(config);
+
+            long accountId = 1000001L;
+            String messageId = "a1b2c3d4-5e6f-7a8b-9c0d-1e2f3a4b5c6d";
+            var message = client.sendingApi().emailLogs().get(accountId, messageId);
+            System.out.println(message.getSubject());
       parameters:
         - $ref: '#/components/parameters/sending_message_id'
       responses:
@@ -1815,6 +2323,135 @@ paths:
                   "domain_id": 435
                 }
               }'
+        - lang: javascript
+          label: Node.js
+          source: |
+            import { MailtrapClient } from "mailtrap";
+
+            const accountId = 1000001;
+            const client = new MailtrapClient({ token: "YOUR_API_KEY", accountId });
+
+            // The signing secret is returned only on creation — store it securely.
+            const webhook = await client.webhooks.create({
+              url: "https://example.com/mailtrap/webhooks",
+              webhook_type: "email_sending",
+              payload_format: "json",
+              sending_stream: "transactional",
+              event_types: ["delivery", "bounce"],
+            });
+            console.log(webhook);
+        - lang: php
+          label: PHP
+          source: |
+            <?php
+            use Mailtrap\Config;
+            use Mailtrap\DTO\Request\Webhook\CreateWebhook;
+            use Mailtrap\DTO\Request\Webhook\Webhook;
+            use Mailtrap\Helper\ResponseHelper;
+            use Mailtrap\MailtrapSendingClient;
+
+            $config = new Config($_ENV['MAILTRAP_API_KEY']);
+            $accountId = $_ENV['MAILTRAP_ACCOUNT_ID'];
+            $webhooks = (new MailtrapSendingClient($config))->webhooks($accountId);
+
+            $response = $webhooks->createWebhook(new CreateWebhook(
+                url: 'https://example.com/mailtrap/webhooks',
+                webhookType: Webhook::TYPE_EMAIL_SENDING,
+                eventTypes: [Webhook::EVENT_DELIVERY, Webhook::EVENT_BOUNCE],
+                payloadFormat: Webhook::PAYLOAD_FORMAT_JSON,
+                sendingStream: Webhook::SENDING_STREAM_TRANSACTIONAL,
+            ));
+            var_dump(ResponseHelper::toArray($response));
+        - lang: python
+          label: Python
+          source: |
+            import mailtrap as mt
+
+            client = mt.MailtrapClient(token="YOUR_API_KEY", account_id=1000001)
+
+            # The signing_secret is returned only on creation — store it securely.
+            webhook = client.webhooks_api.webhooks.create(
+                mt.CreateWebhookParams(
+                    url="https://example.com/mailtrap/webhooks",
+                    webhook_type="email_sending",
+                    sending_stream="transactional",
+                    event_types=["delivery", "bounce"],
+                )
+            )
+            print(webhook)
+        - lang: ruby
+          label: Ruby
+          source: |
+            require 'mailtrap'
+
+            client = Mailtrap::Client.new(api_key: 'YOUR_API_KEY')
+            account_id = 1000001
+            webhooks = Mailtrap::WebhooksAPI.new(account_id, client)
+
+            # The signing_secret is returned only on creation — store it securely.
+            webhook = webhooks.create(
+              url: 'https://example.com/mailtrap/webhooks',
+              webhook_type: 'email_sending',
+              payload_format: 'json',
+              sending_stream: 'transactional',
+              event_types: %w[delivery bounce]
+            )
+            puts webhook
+        - lang: csharp
+          label: .NET
+          source: |
+            using Mailtrap;
+            using Mailtrap.Core.Models;
+            using Mailtrap.Webhooks.Models;
+            using Mailtrap.Webhooks.Requests;
+
+            using var mailtrapFactory = new MailtrapClientFactory("YOUR_API_KEY");
+            var client = mailtrapFactory.CreateClient();
+
+            var accountId = 1000001;
+            var request = new CreateWebhookRequest
+            {
+                Url = new Uri("https://example.com/mailtrap/webhooks"),
+                WebhookType = WebhookType.EmailSending,
+                Active = true,
+                PayloadFormat = WebhookPayloadFormat.Json,
+                SendingStream = SendingStream.Transactional,
+            };
+            request.EventTypes.Add(WebhookEventType.Delivery);
+            request.EventTypes.Add(WebhookEventType.Bounce);
+
+            // The signing secret is returned only on creation — store it securely.
+            var webhook = await client.Account(accountId).Webhooks().Create(request);
+            Console.WriteLine(webhook.SigningSecret);
+        - lang: java
+          label: Java
+          source: |
+            import io.mailtrap.config.MailtrapConfig;
+            import io.mailtrap.factory.MailtrapClientFactory;
+            import io.mailtrap.model.SendingStream;
+            import io.mailtrap.model.WebhookEventType;
+            import io.mailtrap.model.WebhookPayloadFormat;
+            import io.mailtrap.model.WebhookType;
+            import io.mailtrap.model.request.webhooks.CreateWebhookRequest;
+            import io.mailtrap.model.request.webhooks.WebhookInput;
+            import java.util.List;
+
+            var config = new MailtrapConfig.Builder().token("YOUR_API_KEY").build();
+            var client = MailtrapClientFactory.createMailtrapClient(config);
+
+            long accountId = 1000001L;
+            var request = new CreateWebhookRequest(
+                WebhookInput.builder()
+                    .url("https://example.com/mailtrap/webhooks")
+                    .webhookType(WebhookType.EMAIL_SENDING)
+                    .payloadFormat(WebhookPayloadFormat.JSON)
+                    .sendingStream(SendingStream.TRANSACTIONAL)
+                    .eventTypes(List.of(WebhookEventType.DELIVERY, WebhookEventType.BOUNCE))
+                    .build());
+
+            // signing_secret is returned only on creation — store it securely.
+            var webhook = client.generalApi().webhooks().createWebhook(accountId, request);
+            System.out.println(webhook);
       requestBody:
         required: true
         content:
@@ -1939,6 +2576,72 @@ paths:
           source: |
             curl -X GET https://mailtrap.io/api/webhooks \
               -H 'Authorization: Bearer YOUR_API_KEY'
+        - lang: javascript
+          label: Node.js
+          source: |
+            import { MailtrapClient } from "mailtrap";
+
+            const accountId = 1000001;
+            const client = new MailtrapClient({ token: "YOUR_API_KEY", accountId });
+
+            const webhooks = await client.webhooks.getList();
+            console.log(webhooks);
+        - lang: php
+          label: PHP
+          source: |
+            <?php
+            use Mailtrap\Config;
+            use Mailtrap\Helper\ResponseHelper;
+            use Mailtrap\MailtrapSendingClient;
+
+            $config = new Config($_ENV['MAILTRAP_API_KEY']);
+            $accountId = $_ENV['MAILTRAP_ACCOUNT_ID'];
+            $webhooks = (new MailtrapSendingClient($config))->webhooks($accountId);
+
+            $response = $webhooks->getWebhooks();
+            var_dump(ResponseHelper::toArray($response));
+        - lang: python
+          label: Python
+          source: |
+            import mailtrap as mt
+
+            client = mt.MailtrapClient(token="YOUR_API_KEY", account_id=1000001)
+
+            webhooks = client.webhooks_api.webhooks.get_list()
+            print(webhooks)
+        - lang: ruby
+          label: Ruby
+          source: |
+            require 'mailtrap'
+
+            client = Mailtrap::Client.new(api_key: 'YOUR_API_KEY')
+            account_id = 1000001
+            webhooks = Mailtrap::WebhooksAPI.new(account_id, client)
+
+            puts webhooks.list
+        - lang: csharp
+          label: .NET
+          source: |
+            using Mailtrap;
+
+            using var mailtrapFactory = new MailtrapClientFactory("YOUR_API_KEY");
+            var client = mailtrapFactory.CreateClient();
+
+            var accountId = 1000001;
+            var webhooks = await client.Account(accountId).Webhooks().GetAll();
+            Console.WriteLine(webhooks.Count);
+        - lang: java
+          label: Java
+          source: |
+            import io.mailtrap.config.MailtrapConfig;
+            import io.mailtrap.factory.MailtrapClientFactory;
+
+            var config = new MailtrapConfig.Builder().token("YOUR_API_KEY").build();
+            var client = MailtrapClientFactory.createMailtrapClient(config);
+
+            long accountId = 1000001L;
+            var webhooks = client.generalApi().webhooks().getAllWebhooks(accountId);
+            System.out.println(webhooks);
       responses:
         '200':
           description: List of webhooks
@@ -1986,6 +2689,78 @@ paths:
           source: |
             curl -X GET https://mailtrap.io/api/webhooks/{webhook_id} \
               -H 'Authorization: Bearer YOUR_API_KEY'
+        - lang: javascript
+          label: Node.js
+          source: |
+            import { MailtrapClient } from "mailtrap";
+
+            const accountId = 1000001;
+            const client = new MailtrapClient({ token: "YOUR_API_KEY", accountId });
+
+            const webhookId = 123;
+            const webhook = await client.webhooks.get(webhookId);
+            console.log(webhook);
+        - lang: php
+          label: PHP
+          source: |
+            <?php
+            use Mailtrap\Config;
+            use Mailtrap\Helper\ResponseHelper;
+            use Mailtrap\MailtrapSendingClient;
+
+            $config = new Config($_ENV['MAILTRAP_API_KEY']);
+            $accountId = $_ENV['MAILTRAP_ACCOUNT_ID'];
+            $webhooks = (new MailtrapSendingClient($config))->webhooks($accountId);
+
+            $webhookId = $_ENV['MAILTRAP_WEBHOOK_ID'];
+            $response = $webhooks->getWebhook($webhookId);
+            var_dump(ResponseHelper::toArray($response));
+        - lang: python
+          label: Python
+          source: |
+            import mailtrap as mt
+
+            client = mt.MailtrapClient(token="YOUR_API_KEY", account_id=1000001)
+
+            webhook_id = 123
+            webhook = client.webhooks_api.webhooks.get_by_id(webhook_id)
+            print(webhook)
+        - lang: ruby
+          label: Ruby
+          source: |
+            require 'mailtrap'
+
+            client = Mailtrap::Client.new(api_key: 'YOUR_API_KEY')
+            account_id = 1000001
+            webhooks = Mailtrap::WebhooksAPI.new(account_id, client)
+
+            webhook_id = 123
+            puts webhooks.get(webhook_id)
+        - lang: csharp
+          label: .NET
+          source: |
+            using Mailtrap;
+
+            using var mailtrapFactory = new MailtrapClientFactory("YOUR_API_KEY");
+            var client = mailtrapFactory.CreateClient();
+
+            var accountId = 1000001;
+            var webhookId = 123;
+            var webhook = await client.Account(accountId).Webhook(webhookId).GetDetails();
+            Console.WriteLine(webhook.Url);
+        - lang: java
+          label: Java
+          source: |
+            import io.mailtrap.config.MailtrapConfig;
+            import io.mailtrap.factory.MailtrapClientFactory;
+
+            var config = new MailtrapConfig.Builder().token("YOUR_API_KEY").build();
+            var client = MailtrapClientFactory.createMailtrapClient(config);
+
+            long accountId = 1000001L;
+            long webhookId = 123L;
+            var webhook = client.generalApi().webhooks().getWebhook(accountId, webhookId);
+            System.out.println(webhook);
       parameters:
         - $ref: '#/components/parameters/webhook_id'
       responses:
@@ -2036,6 +2811,86 @@ paths:
                   "active": false
                 }
               }'
+        - lang: javascript
+          label: Node.js
+          source: |
+            import { MailtrapClient } from "mailtrap";
+
+            const accountId = 1000001;
+            const client = new MailtrapClient({ token: "YOUR_API_KEY", accountId });
+
+            const webhookId = 123;
+            const webhook = await client.webhooks.update(webhookId, { active: false });
+            console.log(webhook);
+        - lang: php
+          label: PHP
+          source: |
+            <?php
+            use Mailtrap\Config;
+            use Mailtrap\DTO\Request\Webhook\UpdateWebhook;
+            use Mailtrap\Helper\ResponseHelper;
+            use Mailtrap\MailtrapSendingClient;
+
+            $config = new Config($_ENV['MAILTRAP_API_KEY']);
+            $accountId = $_ENV['MAILTRAP_ACCOUNT_ID'];
+            $webhooks = (new MailtrapSendingClient($config))->webhooks($accountId);
+
+            $webhookId = $_ENV['MAILTRAP_WEBHOOK_ID'];
+            $response = $webhooks->updateWebhook($webhookId, new UpdateWebhook(active: false));
+            var_dump(ResponseHelper::toArray($response));
+        - lang: python
+          label: Python
+          source: |
+            import mailtrap as mt
+
+            client = mt.MailtrapClient(token="YOUR_API_KEY", account_id=1000001)
+
+            webhook_id = 123
+            webhook = client.webhooks_api.webhooks.update(
+                webhook_id, mt.UpdateWebhookParams(active=False)
+            )
+            print(webhook)
+        - lang: ruby
+          label: Ruby
+          source: |
+            require 'mailtrap'
+
+            client = Mailtrap::Client.new(api_key: 'YOUR_API_KEY')
+            account_id = 1000001
+            webhooks = Mailtrap::WebhooksAPI.new(account_id, client)
+
+            webhook_id = 123
+            puts webhooks.update(webhook_id, active: false)
+        - lang: csharp
+          label: .NET
+          source: |
+            using Mailtrap;
+            using Mailtrap.Webhooks.Requests;
+
+            using var mailtrapFactory = new MailtrapClientFactory("YOUR_API_KEY");
+            var client = mailtrapFactory.CreateClient();
+
+            var accountId = 1000001;
+            var webhookId = 123;
+            var request = new UpdateWebhookRequest { Active = false };
+            var webhook = await client.Account(accountId).Webhook(webhookId).Update(request);
+            Console.WriteLine(webhook.Active);
+        - lang: java
+          label: Java
+          source: |
+            import io.mailtrap.config.MailtrapConfig;
+            import io.mailtrap.factory.MailtrapClientFactory;
+            import io.mailtrap.model.request.webhooks.UpdateWebhookRequest;
+            import io.mailtrap.model.request.webhooks.WebhookInput;
+
+            var config = new MailtrapConfig.Builder().token("YOUR_API_KEY").build();
+            var client = MailtrapClientFactory.createMailtrapClient(config);
+
+            long accountId = 1000001L;
+            long webhookId = 123L;
+            var request = new UpdateWebhookRequest(WebhookInput.builder().active(false).build());
+            var webhook = client.generalApi().webhooks().updateWebhook(accountId, webhookId, request);
+            System.out.println(webhook);
       parameters:
         - $ref: '#/components/parameters/webhook_id'
       requestBody:
@@ -2135,6 +2990,74 @@ paths:
           source: |
             curl -X DELETE https://mailtrap.io/api/webhooks/{webhook_id} \
               -H 'Authorization: Bearer YOUR_API_KEY'
+        - lang: javascript
+          label: Node.js
+          source: |
+            import { MailtrapClient } from "mailtrap";
+
+            const accountId = 1000001;
+            const client = new MailtrapClient({ token: "YOUR_API_KEY", accountId });
+
+            const webhookId = 123;
+            await client.webhooks.delete(webhookId);
+        - lang: php
+          label: PHP
+          source: |
+            <?php
+            use Mailtrap\Config;
+            use Mailtrap\Helper\ResponseHelper;
+            use Mailtrap\MailtrapSendingClient;
+
+            $config = new Config($_ENV['MAILTRAP_API_KEY']);
+            $accountId = $_ENV['MAILTRAP_ACCOUNT_ID'];
+            $webhooks = (new MailtrapSendingClient($config))->webhooks($accountId);
+
+            $webhookId = $_ENV['MAILTRAP_WEBHOOK_ID'];
+            $response = $webhooks->deleteWebhook($webhookId);
+            var_dump(ResponseHelper::toArray($response));
+        - lang: python
+          label: Python
+          source: |
+            import mailtrap as mt
+
+            client = mt.MailtrapClient(token="YOUR_API_KEY", account_id=1000001)
+
+            webhook_id = 123
+            client.webhooks_api.webhooks.delete(webhook_id)
+        - lang: ruby
+          label: Ruby
+          source: |
+            require 'mailtrap'
+
+            client = Mailtrap::Client.new(api_key: 'YOUR_API_KEY')
+            account_id = 1000001
+            webhooks = Mailtrap::WebhooksAPI.new(account_id, client)
+
+            webhook_id = 123
+            webhooks.delete(webhook_id)
+        - lang: csharp
+          label: .NET
+          source: |
+            using Mailtrap;
+
+            using var mailtrapFactory = new MailtrapClientFactory("YOUR_API_KEY");
+            var client = mailtrapFactory.CreateClient();
+
+            var accountId = 1000001;
+            var webhookId = 123;
+            await client.Account(accountId).Webhook(webhookId).Delete();
+        - lang: java
+          label: Java
+          source: |
+            import io.mailtrap.config.MailtrapConfig;
+            import io.mailtrap.factory.MailtrapClientFactory;
+
+            var config = new MailtrapConfig.Builder().token("YOUR_API_KEY").build();
+            var client = MailtrapClientFactory.createMailtrapClient(config);
+
+            long accountId = 1000001L;
+            long webhookId = 123L;
+            client.generalApi().webhooks().deleteWebhook(accountId, webhookId);
       parameters:
         - $ref: '#/components/parameters/webhook_id'
       responses:

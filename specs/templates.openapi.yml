@@ -146,7 +146,7 @@ paths:
           label: Node.js
           source: |
             import { MailtrapClient } from "mailtrap";
-            const client = new MailtrapClient({ token: "YOUR_API_TOKEN" });
+            const client = new MailtrapClient({ token: "YOUR_API_KEY" });
             
             async function createTemplate() {
               const template = await client.templates.create({
@@ -189,7 +189,7 @@ paths:
           label: Python
           source: |
             import mailtrap as mt
-            client = mt.MailtrapClient(token="YOUR_API_TOKEN", account_id="YOUR_ACCOUNT_ID")
+            client = mt.MailtrapClient(token="YOUR_API_KEY", account_id="YOUR_ACCOUNT_ID")
             template = client.email_templates_api.templates.create(
                 mt.CreateEmailTemplateParams(
                     name="Welcome Email",
@@ -203,7 +203,7 @@ paths:
           label: Ruby
           source: |
             require 'mailtrap'
-            client = Mailtrap::Client.new(api_key: 'YOUR_API_TOKEN')
+            client = Mailtrap::Client.new(api_key: 'YOUR_API_KEY')
             templates = Mailtrap::EmailTemplatesAPI.new(YOUR_ACCOUNT_ID, client)
             template = templates.create(
               name: 'Welcome Email',
@@ -237,7 +237,7 @@ paths:
             import io.mailtrap.config.MailtrapConfig;
             import io.mailtrap.factory.MailtrapClientFactory;
             
-            var config = new MailtrapConfig.Builder().token("YOUR_API_TOKEN").build();
+            var config = new MailtrapConfig.Builder().token("YOUR_API_KEY").build();
             var client = MailtrapClientFactory.createMailtrapClient(config);
             
             var request = new CreateEmailTemplateRequest(
@@ -314,7 +314,7 @@ paths:
           source: |
             import mailtrap as mt
 
-            client = mt.MailtrapClient(token="YOUR_API_TOKEN", account_id="YOUR_ACCOUNT_ID")
+            client = mt.MailtrapClient(token="YOUR_API_KEY", account_id="YOUR_ACCOUNT_ID")
 
             template_id = 12345
             template = client.email_templates_api.templates.get_by_id(template_id)
@@ -331,6 +331,32 @@ paths:
             )
             template = templates.get(template_id)
             puts "Template: #{template}"
+        - lang: csharp
+          label: .NET
+          source: |
+            using Mailtrap;
+
+            using var mailtrapFactory = new MailtrapClientFactory("YOUR_API_KEY");
+            var client = mailtrapFactory.CreateClient();
+
+            var accountId = 1000001;
+            var templateId = 12345;
+            var template = await client.Account(accountId).EmailTemplate(templateId).GetDetails();
+            Console.WriteLine(template.Name);
+        - lang: java
+          label: Java
+          source: |
+            import io.mailtrap.config.MailtrapConfig;
+            import io.mailtrap.factory.MailtrapClientFactory;
+
+            var config = new MailtrapConfig.Builder().token("YOUR_API_KEY").build();
+            var client = MailtrapClientFactory.createMailtrapClient(config);
+
+            long accountId = 1000001L;
+            long templateId = 12345L;
+            var template = client.emailTemplatesApi().emailTemplates()
+                .getEmailTemplate(accountId, templateId);
+            System.out.println(template);
       responses:
         '200':
           description: Returns attributes of the email template.
@@ -411,7 +437,7 @@ paths:
 
             email_template_id = "YOUR_TEMPLATE_ID"
 
-            client = mt.MailtrapClient(token="YOUR_API_TOKEN", account_id="YOUR_ACCOUNT_ID")
+            client = mt.MailtrapClient(token="YOUR_API_KEY", account_id="YOUR_ACCOUNT_ID")
             template = client.email_templates_api.templates.update(
                 template_id=email_template_id,
                 template_params=mt.UpdateEmailTemplateParams(
@@ -433,6 +459,43 @@ paths:
               client
             )
             templates.update(EMAIL_TEMPLATE_ID, name: 'Welcome Updated')
+        - lang: csharp
+          label: .NET
+          source: |
+            using Mailtrap;
+            using Mailtrap.EmailTemplates.Requests;
+
+            using var mailtrapFactory = new MailtrapClientFactory("YOUR_API_KEY");
+            var client = mailtrapFactory.CreateClient();
+
+            var accountId = 1000001;
+            var templateId = 12345;
+            var request = new UpdateEmailTemplateRequest("Updated Welcome Email", "Transactional", "Updated Subject")
+            {
+                BodyHtml = "<div>Updated HTML Body</div>",
+                BodyText = "Updated Text Body",
+            };
+            var template = await client.Account(accountId).EmailTemplate(templateId).Update(request);
+            Console.WriteLine(template.Name);
+        - lang: java
+          label: Java
+          source: |
+            import io.mailtrap.config.MailtrapConfig;
+            import io.mailtrap.factory.MailtrapClientFactory;
+            import io.mailtrap.model.request.emailtemplates.EmailTemplate;
+            import io.mailtrap.model.request.emailtemplates.UpdateEmailTemplateRequest;
+
+            var config = new MailtrapConfig.Builder().token("YOUR_API_KEY").build();
+            var client = MailtrapClientFactory.createMailtrapClient(config);
+
+            long accountId = 1000001L;
+            long templateId = 12345L;
+            var request = new UpdateEmailTemplateRequest(
+                new EmailTemplate("Updated Welcome Email", "Transactional", "Updated Subject",
+                    "Updated Text Body", "<div>Updated HTML Body</div>"));
+            var template = client.emailTemplatesApi().emailTemplates()
+                .updateEmailTemplate(accountId, templateId, request);
+            System.out.println(template);
       requestBody:
         content:
           application/json:
@@ -502,7 +565,7 @@ paths:
 
             email_template_id = "YOUR_TEMPLATE_ID"
 
-            client = mt.MailtrapClient(token="YOUR_API_TOKEN", account_id="YOUR_ACCOUNT_ID")
+            client = mt.MailtrapClient(token="YOUR_API_KEY", account_id="YOUR_ACCOUNT_ID")
             deleted_template = client.email_templates_api.templates.delete(
               template_id=email_template_id
             )
@@ -517,6 +580,29 @@ paths:
               client
             )
             templates.delete(EMAIL_TEMPLATE_ID)
+        - lang: csharp
+          label: .NET
+          source: |
+            using Mailtrap;
+
+            using var mailtrapFactory = new MailtrapClientFactory("YOUR_API_KEY");
+            var client = mailtrapFactory.CreateClient();
+
+            var accountId = 1000001;
+            var templateId = 12345;
+            await client.Account(accountId).EmailTemplate(templateId).Delete();
+        - lang: java
+          label: Java
+          source: |
+            import io.mailtrap.config.MailtrapConfig;
+            import io.mailtrap.factory.MailtrapClientFactory;
+
+            var config = new MailtrapConfig.Builder().token("YOUR_API_KEY").build();
+            var client = MailtrapClientFactory.createMailtrapClient(config);
+
+            long accountId = 1000001L;
+            long templateId = 12345L;
+            client.emailTemplatesApi().emailTemplates().deleteEmailTemplate(accountId, templateId);
       responses:
         '204':
           description: No Content
