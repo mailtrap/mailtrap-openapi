@@ -63,7 +63,7 @@ paths:
       summary: Create an email campaign
       description: |-
         Creates a new email campaign. The campaign must reference an existing sending domain via
-        `mailsend_domain_id`, and include a template `subject` within `template_attributes`.
+        `domain_id`, and include a template `subject` within `template_attributes`.
 
         Create accepts the same fields as update — pick the audience with
         `contact_list_ids`/`contact_segment_ids`, set delivery options, and add the design via
@@ -97,7 +97,7 @@ paths:
               -H 'Content-Type: application/json' \
               -d '{
                 "name": "Spring Sale",
-                "mailsend_domain_id": "d2313359-acb4-4b87-bce6-f5774f6a1e37",
+                "domain_id": 4321,
                 "from_display_name": "Acme Marketing",
                 "from_local_part": "news",
                 "reply_to": {
@@ -504,11 +504,11 @@ components:
           type: string
           description: Campaign name.
           example: Spring Sale
-        mailsend_domain_id:
-          type: string
-          format: uuid
-          description: UUID of the verified sending domain used for the campaign.
-          example: "d2313359-acb4-4b87-bce6-f5774f6a1e37"
+        domain_id:
+          type: integer
+          format: int64
+          description: ID of the verified sending domain used for the campaign, as returned by the Sending Domains endpoints.
+          example: 4321
         from_display_name:
           type: string
           description: Display name shown in the From header.
@@ -554,13 +554,13 @@ components:
             format: int64
           example: [12]
     EmailCampaignCreateRequest:
-      description: Campaign attributes. `name`, `mailsend_domain_id`, `from_local_part` and a template `subject` are required.
+      description: Campaign attributes. `name`, `domain_id`, `from_local_part` and a template `subject` are required.
       allOf:
         - $ref: "#/components/schemas/EmailCampaignWritableAttributes"
         - type: object
           required:
             - name
-            - mailsend_domain_id
+            - domain_id
             - from_local_part
             - template_attributes
           properties:
@@ -648,20 +648,12 @@ components:
           type: integer
           format: int64
           example: 4567
-        type:
-          type: string
-          description: |-
-            Resource type discriminator. `ContactsEmailCampaign` targets contact lists/segments;
-            `RecipientsEmailCampaign` targets an uploaded recipients list.
-          example: ContactsEmailCampaign
-          enum:
-            - ContactsEmailCampaign
-            - RecipientsEmailCampaign
-        mailsend_domain_id:
-          type: string
-          format: uuid
-          example: "d2313359-acb4-4b87-bce6-f5774f6a1e37"
-        mailsend_domain_name:
+        domain_id:
+          type: integer
+          format: int64
+          description: ID of the sending domain used for the campaign, as returned by the Sending Domains endpoints.
+          example: 4321
+        domain_name:
           type: string
           example: acme.com
         name:
@@ -801,55 +793,49 @@ components:
         delivery_count:
           type: integer
           example: 1450
-        open_count:
-          type: integer
-          example: 820
-        click_count:
-          type: integer
-          example: 310
-        bounce_count:
-          type: integer
-          example: 30
-        unsubscription_count:
-          type: integer
-          example: 12
-        sent_count:
-          type: integer
-          example: 1500
-        spam_count:
-          type: integer
-          example: 5
-        message_count:
-          type: integer
-          example: 1500
-        reject_count:
-          type: integer
-          example: 20
         delivery_rate:
           type: number
           format: float
           description: Share of sent messages that were delivered (0–1).
           example: 0.9667
-        open_rate:
-          type: number
-          format: float
-          example: 0.5655
-        click_rate:
-          type: number
-          format: float
-          example: 0.2138
+        bounce_count:
+          type: integer
+          example: 30
         bounce_rate:
           type: number
           format: float
           example: 0.02
+        open_count:
+          type: integer
+          example: 820
+        open_rate:
+          type: number
+          format: float
+          example: 0.5655
+        click_count:
+          type: integer
+          example: 310
+        click_rate:
+          type: number
+          format: float
+          example: 0.2138
+        spam_count:
+          type: integer
+          example: 5
         spam_rate:
           type: number
           format: float
           example: 0.0033
+        unsubscription_count:
+          type: integer
+          example: 12
         unsubscription_rate:
           type: number
           format: float
           example: 0.0083
+        sent_count:
+          type: integer
+          example: 1500
     Pagination:
       type: object
       description: Page-token pagination metadata.
