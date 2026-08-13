@@ -190,8 +190,12 @@ paths:
       operationId: deleteEmailCampaign
       summary: Delete an email campaign
       description: |-
-        Soft-deletes an email campaign. The campaign must not be in a sending state.
-        Returns `204 No Content` on success.
+        Soft-deletes an email campaign. Returns `204 No Content` on success.
+
+        Only `draft` campaigns can be deleted — deleting a campaign that is already
+        scheduled/sending returns `422`. A campaign that has been started never returns to
+        `draft`, so it can no longer be deleted. A `scheduled` campaign can be returned to
+        `draft` first via the `cancel` or `reset` action endpoints.
       tags:
         - Email Campaigns
       parameters:
