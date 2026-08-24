@@ -1,0 +1,14 @@
+specs/account-management.openapi.yml
+  h_68ae9308e52348 820-821,1171-1172
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.23",
+  "base_commit_sha": "e75ba559cff77d9ae8aefeedc2bf7b5c17e762ac",
+  "prompts": {},
+  "humans": {
+    "h_68ae9308e52348": {
+      "author": "Alex Shchyhol <oleksandr.shchyhol@railsware.com>"
+    }
+  }
+}
