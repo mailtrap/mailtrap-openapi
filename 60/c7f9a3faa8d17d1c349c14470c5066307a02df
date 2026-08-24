@@ -1,0 +1,19 @@
+specs/account-management.openapi.yml
+  s_20e8e57d8a9527::t_5c427245b28ce2 1704-1747,1912-1921,2142-2149,2157-2166
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.23",
+  "base_commit_sha": "60c7f9a3faa8d17d1c349c14470c5066307a02df",
+  "prompts": {},
+  "sessions": {
+    "s_20e8e57d8a9527": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "14ae8e5a-444d-44b3-a7f4-519196ae461b",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Alex Shchyhol <oleksandr.shchyhol@railsware.com>"
+    }
+  }
+}
