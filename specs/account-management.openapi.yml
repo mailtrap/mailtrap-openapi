@@ -817,6 +817,8 @@ paths:
         Creates a new API token for the account with the given name and resource permissions.
         Unless `expires_at` is provided, the token expires 1 year after creation.
         Pass `"expires_at": null` to create a token that never expires.
+        `expires_at` must be in the future and no more than 5 years ahead;
+        past or unparseable values are rejected with a 422 error.
       tags:
         - API Tokens
       x-codeSamples:
@@ -1166,6 +1168,8 @@ paths:
         the new token value (store it securely; it is only returned once).
         Unless `expires_at` is provided, the new token expires 1 year after the reset.
         Pass `"expires_at": null` to create a token that never expires.
+        `expires_at` must be in the future and no more than 5 years ahead;
+        past or unparseable values are rejected with a 422 error.
         Tokens that have already expired cannot be reset (returns a 422 error).
       tags:
         - API Tokens
