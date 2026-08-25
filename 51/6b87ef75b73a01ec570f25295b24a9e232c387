@@ -1,0 +1,19 @@
+specs/contacts.openapi.yml
+  s_a981bb979e4bd7::t_5f576e587c56e0 61-219,2459,2790-2869
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.24",
+  "base_commit_sha": "516b87ef75b73a01ec570f25295b24a9e232c387",
+  "prompts": {},
+  "sessions": {
+    "s_a981bb979e4bd7": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "a76c1674-b24b-41a6-b33f-c9bfcd4c45fd",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Maciej Walusiak <maciej.walusiak@railsware.com>"
+    }
+  }
+}
