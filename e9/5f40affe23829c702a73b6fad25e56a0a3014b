@@ -1,0 +1,21 @@
+specs/sandbox-sending.openapi.yml
+  s_1e1a07c5f44053::t_ff8664d521e53d 189-221,496-535
+specs/sandbox.openapi.yml
+  s_1e1a07c5f44053::t_b85e7d029ae5c7 164-192,335-361,478-506,627-653,786-812,945-970,1145-1171,1287-1313,1425-1452,1611-1640,1757-1783,1900-1926,2043-2069,2188-2214,2334-2360,2533-2559,2809-2835,3045-3072,3255-3295,3483-3509,3670-3699,3880-3908,4040-4068,4244-4272,4423-4451,4605-4633,4810-4838,4965-4993,5159-5189,5347-5373
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.0",
+  "base_commit_sha": "e95f40affe23829c702a73b6fad25e56a0a3014b",
+  "prompts": {},
+  "sessions": {
+    "s_1e1a07c5f44053": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "344c3038-4917-47da-8bb3-b3fd6fe515e3",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Maciej Walusiak <maciej.walusiak@railsware.com>"
+    }
+  }
+}
