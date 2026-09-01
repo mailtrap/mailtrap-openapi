@@ -107,6 +107,35 @@ paths:
             var client = MailtrapClientFactory.createMailtrapClient(config);
             
             var response = client.emailTemplatesApi().emailTemplates().getAllTemplates(accountId);
+        - lang: go
+          label: Go
+          source: |
+            package main
+
+            import (
+            	"context"
+            	"fmt"
+            	"log"
+            	"os"
+
+            	"github.com/mailtrap/mailtrap-go"
+            )
+
+            func main() {
+            	client, err := mailtrap.NewClient(os.Getenv("MAILTRAP_API_TOKEN"))
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	templates, _, err := client.EmailTemplates.List(context.Background())
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	for _, template := range templates {
+            		fmt.Printf("%d %s (%s)\n", template.ID, template.Name, template.Category)
+            	}
+            }
       responses:
         '200':
           description: OK.
@@ -246,6 +275,61 @@ paths:
             "Welcome {{user_name}}!", "<h1>Welcome {{user_name}}!</h1>")
             );
             var template = client.emailTemplatesApi().emailTemplates().createEmailTemplate(accountId, request);
+        - lang: go
+          label: Go
+          source: |
+            package main
+
+            import (
+            	"context"
+            	"fmt"
+            	"log"
+            	"os"
+
+            	"github.com/mailtrap/mailtrap-go"
+            )
+
+            func main() {
+            	client, err := mailtrap.NewClient(os.Getenv("MAILTRAP_API_TOKEN"))
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	template, _, err := client.EmailTemplates.Create(context.Background(), &mailtrap.EmailTemplateRequest{
+            		Name:     "Welcome email",
+            		Category: "Onboarding",
+            		Subject:  "Welcome to Mailtrap",
+            		BodyHTML: "<h1>Welcome, {{name}}!</h1>",
+            		BodyText: "Welcome, {{name}}!",
+            	})
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	fmt.Printf("created template %d (uuid %s)\n", template.ID, template.UUID)
+            }
+        - lang: hcl
+          label: OpenTofu
+          source: |
+            # tofu apply creates the template: POST /api/email_templates
+            terraform {
+              required_providers {
+                mailtrap = {
+                  source = "mailtrap/mailtrap"
+                }
+              }
+            }
+
+            # The token is read from the MAILTRAP_API_TOKEN environment variable.
+            provider "mailtrap" {}
+
+            resource "mailtrap_email_template" "welcome" {
+              name      = "Welcome email"
+              category  = "Onboarding"
+              subject   = "Welcome to Mailtrap"
+              body_html = "<h1>Welcome, {{name}}!</h1>"
+              body_text = "Welcome, {{name}}!"
+            }
       requestBody:
         content:
           application/json:
@@ -357,6 +441,54 @@ paths:
             var template = client.emailTemplatesApi().emailTemplates()
                 .getEmailTemplate(accountId, templateId);
             System.out.println(template);
+        - lang: go
+          label: Go
+          source: |
+            package main
+
+            import (
+            	"context"
+            	"fmt"
+            	"log"
+            	"os"
+
+            	"github.com/mailtrap/mailtrap-go"
+            )
+
+            func main() {
+            	client, err := mailtrap.NewClient(os.Getenv("MAILTRAP_API_TOKEN"))
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	template, _, err := client.EmailTemplates.Get(context.Background(), 1000001)
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	fmt.Printf("%s: %s\n", template.Name, template.Subject)
+            }
+        - lang: hcl
+          label: OpenTofu
+          source: |
+            # tofu plan refreshes the resource, and tofu import mailtrap_email_template.welcome 1000001
+            # adopts an existing one: GET /api/email_templates/{email_template_id}
+            terraform {
+              required_providers {
+                mailtrap = {
+                  source = "mailtrap/mailtrap"
+                }
+              }
+            }
+
+            # The token is read from the MAILTRAP_API_TOKEN environment variable.
+            provider "mailtrap" {}
+
+            resource "mailtrap_email_template" "welcome" {
+              name     = "Welcome email"
+              category = "Onboarding"
+              subject  = "Welcome to Mailtrap"
+            }
       responses:
         '200':
           description: Returns attributes of the email template.
@@ -496,6 +628,61 @@ paths:
             var template = client.emailTemplatesApi().emailTemplates()
                 .updateEmailTemplate(accountId, templateId, request);
             System.out.println(template);
+        - lang: go
+          label: Go
+          source: |
+            package main
+
+            import (
+            	"context"
+            	"fmt"
+            	"log"
+            	"os"
+
+            	"github.com/mailtrap/mailtrap-go"
+            )
+
+            func main() {
+            	client, err := mailtrap.NewClient(os.Getenv("MAILTRAP_API_TOKEN"))
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	// Only the fields you set are changed. A body that has been set cannot be
+            	// cleared, only replaced.
+            	template, _, err := client.EmailTemplates.Update(context.Background(), 1000001, &mailtrap.EmailTemplateRequest{
+            		Subject:  "Welcome aboard",
+            		BodyHTML: "<h1>Welcome aboard, {{name}}!</h1>",
+            	})
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	fmt.Printf("updated template %d: %s\n", template.ID, template.Subject)
+            }
+        - lang: hcl
+          label: OpenTofu
+          source: |
+            # changing a tracked attribute and running tofu apply: PATCH /api/email_templates/{email_template_id}
+            terraform {
+              required_providers {
+                mailtrap = {
+                  source = "mailtrap/mailtrap"
+                }
+              }
+            }
+
+            # The token is read from the MAILTRAP_API_TOKEN environment variable.
+            provider "mailtrap" {}
+
+            # The API cannot clear body_html or body_text once set: a body can only be
+            # replaced, so removing the argument leaves the stored value in place.
+            resource "mailtrap_email_template" "welcome" {
+              name      = "Welcome email"
+              category  = "Onboarding"
+              subject   = "Welcome aboard"
+              body_html = "<h1>Welcome aboard, {{name}}!</h1>"
+            }
       requestBody:
         content:
           application/json:
@@ -603,6 +790,53 @@ paths:
             long accountId = 1000001L;
             long templateId = 12345L;
             client.emailTemplatesApi().emailTemplates().deleteEmailTemplate(accountId, templateId);
+        - lang: go
+          label: Go
+          source: |
+            package main
+
+            import (
+            	"context"
+            	"fmt"
+            	"log"
+            	"os"
+
+            	"github.com/mailtrap/mailtrap-go"
+            )
+
+            func main() {
+            	client, err := mailtrap.NewClient(os.Getenv("MAILTRAP_API_TOKEN"))
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	if _, err := client.EmailTemplates.Delete(context.Background(), 1000001); err != nil {
+            		log.Fatal(err)
+            	}
+
+            	fmt.Println("template deleted")
+            }
+        - lang: hcl
+          label: OpenTofu
+          source: |
+            # tofu destroy, or removing this block and running tofu apply:
+            # DELETE /api/email_templates/{email_template_id}
+            terraform {
+              required_providers {
+                mailtrap = {
+                  source = "mailtrap/mailtrap"
+                }
+              }
+            }
+
+            # The token is read from the MAILTRAP_API_TOKEN environment variable.
+            provider "mailtrap" {}
+
+            resource "mailtrap_email_template" "welcome" {
+              name     = "Welcome email"
+              category = "Onboarding"
+              subject  = "Welcome to Mailtrap"
+            }
       responses:
         '204':
           description: No Content
