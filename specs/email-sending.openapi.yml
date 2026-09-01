@@ -186,6 +186,36 @@ paths:
                 .create(YOUR_ACCOUNT_ID, request);
 
             System.out.println(domain);
+        - lang: go
+          label: Go
+          source: |
+            package main
+
+            import (
+            	"context"
+            	"fmt"
+            	"log"
+            	"os"
+
+            	"github.com/mailtrap/mailtrap-go"
+            )
+
+            func main() {
+            	client, err := mailtrap.NewClient(os.Getenv("MAILTRAP_API_TOKEN"))
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	domain, _, err := client.SendingDomains.Create(context.Background(), "mail.example.com")
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	fmt.Printf("created domain %d (%s)\n", domain.ID, domain.DomainName)
+            	for _, record := range domain.DNSRecords {
+            		fmt.Printf("  %s %s %q -> %q\n", record.Key, record.Type, record.Name, record.Value)
+            	}
+            }
       requestBody:
         required: true
         content:
@@ -324,6 +354,35 @@ paths:
             domains.forEach(domain ->
                 System.out.println("Domain: " + domain.getDomainName())
             );
+        - lang: go
+          label: Go
+          source: |
+            package main
+
+            import (
+            	"context"
+            	"fmt"
+            	"log"
+            	"os"
+
+            	"github.com/mailtrap/mailtrap-go"
+            )
+
+            func main() {
+            	client, err := mailtrap.NewClient(os.Getenv("MAILTRAP_API_TOKEN"))
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	domains, _, err := client.SendingDomains.List(context.Background())
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	for _, domain := range domains {
+            		fmt.Printf("%d %s (DNS verified: %t, compliance: %s)\n", domain.ID, domain.DomainName, domain.DNSVerified, domain.ComplianceStatus)
+            	}
+            }
       responses:
         '200':
           $ref: '#/components/responses/DomainsResponse'
@@ -436,6 +495,33 @@ paths:
                 .getSendingDomain(YOUR_ACCOUNT_ID, domainId);
 
             System.out.println("Domain: " + domain.getDomainName());
+        - lang: go
+          label: Go
+          source: |
+            package main
+
+            import (
+            	"context"
+            	"fmt"
+            	"log"
+            	"os"
+
+            	"github.com/mailtrap/mailtrap-go"
+            )
+
+            func main() {
+            	client, err := mailtrap.NewClient(os.Getenv("MAILTRAP_API_TOKEN"))
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	domain, _, err := client.SendingDomains.Get(context.Background(), 1000001)
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	fmt.Printf("%s: DNS verified %t, open tracking %t\n", domain.DomainName, domain.DNSVerified, domain.OpenTrackingEnabled)
+            }
       parameters:
         - $ref: '#/components/parameters/domain_id'
       responses:
@@ -548,6 +634,32 @@ paths:
                 .deleteSendingDomain(YOUR_ACCOUNT_ID, domainId);
 
             System.out.println("Domain deleted successfully");
+        - lang: go
+          label: Go
+          source: |
+            package main
+
+            import (
+            	"context"
+            	"fmt"
+            	"log"
+            	"os"
+
+            	"github.com/mailtrap/mailtrap-go"
+            )
+
+            func main() {
+            	client, err := mailtrap.NewClient(os.Getenv("MAILTRAP_API_TOKEN"))
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	if _, err := client.SendingDomains.Delete(context.Background(), 1000001); err != nil {
+            		log.Fatal(err)
+            	}
+
+            	fmt.Println("domain deleted")
+            }
       parameters:
         - $ref: '#/components/parameters/domain_id'
       responses:
@@ -599,6 +711,39 @@ paths:
               click_tracking_enabled: true,
               auto_unsubscribe_link_enabled: false
             )
+        - lang: go
+          label: Go
+          source: |
+            package main
+
+            import (
+            	"context"
+            	"fmt"
+            	"log"
+            	"os"
+
+            	"github.com/mailtrap/mailtrap-go"
+            )
+
+            func main() {
+            	client, err := mailtrap.NewClient(os.Getenv("MAILTRAP_API_TOKEN"))
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	// The tracking flags are pointers: a nil field keeps its current value, so use
+            	// mailtrap.Ptr to send an explicit true or false.
+            	domain, _, err := client.SendingDomains.Update(context.Background(), 1000001, &mailtrap.UpdateDomainRequest{
+            		OpenTrackingEnabled:        mailtrap.Ptr(true),
+            		ClickTrackingEnabled:       mailtrap.Ptr(true),
+            		AutoUnsubscribeLinkEnabled: mailtrap.Ptr(false),
+            	})
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	fmt.Printf("%s: open tracking %t, click tracking %t\n", domain.DomainName, domain.OpenTrackingEnabled, domain.ClickTrackingEnabled)
+            }
       parameters:
         - $ref: '#/components/parameters/domain_id'
       requestBody:
@@ -759,6 +904,32 @@ paths:
                 );
 
             System.out.println("Setup instructions sent");
+        - lang: go
+          label: Go
+          source: |
+            package main
+
+            import (
+            	"context"
+            	"fmt"
+            	"log"
+            	"os"
+
+            	"github.com/mailtrap/mailtrap-go"
+            )
+
+            func main() {
+            	client, err := mailtrap.NewClient(os.Getenv("MAILTRAP_API_TOKEN"))
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	if _, err := client.SendingDomains.SendSetupInstructions(context.Background(), 1000001, "devops@example.com"); err != nil {
+            		log.Fatal(err)
+            	}
+
+            	fmt.Println("setup instructions sent")
+            }
       parameters:
         - $ref: '#/components/parameters/domain_id'
       requestBody:
@@ -813,6 +984,33 @@ paths:
 
             domain_id = 12345
             puts company_info.get(domain_id)
+        - lang: go
+          label: Go
+          source: |
+            package main
+
+            import (
+            	"context"
+            	"fmt"
+            	"log"
+            	"os"
+
+            	"github.com/mailtrap/mailtrap-go"
+            )
+
+            func main() {
+            	client, err := mailtrap.NewClient(os.Getenv("MAILTRAP_API_TOKEN"))
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	info, _, err := client.SendingDomains.CompanyInfo(context.Background(), 1000001)
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	fmt.Printf("%s (%s), %s %s, %s\n", info.Name, info.InfoLevel, info.ZipCode, info.City, info.Country)
+            }
       parameters:
         - $ref: '#/components/parameters/domain_id'
       responses:
@@ -874,6 +1072,41 @@ paths:
               website_url: 'https://mailtrap.io',
               info_level: 'business'
             )
+        - lang: go
+          label: Go
+          source: |
+            package main
+
+            import (
+            	"context"
+            	"fmt"
+            	"log"
+            	"os"
+
+            	"github.com/mailtrap/mailtrap-go"
+            )
+
+            func main() {
+            	client, err := mailtrap.NewClient(os.Getenv("MAILTRAP_API_TOKEN"))
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	info, _, err := client.SendingDomains.CreateCompanyInfo(context.Background(), 1000001, &mailtrap.CompanyInfoRequest{
+            		Name:       "Example Inc.",
+            		Address:    "1 Example Street",
+            		City:       "Dublin",
+            		Country:    "Ireland",
+            		ZipCode:    "D01 F5P2",
+            		WebsiteURL: "https://example.com",
+            		InfoLevel:  mailtrap.InfoLevelBusiness,
+            	})
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	fmt.Printf("company info set for %s\n", info.Name)
+            }
       parameters:
         - $ref: '#/components/parameters/domain_id'
       requestBody:
@@ -943,6 +1176,37 @@ paths:
 
             domain_id = 12345
             puts company_info.update(domain_id, city: 'New York', zip_code: '10001')
+        - lang: go
+          label: Go
+          source: |
+            package main
+
+            import (
+            	"context"
+            	"fmt"
+            	"log"
+            	"os"
+
+            	"github.com/mailtrap/mailtrap-go"
+            )
+
+            func main() {
+            	client, err := mailtrap.NewClient(os.Getenv("MAILTRAP_API_TOKEN"))
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	// Only the fields you set are changed.
+            	info, _, err := client.SendingDomains.UpdateCompanyInfo(context.Background(), 1000001, &mailtrap.CompanyInfoRequest{
+            		Phone:            "+353 1 234 5678",
+            		PrivacyPolicyURL: "https://example.com/privacy",
+            	})
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	fmt.Printf("company info updated for %s\n", info.Name)
+            }
       parameters:
         - $ref: '#/components/parameters/domain_id'
       requestBody:
@@ -1130,6 +1394,38 @@ paths:
             filtered.forEach(filteredSuppression ->
                 System.out.println("Email: " + filteredSuppression.getEmail())
             );
+        - lang: go
+          label: Go
+          source: |
+            package main
+
+            import (
+            	"context"
+            	"fmt"
+            	"log"
+            	"os"
+
+            	"github.com/mailtrap/mailtrap-go"
+            )
+
+            func main() {
+            	client, err := mailtrap.NewClient(os.Getenv("MAILTRAP_API_TOKEN"))
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	suppressions, _, err := client.Suppressions.List(context.Background(), &mailtrap.SuppressionListOptions{
+            		StartTime: "2026-01-01T00:00:00Z",
+            		EndTime:   "2026-02-01T00:00:00Z",
+            	})
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	for _, suppression := range suppressions {
+            		fmt.Printf("%s %s (%s, %s)\n", suppression.ID, suppression.Email, suppression.Type, suppression.SendingStream)
+            	}
+            }
       parameters:
         - name: email
           in: query
@@ -1196,6 +1492,38 @@ paths:
                 "sending_stream": "transactional",
                 "type": "manual import"
               }'
+        - lang: go
+          label: Go
+          source: |
+            package main
+
+            import (
+            	"context"
+            	"fmt"
+            	"log"
+            	"os"
+
+            	"github.com/mailtrap/mailtrap-go"
+            )
+
+            func main() {
+            	client, err := mailtrap.NewClient(os.Getenv("MAILTRAP_API_TOKEN"))
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	suppression, _, err := client.Suppressions.Create(context.Background(), &mailtrap.CreateSuppressionRequest{
+            		Email:         "bounced@example.com",
+            		DomainID:      1000001,
+            		SendingStream: mailtrap.SendingStreamTransactional,
+            		Type:          mailtrap.SuppressionTypeHardBounce,
+            	})
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	fmt.Printf("suppressed %s (%s)\n", suppression.Email, suppression.Type)
+            }
       requestBody:
         required: true
         content:
@@ -1348,6 +1676,34 @@ paths:
                 .deleteSuppression(YOUR_ACCOUNT_ID, suppressionId);
 
             System.out.println("Suppression removed: " + result.getEmail());
+        - lang: go
+          label: Go
+          source: |
+            package main
+
+            import (
+            	"context"
+            	"fmt"
+            	"log"
+            	"os"
+
+            	"github.com/mailtrap/mailtrap-go"
+            )
+
+            func main() {
+            	client, err := mailtrap.NewClient(os.Getenv("MAILTRAP_API_TOKEN"))
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	// Delete returns the suppression it removed.
+            	suppression, _, err := client.Suppressions.Delete(context.Background(), "018dd3e0-1d2f-7a4b-9c8e-3f5a6b7c8d9e")
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	fmt.Printf("unsuppressed %s\n", suppression.Email)
+            }
       parameters:
         - $ref: '#/components/parameters/suppression_id'
       responses:
@@ -1592,6 +1948,37 @@ paths:
             var filter = StatsFilter.builder().startDate("2026-01-01").endDate("2026-01-31").build();
             var stats = client.sendingApi().stats().getStats(accountId, filter);
             System.out.println(stats);
+        - lang: go
+          label: Go
+          source: |
+            package main
+
+            import (
+            	"context"
+            	"fmt"
+            	"log"
+            	"os"
+
+            	"github.com/mailtrap/mailtrap-go"
+            )
+
+            func main() {
+            	client, err := mailtrap.NewClient(os.Getenv("MAILTRAP_API_TOKEN"))
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	// StartDate and EndDate are required; the other fields narrow the query.
+            	stats, _, err := client.Stats.Get(context.Background(), &mailtrap.StatsOptions{
+            		StartDate: "2026-01-01",
+            		EndDate:   "2026-01-31",
+            	})
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	fmt.Printf("delivered %d (%.2f), opened %d (%.2f)\n", stats.DeliveryCount, stats.DeliveryRate, stats.OpenCount, stats.OpenRate)
+            }
       parameters:
         - $ref: '#/components/parameters/StartDateQueryFilter'
         - $ref: '#/components/parameters/EndDateQueryFilter'
@@ -1698,6 +2085,39 @@ paths:
             var filter = StatsFilter.builder().startDate("2026-01-01").endDate("2026-01-31").build();
             var stats = client.sendingApi().stats().byDomain(accountId, filter);
             System.out.println(stats);
+        - lang: go
+          label: Go
+          source: |
+            package main
+
+            import (
+            	"context"
+            	"fmt"
+            	"log"
+            	"os"
+
+            	"github.com/mailtrap/mailtrap-go"
+            )
+
+            func main() {
+            	client, err := mailtrap.NewClient(os.Getenv("MAILTRAP_API_TOKEN"))
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	stats, _, err := client.Stats.ByDomain(context.Background(), &mailtrap.StatsOptions{
+            		StartDate:      "2026-01-01",
+            		EndDate:        "2026-01-31",
+            		SendingStreams: []string{mailtrap.SendingStreamTransactional},
+            	})
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	for _, entry := range stats {
+            		fmt.Printf("domain %d: delivered %d, bounced %d\n", entry.DomainID, entry.Stats.DeliveryCount, entry.Stats.BounceCount)
+            	}
+            }
       parameters:
         - $ref: '#/components/parameters/StartDateQueryFilter'
         - $ref: '#/components/parameters/EndDateQueryFilter'
@@ -1819,6 +2239,39 @@ paths:
             var filter = StatsFilter.builder().startDate("2026-01-01").endDate("2026-01-31").build();
             var stats = client.sendingApi().stats().byCategory(accountId, filter);
             System.out.println(stats);
+        - lang: go
+          label: Go
+          source: |
+            package main
+
+            import (
+            	"context"
+            	"fmt"
+            	"log"
+            	"os"
+
+            	"github.com/mailtrap/mailtrap-go"
+            )
+
+            func main() {
+            	client, err := mailtrap.NewClient(os.Getenv("MAILTRAP_API_TOKEN"))
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	stats, _, err := client.Stats.ByCategory(context.Background(), &mailtrap.StatsOptions{
+            		StartDate:  "2026-01-01",
+            		EndDate:    "2026-01-31",
+            		Categories: []string{"Password Reset"},
+            	})
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	for _, entry := range stats {
+            		fmt.Printf("%s: delivered %d, opened %d\n", entry.Category, entry.Stats.DeliveryCount, entry.Stats.OpenCount)
+            	}
+            }
       parameters:
         - $ref: '#/components/parameters/StartDateQueryFilter'
         - $ref: '#/components/parameters/EndDateQueryFilter'
@@ -1933,6 +2386,38 @@ paths:
             var filter = StatsFilter.builder().startDate("2026-01-01").endDate("2026-01-31").build();
             var stats = client.sendingApi().stats().byEmailServiceProvider(accountId, filter);
             System.out.println(stats);
+        - lang: go
+          label: Go
+          source: |
+            package main
+
+            import (
+            	"context"
+            	"fmt"
+            	"log"
+            	"os"
+
+            	"github.com/mailtrap/mailtrap-go"
+            )
+
+            func main() {
+            	client, err := mailtrap.NewClient(os.Getenv("MAILTRAP_API_TOKEN"))
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	stats, _, err := client.Stats.ByEmailServiceProvider(context.Background(), &mailtrap.StatsOptions{
+            		StartDate: "2026-01-01",
+            		EndDate:   "2026-01-31",
+            	})
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	for _, entry := range stats {
+            		fmt.Printf("%s: delivered %d (%.2f)\n", entry.EmailServiceProvider, entry.Stats.DeliveryCount, entry.Stats.DeliveryRate)
+            	}
+            }
       parameters:
         - $ref: '#/components/parameters/StartDateQueryFilter'
         - $ref: '#/components/parameters/EndDateQueryFilter'
@@ -2047,6 +2532,39 @@ paths:
             var filter = StatsFilter.builder().startDate("2026-01-01").endDate("2026-01-31").build();
             var stats = client.sendingApi().stats().byDate(accountId, filter);
             System.out.println(stats);
+        - lang: go
+          label: Go
+          source: |
+            package main
+
+            import (
+            	"context"
+            	"fmt"
+            	"log"
+            	"os"
+
+            	"github.com/mailtrap/mailtrap-go"
+            )
+
+            func main() {
+            	client, err := mailtrap.NewClient(os.Getenv("MAILTRAP_API_TOKEN"))
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	stats, _, err := client.Stats.ByDate(context.Background(), &mailtrap.StatsOptions{
+            		StartDate:        "2026-01-01",
+            		EndDate:          "2026-01-31",
+            		SendingDomainIDs: []int64{1000001},
+            	})
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	for _, entry := range stats {
+            		fmt.Printf("%s: delivered %d, clicked %d\n", entry.Date, entry.Stats.DeliveryCount, entry.Stats.ClickCount)
+            	}
+            }
       parameters:
         - $ref: '#/components/parameters/StartDateQueryFilter'
         - $ref: '#/components/parameters/EndDateQueryFilter'
@@ -2163,6 +2681,50 @@ paths:
             long accountId = 1000001L;
             var response = client.sendingApi().emailLogs().list(accountId, null, null);
             System.out.println(response.getTotalCount());
+        - lang: go
+          label: Go
+          source: |
+            package main
+
+            import (
+            	"context"
+            	"fmt"
+            	"log"
+            	"os"
+
+            	"github.com/mailtrap/mailtrap-go"
+            )
+
+            func main() {
+            	client, err := mailtrap.NewClient(os.Getenv("MAILTRAP_API_TOKEN"))
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	logs, _, err := client.EmailLogs.List(context.Background(), &mailtrap.EmailLogsListOptions{
+            		SentAfter: "2026-01-01T00:00:00Z",
+            		Filters: map[string]mailtrap.LogFilter{
+            			"status": {Operator: "equal", Values: []string{mailtrap.EmailLogStatusDelivered}},
+            		},
+            	})
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	for _, message := range logs.Messages {
+            		fmt.Printf("%s %s -> %s (%s)\n", message.MessageID, message.From, message.To, message.Status)
+            	}
+
+            	// To walk every page instead of one, use the iterator, which follows
+            	// next_page_cursor for you:
+            	//
+            	//	for message, err := range client.EmailLogs.All(context.Background(), nil) {
+            	//		if err != nil {
+            	//			log.Fatal(err)
+            	//		}
+            	//		fmt.Println(message.MessageID)
+            	//	}
+            }
       parameters:
         - name: search_after
           in: query
@@ -2281,6 +2843,36 @@ paths:
             String messageId = "a1b2c3d4-5e6f-7a8b-9c0d-1e2f3a4b5c6d";
             var message = client.sendingApi().emailLogs().get(accountId, messageId);
             System.out.println(message.getSubject());
+        - lang: go
+          label: Go
+          source: |
+            package main
+
+            import (
+            	"context"
+            	"fmt"
+            	"log"
+            	"os"
+
+            	"github.com/mailtrap/mailtrap-go"
+            )
+
+            func main() {
+            	client, err := mailtrap.NewClient(os.Getenv("MAILTRAP_API_TOKEN"))
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	message, _, err := client.EmailLogs.Get(context.Background(), "018dd3e0-1d2f-7a4b-9c8e-3f5a6b7c8d9e")
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	fmt.Printf("%s (%s), %d open(s)\n", message.Subject, message.Status, message.OpensCount)
+            	for _, event := range message.Events {
+            		fmt.Printf("  %s at %s\n", event.EventType, event.CreatedAt)
+            	}
+            }
       parameters:
         - $ref: '#/components/parameters/sending_message_id'
       responses:
@@ -2452,6 +3044,43 @@ paths:
             // signing_secret is returned only on creation — store it securely.
             var webhook = client.generalApi().webhooks().createWebhook(accountId, request);
             System.out.println(webhook);
+        - lang: go
+          label: Go
+          source: |
+            package main
+
+            import (
+            	"context"
+            	"fmt"
+            	"log"
+            	"os"
+
+            	"github.com/mailtrap/mailtrap-go"
+            )
+
+            func main() {
+            	client, err := mailtrap.NewClient(os.Getenv("MAILTRAP_API_TOKEN"))
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	// The API requires sending_stream for email_sending webhooks.
+            	webhook, _, err := client.Webhooks.Create(context.Background(), &mailtrap.CreateWebhookRequest{
+            		URL:           "https://example.com/mailtrap/webhook",
+            		WebhookType:   mailtrap.WebhookTypeEmailSending,
+            		SendingStream: mailtrap.SendingStreamTransactional,
+            		PayloadFormat: mailtrap.PayloadFormatJSON,
+            		DomainID:      mailtrap.Ptr(int64(1000001)),
+            		EventTypes:    []string{mailtrap.WebhookEventDelivery, mailtrap.WebhookEventBounce, mailtrap.WebhookEventOpen},
+            		Active:        mailtrap.Ptr(true),
+            	})
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	// The signing secret is returned only here: store it to verify payloads.
+            	fmt.Printf("created webhook %d, signing secret %s\n", webhook.ID, webhook.SigningSecret)
+            }
       requestBody:
         required: true
         content:
@@ -2642,6 +3271,35 @@ paths:
             long accountId = 1000001L;
             var webhooks = client.generalApi().webhooks().getAllWebhooks(accountId);
             System.out.println(webhooks);
+        - lang: go
+          label: Go
+          source: |
+            package main
+
+            import (
+            	"context"
+            	"fmt"
+            	"log"
+            	"os"
+
+            	"github.com/mailtrap/mailtrap-go"
+            )
+
+            func main() {
+            	client, err := mailtrap.NewClient(os.Getenv("MAILTRAP_API_TOKEN"))
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	webhooks, _, err := client.Webhooks.List(context.Background())
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	for _, webhook := range webhooks {
+            		fmt.Printf("%d %s (%s, active: %t)\n", webhook.ID, webhook.URL, webhook.WebhookType, webhook.Active)
+            	}
+            }
       responses:
         '200':
           description: List of webhooks
@@ -2761,6 +3419,33 @@ paths:
             long webhookId = 123L;
             var webhook = client.generalApi().webhooks().getWebhook(accountId, webhookId);
             System.out.println(webhook);
+        - lang: go
+          label: Go
+          source: |
+            package main
+
+            import (
+            	"context"
+            	"fmt"
+            	"log"
+            	"os"
+
+            	"github.com/mailtrap/mailtrap-go"
+            )
+
+            func main() {
+            	client, err := mailtrap.NewClient(os.Getenv("MAILTRAP_API_TOKEN"))
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	webhook, _, err := client.Webhooks.Get(context.Background(), 1000001)
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	fmt.Printf("%s (%s): %v\n", webhook.URL, webhook.PayloadFormat, webhook.EventTypes)
+            }
       parameters:
         - $ref: '#/components/parameters/webhook_id'
       responses:
@@ -2891,6 +3576,39 @@ paths:
             var request = new UpdateWebhookRequest(WebhookInput.builder().active(false).build());
             var webhook = client.generalApi().webhooks().updateWebhook(accountId, webhookId, request);
             System.out.println(webhook);
+        - lang: go
+          label: Go
+          source: |
+            package main
+
+            import (
+            	"context"
+            	"fmt"
+            	"log"
+            	"os"
+
+            	"github.com/mailtrap/mailtrap-go"
+            )
+
+            func main() {
+            	client, err := mailtrap.NewClient(os.Getenv("MAILTRAP_API_TOKEN"))
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	// Only url, active, payload_format and event_types are mutable.
+            	webhook, _, err := client.Webhooks.Update(context.Background(), 1000001, &mailtrap.UpdateWebhookRequest{
+            		URL:           "https://example.com/mailtrap/webhook/v2",
+            		Active:        mailtrap.Ptr(false),
+            		PayloadFormat: mailtrap.PayloadFormatJSONLines,
+            		EventTypes:    []string{mailtrap.WebhookEventDelivery, mailtrap.WebhookEventSpamComplaint},
+            	})
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	fmt.Printf("updated webhook %d: %s (active: %t)\n", webhook.ID, webhook.URL, webhook.Active)
+            }
       parameters:
         - $ref: '#/components/parameters/webhook_id'
       requestBody:
@@ -3058,6 +3776,34 @@ paths:
             long accountId = 1000001L;
             long webhookId = 123L;
             client.generalApi().webhooks().deleteWebhook(accountId, webhookId);
+        - lang: go
+          label: Go
+          source: |
+            package main
+
+            import (
+            	"context"
+            	"fmt"
+            	"log"
+            	"os"
+
+            	"github.com/mailtrap/mailtrap-go"
+            )
+
+            func main() {
+            	client, err := mailtrap.NewClient(os.Getenv("MAILTRAP_API_TOKEN"))
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	// Delete returns the webhook it removed.
+            	webhook, _, err := client.Webhooks.Delete(context.Background(), 1000001)
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	fmt.Printf("deleted webhook %d (%s)\n", webhook.ID, webhook.URL)
+            }
       parameters:
         - $ref: '#/components/parameters/webhook_id'
       responses:

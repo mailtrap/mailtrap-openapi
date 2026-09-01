@@ -212,6 +212,40 @@ paths:
                 .build();
 
             client.bulkSendingApi().emails().send(mail);
+        - lang: go
+          label: Go
+          source: |
+            package main
+
+            import (
+            	"context"
+            	"fmt"
+            	"log"
+            	"os"
+
+            	"github.com/mailtrap/mailtrap-go"
+            )
+
+            func main() {
+            	client, err := mailtrap.NewClient(os.Getenv("MAILTRAP_API_TOKEN"), mailtrap.WithBulk(true))
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	// WithBulk(true) routes Send and SendBatch to the bulk host.
+            	response, _, err := client.Send(context.Background(), &mailtrap.SendRequest{
+            		From:     mailtrap.Address{Email: "sender@mail.example.com", Name: "Mailtrap Test"},
+            		To:       []mailtrap.Address{{Email: "recipient@example.com"}},
+            		Subject:  "You are awesome!",
+            		Text:     "Congrats for sending test email with Mailtrap!",
+            		Category: "Bulk Test",
+            	})
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	fmt.Printf("sent: %v\n", response.MessageIDs)
+            }
       requestBody:
         required: true
         content:
@@ -447,6 +481,47 @@ paths:
                 .build();
 
             client.bulkSendingApi().emails().batchSend(batchMail);
+        - lang: go
+          label: Go
+          source: |
+            package main
+
+            import (
+            	"context"
+            	"fmt"
+            	"log"
+            	"os"
+
+            	"github.com/mailtrap/mailtrap-go"
+            )
+
+            func main() {
+            	client, err := mailtrap.NewClient(os.Getenv("MAILTRAP_API_TOKEN"), mailtrap.WithBulk(true))
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	// Base holds the fields shared by every message; per-request fields override it.
+            	response, _, err := client.SendBatch(context.Background(), &mailtrap.BatchSendRequest{
+            		Base: &mailtrap.SendRequest{
+            			From:     mailtrap.Address{Email: "sender@mail.example.com", Name: "Mailtrap Test"},
+            			Subject:  "You are awesome!",
+            			Text:     "Congrats for sending test email with Mailtrap!",
+            			Category: "Bulk Test",
+            		},
+            		Requests: []mailtrap.SendRequest{
+            			{To: []mailtrap.Address{{Email: "first@example.com"}}},
+            			{To: []mailtrap.Address{{Email: "second@example.com"}}},
+            		},
+            	})
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	for i, item := range response.Responses {
+            		fmt.Printf("message %d: success=%t ids=%v errors=%v\n", i, item.Success, item.MessageIDs, item.Errors)
+            	}
+            }
       requestBody:
         required: true
         content:
