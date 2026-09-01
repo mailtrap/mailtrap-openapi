@@ -161,6 +161,35 @@ paths:
                 .getInboxes(accountId);
 
             System.out.println(inboxes);
+        - lang: go
+          label: Go
+          source: |
+            package main
+
+            import (
+            	"context"
+            	"fmt"
+            	"log"
+            	"os"
+
+            	"github.com/mailtrap/mailtrap-go"
+            )
+
+            func main() {
+            	client, err := mailtrap.NewClient(os.Getenv("MAILTRAP_API_TOKEN"))
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	sandboxes, _, err := client.Sandboxes.List(context.Background())
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	for _, sandbox := range sandboxes {
+            		fmt.Printf("%d %s (%d message(s), %d unread)\n", sandbox.ID, sandbox.Name, sandbox.EmailsCount, sandbox.EmailsUnreadCount)
+            	}
+            }
       operationId: getSandboxes
   '/api/projects':
     post:
@@ -303,6 +332,33 @@ paths:
                 .createProject(accountId, request);
 
             System.out.println(project);
+        - lang: go
+          label: Go
+          source: |
+            package main
+
+            import (
+            	"context"
+            	"fmt"
+            	"log"
+            	"os"
+
+            	"github.com/mailtrap/mailtrap-go"
+            )
+
+            func main() {
+            	client, err := mailtrap.NewClient(os.Getenv("MAILTRAP_API_TOKEN"))
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	project, _, err := client.Projects.Create(context.Background(), "My project")
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	fmt.Printf("created project %d (%s)\n", project.ID, project.Name)
+            }
     get:
       summary: Get a list of projects
       description: List projects and their sandboxes to which the API token has access.
@@ -418,6 +474,35 @@ paths:
             for (var project : projects) {
                 System.out.println("Project: " + project.getName() +
                                    ", ID: " + project.getId());
+            }
+        - lang: go
+          label: Go
+          source: |
+            package main
+
+            import (
+            	"context"
+            	"fmt"
+            	"log"
+            	"os"
+
+            	"github.com/mailtrap/mailtrap-go"
+            )
+
+            func main() {
+            	client, err := mailtrap.NewClient(os.Getenv("MAILTRAP_API_TOKEN"))
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	projects, _, err := client.Projects.List(context.Background())
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	for _, project := range projects {
+            		fmt.Printf("%d %s (%d sandbox(es))\n", project.ID, project.Name, len(project.Sandboxes))
+            	}
             }
   '/api/projects/{project_id}':
     get:
@@ -539,6 +624,33 @@ paths:
                 .getProject(accountId, projectId);
 
             System.out.println("Project: " + project.getName());
+        - lang: go
+          label: Go
+          source: |
+            package main
+
+            import (
+            	"context"
+            	"fmt"
+            	"log"
+            	"os"
+
+            	"github.com/mailtrap/mailtrap-go"
+            )
+
+            func main() {
+            	client, err := mailtrap.NewClient(os.Getenv("MAILTRAP_API_TOKEN"))
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	project, _, err := client.Projects.Get(context.Background(), 1000001)
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	fmt.Printf("%d %s\n", project.ID, project.Name)
+            }
     patch:
       summary: Update project
       description: Update project name. The project name is min 2 characters and max 100 characters long.
@@ -671,6 +783,33 @@ paths:
                 .updateProject(accountId, projectId, request);
 
             System.out.println("Project updated: " + updatedProject.getName());
+        - lang: go
+          label: Go
+          source: |
+            package main
+
+            import (
+            	"context"
+            	"fmt"
+            	"log"
+            	"os"
+
+            	"github.com/mailtrap/mailtrap-go"
+            )
+
+            func main() {
+            	client, err := mailtrap.NewClient(os.Getenv("MAILTRAP_API_TOKEN"))
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	project, _, err := client.Projects.Update(context.Background(), 1000001, "Renamed project")
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	fmt.Printf("renamed project %d to %s\n", project.ID, project.Name)
+            }
       requestBody:
         content:
           application/json:
@@ -803,6 +942,32 @@ paths:
                 .deleteProject(accountId, projectId);
 
             System.out.println("Project deleted: " + deletedProject.getId());
+        - lang: go
+          label: Go
+          source: |
+            package main
+
+            import (
+            	"context"
+            	"fmt"
+            	"log"
+            	"os"
+
+            	"github.com/mailtrap/mailtrap-go"
+            )
+
+            func main() {
+            	client, err := mailtrap.NewClient(os.Getenv("MAILTRAP_API_TOKEN"))
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	if _, err := client.Projects.Delete(context.Background(), 1000001); err != nil {
+            		log.Fatal(err)
+            	}
+
+            	fmt.Println("project deleted")
+            }
       responses:
         '200':
           description: Returns id of the deleted project.
@@ -977,6 +1142,33 @@ paths:
 
             System.out.println("Inbox created: " + inbox.getName());
             System.out.println("SMTP credentials - User: " + inbox.getUsername());
+        - lang: go
+          label: Go
+          source: |
+            package main
+
+            import (
+            	"context"
+            	"fmt"
+            	"log"
+            	"os"
+
+            	"github.com/mailtrap/mailtrap-go"
+            )
+
+            func main() {
+            	client, err := mailtrap.NewClient(os.Getenv("MAILTRAP_API_TOKEN"))
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	sandbox, _, err := client.Sandboxes.Create(context.Background(), 1000001, "Staging inbox")
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	fmt.Printf("created sandbox %d (%s)\n", sandbox.ID, sandbox.Name)
+            }
     parameters:
       - $ref: '#/components/parameters/project_id'
   '/api/sandboxes/{sandbox_id}':
@@ -1092,6 +1284,33 @@ paths:
                 .getInboxAttributes(accountId, inboxId);
 
             System.out.println(inboxAttributes);
+        - lang: go
+          label: Go
+          source: |
+            package main
+
+            import (
+            	"context"
+            	"fmt"
+            	"log"
+            	"os"
+
+            	"github.com/mailtrap/mailtrap-go"
+            )
+
+            func main() {
+            	client, err := mailtrap.NewClient(os.Getenv("MAILTRAP_API_TOKEN"))
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	sandbox, _, err := client.Sandboxes.Get(context.Background(), 3000001)
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	fmt.Printf("%s: %s@%s, SMTP %v\n", sandbox.Name, sandbox.Username, sandbox.Domain, sandbox.SMTPPorts)
+            }
       operationId: getSandboxAttributes
     delete:
       summary: Delete a sandbox
@@ -1203,6 +1422,34 @@ paths:
                 .deleteInbox(ACCOUNT_ID, inboxId);
 
             System.out.println(deletedInbox);
+        - lang: go
+          label: Go
+          source: |
+            package main
+
+            import (
+            	"context"
+            	"fmt"
+            	"log"
+            	"os"
+
+            	"github.com/mailtrap/mailtrap-go"
+            )
+
+            func main() {
+            	client, err := mailtrap.NewClient(os.Getenv("MAILTRAP_API_TOKEN"))
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	// Unlike most deletes, this one returns the deleted sandbox.
+            	sandbox, _, err := client.Sandboxes.Delete(context.Background(), 3000001)
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	fmt.Printf("deleted sandbox %d (%s)\n", sandbox.ID, sandbox.Name)
+            }
       operationId: deleteSandbox
     patch:
       summary: Update a sandbox
@@ -1361,6 +1608,36 @@ paths:
                 .updateInbox(accountId, inboxId, updateRequest);
 
             System.out.println(updatedInbox);
+        - lang: go
+          label: Go
+          source: |
+            package main
+
+            import (
+            	"context"
+            	"fmt"
+            	"log"
+            	"os"
+
+            	"github.com/mailtrap/mailtrap-go"
+            )
+
+            func main() {
+            	client, err := mailtrap.NewClient(os.Getenv("MAILTRAP_API_TOKEN"))
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	sandbox, _, err := client.Sandboxes.Update(context.Background(), 3000001, &mailtrap.SandboxUpdateRequest{
+            		Name:          "Renamed inbox",
+            		EmailUsername: "staging",
+            	})
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	fmt.Printf("updated sandbox %d: %s\n", sandbox.ID, sandbox.Name)
+            }
       operationId: updateSandbox
     parameters:
       - $ref: '#/components/parameters/sandbox_id'
@@ -1477,6 +1754,33 @@ paths:
                 .cleanInbox(accountId, inboxId);
 
             System.out.println(cleanedInbox);
+        - lang: go
+          label: Go
+          source: |
+            package main
+
+            import (
+            	"context"
+            	"fmt"
+            	"log"
+            	"os"
+
+            	"github.com/mailtrap/mailtrap-go"
+            )
+
+            func main() {
+            	client, err := mailtrap.NewClient(os.Getenv("MAILTRAP_API_TOKEN"))
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	sandbox, _, err := client.Sandboxes.Clean(context.Background(), 3000001)
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	fmt.Printf("sandbox %d now holds %d message(s)\n", sandbox.ID, sandbox.EmailsCount)
+            }
       operationId: cleanSandbox
     parameters:
       - $ref: '#/components/parameters/sandbox_id'
@@ -1593,6 +1897,33 @@ paths:
                 .markAsRead(accountId, inboxId);
 
             System.out.println(markedInbox);
+        - lang: go
+          label: Go
+          source: |
+            package main
+
+            import (
+            	"context"
+            	"fmt"
+            	"log"
+            	"os"
+
+            	"github.com/mailtrap/mailtrap-go"
+            )
+
+            func main() {
+            	client, err := mailtrap.NewClient(os.Getenv("MAILTRAP_API_TOKEN"))
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	sandbox, _, err := client.Sandboxes.MarkAllRead(context.Background(), 3000001)
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	fmt.Printf("sandbox %d has %d unread message(s)\n", sandbox.ID, sandbox.EmailsUnreadCount)
+            }
       operationId: markAsReadSandbox
     parameters:
       - $ref: '#/components/parameters/sandbox_id'
@@ -1709,6 +2040,33 @@ paths:
                 .resetCredentials(accountId, inboxId);
 
             System.out.println(updatedInbox);
+        - lang: go
+          label: Go
+          source: |
+            package main
+
+            import (
+            	"context"
+            	"fmt"
+            	"log"
+            	"os"
+
+            	"github.com/mailtrap/mailtrap-go"
+            )
+
+            func main() {
+            	client, err := mailtrap.NewClient(os.Getenv("MAILTRAP_API_TOKEN"))
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	sandbox, _, err := client.Sandboxes.ResetCredentials(context.Background(), 3000001)
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	fmt.Printf("new SMTP credentials: %s / %s\n", sandbox.Username, sandbox.Password)
+            }
       operationId: resetSandboxCredentials
     parameters:
       - $ref: '#/components/parameters/sandbox_id'
@@ -1827,6 +2185,33 @@ paths:
                 .enableEmailAddress(accountId, inboxId);
 
             System.out.println(updatedInbox);
+        - lang: go
+          label: Go
+          source: |
+            package main
+
+            import (
+            	"context"
+            	"fmt"
+            	"log"
+            	"os"
+
+            	"github.com/mailtrap/mailtrap-go"
+            )
+
+            func main() {
+            	client, err := mailtrap.NewClient(os.Getenv("MAILTRAP_API_TOKEN"))
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	sandbox, _, err := client.Sandboxes.ToggleEmailAddress(context.Background(), 3000001)
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	fmt.Printf("email address enabled: %t (%s@%s)\n", sandbox.EmailUsernameEnabled, sandbox.EmailUsername, sandbox.EmailDomain)
+            }
       operationId: enableSandboxEmailAddresses
     parameters:
       - $ref: '#/components/parameters/sandbox_id'
@@ -1946,6 +2331,33 @@ paths:
                 .resetEmailAddresses(accountId, inboxId);
 
             System.out.println(updatedInbox);
+        - lang: go
+          label: Go
+          source: |
+            package main
+
+            import (
+            	"context"
+            	"fmt"
+            	"log"
+            	"os"
+
+            	"github.com/mailtrap/mailtrap-go"
+            )
+
+            func main() {
+            	client, err := mailtrap.NewClient(os.Getenv("MAILTRAP_API_TOKEN"))
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	sandbox, _, err := client.Sandboxes.ResetEmailAddress(context.Background(), 3000001)
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	fmt.Printf("email address reset to %s@%s\n", sandbox.EmailUsername, sandbox.EmailDomain)
+            }
       operationId: resetEmailUserNamePerSandbox
     parameters:
       - $ref: '#/components/parameters/sandbox_id'
@@ -2118,6 +2530,33 @@ paths:
                 .getMessage(accountId, inboxId, messageId);
 
             System.out.println(message);
+        - lang: go
+          label: Go
+          source: |
+            package main
+
+            import (
+            	"context"
+            	"fmt"
+            	"log"
+            	"os"
+
+            	"github.com/mailtrap/mailtrap-go"
+            )
+
+            func main() {
+            	client, err := mailtrap.NewClient(os.Getenv("MAILTRAP_API_TOKEN"))
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	message, _, err := client.SandboxMessages.Get(context.Background(), 3000001, 4000001)
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	fmt.Printf("%s -> %s: %s (read: %t)\n", message.FromEmail, message.ToEmail, message.Subject, message.IsRead)
+            }
       operationId: showSandboxEmailMessage
     patch:
       summary: Update message
@@ -2367,6 +2806,33 @@ paths:
                 .updateMessage(accountId, inboxId, messageId, updateRequest);
 
             System.out.println(updatedMessage);
+        - lang: go
+          label: Go
+          source: |
+            package main
+
+            import (
+            	"context"
+            	"fmt"
+            	"log"
+            	"os"
+
+            	"github.com/mailtrap/mailtrap-go"
+            )
+
+            func main() {
+            	client, err := mailtrap.NewClient(os.Getenv("MAILTRAP_API_TOKEN"))
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	message, _, err := client.SandboxMessages.Update(context.Background(), 3000001, 4000001, true)
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	fmt.Printf("message %d read: %t\n", message.ID, message.IsRead)
+            }
       operationId: updateSandboxEmailMessage
     delete:
       summary: Delete message
@@ -2576,6 +3042,34 @@ paths:
                 .deleteMessage(accountId, inboxId, messageId);
 
             System.out.println(deletedMessage);
+        - lang: go
+          label: Go
+          source: |
+            package main
+
+            import (
+            	"context"
+            	"fmt"
+            	"log"
+            	"os"
+
+            	"github.com/mailtrap/mailtrap-go"
+            )
+
+            func main() {
+            	client, err := mailtrap.NewClient(os.Getenv("MAILTRAP_API_TOKEN"))
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	// Delete returns the message it removed.
+            	message, _, err := client.SandboxMessages.Delete(context.Background(), 3000001, 4000001)
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	fmt.Printf("deleted message %d (%s)\n", message.ID, message.Subject)
+            }
       operationId: deleteSandboxEmailMessage
     parameters:
       - $ref: '#/components/parameters/sandbox_id'
@@ -2757,6 +3251,47 @@ paths:
                 System.out.println("From: " + message.getFromEmail());
                 System.out.println("Subject: " + message.getSubject());
                 System.out.println("Received: " + message.getCreatedAt());
+            }
+        - lang: go
+          label: Go
+          source: |
+            package main
+
+            import (
+            	"context"
+            	"fmt"
+            	"log"
+            	"os"
+
+            	"github.com/mailtrap/mailtrap-go"
+            )
+
+            func main() {
+            	client, err := mailtrap.NewClient(os.Getenv("MAILTRAP_API_TOKEN"))
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	messages, _, err := client.SandboxMessages.List(context.Background(), 3000001, &mailtrap.MessageListOptions{
+            		Search: "welcome",
+            		Page:   1,
+            	})
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	for _, message := range messages {
+            		fmt.Printf("%d %s (from %s)\n", message.ID, message.Subject, message.FromEmail)
+            	}
+
+            	// To walk every page instead of one, use the iterator:
+            	//
+            	//	for message, err := range client.SandboxMessages.All(context.Background(), 3000001, nil) {
+            	//		if err != nil {
+            	//			log.Fatal(err)
+            	//		}
+            	//		fmt.Println(message.Subject)
+            	//	}
             }
       parameters:
         - schema:
@@ -2945,6 +3480,33 @@ paths:
                 .forwardMessage(accountId, inboxId, messageId, forwardRequest);
 
             System.out.println(forwardedMessage);
+        - lang: go
+          label: Go
+          source: |
+            package main
+
+            import (
+            	"context"
+            	"fmt"
+            	"log"
+            	"os"
+
+            	"github.com/mailtrap/mailtrap-go"
+            )
+
+            func main() {
+            	client, err := mailtrap.NewClient(os.Getenv("MAILTRAP_API_TOKEN"))
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	// The recipient must have confirmed forwarding to this address in advance.
+            	if _, err := client.SandboxMessages.Forward(context.Background(), 3000001, 4000001, "qa@example.com"); err != nil {
+            		log.Fatal(err)
+            	}
+
+            	fmt.Println("message forwarded")
+            }
       operationId: forwardSandboxEmailMessage
     parameters:
       - $ref: '#/components/parameters/sandbox_id'
@@ -3105,6 +3667,36 @@ paths:
 
             var spamReport = client.testingApi().messages().getSpamScore(accountId, inboxId, messageId);
             System.out.println(spamReport);
+        - lang: go
+          label: Go
+          source: |
+            package main
+
+            import (
+            	"context"
+            	"fmt"
+            	"log"
+            	"os"
+
+            	"github.com/mailtrap/mailtrap-go"
+            )
+
+            func main() {
+            	client, err := mailtrap.NewClient(os.Getenv("MAILTRAP_API_TOKEN"))
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	report, _, err := client.SandboxMessages.SpamReport(context.Background(), 3000001, 4000001)
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	fmt.Printf("score %.2f of %.2f, spam: %t\n", report.Score, report.Threshold, report.Spam)
+            	for _, detail := range report.Details {
+            		fmt.Printf("  %+.2f %s: %s\n", detail.Pts, detail.RuleName, detail.Description)
+            	}
+            }
       operationId: getSandboxEmailMessageSpamReport
     parameters:
       - $ref: '#/components/parameters/sandbox_id'
@@ -3285,6 +3877,35 @@ paths:
             long inboxId = 12345L;
             var htmlAnalysis = client.testingApi().messages().getMessageHtmlAnalysis(accountId, inboxId, messageId);
             System.out.println(htmlAnalysis);
+        - lang: go
+          label: Go
+          source: |
+            package main
+
+            import (
+            	"context"
+            	"fmt"
+            	"log"
+            	"os"
+
+            	"github.com/mailtrap/mailtrap-go"
+            )
+
+            func main() {
+            	client, err := mailtrap.NewClient(os.Getenv("MAILTRAP_API_TOKEN"))
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	report, _, err := client.SandboxMessages.HTMLAnalysis(context.Background(), 3000001, 4000001)
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	for _, issue := range report.Errors {
+            		fmt.Printf("line %d: %s (desktop: %v)\n", issue.ErrorLine, issue.RuleName, issue.EmailClients.Desktop)
+            	}
+            }
       operationId: getSandboxEmailMessageHTMLAnalysis
     parameters:
       - $ref: '#/components/parameters/sandbox_id'
@@ -3416,6 +4037,35 @@ paths:
 
             String textBody = client.testingApi().messages().getTextMessage(accountId, inboxId, messageId);
             System.out.println(textBody);
+        - lang: go
+          label: Go
+          source: |
+            package main
+
+            import (
+            	"context"
+            	"fmt"
+            	"log"
+            	"os"
+
+            	"github.com/mailtrap/mailtrap-go"
+            )
+
+            func main() {
+            	client, err := mailtrap.NewClient(os.Getenv("MAILTRAP_API_TOKEN"))
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	// The body endpoints return the raw bytes.
+            	body, _, err := client.SandboxMessages.Text(context.Background(), 3000001, 4000001)
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	// body holds the plain-text body.
+            	fmt.Println(string(body))
+            }
       operationId: getSandboxEmailMessageBodyAsTxt
     parameters:
       - $ref: '#/components/parameters/sandbox_id'
@@ -3591,6 +4241,35 @@ paths:
 
             String rawBody = client.testingApi().messages().getRawMessage(accountId, inboxId, messageId);
             System.out.println(rawBody);
+        - lang: go
+          label: Go
+          source: |
+            package main
+
+            import (
+            	"context"
+            	"fmt"
+            	"log"
+            	"os"
+
+            	"github.com/mailtrap/mailtrap-go"
+            )
+
+            func main() {
+            	client, err := mailtrap.NewClient(os.Getenv("MAILTRAP_API_TOKEN"))
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	// The body endpoints return the raw bytes.
+            	body, _, err := client.SandboxMessages.Raw(context.Background(), 3000001, 4000001)
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	// body holds the raw MIME source.
+            	fmt.Println(string(body))
+            }
       operationId: getSandboxEmailMessageBodyAsRaw
     parameters:
       - $ref: '#/components/parameters/sandbox_id'
@@ -3741,6 +4420,35 @@ paths:
 
             String htmlSource = client.testingApi().messages().getMessageSource(accountId, inboxId, messageId);
             System.out.println(htmlSource);
+        - lang: go
+          label: Go
+          source: |
+            package main
+
+            import (
+            	"context"
+            	"fmt"
+            	"log"
+            	"os"
+
+            	"github.com/mailtrap/mailtrap-go"
+            )
+
+            func main() {
+            	client, err := mailtrap.NewClient(os.Getenv("MAILTRAP_API_TOKEN"))
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	// The body endpoints return the raw bytes.
+            	body, _, err := client.SandboxMessages.HTMLSource(context.Background(), 3000001, 4000001)
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	// body holds the HTML source.
+            	fmt.Println(string(body))
+            }
       operationId: getSandboxEmailMessageBodyAsHtmlSource
     parameters:
       - $ref: '#/components/parameters/sandbox_id'
@@ -3894,6 +4602,35 @@ paths:
             long messageId = 12345L;
             String htmlBody = client.testingApi().messages().getHtmlMessage(accountId, inboxId, messageId);
             System.out.println(htmlBody);
+        - lang: go
+          label: Go
+          source: |
+            package main
+
+            import (
+            	"context"
+            	"fmt"
+            	"log"
+            	"os"
+
+            	"github.com/mailtrap/mailtrap-go"
+            )
+
+            func main() {
+            	client, err := mailtrap.NewClient(os.Getenv("MAILTRAP_API_TOKEN"))
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	// The body endpoints return the raw bytes.
+            	body, _, err := client.SandboxMessages.HTML(context.Background(), 3000001, 4000001)
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	// body holds the formatted HTML body.
+            	fmt.Println(string(body))
+            }
       operationId: getSandboxEmailMessageBodyAsHtml
     parameters:
       - $ref: '#/components/parameters/sandbox_id'
@@ -4070,6 +4807,35 @@ paths:
 
             String emlContent = client.testingApi().messages().getMessageAsEml(accountId, inboxId, messageId);
             System.out.println(emlContent);
+        - lang: go
+          label: Go
+          source: |
+            package main
+
+            import (
+            	"context"
+            	"fmt"
+            	"log"
+            	"os"
+
+            	"github.com/mailtrap/mailtrap-go"
+            )
+
+            func main() {
+            	client, err := mailtrap.NewClient(os.Getenv("MAILTRAP_API_TOKEN"))
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	// The body endpoints return the raw bytes.
+            	body, _, err := client.SandboxMessages.EML(context.Background(), 3000001, 4000001)
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	// body holds the message in .eml format.
+            	fmt.Println(string(body))
+            }
       operationId: getSandboxEmailMessageBodyAsEml
     parameters:
       - $ref: '#/components/parameters/sandbox_id'
@@ -4196,6 +4962,35 @@ paths:
 
             var mailHeaders = client.testingApi().messages().getMailHeaders(accountId, inboxId, messageId);
             System.out.println(mailHeaders);
+        - lang: go
+          label: Go
+          source: |
+            package main
+
+            import (
+            	"context"
+            	"fmt"
+            	"log"
+            	"os"
+
+            	"github.com/mailtrap/mailtrap-go"
+            )
+
+            func main() {
+            	client, err := mailtrap.NewClient(os.Getenv("MAILTRAP_API_TOKEN"))
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	headers, _, err := client.SandboxMessages.Headers(context.Background(), 3000001, 4000001)
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	for name, value := range headers {
+            		fmt.Printf("%s: %s\n", name, value)
+            	}
+            }
       operationId: getMailHeadersOfEmailMessage
     parameters:
       - $ref: '#/components/parameters/sandbox_id'
@@ -4361,6 +5156,37 @@ paths:
             long messageId = 67890L;
             
             var attachments = client.testingApi().attachments().getAttachments(accountId, inboxId, messageId, null);
+        - lang: go
+          label: Go
+          source: |
+            package main
+
+            import (
+            	"context"
+            	"fmt"
+            	"log"
+            	"os"
+
+            	"github.com/mailtrap/mailtrap-go"
+            )
+
+            func main() {
+            	client, err := mailtrap.NewClient(os.Getenv("MAILTRAP_API_TOKEN"))
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	attachments, _, err := client.SandboxAttachments.List(context.Background(), 3000001, 4000001, &mailtrap.AttachmentListOptions{
+            		Type: "attachment",
+            	})
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	for _, attachment := range attachments {
+            		fmt.Printf("%d %s (%s, %s)\n", attachment.ID, attachment.Filename, attachment.ContentType, attachment.AttachmentHumanSize)
+            	}
+            }
     parameters:
       - $ref: '#/components/parameters/sandbox_id'
       - $ref: '#/components/parameters/message_id'
@@ -4518,6 +5344,33 @@ paths:
             
             var client = MailtrapClientFactory.createMailtrapClient(config);
             var attachment = client.testingApi().attachments().getSingleAttachment(accountId, inboxId, messageId, attachmentId);
+        - lang: go
+          label: Go
+          source: |
+            package main
+
+            import (
+            	"context"
+            	"fmt"
+            	"log"
+            	"os"
+
+            	"github.com/mailtrap/mailtrap-go"
+            )
+
+            func main() {
+            	client, err := mailtrap.NewClient(os.Getenv("MAILTRAP_API_TOKEN"))
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	attachment, _, err := client.SandboxAttachments.Get(context.Background(), 3000001, 4000001, 5000001)
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	fmt.Printf("%s (%s): %s\n", attachment.Filename, attachment.ContentType, attachment.DownloadPath)
+            }
     parameters:
       - $ref: '#/components/parameters/sandbox_id'
       - $ref: '#/components/parameters/message_id'
