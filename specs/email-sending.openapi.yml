@@ -216,6 +216,28 @@ paths:
             		fmt.Printf("  %s %s %q -> %q\n", record.Key, record.Type, record.Name, record.Value)
             	}
             }
+        - lang: hcl
+          label: OpenTofu
+          source: |
+            # tofu apply creates the domain: POST /api/domains
+            terraform {
+              required_providers {
+                mailtrap = {
+                  source = "mailtrap/mailtrap"
+                }
+              }
+            }
+
+            # The token is read from the MAILTRAP_API_TOKEN environment variable.
+            provider "mailtrap" {}
+
+            # Create only accepts domain_name. The tracking flags below make the same apply
+            # follow up with a PATCH.
+            resource "mailtrap_domain" "example" {
+              domain_name            = "mail.example.com"
+              open_tracking_enabled  = true
+              click_tracking_enabled = true
+            }
       requestBody:
         required: true
         content:
@@ -522,6 +544,29 @@ paths:
 
             	fmt.Printf("%s: DNS verified %t, open tracking %t\n", domain.DomainName, domain.DNSVerified, domain.OpenTrackingEnabled)
             }
+        - lang: hcl
+          label: OpenTofu
+          source: |
+            # tofu apply reads the domain: GET /api/domains/{domain_id}
+            terraform {
+              required_providers {
+                mailtrap = {
+                  source = "mailtrap/mailtrap"
+                }
+              }
+            }
+
+            # The token is read from the MAILTRAP_API_TOKEN environment variable.
+            provider "mailtrap" {}
+
+            # The domain data source can only be looked up by id: there is no name lookup.
+            data "mailtrap_domain" "example" {
+              id = 1000001
+            }
+
+            output "dns_verified" {
+              value = data.mailtrap_domain.example.dns_verified
+            }
       parameters:
         - $ref: '#/components/parameters/domain_id'
       responses:
@@ -660,6 +705,25 @@ paths:
 
             	fmt.Println("domain deleted")
             }
+        - lang: hcl
+          label: OpenTofu
+          source: |
+            # tofu destroy, or removing this block and running tofu apply:
+            # DELETE /api/domains/{domain_id}
+            terraform {
+              required_providers {
+                mailtrap = {
+                  source = "mailtrap/mailtrap"
+                }
+              }
+            }
+
+            # The token is read from the MAILTRAP_API_TOKEN environment variable.
+            provider "mailtrap" {}
+
+            resource "mailtrap_domain" "example" {
+              domain_name = "mail.example.com"
+            }
       parameters:
         - $ref: '#/components/parameters/domain_id'
       responses:
@@ -743,6 +807,28 @@ paths:
             	}
 
             	fmt.Printf("%s: open tracking %t, click tracking %t\n", domain.DomainName, domain.OpenTrackingEnabled, domain.ClickTrackingEnabled)
+            }
+        - lang: hcl
+          label: OpenTofu
+          source: |
+            # changing a tracked attribute and running tofu apply:
+            # PATCH /api/domains/{domain_id}
+            terraform {
+              required_providers {
+                mailtrap = {
+                  source = "mailtrap/mailtrap"
+                }
+              }
+            }
+
+            # The token is read from the MAILTRAP_API_TOKEN environment variable.
+            provider "mailtrap" {}
+
+            resource "mailtrap_domain" "example" {
+              domain_name                   = "mail.example.com"
+              open_tracking_enabled         = true
+              click_tracking_enabled        = false
+              auto_unsubscribe_link_enabled = true
             }
       parameters:
         - $ref: '#/components/parameters/domain_id'
@@ -3081,6 +3167,37 @@ paths:
             	// The signing secret is returned only here: store it to verify payloads.
             	fmt.Printf("created webhook %d, signing secret %s\n", webhook.ID, webhook.SigningSecret)
             }
+        - lang: hcl
+          label: OpenTofu
+          source: |
+            # tofu apply creates the webhook: POST /api/webhooks
+            terraform {
+              required_providers {
+                mailtrap = {
+                  source = "mailtrap/mailtrap"
+                }
+              }
+            }
+
+            # The token is read from the MAILTRAP_API_TOKEN environment variable.
+            provider "mailtrap" {}
+
+            # The API requires sending_stream for email_sending webhooks.
+            resource "mailtrap_webhook" "delivery" {
+              url            = "https://example.com/mailtrap/webhook"
+              webhook_type   = "email_sending"
+              sending_stream = "transactional"
+              domain_id      = 1000001
+              payload_format = "json"
+              event_types    = ["delivery", "bounce", "open"]
+              active         = true
+            }
+
+            # signing_secret is returned only on create, and is unavailable after an import.
+            output "signing_secret" {
+              value     = mailtrap_webhook.delivery.signing_secret
+              sensitive = true
+            }
       requestBody:
         required: true
         content:
@@ -3446,6 +3563,29 @@ paths:
 
             	fmt.Printf("%s (%s): %v\n", webhook.URL, webhook.PayloadFormat, webhook.EventTypes)
             }
+        - lang: hcl
+          label: OpenTofu
+          source: |
+            # tofu plan refreshes the resource, and tofu import mailtrap_webhook.delivery 1000001
+            # adopts an existing one: GET /api/webhooks/{webhook_id}
+            terraform {
+              required_providers {
+                mailtrap = {
+                  source = "mailtrap/mailtrap"
+                }
+              }
+            }
+
+            # The token is read from the MAILTRAP_API_TOKEN environment variable.
+            provider "mailtrap" {}
+
+            # An imported webhook has no signing_secret: the API returns it only on create.
+            resource "mailtrap_webhook" "delivery" {
+              url            = "https://example.com/mailtrap/webhook"
+              webhook_type   = "email_sending"
+              sending_stream = "transactional"
+              domain_id      = 1000001
+            }
       parameters:
         - $ref: '#/components/parameters/webhook_id'
       responses:
@@ -3608,6 +3748,33 @@ paths:
             	}
 
             	fmt.Printf("updated webhook %d: %s (active: %t)\n", webhook.ID, webhook.URL, webhook.Active)
+            }
+        - lang: hcl
+          label: OpenTofu
+          source: |
+            # changing a mutable attribute and running tofu apply:
+            # PATCH /api/webhooks/{webhook_id}
+            terraform {
+              required_providers {
+                mailtrap = {
+                  source = "mailtrap/mailtrap"
+                }
+              }
+            }
+
+            # The token is read from the MAILTRAP_API_TOKEN environment variable.
+            provider "mailtrap" {}
+
+            # Only url, active, payload_format and event_types are mutable; changing
+            # webhook_type, sending_stream or domain_id replaces the webhook.
+            resource "mailtrap_webhook" "delivery" {
+              url            = "https://example.com/mailtrap/webhook/v2"
+              webhook_type   = "email_sending"
+              sending_stream = "transactional"
+              domain_id      = 1000001
+              payload_format = "jsonlines"
+              event_types    = ["delivery", "spam_complaint"]
+              active         = false
             }
       parameters:
         - $ref: '#/components/parameters/webhook_id'
@@ -3803,6 +3970,28 @@ paths:
             	}
 
             	fmt.Printf("deleted webhook %d (%s)\n", webhook.ID, webhook.URL)
+            }
+        - lang: hcl
+          label: OpenTofu
+          source: |
+            # tofu destroy, or removing this block and running tofu apply:
+            # DELETE /api/webhooks/{webhook_id}
+            terraform {
+              required_providers {
+                mailtrap = {
+                  source = "mailtrap/mailtrap"
+                }
+              }
+            }
+
+            # The token is read from the MAILTRAP_API_TOKEN environment variable.
+            provider "mailtrap" {}
+
+            resource "mailtrap_webhook" "delivery" {
+              url            = "https://example.com/mailtrap/webhook"
+              webhook_type   = "email_sending"
+              sending_stream = "transactional"
+              domain_id      = 1000001
             }
       parameters:
         - $ref: '#/components/parameters/webhook_id'

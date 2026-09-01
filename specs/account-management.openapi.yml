@@ -164,6 +164,29 @@ paths:
             		fmt.Printf("%d %s (access levels %v)\n", account.ID, account.Name, account.AccessLevels)
             	}
             }
+        - lang: hcl
+          label: OpenTofu
+          source: |
+            # looking an account up lists them: GET /api/accounts
+            terraform {
+              required_providers {
+                mailtrap = {
+                  source = "mailtrap/mailtrap"
+                }
+              }
+            }
+
+            # The token is read from the MAILTRAP_API_TOKEN environment variable.
+            provider "mailtrap" {}
+
+            # With no filters the token must map to exactly one account.
+            data "mailtrap_account" "current" {
+              name = "Acme Corp"
+            }
+
+            output "account_id" {
+              value = data.mailtrap_account.current.id
+            }
       responses:
         '200':
           description: 'Returns the list of accounts to which the API token has access. **access_levels** can return 1000 (account owner), 100 (admin), 10 (viewer).'
@@ -1172,6 +1195,38 @@ paths:
             	// The full token value is returned only here: store it securely.
             	fmt.Printf("created token %d: %s\n", token.ID, token.Token)
             }
+        - lang: hcl
+          label: OpenTofu
+          source: |
+            # tofu apply creates the token: POST /api/api_tokens
+            terraform {
+              required_providers {
+                mailtrap = {
+                  source = "mailtrap/mailtrap"
+                }
+              }
+            }
+
+            # The token is read from the MAILTRAP_API_TOKEN environment variable.
+            provider "mailtrap" {}
+
+            resource "mailtrap_api_token" "ci" {
+              name = "CI deploy token"
+
+              resources = [
+                {
+                  resource_type = "sandbox"
+                  resource_id   = 3000001
+                  access_level  = 100
+                },
+              ]
+            }
+
+            # token is returned only on create, and is unavailable after an import.
+            output "api_token" {
+              value     = mailtrap_api_token.ci.token
+              sensitive = true
+            }
       requestBody:
         required: true
         content:
@@ -1305,6 +1360,36 @@ paths:
 
             	fmt.Printf("%s (...%s), created by %s\n", token.Name, token.Last4Digits, token.CreatedBy)
             }
+        - lang: hcl
+          label: OpenTofu
+          source: |
+            # tofu plan refreshes the resource, and tofu import mailtrap_api_token.ci 1000001
+            # adopts an existing one: GET /api/api_tokens/{id}
+            terraform {
+              required_providers {
+                mailtrap = {
+                  source = "mailtrap/mailtrap"
+                }
+              }
+            }
+
+            # The token is read from the MAILTRAP_API_TOKEN environment variable.
+            provider "mailtrap" {}
+
+            # The token has no update path: every attribute forces replacement. Permission
+            # drift made outside OpenTofu is not detected, and token is unavailable after an
+            # import.
+            resource "mailtrap_api_token" "ci" {
+              name = "CI deploy token"
+
+              resources = [
+                {
+                  resource_type = "sandbox"
+                  resource_id   = 3000001
+                  access_level  = 100
+                },
+              ]
+            }
       parameters:
         - $ref: '#/components/parameters/api_token_id'
       responses:
@@ -1423,6 +1508,25 @@ paths:
             	}
 
             	fmt.Println("API token deleted")
+            }
+        - lang: hcl
+          label: OpenTofu
+          source: |
+            # tofu destroy, or removing this block and running tofu apply:
+            # DELETE /api/api_tokens/{id}
+            terraform {
+              required_providers {
+                mailtrap = {
+                  source = "mailtrap/mailtrap"
+                }
+              }
+            }
+
+            # The token is read from the MAILTRAP_API_TOKEN environment variable.
+            provider "mailtrap" {}
+
+            resource "mailtrap_api_token" "ci" {
+              name = "CI deploy token"
             }
       parameters:
         - $ref: '#/components/parameters/api_token_id'

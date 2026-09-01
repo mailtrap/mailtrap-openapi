@@ -190,6 +190,28 @@ paths:
             		fmt.Printf("%d %s (%d message(s), %d unread)\n", sandbox.ID, sandbox.Name, sandbox.EmailsCount, sandbox.EmailsUnreadCount)
             	}
             }
+        - lang: hcl
+          label: OpenTofu
+          source: |
+            # looking a sandbox up by name lists them: GET /api/sandboxes
+            terraform {
+              required_providers {
+                mailtrap = {
+                  source = "mailtrap/mailtrap"
+                }
+              }
+            }
+
+            # The token is read from the MAILTRAP_API_TOKEN environment variable.
+            provider "mailtrap" {}
+
+            data "mailtrap_sandbox" "staging" {
+              name = "Staging inbox"
+            }
+
+            output "sandbox_id" {
+              value = data.mailtrap_sandbox.staging.id
+            }
       operationId: getSandboxes
   '/api/projects':
     post:
@@ -359,6 +381,24 @@ paths:
 
             	fmt.Printf("created project %d (%s)\n", project.ID, project.Name)
             }
+        - lang: hcl
+          label: OpenTofu
+          source: |
+            # tofu apply creates the project: POST /api/projects
+            terraform {
+              required_providers {
+                mailtrap = {
+                  source = "mailtrap/mailtrap"
+                }
+              }
+            }
+
+            # The token is read from the MAILTRAP_API_TOKEN environment variable.
+            provider "mailtrap" {}
+
+            resource "mailtrap_project" "testing" {
+              name = "My project"
+            }
     get:
       summary: Get a list of projects
       description: List projects and their sandboxes to which the API token has access.
@@ -503,6 +543,28 @@ paths:
             	for _, project := range projects {
             		fmt.Printf("%d %s (%d sandbox(es))\n", project.ID, project.Name, len(project.Sandboxes))
             	}
+            }
+        - lang: hcl
+          label: OpenTofu
+          source: |
+            # looking a project up by name lists them: GET /api/projects
+            terraform {
+              required_providers {
+                mailtrap = {
+                  source = "mailtrap/mailtrap"
+                }
+              }
+            }
+
+            # The token is read from the MAILTRAP_API_TOKEN environment variable.
+            provider "mailtrap" {}
+
+            data "mailtrap_project" "testing" {
+              name = "My project"
+            }
+
+            output "project_id" {
+              value = data.mailtrap_project.testing.id
             }
   '/api/projects/{project_id}':
     get:
@@ -650,6 +712,28 @@ paths:
             	}
 
             	fmt.Printf("%d %s\n", project.ID, project.Name)
+            }
+        - lang: hcl
+          label: OpenTofu
+          source: |
+            # tofu apply reads the project: GET /api/projects/{project_id}
+            terraform {
+              required_providers {
+                mailtrap = {
+                  source = "mailtrap/mailtrap"
+                }
+              }
+            }
+
+            # The token is read from the MAILTRAP_API_TOKEN environment variable.
+            provider "mailtrap" {}
+
+            data "mailtrap_project" "testing" {
+              id = 1000001
+            }
+
+            output "project_name" {
+              value = data.mailtrap_project.testing.name
             }
     patch:
       summary: Update project
@@ -810,6 +894,24 @@ paths:
 
             	fmt.Printf("renamed project %d to %s\n", project.ID, project.Name)
             }
+        - lang: hcl
+          label: OpenTofu
+          source: |
+            # changing the name and running tofu apply: PATCH /api/projects/{project_id}
+            terraform {
+              required_providers {
+                mailtrap = {
+                  source = "mailtrap/mailtrap"
+                }
+              }
+            }
+
+            # The token is read from the MAILTRAP_API_TOKEN environment variable.
+            provider "mailtrap" {}
+
+            resource "mailtrap_project" "testing" {
+              name = "Renamed project"
+            }
       requestBody:
         content:
           application/json:
@@ -967,6 +1069,25 @@ paths:
             	}
 
             	fmt.Println("project deleted")
+            }
+        - lang: hcl
+          label: OpenTofu
+          source: |
+            # tofu destroy, or removing this block and running tofu apply:
+            # DELETE /api/projects/{project_id}
+            terraform {
+              required_providers {
+                mailtrap = {
+                  source = "mailtrap/mailtrap"
+                }
+              }
+            }
+
+            # The token is read from the MAILTRAP_API_TOKEN environment variable.
+            provider "mailtrap" {}
+
+            resource "mailtrap_project" "testing" {
+              name = "My project"
             }
       responses:
         '200':
@@ -1169,6 +1290,31 @@ paths:
 
             	fmt.Printf("created sandbox %d (%s)\n", sandbox.ID, sandbox.Name)
             }
+        - lang: hcl
+          label: OpenTofu
+          source: |
+            # tofu apply creates the sandbox: POST /api/projects/{project_id}/sandboxes
+            terraform {
+              required_providers {
+                mailtrap = {
+                  source = "mailtrap/mailtrap"
+                }
+              }
+            }
+
+            # The token is read from the MAILTRAP_API_TOKEN environment variable.
+            provider "mailtrap" {}
+
+            resource "mailtrap_project" "testing" {
+              name = "My project"
+            }
+
+            # Create only accepts name and project_id. Setting email_username makes the same
+            # apply follow up with a PATCH.
+            resource "mailtrap_sandbox" "staging" {
+              name       = "Staging inbox"
+              project_id = mailtrap_project.testing.id
+            }
     parameters:
       - $ref: '#/components/parameters/project_id'
   '/api/sandboxes/{sandbox_id}':
@@ -1311,6 +1457,28 @@ paths:
 
             	fmt.Printf("%s: %s@%s, SMTP %v\n", sandbox.Name, sandbox.Username, sandbox.Domain, sandbox.SMTPPorts)
             }
+        - lang: hcl
+          label: OpenTofu
+          source: |
+            # tofu apply reads the sandbox: GET /api/sandboxes/{sandbox_id}
+            terraform {
+              required_providers {
+                mailtrap = {
+                  source = "mailtrap/mailtrap"
+                }
+              }
+            }
+
+            # The token is read from the MAILTRAP_API_TOKEN environment variable.
+            provider "mailtrap" {}
+
+            data "mailtrap_sandbox" "staging" {
+              id = 3000001
+            }
+
+            output "smtp_host" {
+              value = data.mailtrap_sandbox.staging.domain
+            }
       operationId: getSandboxAttributes
     delete:
       summary: Delete a sandbox
@@ -1449,6 +1617,26 @@ paths:
             	}
 
             	fmt.Printf("deleted sandbox %d (%s)\n", sandbox.ID, sandbox.Name)
+            }
+        - lang: hcl
+          label: OpenTofu
+          source: |
+            # tofu destroy, or removing this block and running tofu apply:
+            # DELETE /api/sandboxes/{sandbox_id}
+            terraform {
+              required_providers {
+                mailtrap = {
+                  source = "mailtrap/mailtrap"
+                }
+              }
+            }
+
+            # The token is read from the MAILTRAP_API_TOKEN environment variable.
+            provider "mailtrap" {}
+
+            resource "mailtrap_sandbox" "staging" {
+              name       = "Staging inbox"
+              project_id = 1000001
             }
       operationId: deleteSandbox
     patch:
@@ -1637,6 +1825,27 @@ paths:
             	}
 
             	fmt.Printf("updated sandbox %d: %s\n", sandbox.ID, sandbox.Name)
+            }
+        - lang: hcl
+          label: OpenTofu
+          source: |
+            # changing a tracked attribute and running tofu apply:
+            # PATCH /api/sandboxes/{sandbox_id}
+            terraform {
+              required_providers {
+                mailtrap = {
+                  source = "mailtrap/mailtrap"
+                }
+              }
+            }
+
+            # The token is read from the MAILTRAP_API_TOKEN environment variable.
+            provider "mailtrap" {}
+
+            resource "mailtrap_sandbox" "staging" {
+              name           = "Renamed inbox"
+              project_id     = 1000001
+              email_username = "staging"
             }
       operationId: updateSandbox
     parameters:
