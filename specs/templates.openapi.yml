@@ -309,9 +309,9 @@ paths:
             	fmt.Printf("created template %d (uuid %s)\n", template.ID, template.UUID)
             }
         - lang: hcl
-          label: OpenTofu
+          label: Terraform
           source: |
-            # tofu apply creates the template: POST /api/email_templates
+            # terraform apply creates the template: POST /api/email_templates
             terraform {
               required_providers {
                 mailtrap = {
@@ -469,9 +469,9 @@ paths:
             	fmt.Printf("%s: %s\n", template.Name, template.Subject)
             }
         - lang: hcl
-          label: OpenTofu
+          label: Terraform
           source: |
-            # tofu plan refreshes the resource, and tofu import mailtrap_email_template.welcome 1000001
+            # terraform plan refreshes the resource, and terraform import mailtrap_email_template.welcome 1000001
             # adopts an existing one: GET /api/email_templates/{email_template_id}
             terraform {
               required_providers {
@@ -661,9 +661,9 @@ paths:
             	fmt.Printf("updated template %d: %s\n", template.ID, template.Subject)
             }
         - lang: hcl
-          label: OpenTofu
+          label: Terraform
           source: |
-            # changing a tracked attribute and running tofu apply: PATCH /api/email_templates/{email_template_id}
+            # changing a tracked attribute and running terraform apply: PATCH /api/email_templates/{email_template_id}
             terraform {
               required_providers {
                 mailtrap = {
@@ -817,9 +817,9 @@ paths:
             	fmt.Println("template deleted")
             }
         - lang: hcl
-          label: OpenTofu
+          label: Terraform
           source: |
-            # tofu destroy, or removing this block and running tofu apply:
+            # terraform destroy, or removing this block and running terraform apply:
             # DELETE /api/email_templates/{email_template_id}
             terraform {
               required_providers {

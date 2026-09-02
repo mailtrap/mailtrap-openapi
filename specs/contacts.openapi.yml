@@ -1781,9 +1781,9 @@ paths:
             	fmt.Printf("created list %d (%s)\n", list.ID, list.Name)
             }
         - lang: hcl
-          label: OpenTofu
+          label: Terraform
           source: |
-            # tofu apply creates the list: POST /api/contacts/lists
+            # terraform apply creates the list: POST /api/contacts/lists
             terraform {
               required_providers {
                 mailtrap = {
@@ -1923,9 +1923,9 @@ paths:
             	fmt.Printf("%d %s\n", list.ID, list.Name)
             }
         - lang: hcl
-          label: OpenTofu
+          label: Terraform
           source: |
-            # tofu plan refreshes the resource, and tofu import mailtrap_contact_list.newsletter 1000001
+            # terraform plan refreshes the resource, and terraform import mailtrap_contact_list.newsletter 1000001
             # adopts an existing one: GET /api/contacts/lists/{list_id}
             terraform {
               required_providers {
@@ -2059,9 +2059,9 @@ paths:
             	fmt.Printf("renamed list %d to %s\n", list.ID, list.Name)
             }
         - lang: hcl
-          label: OpenTofu
+          label: Terraform
           source: |
-            # changing the name and running tofu apply: PATCH /api/contacts/lists/{list_id}
+            # changing the name and running terraform apply: PATCH /api/contacts/lists/{list_id}
             terraform {
               required_providers {
                 mailtrap = {
@@ -2200,9 +2200,9 @@ paths:
             	fmt.Println("contact list deleted")
             }
         - lang: hcl
-          label: OpenTofu
+          label: Terraform
           source: |
-            # tofu destroy, or removing this block and running tofu apply:
+            # terraform destroy, or removing this block and running terraform apply:
             # DELETE /api/contacts/lists/{list_id}
             terraform {
               required_providers {
@@ -2467,9 +2467,9 @@ paths:
             	fmt.Printf("created field %d (%s)\n", field.ID, field.MergeTag)
             }
         - lang: hcl
-          label: OpenTofu
+          label: Terraform
           source: |
-            # tofu apply creates the field: POST /api/contacts/fields
+            # terraform apply creates the field: POST /api/contacts/fields
             terraform {
               required_providers {
                 mailtrap = {
@@ -2643,9 +2643,9 @@ paths:
             	fmt.Printf("%s (%s), merge tag %s\n", field.Name, field.DataType, field.MergeTag)
             }
         - lang: hcl
-          label: OpenTofu
+          label: Terraform
           source: |
-            # tofu plan refreshes the resource, and tofu import mailtrap_contact_field.first_name 1000001
+            # terraform plan refreshes the resource, and terraform import mailtrap_contact_field.first_name 1000001
             # adopts an existing one: GET /api/contacts/fields/{field_id}
             terraform {
               required_providers {
@@ -2788,9 +2788,9 @@ paths:
             	fmt.Printf("updated field %d: %s (%s)\n", field.ID, field.Name, field.MergeTag)
             }
         - lang: hcl
-          label: OpenTofu
+          label: Terraform
           source: |
-            # changing the name or merge tag and running tofu apply:
+            # changing the name or merge tag and running terraform apply:
             # PATCH /api/contacts/fields/{field_id}
             terraform {
               required_providers {
@@ -2954,9 +2954,9 @@ paths:
             	fmt.Println("contact field deleted")
             }
         - lang: hcl
-          label: OpenTofu
+          label: Terraform
           source: |
-            # tofu destroy, or removing this block and running tofu apply:
+            # terraform destroy, or removing this block and running terraform apply:
             # DELETE /api/contacts/fields/{field_id}
             terraform {
               required_providers {

@@ -217,9 +217,9 @@ paths:
             	}
             }
         - lang: hcl
-          label: OpenTofu
+          label: Terraform
           source: |
-            # tofu apply creates the domain: POST /api/domains
+            # terraform apply creates the domain: POST /api/domains
             terraform {
               required_providers {
                 mailtrap = {
@@ -545,9 +545,9 @@ paths:
             	fmt.Printf("%s: DNS verified %t, open tracking %t\n", domain.DomainName, domain.DNSVerified, domain.OpenTrackingEnabled)
             }
         - lang: hcl
-          label: OpenTofu
+          label: Terraform
           source: |
-            # tofu apply reads the domain: GET /api/domains/{domain_id}
+            # terraform apply reads the domain: GET /api/domains/{domain_id}
             terraform {
               required_providers {
                 mailtrap = {
@@ -706,9 +706,9 @@ paths:
             	fmt.Println("domain deleted")
             }
         - lang: hcl
-          label: OpenTofu
+          label: Terraform
           source: |
-            # tofu destroy, or removing this block and running tofu apply:
+            # terraform destroy, or removing this block and running terraform apply:
             # DELETE /api/domains/{domain_id}
             terraform {
               required_providers {
@@ -809,9 +809,9 @@ paths:
             	fmt.Printf("%s: open tracking %t, click tracking %t\n", domain.DomainName, domain.OpenTrackingEnabled, domain.ClickTrackingEnabled)
             }
         - lang: hcl
-          label: OpenTofu
+          label: Terraform
           source: |
-            # changing a tracked attribute and running tofu apply:
+            # changing a tracked attribute and running terraform apply:
             # PATCH /api/domains/{domain_id}
             terraform {
               required_providers {
@@ -3168,9 +3168,9 @@ paths:
             	fmt.Printf("created webhook %d, signing secret %s\n", webhook.ID, webhook.SigningSecret)
             }
         - lang: hcl
-          label: OpenTofu
+          label: Terraform
           source: |
-            # tofu apply creates the webhook: POST /api/webhooks
+            # terraform apply creates the webhook: POST /api/webhooks
             terraform {
               required_providers {
                 mailtrap = {
@@ -3564,9 +3564,9 @@ paths:
             	fmt.Printf("%s (%s): %v\n", webhook.URL, webhook.PayloadFormat, webhook.EventTypes)
             }
         - lang: hcl
-          label: OpenTofu
+          label: Terraform
           source: |
-            # tofu plan refreshes the resource, and tofu import mailtrap_webhook.delivery 1000001
+            # terraform plan refreshes the resource, and terraform import mailtrap_webhook.delivery 1000001
             # adopts an existing one: GET /api/webhooks/{webhook_id}
             terraform {
               required_providers {
@@ -3750,9 +3750,9 @@ paths:
             	fmt.Printf("updated webhook %d: %s (active: %t)\n", webhook.ID, webhook.URL, webhook.Active)
             }
         - lang: hcl
-          label: OpenTofu
+          label: Terraform
           source: |
-            # changing a mutable attribute and running tofu apply:
+            # changing a mutable attribute and running terraform apply:
             # PATCH /api/webhooks/{webhook_id}
             terraform {
               required_providers {
@@ -3972,9 +3972,9 @@ paths:
             	fmt.Printf("deleted webhook %d (%s)\n", webhook.ID, webhook.URL)
             }
         - lang: hcl
-          label: OpenTofu
+          label: Terraform
           source: |
-            # tofu destroy, or removing this block and running tofu apply:
+            # terraform destroy, or removing this block and running terraform apply:
             # DELETE /api/webhooks/{webhook_id}
             terraform {
               required_providers {

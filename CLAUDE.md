@@ -149,7 +149,7 @@ Include code samples in this order:
 6. .NET (C#)
 7. Java
 8. Go (`lang: go`, `label: Go`)
-9. OpenTofu (`lang: hcl`, `label: OpenTofu`) - HCL, not an API call; see below
+9. Terraform (`lang: hcl`, `label: Terraform`) - HCL, not an API call; see below
 
 ### Code Sample Format
 
@@ -177,8 +177,8 @@ x-codeSamples:
 
 - **Use official Mailtrap SDKs** for language-specific examples
 - **If SDK doesn't support a method**, either let GitBook generate the example or add a comment noting SDK limitations
-- **For Go and OpenTofu, omit the entry entirely** when the tool cannot express the operation. A tab that
-  says "unsupported" is worse than an absent tab, so `inbound.openapi.yml` gets no Go or OpenTofu samples
+- **For Go and Terraform, omit the entry entirely** when the tool cannot express the operation. A tab that
+  says "unsupported" is worse than an absent tab, so `inbound.openapi.yml` gets no Go or Terraform samples
   at all, and the tracking opt-out operations keep their cURL-only sample.
 - **Use environment variables** for API keys (e.g., `process.env.MAILTRAP_API_KEY`)
 - **Use Context7 MCP** to query SDK capabilities when unsure
@@ -199,19 +199,19 @@ x-codeSamples:
   *indentation* must be spaces), so a `source: |` block indented with 12 spaces followed by tabs
   round-trips correctly.
 
-#### OpenTofu samples
+#### Terraform samples
 
-- Use `lang: hcl` with `label: OpenTofu`. GitBook highlights with Prism, which has an `hcl` component and
+- Use `lang: hcl` with `label: Terraform`. GitBook highlights with Prism, which has an `hcl` component and
   no `terraform` one; `lang` resolves through Prism identifiers rather than GitBook's documented linguist
   list, as the existing `csharp` and `shell` samples show. The dropdown tab is titled by `label`, so it
-  reads "OpenTofu" regardless.
+  reads "Terraform" regardless.
 - An HCL block is not an API call: a `resource` block declares desired state and the endpoint fires as a
   side effect of a lifecycle command. Every sample therefore opens with a comment naming both the command
-  and the operation, e.g. `# tofu apply creates the domain: POST /api/domains`.
+  and the operation, e.g. `# terraform apply creates the domain: POST /api/domains`.
 - Each sample is self-contained, including the `terraform { required_providers { ... } }` and
   `provider "mailtrap" {}` blocks, because the sample tab is where a reader learns the source string.
 - Take attribute names from the provider schema, not from its published examples. Verify with
-  `tofu fmt -check` plus `tofu validate` against a locally built provider binary under `dev_overrides`.
+  `terraform fmt -check` plus `terraform validate` against a locally built provider binary under `dev_overrides`.
 
 ### SDK Repositories
 
@@ -223,7 +223,7 @@ Reference SDK repos for accurate code examples:
 - .NET: Future reference
 - Java: Future reference
 - Go: `mailtrap/mailtrap-go`
-- OpenTofu/Terraform provider: `mailtrap/terraform-provider-mailtrap`
+- Terraform provider: `mailtrap/terraform-provider-mailtrap`
 
 ## OpenAPI Extensions
 

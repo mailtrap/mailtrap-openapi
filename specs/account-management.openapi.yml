@@ -165,7 +165,7 @@ paths:
             	}
             }
         - lang: hcl
-          label: OpenTofu
+          label: Terraform
           source: |
             # looking an account up lists them: GET /api/accounts
             terraform {
@@ -1196,9 +1196,9 @@ paths:
             	fmt.Printf("created token %d: %s\n", token.ID, token.Token)
             }
         - lang: hcl
-          label: OpenTofu
+          label: Terraform
           source: |
-            # tofu apply creates the token: POST /api/api_tokens
+            # terraform apply creates the token: POST /api/api_tokens
             terraform {
               required_providers {
                 mailtrap = {
@@ -1361,9 +1361,9 @@ paths:
             	fmt.Printf("%s (...%s), created by %s\n", token.Name, token.Last4Digits, token.CreatedBy)
             }
         - lang: hcl
-          label: OpenTofu
+          label: Terraform
           source: |
-            # tofu plan refreshes the resource, and tofu import mailtrap_api_token.ci 1000001
+            # terraform plan refreshes the resource, and terraform import mailtrap_api_token.ci 1000001
             # adopts an existing one: GET /api/api_tokens/{id}
             terraform {
               required_providers {
@@ -1377,7 +1377,7 @@ paths:
             provider "mailtrap" {}
 
             # The token has no update path: every attribute forces replacement. Permission
-            # drift made outside OpenTofu is not detected, and token is unavailable after an
+            # drift made outside Terraform is not detected, and token is unavailable after an
             # import.
             resource "mailtrap_api_token" "ci" {
               name = "CI deploy token"
@@ -1510,9 +1510,9 @@ paths:
             	fmt.Println("API token deleted")
             }
         - lang: hcl
-          label: OpenTofu
+          label: Terraform
           source: |
-            # tofu destroy, or removing this block and running tofu apply:
+            # terraform destroy, or removing this block and running terraform apply:
             # DELETE /api/api_tokens/{id}
             terraform {
               required_providers {
