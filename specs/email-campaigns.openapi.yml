@@ -923,10 +923,13 @@ paths:
         - lang: shell
           label: "cURL"
           source: |
+            # Must be in the future and no more than 1 month ahead.
+            DATETIME=$(date -u -d '+1 day' +%Y-%m-%dT%H:%M:%S.000Z 2>/dev/null || date -u -v+1d +%Y-%m-%dT%H:%M:%S.000Z)
+
             curl -X POST "https://mailtrap.io/api/email_campaigns/4567/schedule" \
               -H 'Api-Token: YOUR_API_KEY' \
               -H 'Content-Type: application/json' \
-              -d '{ "datetime": "2026-10-01T09:00:00.000Z" }'
+              -d "{ \"datetime\": \"$DATETIME\" }"
         - lang: javascript
           label: Node.js
           source: |
@@ -1767,7 +1770,7 @@ components:
               type: string
               format: date-time
               description: When the campaign is scheduled to send (ISO 8601). Present in the `scheduled` state.
-              example: "2026-10-01T09:00:00.000Z"
+              example: "2026-06-01T09:00:00.000Z"
         created_at:
           type: string
           format: date-time
