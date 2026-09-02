@@ -721,7 +721,6 @@ paths:
             <?php
             use Mailtrap\Config;
             use Mailtrap\MailtrapGeneralClient;
-            use Mailtrap\Helper\ResponseHelper;
 
             $config = new Config($_ENV['MAILTRAP_API_KEY']);
             $accountId = (int) $_ENV['MAILTRAP_ACCOUNT_ID'];
@@ -927,7 +926,7 @@ paths:
             curl -X POST "https://mailtrap.io/api/email_campaigns/4567/schedule" \
               -H 'Api-Token: YOUR_API_KEY' \
               -H 'Content-Type: application/json' \
-              -d '{ "datetime": "2026-06-01T09:00:00.000Z" }'
+              -d '{ "datetime": "2026-10-01T09:00:00.000Z" }'
         - lang: javascript
           label: Node.js
           source: |
@@ -935,8 +934,11 @@ paths:
 
             const client = new MailtrapClient({ token: "YOUR_API_KEY" });
 
+            // Must be in the future and no more than 1 month ahead.
+            const scheduledAt = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
+
             const scheduled = await client.emailCampaigns.schedule(4567, {
-              datetime: "2026-06-01T09:00:00.000Z"
+              datetime: scheduledAt
             });
 
             console.log(`Scheduled for: ${scheduled.data.current_state_metadata.scheduled_at}`);
@@ -952,20 +954,31 @@ paths:
             $accountId = (int) $_ENV['MAILTRAP_ACCOUNT_ID'];
             $emailCampaigns = (new MailtrapGeneralClient($config))->emailCampaigns($accountId);
 
-            $response = $emailCampaigns->scheduleEmailCampaign(4567, '2026-06-01T09:00:00.000Z');
+            // Must be in the future and no more than 1 month ahead.
+            $response = $emailCampaigns->scheduleEmailCampaign(
+                4567,
+                new DateTimeImmutable('+1 day', new DateTimeZone('UTC'))
+            );
 
             var_dump(ResponseHelper::toArray($response));
         - lang: python
           label: Python
           source: |
+            from datetime import datetime, timedelta, timezone
+
             import mailtrap as mt
 
             client = mt.MailtrapClient(token="YOUR_API_KEY")
             campaigns = client.email_campaigns_api.email_campaigns
 
+            # Must be in the future and no more than 1 month ahead.
+            send_at = datetime.now(timezone.utc) + timedelta(days=1)
+
             scheduled = campaigns.schedule(
                 email_campaign_id=4567,
-                schedule_params=mt.ScheduleEmailCampaignParams(datetime="2026-06-01T09:00:00.000Z")
+                schedule_params=mt.ScheduleEmailCampaignParams(
+                    datetime=send_at.isoformat(timespec="milliseconds").replace("+00:00", "Z")
+                )
             )
 
             print(f"Scheduled for: {scheduled.current_state_metadata.scheduled_at}")
@@ -977,7 +990,10 @@ paths:
             client = Mailtrap::Client.new(api_key: 'YOUR_API_KEY')
             email_campaigns = Mailtrap::EmailCampaignsAPI.new(client)
 
-            campaign = email_campaigns.schedule(4567, '2026-06-01T09:00:00.000Z')
+            # Must be in the future and no more than 1 month ahead.
+            schedule_at = (Time.now.utc + 86_400).strftime('%Y-%m-%dT%H:%M:%S.000Z')
+
+            campaign = email_campaigns.schedule(4567, schedule_at)
 
             puts "State after schedule: #{campaign.current_state}"
         - lang: csharp
@@ -989,8 +1005,8 @@ paths:
             using var mailtrapFactory = new MailtrapClientFactory("YOUR_API_KEY");
             var client = mailtrapFactory.CreateClient();
 
-            var request = new ScheduleEmailCampaignRequest(
-                DateTimeOffset.Parse("2026-06-01T09:00:00.000Z"));
+            // Must be in the future and no more than 1 month ahead.
+            var request = new ScheduleEmailCampaignRequest(DateTimeOffset.UtcNow.AddDays(1));
 
             var campaign = await client.EmailCampaign(4567).Schedule(request);
 
@@ -1002,6 +1018,7 @@ paths:
             import io.mailtrap.factory.MailtrapClientFactory;
             import io.mailtrap.model.request.emailcampaigns.ScheduleEmailCampaignRequest;
             import java.time.OffsetDateTime;
+            import java.time.ZoneOffset;
 
             var config = new MailtrapConfig.Builder()
                 .token("YOUR_API_KEY")
@@ -1010,8 +1027,9 @@ paths:
             var client = MailtrapClientFactory.createMailtrapClient(config);
             var campaigns = client.emailCampaignsApi().emailCampaigns();
 
+            // Must be in the future and no more than 1 month ahead.
             var scheduled = campaigns.scheduleEmailCampaign(4567L,
-                new ScheduleEmailCampaignRequest(OffsetDateTime.parse("2026-06-01T09:00:00.000Z")));
+                new ScheduleEmailCampaignRequest(OffsetDateTime.now(ZoneOffset.UTC).plusDays(1)));
 
             System.out.println(scheduled.getData().getCurrentStateMetadata().getScheduledAt());
   "/api/email_campaigns/{email_campaign_id}/cancel":
@@ -1626,7 +1644,7 @@ components:
           description: |-
             When to send the campaign (ISO 8601). Must be in the future and no more than 1 month
             ahead, otherwise the request is rejected with `422`.
-          example: "2026-06-01T09:00:00.000Z"
+          example: "2026-10-01T09:00:00.000Z"
     ReplyTo:
       type: object
       description: Reply-To address parts.
@@ -1749,7 +1767,7 @@ components:
               type: string
               format: date-time
               description: When the campaign is scheduled to send (ISO 8601). Present in the `scheduled` state.
-              example: "2026-06-01T09:00:00.000Z"
+              example: "2026-10-01T09:00:00.000Z"
         created_at:
           type: string
           format: date-time
