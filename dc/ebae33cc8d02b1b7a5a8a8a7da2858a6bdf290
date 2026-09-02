@@ -1,0 +1,34 @@
+specs/contacts.openapi.yml
+  s_d745c0a8752aa2::t_609fc1d4068d34 1786,1928,2064,2205,2472,2648,2793,2959
+  s_d745c0a8752aa2::t_aaa1bd998ab9d4 1784,1926,2062,2203,2470,2646,2791,2957
+specs/account-management.openapi.yml
+  s_d745c0a8752aa2::t_aaa1bd998ab9d4 168,1199,1364,1380,1513
+  s_d745c0a8752aa2::t_609fc1d4068d34 1201,1366,1515
+specs/email-sending.openapi.yml
+  s_d745c0a8752aa2::t_aaa1bd998ab9d4 220,548,709,812,3171,3567,3753,3975
+  s_d745c0a8752aa2::t_609fc1d4068d34 222,550,711,814,3173,3569,3755,3977
+specs/templates.openapi.yml
+  s_d745c0a8752aa2::t_609fc1d4068d34 314,474,666,822
+  s_d745c0a8752aa2::t_aaa1bd998ab9d4 312,472,664,820
+CLAUDE.md
+  s_d745c0a8752aa2::t_fd4ac19fb53bcd 152,180-181,202,204,207,210,214,226
+specs/sandbox.openapi.yml
+  s_d745c0a8752aa2::t_aaa1bd998ab9d4 194,385,548,717,898,1074,1294,1461,1622,1830
+  s_d745c0a8752aa2::t_609fc1d4068d34 387,719,900,1076,1296,1463,1624,1832
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.0",
+  "base_commit_sha": "dcebae33cc8d02b1b7a5a8a8a7da2858a6bdf290",
+  "prompts": {},
+  "sessions": {
+    "s_d745c0a8752aa2": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "e22a14ca-916b-4b89-aef6-423acd63f53e",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Maciej Walusiak <maciej.walusiak@railsware.com>"
+    }
+  }
+}
