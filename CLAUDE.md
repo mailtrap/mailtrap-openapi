@@ -217,11 +217,11 @@ x-codeSamples:
 
 Reference SDK repos for accurate code examples:
 - Node.js: `mailtrap/mailtrap-nodejs`
-- PHP: `railsware/mailtrap-php`
-- Python: `railsware/mailtrap-python`
-- Ruby: `railsware/mailtrap-ruby`
-- .NET: Future reference
-- Java: Future reference
+- PHP: `mailtrap/mailtrap-php`
+- Python: `mailtrap/mailtrap-python`
+- Ruby: `mailtrap/mailtrap-ruby`
+- .NET: `mailtrap/mailtrap-dotnet`
+- Java: `mailtrap/mailtrap-java`
 - Go: `mailtrap/mailtrap-go`
 - Terraform provider: `mailtrap/terraform-provider-mailtrap`
 
