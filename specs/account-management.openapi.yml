@@ -1735,6 +1735,50 @@ paths:
                 $ref: '#/components/schemas/UnprocessableEntity'
     parameters:
       - $ref: '#/components/parameters/organization_id'
+  '/api/organizations/{organization_id}/sub_accounts/{sub_account_id}':
+    delete:
+      operationId: deleteOrganizationSubAccount
+      summary: Delete organization sub account
+      description: |-
+        Delete a sub account of the specified organization. You must have sub account management
+        permissions for this organization.
+
+        The sub account and all of its data – projects, sandboxes, emails and domains – are removed
+        permanently and cannot be restored. Deleting the organization's last sub account also deletes
+        the organization.
+
+        A repeated call for the same sub account returns `404`, because a sub account that is already
+        scheduled for deletion is no longer listed.
+
+        Rate limit: 10 requests per minute per organization.
+      tags:
+        - Organizations
+      x-codeSamples:
+        - lang: shell
+          label: 'cURL'
+          source: |
+            curl -X DELETE https://mailtrap.io/api/organizations/{organization_id}/sub_accounts/{sub_account_id} \
+              -H 'Authorization: Bearer YOUR_API_TOKEN'
+      responses:
+        '204':
+          description: Sub account deleted successfully. No content is returned.
+        '401':
+          $ref: '#/components/responses/UNAUTHENTICATED'
+        '403':
+          description: Insufficient organization permissions or wrong organization.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PermissionsDeniedResponse'
+              example:
+                errors: Access forbidden
+        '404':
+          $ref: '#/components/responses/NOT_FOUND'
+        '429':
+          $ref: '#/components/responses/LIMIT_EXCEEDED'
+    parameters:
+      - $ref: '#/components/parameters/organization_id'
+      - $ref: '#/components/parameters/sub_account_id'
 components:
   schemas:
     SubAccount:
@@ -1899,6 +1943,16 @@ components:
           example: Account access forbidden
       example:
         errors: Account access forbidden
+    RateLimitExceededResponse:
+      title: RateLimitExceededResponse
+      type: object
+      properties:
+        errors:
+          type: string
+          description: Error message
+          example: Rate limit exceeded
+      example:
+        errors: Rate limit exceeded
     UnauthenticatedResponse:
       title: UnauthenticatedResponse
       type: object
@@ -2130,6 +2184,14 @@ components:
             $ref: '#/components/schemas/NotFoundResponse'
           example:
             error: Not Found
+    LIMIT_EXCEEDED:
+      description: Rate limit exceeded.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/RateLimitExceededResponse'
+          example:
+            errors: Rate limit exceeded
     UNPROCESSABLE_ENTITY:
       description: Validation error or other business rule violation
       content:
@@ -2137,6 +2199,16 @@ components:
           schema:
             $ref: '#/components/schemas/UnprocessableEntity'
   parameters:
+    sub_account_id:
+      description: Unique sub account ID
+      name: sub_account_id
+      in: path
+      required: true
+      schema:
+        type: integer
+        format: int64
+        minimum: 1
+        example: 12345
     organization_id:
       description: Unique organization ID
       name: organization_id
