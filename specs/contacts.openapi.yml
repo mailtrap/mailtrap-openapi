@@ -1784,6 +1784,7 @@ paths:
           label: Terraform
           source: |
             # terraform apply creates the list: POST /api/contacts/lists
+            # Provider docs: https://registry.terraform.io/providers/mailtrap/mailtrap/latest/docs
             terraform {
               required_providers {
                 mailtrap = {
@@ -1922,25 +1923,6 @@ paths:
 
             	fmt.Printf("%d %s\n", list.ID, list.Name)
             }
-        - lang: hcl
-          label: Terraform
-          source: |
-            # terraform plan refreshes the resource, and terraform import mailtrap_contact_list.newsletter 1000001
-            # adopts an existing one: GET /api/contacts/lists/{list_id}
-            terraform {
-              required_providers {
-                mailtrap = {
-                  source = "mailtrap/mailtrap"
-                }
-              }
-            }
-
-            # The token is read from the MAILTRAP_API_TOKEN environment variable.
-            provider "mailtrap" {}
-
-            resource "mailtrap_contact_list" "newsletter" {
-              name = "Monthly newsletter"
-            }
       responses:
         '200':
           description: Returns attributes of the contact list.
@@ -2057,24 +2039,6 @@ paths:
             	}
 
             	fmt.Printf("renamed list %d to %s\n", list.ID, list.Name)
-            }
-        - lang: hcl
-          label: Terraform
-          source: |
-            # changing the name and running terraform apply: PATCH /api/contacts/lists/{list_id}
-            terraform {
-              required_providers {
-                mailtrap = {
-                  source = "mailtrap/mailtrap"
-                }
-              }
-            }
-
-            # The token is read from the MAILTRAP_API_TOKEN environment variable.
-            provider "mailtrap" {}
-
-            resource "mailtrap_contact_list" "newsletter" {
-              name = "Weekly newsletter"
             }
       requestBody:
         content:
@@ -2198,25 +2162,6 @@ paths:
             	}
 
             	fmt.Println("contact list deleted")
-            }
-        - lang: hcl
-          label: Terraform
-          source: |
-            # terraform destroy, or removing this block and running terraform apply:
-            # DELETE /api/contacts/lists/{list_id}
-            terraform {
-              required_providers {
-                mailtrap = {
-                  source = "mailtrap/mailtrap"
-                }
-              }
-            }
-
-            # The token is read from the MAILTRAP_API_TOKEN environment variable.
-            provider "mailtrap" {}
-
-            resource "mailtrap_contact_list" "newsletter" {
-              name = "Monthly newsletter"
             }
       responses:
         '204':
@@ -2470,6 +2415,7 @@ paths:
           label: Terraform
           source: |
             # terraform apply creates the field: POST /api/contacts/fields
+            # Provider docs: https://registry.terraform.io/providers/mailtrap/mailtrap/latest/docs
             terraform {
               required_providers {
                 mailtrap = {
@@ -2642,27 +2588,6 @@ paths:
 
             	fmt.Printf("%s (%s), merge tag %s\n", field.Name, field.DataType, field.MergeTag)
             }
-        - lang: hcl
-          label: Terraform
-          source: |
-            # terraform plan refreshes the resource, and terraform import mailtrap_contact_field.first_name 1000001
-            # adopts an existing one: GET /api/contacts/fields/{field_id}
-            terraform {
-              required_providers {
-                mailtrap = {
-                  source = "mailtrap/mailtrap"
-                }
-              }
-            }
-
-            # The token is read from the MAILTRAP_API_TOKEN environment variable.
-            provider "mailtrap" {}
-
-            resource "mailtrap_contact_field" "first_name" {
-              name      = "First name"
-              data_type = "text"
-              merge_tag = "first_name"
-            }
       responses:
         '200':
           description: Returns attributes of the contact field.
@@ -2786,28 +2711,6 @@ paths:
             	}
 
             	fmt.Printf("updated field %d: %s (%s)\n", field.ID, field.Name, field.MergeTag)
-            }
-        - lang: hcl
-          label: Terraform
-          source: |
-            # changing the name or merge tag and running terraform apply:
-            # PATCH /api/contacts/fields/{field_id}
-            terraform {
-              required_providers {
-                mailtrap = {
-                  source = "mailtrap/mailtrap"
-                }
-              }
-            }
-
-            # The token is read from the MAILTRAP_API_TOKEN environment variable.
-            provider "mailtrap" {}
-
-            # data_type is immutable: changing it forces the field to be replaced.
-            resource "mailtrap_contact_field" "first_name" {
-              name      = "Given name"
-              data_type = "text"
-              merge_tag = "given_name"
             }
       requestBody:
         content:
@@ -2952,27 +2855,6 @@ paths:
             	}
 
             	fmt.Println("contact field deleted")
-            }
-        - lang: hcl
-          label: Terraform
-          source: |
-            # terraform destroy, or removing this block and running terraform apply:
-            # DELETE /api/contacts/fields/{field_id}
-            terraform {
-              required_providers {
-                mailtrap = {
-                  source = "mailtrap/mailtrap"
-                }
-              }
-            }
-
-            # The token is read from the MAILTRAP_API_TOKEN environment variable.
-            provider "mailtrap" {}
-
-            resource "mailtrap_contact_field" "first_name" {
-              name      = "First name"
-              data_type = "text"
-              merge_tag = "first_name"
             }
       responses:
         '204':

@@ -205,9 +205,16 @@ x-codeSamples:
   no `terraform` one; `lang` resolves through Prism identifiers rather than GitBook's documented linguist
   list, as the existing `csharp` and `shell` samples show. The dropdown tab is titled by `label`, so it
   reads "Terraform" regardless.
+- **Cover only creates and genuine data-source reads.** A `resource` block is the create; its update,
+  delete and import paths are native Terraform lifecycle and are documented once by the provider, so
+  those operations get no Terraform sample. A `data` block goes on a read operation only when the
+  provider has a matching data source. Do not fake a read with a `resource` block plus `terraform import`.
 - An HCL block is not an API call: a `resource` block declares desired state and the endpoint fires as a
   side effect of a lifecycle command. Every sample therefore opens with a comment naming both the command
-  and the operation, e.g. `# terraform apply creates the domain: POST /api/domains`.
+  and the operation, e.g. `# terraform apply creates the domain: POST /api/domains`. Create samples add a
+  second comment line linking the provider docs
+  (`# Provider docs: https://registry.terraform.io/providers/mailtrap/mailtrap/latest/docs`), which is
+  where the lifecycle operations live.
 - Each sample is self-contained, including the `terraform { required_providers { ... } }` and
   `provider "mailtrap" {}` blocks, because the sample tab is where a reader learns the source string.
 - Take attribute names from the provider schema, not from its published examples. Verify with

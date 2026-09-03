@@ -1199,6 +1199,7 @@ paths:
           label: Terraform
           source: |
             # terraform apply creates the token: POST /api/api_tokens
+            # Provider docs: https://registry.terraform.io/providers/mailtrap/mailtrap/latest/docs
             terraform {
               required_providers {
                 mailtrap = {
@@ -1360,36 +1361,6 @@ paths:
 
             	fmt.Printf("%s (...%s), created by %s\n", token.Name, token.Last4Digits, token.CreatedBy)
             }
-        - lang: hcl
-          label: Terraform
-          source: |
-            # terraform plan refreshes the resource, and terraform import mailtrap_api_token.ci 1000001
-            # adopts an existing one: GET /api/api_tokens/{id}
-            terraform {
-              required_providers {
-                mailtrap = {
-                  source = "mailtrap/mailtrap"
-                }
-              }
-            }
-
-            # The token is read from the MAILTRAP_API_TOKEN environment variable.
-            provider "mailtrap" {}
-
-            # The token has no update path: every attribute forces replacement. Permission
-            # drift made outside Terraform is not detected, and token is unavailable after an
-            # import.
-            resource "mailtrap_api_token" "ci" {
-              name = "CI deploy token"
-
-              resources = [
-                {
-                  resource_type = "sandbox"
-                  resource_id   = 3000001
-                  access_level  = 100
-                },
-              ]
-            }
       parameters:
         - $ref: '#/components/parameters/api_token_id'
       responses:
@@ -1508,25 +1479,6 @@ paths:
             	}
 
             	fmt.Println("API token deleted")
-            }
-        - lang: hcl
-          label: Terraform
-          source: |
-            # terraform destroy, or removing this block and running terraform apply:
-            # DELETE /api/api_tokens/{id}
-            terraform {
-              required_providers {
-                mailtrap = {
-                  source = "mailtrap/mailtrap"
-                }
-              }
-            }
-
-            # The token is read from the MAILTRAP_API_TOKEN environment variable.
-            provider "mailtrap" {}
-
-            resource "mailtrap_api_token" "ci" {
-              name = "CI deploy token"
             }
       parameters:
         - $ref: '#/components/parameters/api_token_id'

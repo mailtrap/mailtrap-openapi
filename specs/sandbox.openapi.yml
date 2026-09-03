@@ -385,6 +385,7 @@ paths:
           label: Terraform
           source: |
             # terraform apply creates the project: POST /api/projects
+            # Provider docs: https://registry.terraform.io/providers/mailtrap/mailtrap/latest/docs
             terraform {
               required_providers {
                 mailtrap = {
@@ -894,24 +895,6 @@ paths:
 
             	fmt.Printf("renamed project %d to %s\n", project.ID, project.Name)
             }
-        - lang: hcl
-          label: Terraform
-          source: |
-            # changing the name and running terraform apply: PATCH /api/projects/{project_id}
-            terraform {
-              required_providers {
-                mailtrap = {
-                  source = "mailtrap/mailtrap"
-                }
-              }
-            }
-
-            # The token is read from the MAILTRAP_API_TOKEN environment variable.
-            provider "mailtrap" {}
-
-            resource "mailtrap_project" "testing" {
-              name = "Renamed project"
-            }
       requestBody:
         content:
           application/json:
@@ -1069,25 +1052,6 @@ paths:
             	}
 
             	fmt.Println("project deleted")
-            }
-        - lang: hcl
-          label: Terraform
-          source: |
-            # terraform destroy, or removing this block and running terraform apply:
-            # DELETE /api/projects/{project_id}
-            terraform {
-              required_providers {
-                mailtrap = {
-                  source = "mailtrap/mailtrap"
-                }
-              }
-            }
-
-            # The token is read from the MAILTRAP_API_TOKEN environment variable.
-            provider "mailtrap" {}
-
-            resource "mailtrap_project" "testing" {
-              name = "My project"
             }
       responses:
         '200':
@@ -1294,6 +1258,7 @@ paths:
           label: Terraform
           source: |
             # terraform apply creates the sandbox: POST /api/projects/{project_id}/sandboxes
+            # Provider docs: https://registry.terraform.io/providers/mailtrap/mailtrap/latest/docs
             terraform {
               required_providers {
                 mailtrap = {
@@ -1618,26 +1583,6 @@ paths:
 
             	fmt.Printf("deleted sandbox %d (%s)\n", sandbox.ID, sandbox.Name)
             }
-        - lang: hcl
-          label: Terraform
-          source: |
-            # terraform destroy, or removing this block and running terraform apply:
-            # DELETE /api/sandboxes/{sandbox_id}
-            terraform {
-              required_providers {
-                mailtrap = {
-                  source = "mailtrap/mailtrap"
-                }
-              }
-            }
-
-            # The token is read from the MAILTRAP_API_TOKEN environment variable.
-            provider "mailtrap" {}
-
-            resource "mailtrap_sandbox" "staging" {
-              name       = "Staging inbox"
-              project_id = 1000001
-            }
       operationId: deleteSandbox
     patch:
       summary: Update a sandbox
@@ -1825,27 +1770,6 @@ paths:
             	}
 
             	fmt.Printf("updated sandbox %d: %s\n", sandbox.ID, sandbox.Name)
-            }
-        - lang: hcl
-          label: Terraform
-          source: |
-            # changing a tracked attribute and running terraform apply:
-            # PATCH /api/sandboxes/{sandbox_id}
-            terraform {
-              required_providers {
-                mailtrap = {
-                  source = "mailtrap/mailtrap"
-                }
-              }
-            }
-
-            # The token is read from the MAILTRAP_API_TOKEN environment variable.
-            provider "mailtrap" {}
-
-            resource "mailtrap_sandbox" "staging" {
-              name           = "Renamed inbox"
-              project_id     = 1000001
-              email_username = "staging"
             }
       operationId: updateSandbox
     parameters:

@@ -312,6 +312,7 @@ paths:
           label: Terraform
           source: |
             # terraform apply creates the template: POST /api/email_templates
+            # Provider docs: https://registry.terraform.io/providers/mailtrap/mailtrap/latest/docs
             terraform {
               required_providers {
                 mailtrap = {
@@ -467,27 +468,6 @@ paths:
             	}
 
             	fmt.Printf("%s: %s\n", template.Name, template.Subject)
-            }
-        - lang: hcl
-          label: Terraform
-          source: |
-            # terraform plan refreshes the resource, and terraform import mailtrap_email_template.welcome 1000001
-            # adopts an existing one: GET /api/email_templates/{email_template_id}
-            terraform {
-              required_providers {
-                mailtrap = {
-                  source = "mailtrap/mailtrap"
-                }
-              }
-            }
-
-            # The token is read from the MAILTRAP_API_TOKEN environment variable.
-            provider "mailtrap" {}
-
-            resource "mailtrap_email_template" "welcome" {
-              name     = "Welcome email"
-              category = "Onboarding"
-              subject  = "Welcome to Mailtrap"
             }
       responses:
         '200':
@@ -660,29 +640,6 @@ paths:
 
             	fmt.Printf("updated template %d: %s\n", template.ID, template.Subject)
             }
-        - lang: hcl
-          label: Terraform
-          source: |
-            # changing a tracked attribute and running terraform apply: PATCH /api/email_templates/{email_template_id}
-            terraform {
-              required_providers {
-                mailtrap = {
-                  source = "mailtrap/mailtrap"
-                }
-              }
-            }
-
-            # The token is read from the MAILTRAP_API_TOKEN environment variable.
-            provider "mailtrap" {}
-
-            # The API cannot clear body_html or body_text once set: a body can only be
-            # replaced, so removing the argument leaves the stored value in place.
-            resource "mailtrap_email_template" "welcome" {
-              name      = "Welcome email"
-              category  = "Onboarding"
-              subject   = "Welcome aboard"
-              body_html = "<h1>Welcome aboard, {{name}}!</h1>"
-            }
       requestBody:
         content:
           application/json:
@@ -815,27 +772,6 @@ paths:
             	}
 
             	fmt.Println("template deleted")
-            }
-        - lang: hcl
-          label: Terraform
-          source: |
-            # terraform destroy, or removing this block and running terraform apply:
-            # DELETE /api/email_templates/{email_template_id}
-            terraform {
-              required_providers {
-                mailtrap = {
-                  source = "mailtrap/mailtrap"
-                }
-              }
-            }
-
-            # The token is read from the MAILTRAP_API_TOKEN environment variable.
-            provider "mailtrap" {}
-
-            resource "mailtrap_email_template" "welcome" {
-              name     = "Welcome email"
-              category = "Onboarding"
-              subject  = "Welcome to Mailtrap"
             }
       responses:
         '204':
