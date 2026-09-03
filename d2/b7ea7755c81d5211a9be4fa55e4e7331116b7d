@@ -1,0 +1,19 @@
+CLAUDE.md
+  s_b1a4d9be5285ae::t_6e63fbe9d876ef 220-224
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.0",
+  "base_commit_sha": "d2b7ea7755c81d5211a9be4fa55e4e7331116b7d",
+  "prompts": {},
+  "sessions": {
+    "s_b1a4d9be5285ae": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "edba17ec-6891-4efe-bea1-4ae83a009d31",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "Maciej Walusiak <maciej.walusiak@railsware.com>"
+    }
+  }
+}
