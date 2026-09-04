@@ -58,6 +58,48 @@ paths:
           source: |
             curl -X GET "https://mailtrap.io/api/email_campaigns?per_page=50&token=1" \
               -H 'Api-Token: YOUR_API_KEY'
+        - lang: go
+          label: Go
+          source: |
+            package main
+
+            import (
+            	"context"
+            	"fmt"
+            	"log"
+            	"os"
+
+            	"github.com/mailtrap/mailtrap-go"
+            )
+
+            func main() {
+            	client, err := mailtrap.NewClient(os.Getenv("MAILTRAP_API_TOKEN"))
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	page, _, err := client.EmailCampaigns.List(context.Background(), &mailtrap.EmailCampaignListOptions{
+            		PerPage: 50,
+            		Search:  "newsletter",
+            	})
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	for _, campaign := range page.Data {
+            		fmt.Printf("%d %s (%s)\n", campaign.ID, campaign.Name, campaign.CurrentState)
+            	}
+
+            	// To walk every page instead of one, use the iterator, which follows
+            	// pagination.next_token for you:
+            	//
+            	//	for campaign, err := range client.EmailCampaigns.All(context.Background(), nil) {
+            	//		if err != nil {
+            	//			log.Fatal(err)
+            	//		}
+            	//		fmt.Println(campaign.Name)
+            	//	}
+            }
     post:
       operationId: createEmailCampaign
       summary: Create an email campaign
@@ -107,6 +149,53 @@ paths:
                 },
                 "template_attributes": { "subject": "Spring is here — 30% off" }
               }'
+        - lang: go
+          label: Go
+          source: |
+            package main
+
+            import (
+            	"context"
+            	"fmt"
+            	"log"
+            	"os"
+
+            	"github.com/mailtrap/mailtrap-go"
+            )
+
+            func main() {
+            	client, err := mailtrap.NewClient(os.Getenv("MAILTRAP_API_TOKEN"))
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	// A campaign is always created as a draft; scheduling and starting it are
+            	// separate actions.
+            	campaign, _, err := client.EmailCampaigns.Create(context.Background(), &mailtrap.CreateEmailCampaignRequest{
+            		Name:            "March newsletter",
+            		DomainID:        1000001,
+            		FromDisplayName: "Acme Corp",
+            		FromLocalPart:   "news",
+            		ReplyTo: &mailtrap.EmailCampaignReplyTo{
+            			DisplayName: "Acme Support",
+            			LocalPart:   "support",
+            			Domain:      "mail.example.com",
+            		},
+            		TemplateAttributes: &mailtrap.EmailCampaignTemplateAttributes{
+            			Subject:   "Hi {{first_name}}, here is March",
+            			BodyHTML:  "<h1>Hello {{first_name}}</h1><a href=\"__unsubscribe_url__\">Unsubscribe</a>",
+            			MergeTags: []string{"first_name"},
+            		},
+            		DeliveryMode:    mailtrap.EmailCampaignDeliveryModeGradual,
+            		DeliveryOptions: &mailtrap.EmailCampaignDeliveryOptions{EmailsPerHour: mailtrap.Ptr(5000)},
+            		ContactListIDs:  []int64{1, 2},
+            	})
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	fmt.Printf("created campaign %d (%s)\n", campaign.ID, campaign.CurrentState)
+            }
   "/api/email_campaigns/{email_campaign_id}":
     get:
       operationId: getEmailCampaign
@@ -133,6 +222,33 @@ paths:
           source: |
             curl -X GET "https://mailtrap.io/api/email_campaigns/4567" \
               -H 'Api-Token: YOUR_API_KEY'
+        - lang: go
+          label: Go
+          source: |
+            package main
+
+            import (
+            	"context"
+            	"fmt"
+            	"log"
+            	"os"
+
+            	"github.com/mailtrap/mailtrap-go"
+            )
+
+            func main() {
+            	client, err := mailtrap.NewClient(os.Getenv("MAILTRAP_API_TOKEN"))
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	campaign, _, err := client.EmailCampaigns.Get(context.Background(), 1000001)
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	fmt.Printf("%s: %s, subject %q\n", campaign.Name, campaign.CurrentState, campaign.Template.Subject)
+            }
     patch:
       operationId: updateEmailCampaign
       summary: Update an email campaign
@@ -186,6 +302,43 @@ paths:
                   "body_html": "<html><body><h1>Hi {{first_name}}!</h1><p><a href=\"__unsubscribe_url__\">Unsubscribe</a></p></body></html>"
                 }
               }'
+        - lang: go
+          label: Go
+          source: |
+            package main
+
+            import (
+            	"context"
+            	"fmt"
+            	"log"
+            	"os"
+
+            	"github.com/mailtrap/mailtrap-go"
+            )
+
+            func main() {
+            	client, err := mailtrap.NewClient(os.Getenv("MAILTRAP_API_TOKEN"))
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	// Only a draft campaign can be updated, and only the fields you set change.
+            	// The list and segment fields are pointers: nil leaves them unchanged, while a
+            	// pointer to an empty slice clears them.
+            	campaign, _, err := client.EmailCampaigns.Update(context.Background(), 1000001, &mailtrap.UpdateEmailCampaignRequest{
+            		Name: "March newsletter (final)",
+            		TemplateAttributes: &mailtrap.EmailCampaignTemplateAttributes{
+            			Subject: "Hi {{first_name}}, March is here",
+            		},
+            		ContactListIDs:    mailtrap.Ptr([]int64{3}),
+            		ContactSegmentIDs: mailtrap.Ptr([]int64{}),
+            	})
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	fmt.Printf("updated campaign %d: %s\n", campaign.ID, campaign.Name)
+            }
     delete:
       operationId: deleteEmailCampaign
       summary: Delete an email campaign
@@ -219,6 +372,33 @@ paths:
           source: |
             curl -X DELETE "https://mailtrap.io/api/email_campaigns/4567" \
               -H 'Api-Token: YOUR_API_KEY'
+        - lang: go
+          label: Go
+          source: |
+            package main
+
+            import (
+            	"context"
+            	"fmt"
+            	"log"
+            	"os"
+
+            	"github.com/mailtrap/mailtrap-go"
+            )
+
+            func main() {
+            	client, err := mailtrap.NewClient(os.Getenv("MAILTRAP_API_TOKEN"))
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	// Only a campaign in the draft state can be deleted.
+            	if _, err := client.EmailCampaigns.Delete(context.Background(), 1000001); err != nil {
+            		log.Fatal(err)
+            	}
+
+            	fmt.Println("campaign deleted")
+            }
   "/api/email_campaigns/{email_campaign_id}/start":
     post:
       operationId: startEmailCampaign
@@ -252,6 +432,33 @@ paths:
           source: |
             curl -X POST "https://mailtrap.io/api/email_campaigns/4567/start" \
               -H 'Api-Token: YOUR_API_KEY'
+        - lang: go
+          label: Go
+          source: |
+            package main
+
+            import (
+            	"context"
+            	"fmt"
+            	"log"
+            	"os"
+
+            	"github.com/mailtrap/mailtrap-go"
+            )
+
+            func main() {
+            	client, err := mailtrap.NewClient(os.Getenv("MAILTRAP_API_TOKEN"))
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	campaign, _, err := client.EmailCampaigns.Start(context.Background(), 1000001)
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	fmt.Printf("campaign %d is %s\n", campaign.ID, campaign.CurrentState)
+            }
   "/api/email_campaigns/{email_campaign_id}/schedule":
     post:
       operationId: scheduleEmailCampaign
@@ -294,6 +501,34 @@ paths:
               -H 'Api-Token: YOUR_API_KEY' \
               -H 'Content-Type: application/json' \
               -d '{ "datetime": "2026-06-01T09:00:00.000Z" }'
+        - lang: go
+          label: Go
+          source: |
+            package main
+
+            import (
+            	"context"
+            	"fmt"
+            	"log"
+            	"os"
+
+            	"github.com/mailtrap/mailtrap-go"
+            )
+
+            func main() {
+            	client, err := mailtrap.NewClient(os.Getenv("MAILTRAP_API_TOKEN"))
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	// The datetime is ISO 8601, must be in the future and no more than a month ahead.
+            	campaign, _, err := client.EmailCampaigns.Schedule(context.Background(), 1000001, "2026-10-01T09:00:00Z")
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	fmt.Printf("campaign %d is %s for %s\n", campaign.ID, campaign.CurrentState, campaign.CurrentStateMetadata.ScheduledAt)
+            }
   "/api/email_campaigns/{email_campaign_id}/cancel":
     post:
       operationId: cancelEmailCampaign
@@ -325,6 +560,34 @@ paths:
           source: |
             curl -X POST "https://mailtrap.io/api/email_campaigns/4567/cancel" \
               -H 'Api-Token: YOUR_API_KEY'
+        - lang: go
+          label: Go
+          source: |
+            package main
+
+            import (
+            	"context"
+            	"fmt"
+            	"log"
+            	"os"
+
+            	"github.com/mailtrap/mailtrap-go"
+            )
+
+            func main() {
+            	client, err := mailtrap.NewClient(os.Getenv("MAILTRAP_API_TOKEN"))
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	// Cancel returns a scheduled campaign to the draft state.
+            	campaign, _, err := client.EmailCampaigns.Cancel(context.Background(), 1000001)
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	fmt.Printf("campaign %d is %s\n", campaign.ID, campaign.CurrentState)
+            }
   "/api/email_campaigns/{email_campaign_id}/terminate":
     post:
       operationId: terminateEmailCampaign
@@ -356,6 +619,34 @@ paths:
           source: |
             curl -X POST "https://mailtrap.io/api/email_campaigns/4567/terminate" \
               -H 'Api-Token: YOUR_API_KEY'
+        - lang: go
+          label: Go
+          source: |
+            package main
+
+            import (
+            	"context"
+            	"fmt"
+            	"log"
+            	"os"
+
+            	"github.com/mailtrap/mailtrap-go"
+            )
+
+            func main() {
+            	client, err := mailtrap.NewClient(os.Getenv("MAILTRAP_API_TOKEN"))
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	// Terminate aborts a campaign that is started, queued or paused.
+            	campaign, _, err := client.EmailCampaigns.Terminate(context.Background(), 1000001)
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	fmt.Printf("campaign %d is %s\n", campaign.ID, campaign.CurrentState)
+            }
   "/api/email_campaigns/{email_campaign_id}/reset":
     post:
       operationId: resetEmailCampaign
@@ -386,6 +677,34 @@ paths:
           source: |
             curl -X POST "https://mailtrap.io/api/email_campaigns/4567/reset" \
               -H 'Api-Token: YOUR_API_KEY'
+        - lang: go
+          label: Go
+          source: |
+            package main
+
+            import (
+            	"context"
+            	"fmt"
+            	"log"
+            	"os"
+
+            	"github.com/mailtrap/mailtrap-go"
+            )
+
+            func main() {
+            	client, err := mailtrap.NewClient(os.Getenv("MAILTRAP_API_TOKEN"))
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	// Reset returns a scheduled campaign to the draft state.
+            	campaign, _, err := client.EmailCampaigns.Reset(context.Background(), 1000001)
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	fmt.Printf("campaign %d is %s\n", campaign.ID, campaign.CurrentState)
+            }
   "/api/email_campaigns/{email_campaign_id}/stats":
     get:
       operationId: getEmailCampaignStats
@@ -424,6 +743,39 @@ paths:
           source: |
             curl -X GET "https://mailtrap.io/api/email_campaigns/4567/stats?start_date=2026-05-01&end_date=2026-05-31" \
               -H 'Api-Token: YOUR_API_KEY'
+        - lang: go
+          label: Go
+          source: |
+            package main
+
+            import (
+            	"context"
+            	"fmt"
+            	"log"
+            	"os"
+
+            	"github.com/mailtrap/mailtrap-go"
+            )
+
+            func main() {
+            	client, err := mailtrap.NewClient(os.Getenv("MAILTRAP_API_TOKEN"))
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	// Pass nil for the default window, which is the period since the campaign was
+            	// last started.
+            	stats, _, err := client.EmailCampaigns.Stats(context.Background(), 1000001, &mailtrap.EmailCampaignStatsOptions{
+            		StartDate: "2026-03-01",
+            		EndDate:   "2026-03-31",
+            	})
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	fmt.Printf("delivered %d (%.2f), opened %d (%.2f), clicked %d (%.2f)\n",
+            		stats.DeliveryCount, stats.DeliveryRate, stats.OpenCount, stats.OpenRate, stats.ClickCount, stats.ClickRate)
+            }
 components:
   securitySchemes:
     HeaderAuth:

@@ -135,6 +135,58 @@ paths:
                 System.out.println("ID: " + account.getId());
                 System.out.println("Access Level: " + account.getAccessLevels().get(0));
             }
+        - lang: go
+          label: Go
+          source: |
+            package main
+
+            import (
+            	"context"
+            	"fmt"
+            	"log"
+            	"os"
+
+            	"github.com/mailtrap/mailtrap-go"
+            )
+
+            func main() {
+            	client, err := mailtrap.NewClient(os.Getenv("MAILTRAP_API_TOKEN"))
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	accounts, _, err := client.Accounts.List(context.Background())
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	for _, account := range accounts {
+            		fmt.Printf("%d %s (access levels %v)\n", account.ID, account.Name, account.AccessLevels)
+            	}
+            }
+        - lang: hcl
+          label: Terraform
+          source: |
+            # looking an account up lists them: GET /api/accounts
+            terraform {
+              required_providers {
+                mailtrap = {
+                  source = "mailtrap/mailtrap"
+                }
+              }
+            }
+
+            # The token is read from the MAILTRAP_API_TOKEN environment variable.
+            provider "mailtrap" {}
+
+            # With no filters the token must map to exactly one account.
+            data "mailtrap_account" "current" {
+              name = "Acme Corp"
+            }
+
+            output "account_id" {
+              value = data.mailtrap_account.current.id
+            }
       responses:
         '200':
           description: 'Returns the list of accounts to which the API token has access. **access_levels** can return 1000 (account owner), 100 (admin), 10 (viewer).'
@@ -252,6 +304,38 @@ paths:
             var client = MailtrapClientFactory.createMailtrapClient(config);
             
             var response = client.generalApi().accountAccesses().listUserAndInviteAccountAccesses(accountId, ListAccountAccessQueryParams.empty());
+        - lang: go
+          label: Go
+          source: |
+            package main
+
+            import (
+            	"context"
+            	"fmt"
+            	"log"
+            	"os"
+
+            	"github.com/mailtrap/mailtrap-go"
+            )
+
+            func main() {
+            	client, err := mailtrap.NewClient(os.Getenv("MAILTRAP_API_TOKEN"))
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	// Pass nil for no filters. Requires account admin or owner permissions.
+            	accesses, _, err := client.AccountAccesses.List(context.Background(), &mailtrap.AccountAccessListOptions{
+            		DomainIDs: []int64{1000001},
+            	})
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	for _, access := range accesses {
+            		fmt.Printf("%d %s (%s)\n", access.ID, access.Specifier.Email, access.SpecifierType)
+            	}
+            }
       parameters:
         - name: project_ids
           description: The identifiers of the projects for which to include the results
@@ -372,6 +456,32 @@ paths:
             var client = MailtrapClientFactory.createMailtrapClient(config);
             
             client.generalApi().accountAccesses().removeAccountAccess(accessId, accountId);
+        - lang: go
+          label: Go
+          source: |
+            package main
+
+            import (
+            	"context"
+            	"fmt"
+            	"log"
+            	"os"
+
+            	"github.com/mailtrap/mailtrap-go"
+            )
+
+            func main() {
+            	client, err := mailtrap.NewClient(os.Getenv("MAILTRAP_API_TOKEN"))
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	if _, err := client.AccountAccesses.Delete(context.Background(), 1000001); err != nil {
+            		log.Fatal(err)
+            	}
+
+            	fmt.Println("account access removed")
+            }
       responses:
         '200':
           description: Returns confirmation of successful deletion and id of the deleted access.
@@ -534,6 +644,46 @@ paths:
             ));
             
             client.generalApi().permissions().managePermissions(accessId, accountId, request);
+        - lang: go
+          label: Go
+          source: |
+            package main
+
+            import (
+            	"context"
+            	"fmt"
+            	"log"
+            	"os"
+
+            	"github.com/mailtrap/mailtrap-go"
+            )
+
+            func main() {
+            	client, err := mailtrap.NewClient(os.Getenv("MAILTRAP_API_TOKEN"))
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	// A resource_type/resource_id pair that already exists is updated, otherwise it
+            	// is created. Set Destroy to remove a permission instead.
+            	_, err = client.Permissions.BulkUpdate(context.Background(), 1000001, []*mailtrap.PermissionUpdate{
+            		{
+            			ResourceID:   "3000001",
+            			ResourceType: mailtrap.ResourceTypeSandbox,
+            			AccessLevel:  mailtrap.PermissionLevelAdmin,
+            		},
+            		{
+            			ResourceID:   "3000002",
+            			ResourceType: mailtrap.ResourceTypeSandbox,
+            			Destroy:      true,
+            		},
+            	})
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	fmt.Println("permissions updated")
+            }
       requestBody:
         content:
           application/json:
@@ -682,6 +832,36 @@ paths:
             var client = MailtrapClientFactory.createMailtrapClient(config);
             
             var response = client.generalApi().permissions().getResources(accountId);
+        - lang: go
+          label: Go
+          source: |
+            package main
+
+            import (
+            	"context"
+            	"fmt"
+            	"log"
+            	"os"
+
+            	"github.com/mailtrap/mailtrap-go"
+            )
+
+            func main() {
+            	client, err := mailtrap.NewClient(os.Getenv("MAILTRAP_API_TOKEN"))
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	resources, _, err := client.Permissions.Resources(context.Background())
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	// The response is a hierarchy: an account holds projects, which hold sandboxes.
+            	for _, resource := range resources {
+            		fmt.Printf("%s %d %s (%d child resource(s))\n", resource.Type, resource.ID, resource.Name, len(resource.Resources))
+            	}
+            }
       responses:
         '200':
           description: |-
@@ -799,6 +979,35 @@ paths:
             long accountId = 1000001L;
             var tokens = client.generalApi().apiTokens().getAllApiTokens(accountId);
             System.out.println(tokens);
+        - lang: go
+          label: Go
+          source: |
+            package main
+
+            import (
+            	"context"
+            	"fmt"
+            	"log"
+            	"os"
+
+            	"github.com/mailtrap/mailtrap-go"
+            )
+
+            func main() {
+            	client, err := mailtrap.NewClient(os.Getenv("MAILTRAP_API_TOKEN"))
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	tokens, _, err := client.APITokens.List(context.Background())
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	for _, token := range tokens {
+            		fmt.Printf("%d %s (...%s, expires %s)\n", token.ID, token.Name, token.Last4Digits, token.ExpiresAt)
+            	}
+            }
       responses:
         '200':
           description: List of API tokens
@@ -949,6 +1158,76 @@ paths:
             // The full token value is returned only once — store it securely.
             var token = client.generalApi().apiTokens().createApiToken(accountId, request);
             System.out.println(token);
+        - lang: go
+          label: Go
+          source: |
+            package main
+
+            import (
+            	"context"
+            	"fmt"
+            	"log"
+            	"os"
+
+            	"github.com/mailtrap/mailtrap-go"
+            )
+
+            func main() {
+            	client, err := mailtrap.NewClient(os.Getenv("MAILTRAP_API_TOKEN"))
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	token, _, err := client.APITokens.Create(context.Background(), &mailtrap.CreateAPITokenRequest{
+            		Name: "CI deploy token",
+            		Resources: []*mailtrap.APITokenPermission{
+            			{
+            				ResourceType: mailtrap.ResourceTypeSandbox,
+            				ResourceID:   3000001,
+            				AccessLevel:  mailtrap.AccessLevelAdmin,
+            			},
+            		},
+            	})
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	// The full token value is returned only here: store it securely.
+            	fmt.Printf("created token %d: %s\n", token.ID, token.Token)
+            }
+        - lang: hcl
+          label: Terraform
+          source: |
+            # terraform apply creates the token: POST /api/api_tokens
+            # Provider docs: https://registry.terraform.io/providers/mailtrap/mailtrap/latest/docs
+            terraform {
+              required_providers {
+                mailtrap = {
+                  source = "mailtrap/mailtrap"
+                }
+              }
+            }
+
+            # The token is read from the MAILTRAP_API_TOKEN environment variable.
+            provider "mailtrap" {}
+
+            resource "mailtrap_api_token" "ci" {
+              name = "CI deploy token"
+
+              resources = [
+                {
+                  resource_type = "sandbox"
+                  resource_id   = 3000001
+                  access_level  = 100
+                },
+              ]
+            }
+
+            # token is returned only on create, and is unavailable after an import.
+            output "api_token" {
+              value     = mailtrap_api_token.ci.token
+              sensitive = true
+            }
       requestBody:
         required: true
         content:
@@ -1054,6 +1333,34 @@ paths:
             long apiTokenId = 123L;
             var token = client.generalApi().apiTokens().getApiToken(accountId, apiTokenId);
             System.out.println(token);
+        - lang: go
+          label: Go
+          source: |
+            package main
+
+            import (
+            	"context"
+            	"fmt"
+            	"log"
+            	"os"
+
+            	"github.com/mailtrap/mailtrap-go"
+            )
+
+            func main() {
+            	client, err := mailtrap.NewClient(os.Getenv("MAILTRAP_API_TOKEN"))
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	// The full token value is not included; it is returned only on create and reset.
+            	token, _, err := client.APITokens.Get(context.Background(), 1000001)
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	fmt.Printf("%s (...%s), created by %s\n", token.Name, token.Last4Digits, token.CreatedBy)
+            }
       parameters:
         - $ref: '#/components/parameters/api_token_id'
       responses:
@@ -1147,6 +1454,32 @@ paths:
             long accountId = 1000001L;
             long apiTokenId = 123L;
             client.generalApi().apiTokens().deleteApiToken(accountId, apiTokenId);
+        - lang: go
+          label: Go
+          source: |
+            package main
+
+            import (
+            	"context"
+            	"fmt"
+            	"log"
+            	"os"
+
+            	"github.com/mailtrap/mailtrap-go"
+            )
+
+            func main() {
+            	client, err := mailtrap.NewClient(os.Getenv("MAILTRAP_API_TOKEN"))
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	if _, err := client.APITokens.Delete(context.Background(), 1000001); err != nil {
+            		log.Fatal(err)
+            	}
+
+            	fmt.Println("API token deleted")
+            }
       parameters:
         - $ref: '#/components/parameters/api_token_id'
       responses:
@@ -1259,6 +1592,36 @@ paths:
             // The new token value is returned only once — store it securely.
             var token = client.generalApi().apiTokens().resetApiToken(accountId, apiTokenId);
             System.out.println(token);
+        - lang: go
+          label: Go
+          source: |
+            package main
+
+            import (
+            	"context"
+            	"fmt"
+            	"log"
+            	"os"
+
+            	"github.com/mailtrap/mailtrap-go"
+            )
+
+            func main() {
+            	client, err := mailtrap.NewClient(os.Getenv("MAILTRAP_API_TOKEN"))
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	// Reset expires the token and issues a replacement with the same permissions.
+            	// Pass nil to send no body and apply the server default expiration.
+            	token, _, err := client.APITokens.Reset(context.Background(), 1000001, nil)
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	// The new token value is returned only here: store it securely.
+            	fmt.Printf("token %d reset: %s\n", token.ID, token.Token)
+            }
       parameters:
         - $ref: '#/components/parameters/api_token_id'
       requestBody:
@@ -1369,6 +1732,38 @@ paths:
             var client = MailtrapClientFactory.createMailtrapClient(config);
             
             var response = client.generalApi().billing().getCurrentBillingCycleUsage(accountId);
+        - lang: go
+          label: Go
+          source: |
+            package main
+
+            import (
+            	"context"
+            	"fmt"
+            	"log"
+            	"os"
+
+            	"github.com/mailtrap/mailtrap-go"
+            )
+
+            func main() {
+            	client, err := mailtrap.NewClient(os.Getenv("MAILTRAP_API_TOKEN"))
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	usage, _, err := client.Billing.Usage(context.Background())
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	fmt.Printf("cycle %s to %s\n", usage.Billing.CycleStart, usage.Billing.CycleEnd)
+            	// A product is nil when the account has no plan for it.
+            	if usage.Sending != nil {
+            		sent := usage.Sending.Usage.SentMessagesCount
+            		fmt.Printf("sending (%s): %d of %d\n", usage.Sending.Plan.Name, sent.Current, sent.Limit)
+            	}
+            }
       responses:
         '200':
           description: Returns an object with current billing cycle usage for Sandbox, Email Sending (Email API/SMTP), and Email Marketing if available.
@@ -1560,6 +1955,36 @@ paths:
             long organizationId = 2000002L;
             var subAccounts = client.organizationsApi().subAccounts().getSubAccounts(organizationId);
             System.out.println(subAccounts);
+        - lang: go
+          label: Go
+          source: |
+            package main
+
+            import (
+            	"context"
+            	"fmt"
+            	"log"
+            	"os"
+
+            	"github.com/mailtrap/mailtrap-go"
+            )
+
+            func main() {
+            	client, err := mailtrap.NewClient(os.Getenv("MAILTRAP_API_TOKEN"), mailtrap.WithOrganizationID(2000001))
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	// The sub-account endpoints target the organization set with WithOrganizationID.
+            	subAccounts, _, err := client.SubAccounts.List(context.Background())
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	for _, subAccount := range subAccounts {
+            		fmt.Printf("%d %s\n", subAccount.ID, subAccount.Name)
+            	}
+            }
       responses:
         '200':
           description: Returns the list of sub accounts belonging to the organization.
@@ -1683,6 +2108,34 @@ paths:
             var subAccount = client.organizationsApi().subAccounts()
                 .createSubAccount(organizationId, request);
             System.out.println(subAccount);
+        - lang: go
+          label: Go
+          source: |
+            package main
+
+            import (
+            	"context"
+            	"fmt"
+            	"log"
+            	"os"
+
+            	"github.com/mailtrap/mailtrap-go"
+            )
+
+            func main() {
+            	client, err := mailtrap.NewClient(os.Getenv("MAILTRAP_API_TOKEN"), mailtrap.WithOrganizationID(2000001))
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	// The sub-account endpoints target the organization set with WithOrganizationID.
+            	subAccount, _, err := client.SubAccounts.Create(context.Background(), "Acme Corp")
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	fmt.Printf("created sub-account %d (%s)\n", subAccount.ID, subAccount.Name)
+            }
       requestBody:
         required: true
         content:
