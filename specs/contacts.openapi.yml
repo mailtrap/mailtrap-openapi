@@ -58,6 +58,165 @@ tags:
     description: Manage contact events
 paths:
   '/api/contacts':
+    get:
+      operationId: getContacts
+      summary: Get a list of contacts
+      description: |-
+        Returns a paginated list of the account's contacts.
+
+        Pagination is cursor based. Every response carries a `pagination` object; pass its
+        `next_token` value back as the `token` query parameter to fetch the next page, and stop
+        when `next_token` is `null`. Cursors cannot be walked backwards, so `prev_token` and
+        `prev_url` are always `null`. No total count is returned.
+
+        {% hint style="info" %}
+        Filter values are validated rather than ignored. An unknown `status`, a non-integer
+        `list_id`, a repeated filter parameter, or a malformed `token` is rejected with `422`,
+        so a mistyped filter can never widen the result set.
+        {% endhint %}
+      tags:
+        - Contacts
+      parameters:
+        - name: list_id
+          in: query
+          required: false
+          description: Return only contacts that belong to this contact list.
+          schema:
+            type: integer
+            format: int64
+            minimum: 1
+            example: 3229
+        - name: status
+          in: query
+          required: false
+          description: |-
+            Return only contacts with this subscription status. Matches the `status` field of the
+            returned contact.
+          schema:
+            type: string
+            enum:
+              - subscribed
+              - unsubscribed
+            example: subscribed
+        - name: email
+          in: query
+          required: false
+          description: |-
+            Return only contacts whose email contains this value (case-insensitive substring match).
+            `*` and `?` are matched literally, not as wildcards.
+          schema:
+            type: string
+            example: john@
+        - name: per_page
+          in: query
+          required: false
+          description: |-
+            Number of contacts per page. Defaults to `25`, maximum `50`. Larger values are clamped
+            to the maximum.
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 50
+            default: 25
+            example: 25
+        - name: token
+          in: query
+          required: false
+          description: |-
+            Opaque cursor taken from the `next_token` of a previous response. Omit it to fetch the
+            first page. Tokens are not page numbers and must not be constructed by hand.
+          schema:
+            type: string
+            example: WzE3NDI4MjA2MDAyMzAsIjAxOGRkNWUzLWY2ZDItN2MwMC04ZjliLWU1YzNmMmQ4YTEzMiJd
+      x-codeSamples:
+        - lang: shell
+          label: 'cURL'
+          source: |
+            curl -X GET https://mailtrap.io/api/contacts \
+              -H 'Authorization: Bearer YOUR_API_KEY'
+
+            # Filter by list, status and email substring
+            curl -X GET 'https://mailtrap.io/api/contacts?list_id=3229&status=subscribed&email=john%40' \
+              -H 'Authorization: Bearer YOUR_API_KEY'
+
+            # Fetch the next page using the cursor from the previous response
+            curl -X GET 'https://mailtrap.io/api/contacts?per_page=25&token=WzE3NDI4MjA2MDAyMzAsIjAxOGRkNWUzLWY2ZDItN2MwMC04ZjliLWU1YzNmMmQ4YTEzMiJd' \
+              -H 'Authorization: Bearer YOUR_API_KEY'
+      responses:
+        '200':
+          description: A paginated list of contacts.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ContactsCollection'
+              example:
+                data:
+                  - id: 018dd5e3-f6d2-7c00-8f9b-e5c3f2d8a132
+                    email: john.smith@example.com
+                    created_at: 1742820600230
+                    updated_at: 1742820600230
+                    list_ids:
+                      - 1
+                      - 2
+                    status: subscribed
+                    fields:
+                      first_name: John
+                      last_name: Smith
+                  - id: 018dd5e3-f6d2-7c00-8f9b-000000000002
+                    email: jane.doe@example.com
+                    created_at: 1742906999123
+                    updated_at: 1742906999123
+                    list_ids:
+                      - 3
+                    status: unsubscribed
+                    fields: {}
+                pagination:
+                  token: null
+                  prev_token: null
+                  next_token: WzE3NDI5MDY5OTkxMjMsIjAxOGRkNWUzLWY2ZDItN2MwMC04ZjliLTAwMDAwMDAwMDAwMiJd
+                  first_url: 'https://mailtrap.io/api/contacts?per_page=25'
+                  prev_url: null
+                  current_url: 'https://mailtrap.io/api/contacts?per_page=25'
+                  next_url: 'https://mailtrap.io/api/contacts?per_page=25&token=WzE3NDI5MDY5OTkxMjMsIjAxOGRkNWUzLWY2ZDItN2MwMC04ZjliLTAwMDAwMDAwMDAwMiJd'
+        '401':
+          $ref: '#/components/responses/UNAUTHENTICATED'
+        '403':
+          $ref: '#/components/responses/PERMISSION_DENIED'
+        '422':
+          description: A filter value or the pagination cursor was invalid. The request is rejected instead of the filter being ignored.
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/UnprocessableEntity'
+                  - $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                invalid_list_id:
+                  summary: list_id is not an integer
+                  value:
+                    errors:
+                      list_id:
+                        - must be an integer
+                invalid_status:
+                  summary: status is not a known value
+                  value:
+                    errors:
+                      status:
+                        - 'must be one of: subscribed, unsubscribed'
+                repeated_parameter:
+                  summary: A filter was supplied more than once or as an array
+                  value:
+                    errors:
+                      list_id:
+                        - must be a single value
+                invalid_token:
+                  summary: The pagination cursor is malformed
+                  value:
+                    errors: Invalid token
+        '429':
+          $ref: '#/components/responses/LIMIT_EXCEEDED'
+        '500':
+          $ref: '#/components/responses/INTERNAL_ERROR'
     post:
       operationId: createContact
       summary: Create a new Contact
@@ -217,6 +376,37 @@ paths:
             var contact = client.contactsApi().contacts()
                 .createContact(accountId, request);
             System.out.println("Contact created: " + contact.getEmail());
+        - lang: go
+          label: Go
+          source: |
+            package main
+
+            import (
+            	"context"
+            	"fmt"
+            	"log"
+            	"os"
+
+            	"github.com/mailtrap/mailtrap-go"
+            )
+
+            func main() {
+            	client, err := mailtrap.NewClient(os.Getenv("MAILTRAP_API_TOKEN"))
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	contact, _, err := client.Contacts.Create(context.Background(), &mailtrap.CreateContactRequest{
+            		Email:   "john.smith@example.com",
+            		Fields:  map[string]any{"first_name": "John", "last_name": "Smith"},
+            		ListIDs: []int64{1, 2},
+            	})
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	fmt.Printf("created contact %s (%s)\n", contact.ID, contact.Email)
+            }
       requestBody:
         content:
           application/json:
@@ -399,6 +589,34 @@ paths:
 
             System.out.println("Contact: " + contact.getEmail());
             System.out.println("Status: " + contact.getStatus());
+        - lang: go
+          label: Go
+          source: |
+            package main
+
+            import (
+            	"context"
+            	"fmt"
+            	"log"
+            	"os"
+
+            	"github.com/mailtrap/mailtrap-go"
+            )
+
+            func main() {
+            	client, err := mailtrap.NewClient(os.Getenv("MAILTRAP_API_TOKEN"))
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	// The identifier is either the contact's UUID or its email address.
+            	contact, _, err := client.Contacts.Get(context.Background(), "john.smith@example.com")
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	fmt.Printf("%s (%s), lists %v\n", contact.Email, contact.Status, contact.ListIDs)
+            }
       responses:
         '200':
           description: OK.
@@ -511,6 +729,39 @@ paths:
             
             var request = new UpdateContactRequest(new UpdateContact("new@example.com", Map.of("first_name", "John"), List.of(), List.of(), false));
             var response = client.contactsApi().contacts().updateContact(accountId, "contact_id_or_email", request);
+        - lang: go
+          label: Go
+          source: |
+            package main
+
+            import (
+            	"context"
+            	"fmt"
+            	"log"
+            	"os"
+
+            	"github.com/mailtrap/mailtrap-go"
+            )
+
+            func main() {
+            	client, err := mailtrap.NewClient(os.Getenv("MAILTRAP_API_TOKEN"))
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	// Update is an upsert and reports which action the API took.
+            	result, _, err := client.Contacts.Update(context.Background(), "john.smith@example.com", &mailtrap.UpdateContactRequest{
+            		Email:           "john.smith@example.com",
+            		Fields:          map[string]any{"first_name": "John"},
+            		ListIDsIncluded: []int64{3},
+            		ListIDsExcluded: []int64{1},
+            	})
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	fmt.Printf("%s contact %s\n", result.Action, result.Contact.ID)
+            }
       summary: Update contact
       tags:
         - Contacts
@@ -614,6 +865,32 @@ paths:
             var client = MailtrapClientFactory.createMailtrapClient(config);
             
             client.contactsApi().contacts().deleteContact(accountId, "contact_id_or_email");
+        - lang: go
+          label: Go
+          source: |
+            package main
+
+            import (
+            	"context"
+            	"fmt"
+            	"log"
+            	"os"
+
+            	"github.com/mailtrap/mailtrap-go"
+            )
+
+            func main() {
+            	client, err := mailtrap.NewClient(os.Getenv("MAILTRAP_API_TOKEN"))
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	if _, err := client.Contacts.Delete(context.Background(), "john.smith@example.com"); err != nil {
+            		log.Fatal(err)
+            	}
+
+            	fmt.Println("contact deleted")
+            }
       summary: Delete contact
       tags:
         - Contacts
@@ -740,6 +1017,36 @@ paths:
             Map<String, Object> params = Map.of("user_id", 101, "is_active", true);
             var request = new CreateContactEventRequest("UserLogin", params);
             var response = client.contactsApi().contactEvents().createContactEvent(accountId, "contact_id", request);
+        - lang: go
+          label: Go
+          source: |
+            package main
+
+            import (
+            	"context"
+            	"fmt"
+            	"log"
+            	"os"
+
+            	"github.com/mailtrap/mailtrap-go"
+            )
+
+            func main() {
+            	client, err := mailtrap.NewClient(os.Getenv("MAILTRAP_API_TOKEN"))
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	event, _, err := client.ContactEvents.Create(context.Background(), "john.smith@example.com", &mailtrap.CreateContactEventRequest{
+            		Name:   "purchase_completed",
+            		Params: map[string]any{"order_id": "A-1024", "total": 49.99},
+            	})
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	fmt.Printf("recorded %q for %s\n", event.Name, event.ContactEmail)
+            }
       requestBody:
         content:
           application/json:
@@ -876,6 +1183,40 @@ paths:
             var idsFilter = ContactExportFilter.listIds(ContactExportFilterOperator.EQUAL, 1L, 2L);
             var request = new CreateContactsExportRequest(List.of(idsFilter));
             var response = client.contactsApi().contactExports().createContactExport(accountId, request);
+        - lang: go
+          label: Go
+          source: |
+            package main
+
+            import (
+            	"context"
+            	"fmt"
+            	"log"
+            	"os"
+
+            	"github.com/mailtrap/mailtrap-go"
+            )
+
+            func main() {
+            	client, err := mailtrap.NewClient(os.Getenv("MAILTRAP_API_TOKEN"))
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	// Pass nil to export every contact.
+            	export, _, err := client.ContactExports.Create(context.Background(), []*mailtrap.ContactExportFilter{
+            		{
+            			Name:     mailtrap.ContactExportFilterListID,
+            			Operator: mailtrap.ContactExportOperatorEqual,
+            			Value:    []int64{1, 2},
+            		},
+            	})
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	fmt.Printf("export %d is %s\n", export.ID, export.Status)
+            }
       requestBody:
         content:
           application/json:
@@ -988,6 +1329,38 @@ paths:
             var client = MailtrapClientFactory.createMailtrapClient(config);
             
             var response = client.contactsApi().exports().get(accountId, exportId);
+        - lang: go
+          label: Go
+          source: |
+            package main
+
+            import (
+            	"context"
+            	"fmt"
+            	"log"
+            	"os"
+
+            	"github.com/mailtrap/mailtrap-go"
+            )
+
+            func main() {
+            	client, err := mailtrap.NewClient(os.Getenv("MAILTRAP_API_TOKEN"))
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	// Poll until the status is "finished", at which point URL is set.
+            	export, _, err := client.ContactExports.Get(context.Background(), 1000001)
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	if export.Status == mailtrap.ContactExportFinished {
+            		fmt.Printf("download: %s\n", *export.URL)
+            	} else {
+            		fmt.Printf("export %d is %s\n", export.ID, export.Status)
+            	}
+            }
       responses:
         '200':
           description: OK.
@@ -1125,6 +1498,44 @@ paths:
             var contact = new Contact("user1@example.com", Map.of("first_name", "John"), Collections.emptyList(), Collections.emptyList());
             var importContactsRequest = new ImportContactsRequest(List.of(contact));
             client.contactsApi().contactImports().importContacts(accountId, importContactsRequest);
+        - lang: go
+          label: Go
+          source: |
+            package main
+
+            import (
+            	"context"
+            	"fmt"
+            	"log"
+            	"os"
+
+            	"github.com/mailtrap/mailtrap-go"
+            )
+
+            func main() {
+            	client, err := mailtrap.NewClient(os.Getenv("MAILTRAP_API_TOKEN"))
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	result, _, err := client.ContactImports.Create(context.Background(), []*mailtrap.ImportContact{
+            		{
+            			Email:           "john.smith@example.com",
+            			Fields:          map[string]any{"first_name": "John"},
+            			ListIDsIncluded: []int64{1},
+            		},
+            		{
+            			Email:           "jane.doe@example.com",
+            			ListIDsIncluded: []int64{1},
+            			ListIDsExcluded: []int64{2},
+            		},
+            	})
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	fmt.Printf("import %d is %s\n", result.ID, result.Status)
+            }
       requestBody:
         content:
           application/json:
@@ -1236,6 +1647,34 @@ paths:
             var client = MailtrapClientFactory.createMailtrapClient(config);
             
             var response = client.contactsApi().contactImports().getContactImport(accountId, importId);
+        - lang: go
+          label: Go
+          source: |
+            package main
+
+            import (
+            	"context"
+            	"fmt"
+            	"log"
+            	"os"
+
+            	"github.com/mailtrap/mailtrap-go"
+            )
+
+            func main() {
+            	client, err := mailtrap.NewClient(os.Getenv("MAILTRAP_API_TOKEN"))
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	// The counts are populated once the status is "finished".
+            	result, _, err := client.ContactImports.Get(context.Background(), 1000001)
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	fmt.Printf("%s: %d created, %d updated, %d over limit\n", result.Status, result.CreatedContactsCount, result.UpdatedContactsCount, result.ContactsOverLimitCount)
+            }
       responses:
         '200':
           description: OK.
@@ -1348,6 +1787,37 @@ paths:
             var client = MailtrapClientFactory.createMailtrapClient(config);
             
             var response = client.contactsApi().contactLists().findAll(accountId);
+        - lang: go
+          label: Go
+          source: |
+            package main
+
+            import (
+            	"context"
+            	"fmt"
+            	"log"
+            	"os"
+
+            	"github.com/mailtrap/mailtrap-go"
+            )
+
+            func main() {
+            	client, err := mailtrap.NewClient(os.Getenv("MAILTRAP_API_TOKEN"))
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	lists, _, err := client.ContactLists.List(context.Background(), &mailtrap.ContactListListOptions{
+            		Search: "newsletter",
+            	})
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	for _, list := range lists {
+            		fmt.Printf("%d %s\n", list.ID, list.Name)
+            	}
+            }
       responses:
         '200':
           description: OK.
@@ -1442,6 +1912,52 @@ paths:
             var client = MailtrapClientFactory.createMailtrapClient(config);
             
             var response = client.contactsApi().contactLists().createContactList(accountId, new CreateUpdateContactListRequest("Customers"));
+        - lang: go
+          label: Go
+          source: |
+            package main
+
+            import (
+            	"context"
+            	"fmt"
+            	"log"
+            	"os"
+
+            	"github.com/mailtrap/mailtrap-go"
+            )
+
+            func main() {
+            	client, err := mailtrap.NewClient(os.Getenv("MAILTRAP_API_TOKEN"))
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	list, _, err := client.ContactLists.Create(context.Background(), "Monthly newsletter")
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	fmt.Printf("created list %d (%s)\n", list.ID, list.Name)
+            }
+        - lang: hcl
+          label: Terraform
+          source: |
+            # terraform apply creates the list: POST /api/contacts/lists
+            # Provider docs: https://registry.terraform.io/providers/mailtrap/mailtrap/latest/docs
+            terraform {
+              required_providers {
+                mailtrap = {
+                  source = "mailtrap/mailtrap"
+                }
+              }
+            }
+
+            # The token is read from the MAILTRAP_API_TOKEN environment variable.
+            provider "mailtrap" {}
+
+            resource "mailtrap_contact_list" "newsletter" {
+              name = "Monthly newsletter"
+            }
       requestBody:
         content:
           application/json:
@@ -1539,6 +2055,33 @@ paths:
             
             long listId = 1L;
             var response = client.contactsApi().contactLists().getContactList(accountId, listId);
+        - lang: go
+          label: Go
+          source: |
+            package main
+
+            import (
+            	"context"
+            	"fmt"
+            	"log"
+            	"os"
+
+            	"github.com/mailtrap/mailtrap-go"
+            )
+
+            func main() {
+            	client, err := mailtrap.NewClient(os.Getenv("MAILTRAP_API_TOKEN"))
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	list, _, err := client.ContactLists.Get(context.Background(), 1000001)
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	fmt.Printf("%d %s\n", list.ID, list.Name)
+            }
       responses:
         '200':
           description: Returns attributes of the contact list.
@@ -1629,6 +2172,33 @@ paths:
             
             long listId = 1L;
             var response = client.contactsApi().contactLists().updateContactList(accountId, listId, new CreateUpdateContactListRequest("Former Customers"));
+        - lang: go
+          label: Go
+          source: |
+            package main
+
+            import (
+            	"context"
+            	"fmt"
+            	"log"
+            	"os"
+
+            	"github.com/mailtrap/mailtrap-go"
+            )
+
+            func main() {
+            	client, err := mailtrap.NewClient(os.Getenv("MAILTRAP_API_TOKEN"))
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	list, _, err := client.ContactLists.Update(context.Background(), 1000001, "Weekly newsletter")
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	fmt.Printf("renamed list %d to %s\n", list.ID, list.Name)
+            }
       requestBody:
         content:
           application/json:
@@ -1726,6 +2296,32 @@ paths:
             
             long listId = 1L;
             client.contactsApi().contactLists().deleteContactList(accountId, listId);
+        - lang: go
+          label: Go
+          source: |
+            package main
+
+            import (
+            	"context"
+            	"fmt"
+            	"log"
+            	"os"
+
+            	"github.com/mailtrap/mailtrap-go"
+            )
+
+            func main() {
+            	client, err := mailtrap.NewClient(os.Getenv("MAILTRAP_API_TOKEN"))
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	if _, err := client.ContactLists.Delete(context.Background(), 1000001); err != nil {
+            		log.Fatal(err)
+            	}
+
+            	fmt.Println("contact list deleted")
+            }
       responses:
         '204':
           description: Contact List successfully deleted
@@ -1808,6 +2404,35 @@ paths:
             var client = MailtrapClientFactory.createMailtrapClient(config);
             
             var response = client.contactsApi().contactFields().getAllContactFields(accountId);
+        - lang: go
+          label: Go
+          source: |
+            package main
+
+            import (
+            	"context"
+            	"fmt"
+            	"log"
+            	"os"
+
+            	"github.com/mailtrap/mailtrap-go"
+            )
+
+            func main() {
+            	client, err := mailtrap.NewClient(os.Getenv("MAILTRAP_API_TOKEN"))
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	fields, _, err := client.ContactFields.List(context.Background())
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	for _, field := range fields {
+            		fmt.Printf("%d %s (%s, merge tag %s)\n", field.ID, field.Name, field.DataType, field.MergeTag)
+            	}
+            }
       responses:
         '200':
           description: OK.
@@ -1914,6 +2539,58 @@ paths:
             
             var request = new CreateContactFieldRequest("Company", ContactFieldDataType.TEXT, "company");
             var response = client.contactsApi().contactFields().createContactField(accountId, request);
+        - lang: go
+          label: Go
+          source: |
+            package main
+
+            import (
+            	"context"
+            	"fmt"
+            	"log"
+            	"os"
+
+            	"github.com/mailtrap/mailtrap-go"
+            )
+
+            func main() {
+            	client, err := mailtrap.NewClient(os.Getenv("MAILTRAP_API_TOKEN"))
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	field, _, err := client.ContactFields.Create(context.Background(), &mailtrap.CreateContactFieldRequest{
+            		Name:     "First name",
+            		DataType: mailtrap.ContactFieldTypeText,
+            		MergeTag: "first_name",
+            	})
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	fmt.Printf("created field %d (%s)\n", field.ID, field.MergeTag)
+            }
+        - lang: hcl
+          label: Terraform
+          source: |
+            # terraform apply creates the field: POST /api/contacts/fields
+            # Provider docs: https://registry.terraform.io/providers/mailtrap/mailtrap/latest/docs
+            terraform {
+              required_providers {
+                mailtrap = {
+                  source = "mailtrap/mailtrap"
+                }
+              }
+            }
+
+            # The token is read from the MAILTRAP_API_TOKEN environment variable.
+            provider "mailtrap" {}
+
+            resource "mailtrap_contact_field" "first_name" {
+              name      = "First name"
+              data_type = "text"
+              merge_tag = "first_name"
+            }
       requestBody:
         content:
           application/json:
@@ -2043,6 +2720,33 @@ paths:
             
             long fieldId = 2L;
             var response = client.contactsApi().contactFields().getContactField(accountId, fieldId);
+        - lang: go
+          label: Go
+          source: |
+            package main
+
+            import (
+            	"context"
+            	"fmt"
+            	"log"
+            	"os"
+
+            	"github.com/mailtrap/mailtrap-go"
+            )
+
+            func main() {
+            	client, err := mailtrap.NewClient(os.Getenv("MAILTRAP_API_TOKEN"))
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	field, _, err := client.ContactFields.Get(context.Background(), 1000001)
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	fmt.Printf("%s (%s), merge tag %s\n", field.Name, field.DataType, field.MergeTag)
+            }
       responses:
         '200':
           description: Returns attributes of the contact field.
@@ -2136,6 +2840,37 @@ paths:
             
             var request = new UpdateContactFieldRequest("Updated Name", "updated_name");
             var response = client.contactsApi().contactFields().updateContactField(accountId, fieldId, request);
+        - lang: go
+          label: Go
+          source: |
+            package main
+
+            import (
+            	"context"
+            	"fmt"
+            	"log"
+            	"os"
+
+            	"github.com/mailtrap/mailtrap-go"
+            )
+
+            func main() {
+            	client, err := mailtrap.NewClient(os.Getenv("MAILTRAP_API_TOKEN"))
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	// The data type is immutable: only the name and merge tag can change.
+            	field, _, err := client.ContactFields.Update(context.Background(), 1000001, &mailtrap.UpdateContactFieldRequest{
+            		Name:     "Given name",
+            		MergeTag: "given_name",
+            	})
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	fmt.Printf("updated field %d: %s (%s)\n", field.ID, field.Name, field.MergeTag)
+            }
       requestBody:
         content:
           application/json:
@@ -2254,6 +2989,32 @@ paths:
             
             long fieldId = 2L;
             client.contactsApi().contactFields().deleteContactField(accountId, fieldId);
+        - lang: go
+          label: Go
+          source: |
+            package main
+
+            import (
+            	"context"
+            	"fmt"
+            	"log"
+            	"os"
+
+            	"github.com/mailtrap/mailtrap-go"
+            )
+
+            func main() {
+            	client, err := mailtrap.NewClient(os.Getenv("MAILTRAP_API_TOKEN"))
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	if _, err := client.ContactFields.Delete(context.Background(), 1000001); err != nil {
+            		log.Fatal(err)
+            	}
+
+            	fmt.Println("contact field deleted")
+            }
       responses:
         '204':
           description: Contact Field successfully deleted
@@ -2297,36 +3058,7 @@ components:
       type: object
       properties:
         data:
-          type: object
-          properties:
-            id:
-              type: string
-            email:
-              type: string
-            fields:
-              type: object
-              description: |-
-                Object of fields in the following format:
-                  field_1_merge_tag: string | integer | float | boolean | date string in ISO-8601 format (yyyy-mm-dd);
-            list_ids:
-              type: array
-              items:
-                type: integer
-            status:
-              type: string
-              enum:
-                - subscribed
-                - unsubscribed
-              description: |-
-                The status of the contact:
-                  - "subscribed" if its email was NOT in the suppression list
-                  - "unsubscribed" otherwise
-            created_at:
-              type: integer
-              format: timestampMillis
-            updated_at:
-              type: integer
-              format: timestampMillis
+          $ref: '#/components/schemas/ContactObject'
     ContactCreateRequest_2:
       title: ContactCreateRequest
       type: object
@@ -2657,6 +3389,86 @@ components:
       example:
         id: 26730
         name: My Contact List
+    ContactObject:
+      title: Contact
+      type: object
+      properties:
+        id:
+          type: string
+        email:
+          type: string
+        fields:
+          type: object
+          description: |-
+            Object of fields in the following format:
+              field_1_merge_tag: string | integer | float | boolean | date string in ISO-8601 format (yyyy-mm-dd);
+        list_ids:
+          type: array
+          items:
+            type: integer
+        status:
+          type: string
+          enum:
+            - subscribed
+            - unsubscribed
+          description: |-
+            The status of the contact:
+              - "subscribed" if its email was NOT in the suppression list
+              - "unsubscribed" otherwise
+        created_at:
+          type: integer
+          format: timestampMillis
+          description: Creation time as a Unix timestamp in milliseconds.
+        updated_at:
+          type: integer
+          format: timestampMillis
+          description: Last update time as a Unix timestamp in milliseconds.
+    ContactsCollection:
+      title: ContactsCollection
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/ContactObject'
+        pagination:
+          $ref: '#/components/schemas/ContactsPagination'
+    ContactsPagination:
+      title: ContactsPagination
+      type: object
+      description: |-
+        Keyset (cursor) pagination metadata. Tokens are opaque cursors rather than page numbers,
+        and the response carries no total count.
+      properties:
+        token:
+          type: [string, 'null']
+          description: The cursor used for the current request, or `null` on the first page.
+          example: null
+        prev_token:
+          type: [string, 'null']
+          description: Always `null`. Keyset pagination cannot walk backwards.
+          example: null
+        next_token:
+          type: [string, 'null']
+          description: Cursor for the next page, or `null` once the last page has been reached.
+          example: WzE3NDI5MDY5OTkxMjMsIjAxOGRkNWUzLWY2ZDItN2MwMC04ZjliLTAwMDAwMDAwMDAwMiJd
+        first_url:
+          type: string
+          format: uri
+          example: 'https://mailtrap.io/api/contacts?per_page=25'
+        prev_url:
+          type: [string, 'null']
+          format: uri
+          description: Always `null`. Keyset pagination cannot walk backwards.
+          example: null
+        current_url:
+          type: string
+          format: uri
+          example: 'https://mailtrap.io/api/contacts?per_page=25'
+        next_url:
+          type: [string, 'null']
+          format: uri
+          example: 'https://mailtrap.io/api/contacts?per_page=25&token=WzE3NDI5MDY5OTkxMjMsIjAxOGRkNWUzLWY2ZDItN2MwMC04ZjliLTAwMDAwMDAwMDAwMiJd'
     ContactUpdateRequest_2:
       title: ContactUpdateRequest
       type: object

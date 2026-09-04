@@ -148,6 +148,8 @@ Include code samples in this order:
 5. Ruby
 6. .NET (C#)
 7. Java
+8. Go (`lang: go`, `label: Go`)
+9. Terraform (`lang: hcl`, `label: Terraform`) - HCL, not an API call; see below
 
 ### Code Sample Format
 
@@ -175,18 +177,60 @@ x-codeSamples:
 
 - **Use official Mailtrap SDKs** for language-specific examples
 - **If SDK doesn't support a method**, either let GitBook generate the example or add a comment noting SDK limitations
+- **For Go and Terraform, omit the entry entirely** when the tool cannot express the operation. A tab that
+  says "unsupported" is worse than an absent tab, so `inbound.openapi.yml` gets no Go or Terraform samples
+  at all, and the tracking opt-out operations keep their cURL-only sample.
 - **Use environment variables** for API keys (e.g., `process.env.MAILTRAP_API_KEY`)
 - **Use Context7 MCP** to query SDK capabilities when unsure
+
+#### Go samples
+
+- Full compilable `package main` programs: Go has no top-level-statement form, and a complete program can
+  be compile-checked, which is the point.
+- Read the token from `os.Getenv("MAILTRAP_API_TOKEN")`, the idiom used by every example in
+  `mailtrap/mailtrap-go`.
+- Every method takes a `context.Context` first and returns `(payload, *mailtrap.Response, error)`; discard
+  the response as `_` and handle errors as `if err != nil { log.Fatal(err) }`.
+- Set optional pointer fields with `mailtrap.Ptr(...)`, and prefer the SDK's exported constants
+  (`mailtrap.WebhookTypeEmailSending`, `mailtrap.SendingStreamTransactional`, ...) over string literals.
+- Target the latest **released** SDK version. Verify a sample by extracting it to its own package and
+  running `gofmt -l`, `go vet` and `go build` against that version - not by reading it.
+- `gofmt` indents with tabs. Tabs are legal inside a YAML block scalar's content (only block
+  *indentation* must be spaces), so a `source: |` block indented with 12 spaces followed by tabs
+  round-trips correctly.
+
+#### Terraform samples
+
+- Use `lang: hcl` with `label: Terraform`. GitBook highlights with Prism, which has an `hcl` component and
+  no `terraform` one; `lang` resolves through Prism identifiers rather than GitBook's documented linguist
+  list, as the existing `csharp` and `shell` samples show. The dropdown tab is titled by `label`, so it
+  reads "Terraform" regardless.
+- **Cover only creates and genuine data-source reads.** A `resource` block is the create; its update,
+  delete and import paths are native Terraform lifecycle and are documented once by the provider, so
+  those operations get no Terraform sample. A `data` block goes on a read operation only when the
+  provider has a matching data source. Do not fake a read with a `resource` block plus `terraform import`.
+- An HCL block is not an API call: a `resource` block declares desired state and the endpoint fires as a
+  side effect of a lifecycle command. Every sample therefore opens with a comment naming both the command
+  and the operation, e.g. `# terraform apply creates the domain: POST /api/domains`. Create samples add a
+  second comment line linking the provider docs
+  (`# Provider docs: https://registry.terraform.io/providers/mailtrap/mailtrap/latest/docs`), which is
+  where the lifecycle operations live.
+- Each sample is self-contained, including the `terraform { required_providers { ... } }` and
+  `provider "mailtrap" {}` blocks, because the sample tab is where a reader learns the source string.
+- Take attribute names from the provider schema, not from its published examples. Verify with
+  `terraform fmt -check` plus `terraform validate` against a locally built provider binary under `dev_overrides`.
 
 ### SDK Repositories
 
 Reference SDK repos for accurate code examples:
 - Node.js: `mailtrap/mailtrap-nodejs`
-- PHP: `railsware/mailtrap-php`
-- Python: `railsware/mailtrap-python`
-- Ruby: `railsware/mailtrap-ruby`
-- .NET: Future reference
-- Java: Future reference
+- PHP: `mailtrap/mailtrap-php`
+- Python: `mailtrap/mailtrap-python`
+- Ruby: `mailtrap/mailtrap-ruby`
+- .NET: `mailtrap/mailtrap-dotnet`
+- Java: `mailtrap/mailtrap-java`
+- Go: `mailtrap/mailtrap-go`
+- Terraform provider: `mailtrap/terraform-provider-mailtrap`
 
 ## OpenAPI Extensions
 
