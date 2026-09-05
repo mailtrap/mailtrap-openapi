@@ -58,6 +58,89 @@ paths:
           source: |
             curl -X GET "https://mailtrap.io/api/email_campaigns?per_page=50&token=1" \
               -H 'Api-Token: YOUR_API_KEY'
+        - lang: javascript
+          label: Node.js
+          source: |
+            import { MailtrapClient } from "mailtrap";
+
+            const client = new MailtrapClient({ token: "YOUR_API_KEY" });
+
+            const list = await client.emailCampaigns.getList({ per_page: 50, token: 1 });
+
+            console.log(`Campaigns: ${list.data.length}`, list.pagination);
+        - lang: php
+          label: PHP
+          source: |
+            <?php
+            use Mailtrap\Config;
+            use Mailtrap\MailtrapGeneralClient;
+            use Mailtrap\Helper\ResponseHelper;
+
+            $config = new Config($_ENV['MAILTRAP_API_KEY']);
+            $accountId = (int) $_ENV['MAILTRAP_ACCOUNT_ID'];
+            $emailCampaigns = (new MailtrapGeneralClient($config))->emailCampaigns($accountId);
+
+            $response = $emailCampaigns->getEmailCampaigns(perPage: 50, token: 1);
+
+            var_dump(ResponseHelper::toArray($response));
+        - lang: python
+          label: Python
+          source: |
+            import mailtrap as mt
+
+            client = mt.MailtrapClient(token="YOUR_API_KEY")
+            campaigns = client.email_campaigns_api.email_campaigns
+
+            page = campaigns.get_list(mt.EmailCampaignListParams(per_page=50, token=1))
+
+            print(page.data, page.pagination)
+        - lang: ruby
+          label: Ruby
+          source: |
+            require 'mailtrap'
+
+            client = Mailtrap::Client.new(api_key: 'YOUR_API_KEY')
+            email_campaigns = Mailtrap::EmailCampaignsAPI.new(client)
+
+            list = email_campaigns.list(per_page: 50, token: 1)
+
+            puts list.data.map(&:name)
+            puts list.pagination
+        - lang: csharp
+          label: .NET
+          source: |
+            using Mailtrap;
+            using Mailtrap.EmailCampaigns.Models;
+
+            using var mailtrapFactory = new MailtrapClientFactory("YOUR_API_KEY");
+            var client = mailtrapFactory.CreateClient();
+
+            var page = await client
+                .EmailCampaigns()
+                .GetAll(new EmailCampaignListFilter { PerPage = 50, Token = 1 });
+
+            Console.WriteLine($"Campaigns: {page.Data.Count}");
+        - lang: java
+          label: Java
+          source: |
+            import io.mailtrap.config.MailtrapConfig;
+            import io.mailtrap.factory.MailtrapClientFactory;
+            import io.mailtrap.api.emailcampaigns.EmailCampaignListFilter;
+
+            var config = new MailtrapConfig.Builder()
+                .token("YOUR_API_KEY")
+                .build();
+
+            var client = MailtrapClientFactory.createMailtrapClient(config);
+            var campaigns = client.emailCampaignsApi().emailCampaigns();
+
+            var page = campaigns.getEmailCampaigns(
+                EmailCampaignListFilter.builder()
+                    .perPage(50)
+                    .token(1)
+                    .build());
+
+            System.out.println(page.getData());
         - lang: go
           label: Go
           source: |
@@ -149,6 +232,168 @@ paths:
                 },
                 "template_attributes": { "subject": "Spring is here — 30% off" }
               }'
+        - lang: javascript
+          label: Node.js
+          source: |
+            import { MailtrapClient } from "mailtrap";
+
+            const client = new MailtrapClient({ token: "YOUR_API_KEY" });
+
+            const created = await client.emailCampaigns.create({
+              name: "Spring Sale",
+              domain_id: 4321,
+              from_display_name: "Acme Marketing",
+              from_local_part: "news",
+              reply_to: {
+                display_name: "Acme Support",
+                local_part: "support",
+                domain: "acme.com"
+              },
+              template_attributes: { subject: "Spring is here — 30% off" }
+            });
+
+            console.log(`Campaign created: ${created.data.id} (${created.data.current_state})`);
+        - lang: php
+          label: PHP
+          source: |
+            <?php
+            use Mailtrap\Config;
+            use Mailtrap\MailtrapGeneralClient;
+            use Mailtrap\DTO\Request\EmailCampaign\CreateEmailCampaign;
+            use Mailtrap\DTO\Request\EmailCampaign\ReplyTo;
+            use Mailtrap\DTO\Request\EmailCampaign\TemplateAttributes;
+            use Mailtrap\Helper\ResponseHelper;
+
+            $config = new Config($_ENV['MAILTRAP_API_KEY']);
+            $accountId = (int) $_ENV['MAILTRAP_ACCOUNT_ID'];
+            $emailCampaigns = (new MailtrapGeneralClient($config))->emailCampaigns($accountId);
+
+            $response = $emailCampaigns->createEmailCampaign(new CreateEmailCampaign(
+                name: 'Spring Sale',
+                domainId: 4321,
+                fromLocalPart: 'news',
+                templateAttributes: new TemplateAttributes(subject: 'Spring is here — 30% off'),
+                fromDisplayName: 'Acme Marketing',
+                replyTo: new ReplyTo(
+                    displayName: 'Acme Support',
+                    localPart: 'support',
+                    domain: 'acme.com',
+                ),
+            ));
+
+            var_dump(ResponseHelper::toArray($response));
+        - lang: python
+          label: Python
+          source: |
+            import mailtrap as mt
+
+            client = mt.MailtrapClient(token="YOUR_API_KEY")
+            campaigns = client.email_campaigns_api.email_campaigns
+
+            created = campaigns.create(
+                mt.CreateEmailCampaignParams(
+                    name="Spring Sale",
+                    domain_id=4321,
+                    from_display_name="Acme Marketing",
+                    from_local_part="news",
+                    reply_to=mt.EmailCampaignReplyTo(
+                        display_name="Acme Support",
+                        local_part="support",
+                        domain="acme.com"
+                    ),
+                    template_attributes=mt.CreateEmailCampaignTemplateAttributes(
+                        subject="Spring is here — 30% off"
+                    )
+                )
+            )
+
+            print(f"Campaign created: {created.id} ({created.current_state})")
+        - lang: ruby
+          label: Ruby
+          source: |
+            require 'mailtrap'
+
+            client = Mailtrap::Client.new(api_key: 'YOUR_API_KEY')
+            email_campaigns = Mailtrap::EmailCampaignsAPI.new(client)
+
+            campaign = email_campaigns.create(
+              name: 'Spring Sale',
+              domain_id: 4321,
+              from_display_name: 'Acme Marketing',
+              from_local_part: 'news',
+              reply_to: {
+                display_name: 'Acme Support',
+                local_part: 'support',
+                domain: 'acme.com'
+              },
+              template_attributes: { subject: 'Spring is here — 30% off' }
+            )
+
+            puts "Campaign created: #{campaign.id} (#{campaign.current_state})"
+        - lang: csharp
+          label: .NET
+          source: |
+            using Mailtrap;
+            using Mailtrap.EmailCampaigns.Models;
+            using Mailtrap.EmailCampaigns.Requests;
+
+            using var mailtrapFactory = new MailtrapClientFactory("YOUR_API_KEY");
+            var client = mailtrapFactory.CreateClient();
+
+            var request = new CreateEmailCampaignRequest
+            {
+                Name = "Spring Sale",
+                DomainId = 4321,
+                FromDisplayName = "Acme Marketing",
+                FromLocalPart = "news",
+                ReplyTo = new ReplyTo
+                {
+                    DisplayName = "Acme Support",
+                    LocalPart = "support",
+                    Domain = "acme.com"
+                },
+                TemplateAttributes = new EmailCampaignTemplateAttributes
+                {
+                    Subject = "Spring is here — 30% off"
+                }
+            };
+
+            var campaign = await client.EmailCampaigns().Create(request);
+
+            Console.WriteLine($"Campaign created: {campaign.Id} ({campaign.CurrentState})");
+        - lang: java
+          label: Java
+          source: |
+            import io.mailtrap.config.MailtrapConfig;
+            import io.mailtrap.factory.MailtrapClientFactory;
+            import io.mailtrap.model.request.emailcampaigns.CreateEmailCampaign;
+            import io.mailtrap.model.request.emailcampaigns.TemplateAttributes;
+            import io.mailtrap.model.response.emailcampaigns.ReplyTo;
+
+            var config = new MailtrapConfig.Builder()
+                .token("YOUR_API_KEY")
+                .build();
+
+            var client = MailtrapClientFactory.createMailtrapClient(config);
+            var campaigns = client.emailCampaignsApi().emailCampaigns();
+
+            var created = campaigns.createEmailCampaign(
+                CreateEmailCampaign.builder()
+                    .name("Spring Sale")
+                    .domainId(4321L)
+                    .fromDisplayName("Acme Marketing")
+                    .fromLocalPart("news")
+                    .replyTo(ReplyTo.builder()
+                        .displayName("Acme Support")
+                        .localPart("support")
+                        .domain("acme.com")
+                        .build())
+                    .templateAttributes(TemplateAttributes.builder()
+                        .subject("Spring is here — 30% off")
+                        .build())
+                    .build());
+
+            System.out.println("Campaign created: " + created.getData().getId());
         - lang: go
           label: Go
           source: |
@@ -222,6 +467,80 @@ paths:
           source: |
             curl -X GET "https://mailtrap.io/api/email_campaigns/4567" \
               -H 'Api-Token: YOUR_API_KEY'
+        - lang: javascript
+          label: Node.js
+          source: |
+            import { MailtrapClient } from "mailtrap";
+
+            const client = new MailtrapClient({ token: "YOUR_API_KEY" });
+
+            const campaign = await client.emailCampaigns.get(4567);
+
+            console.log(`${campaign.data.name}: ${campaign.data.current_state}`);
+        - lang: php
+          label: PHP
+          source: |
+            <?php
+            use Mailtrap\Config;
+            use Mailtrap\MailtrapGeneralClient;
+            use Mailtrap\Helper\ResponseHelper;
+
+            $config = new Config($_ENV['MAILTRAP_API_KEY']);
+            $accountId = (int) $_ENV['MAILTRAP_ACCOUNT_ID'];
+            $emailCampaigns = (new MailtrapGeneralClient($config))->emailCampaigns($accountId);
+
+            $response = $emailCampaigns->getEmailCampaign(4567);
+
+            var_dump(ResponseHelper::toArray($response));
+        - lang: python
+          label: Python
+          source: |
+            import mailtrap as mt
+
+            client = mt.MailtrapClient(token="YOUR_API_KEY")
+            campaigns = client.email_campaigns_api.email_campaigns
+
+            campaign = campaigns.get_by_id(email_campaign_id=4567)
+
+            print(f"{campaign.name}: {campaign.current_state}")
+        - lang: ruby
+          label: Ruby
+          source: |
+            require 'mailtrap'
+
+            client = Mailtrap::Client.new(api_key: 'YOUR_API_KEY')
+            email_campaigns = Mailtrap::EmailCampaignsAPI.new(client)
+
+            campaign = email_campaigns.get(4567)
+
+            puts "#{campaign.name}: #{campaign.current_state}"
+        - lang: csharp
+          label: .NET
+          source: |
+            using Mailtrap;
+
+            using var mailtrapFactory = new MailtrapClientFactory("YOUR_API_KEY");
+            var client = mailtrapFactory.CreateClient();
+
+            var campaign = await client.EmailCampaign(4567).GetDetails();
+
+            Console.WriteLine($"{campaign.Name}: {campaign.CurrentState}");
+        - lang: java
+          label: Java
+          source: |
+            import io.mailtrap.config.MailtrapConfig;
+            import io.mailtrap.factory.MailtrapClientFactory;
+
+            var config = new MailtrapConfig.Builder()
+                .token("YOUR_API_KEY")
+                .build();
+
+            var client = MailtrapClientFactory.createMailtrapClient(config);
+            var campaigns = client.emailCampaignsApi().emailCampaigns();
+
+            var campaign = campaigns.getEmailCampaign(4567L);
+
+            System.out.println(campaign.getData().getCurrentState());
         - lang: go
           label: Go
           source: |
@@ -302,6 +621,173 @@ paths:
                   "body_html": "<html><body><h1>Hi {{first_name}}!</h1><p><a href=\"__unsubscribe_url__\">Unsubscribe</a></p></body></html>"
                 }
               }'
+        - lang: javascript
+          label: Node.js
+          source: |
+            import { MailtrapClient } from "mailtrap";
+
+            const client = new MailtrapClient({ token: "YOUR_API_KEY" });
+
+            const updated = await client.emailCampaigns.update(4567, {
+              name: "Spring Sale (updated)",
+              template_attributes: {
+                subject: "New subject",
+                body_html:
+                  '<html><body><h1>Hi {{first_name}}!</h1><p><a href="__unsubscribe_url__">Unsubscribe</a></p></body></html>',
+                merge_tags: ["first_name"]
+              },
+              delivery_mode: "gradual",
+              delivery_options: { emails_per_hour: 1000 },
+              contact_list_ids: [55, 56],
+              contact_segment_ids: [12]
+            });
+
+            console.log(`Campaign updated: ${updated.data.name}`);
+        - lang: php
+          label: PHP
+          source: |
+            <?php
+            use Mailtrap\Config;
+            use Mailtrap\MailtrapGeneralClient;
+            use Mailtrap\DTO\Request\EmailCampaign\EmailCampaignInterface;
+            use Mailtrap\DTO\Request\EmailCampaign\TemplateAttributes;
+            use Mailtrap\DTO\Request\EmailCampaign\UpdateEmailCampaign;
+            use Mailtrap\Helper\ResponseHelper;
+
+            $config = new Config($_ENV['MAILTRAP_API_KEY']);
+            $accountId = (int) $_ENV['MAILTRAP_ACCOUNT_ID'];
+            $emailCampaigns = (new MailtrapGeneralClient($config))->emailCampaigns($accountId);
+
+            $response = $emailCampaigns->updateEmailCampaign(4567, new UpdateEmailCampaign(
+                name: 'Spring Sale (updated)',
+                deliveryMode: EmailCampaignInterface::DELIVERY_MODE_GRADUAL,
+                deliveryOptions: ['emails_per_hour' => 1000],
+                templateAttributes: new TemplateAttributes(
+                    subject: 'New subject',
+                    bodyHtml: '<html><body><h1>Hi {{first_name}}!</h1>'
+                        . '<p><a href="__unsubscribe_url__">Unsubscribe</a></p></body></html>',
+                    mergeTags: ['first_name'],
+                ),
+                contactListIds: [55, 56],
+                contactSegmentIds: [12],
+            ));
+
+            var_dump(ResponseHelper::toArray($response));
+        - lang: python
+          label: Python
+          source: |
+            import mailtrap as mt
+
+            client = mt.MailtrapClient(token="YOUR_API_KEY")
+            campaigns = client.email_campaigns_api.email_campaigns
+
+            updated = campaigns.update(
+                email_campaign_id=4567,
+                campaign_params=mt.UpdateEmailCampaignParams(
+                    name="Spring Sale (updated)",
+                    delivery_mode="gradual",
+                    delivery_options=mt.EmailCampaignDeliveryOptions(emails_per_hour=1000),
+                    contact_list_ids=[55, 56],
+                    contact_segment_ids=[12],
+                    template_attributes=mt.EmailCampaignTemplateAttributes(
+                        subject="New subject",
+                        body_html=(
+                            "<html><body><h1>Hi {{first_name}}!</h1>"
+                            '<p><a href="__unsubscribe_url__">Unsubscribe</a></p></body></html>'
+                        ),
+                        merge_tags=["first_name"]
+                    )
+                )
+            )
+
+            print(f"Campaign updated: {updated.name}")
+        - lang: ruby
+          label: Ruby
+          source: |
+            require 'mailtrap'
+
+            client = Mailtrap::Client.new(api_key: 'YOUR_API_KEY')
+            email_campaigns = Mailtrap::EmailCampaignsAPI.new(client)
+
+            campaign = email_campaigns.update(
+              4567,
+              name: 'Spring Sale (updated)',
+              template_attributes: {
+                subject: 'New subject',
+                body_html: '<html><body><h1>Hi {{first_name}}!</h1>' \
+                           '<p><a href="__unsubscribe_url__">Unsubscribe</a></p></body></html>',
+                merge_tags: ['first_name']
+              },
+              delivery_mode: 'gradual',
+              delivery_options: { emails_per_hour: 1000 },
+              contact_list_ids: [55, 56],
+              contact_segment_ids: [12]
+            )
+
+            puts "Campaign updated: #{campaign.name}"
+        - lang: csharp
+          label: .NET
+          source: |
+            using Mailtrap;
+            using Mailtrap.EmailCampaigns.Models;
+            using Mailtrap.EmailCampaigns.Requests;
+
+            using var mailtrapFactory = new MailtrapClientFactory("YOUR_API_KEY");
+            var client = mailtrapFactory.CreateClient();
+
+            var request = new UpdateEmailCampaignRequest
+            {
+                Name = "Spring Sale (updated)",
+                DeliveryMode = DeliveryMode.Gradual,
+                DeliveryOptions = new EmailCampaignDeliveryOptions { EmailsPerHour = 1000 },
+                TemplateAttributes = new EmailCampaignTemplateAttributes
+                {
+                    Subject = "New subject",
+                    BodyHtml = "<html><body><h1>Hi {{first_name}}!</h1>" +
+                        "<p><a href=\"__unsubscribe_url__\">Unsubscribe</a></p></body></html>",
+                    MergeTags = ["first_name"]
+                },
+                ContactListIds = [55, 56],
+                ContactSegmentIds = [12]
+            };
+
+            var campaign = await client.EmailCampaign(4567).Update(request);
+
+            Console.WriteLine($"Campaign updated: {campaign.Name}");
+        - lang: java
+          label: Java
+          source: |
+            import io.mailtrap.config.MailtrapConfig;
+            import io.mailtrap.factory.MailtrapClientFactory;
+            import io.mailtrap.model.DeliveryMode;
+            import io.mailtrap.model.request.emailcampaigns.TemplateAttributes;
+            import io.mailtrap.model.request.emailcampaigns.UpdateEmailCampaign;
+            import io.mailtrap.model.response.emailcampaigns.DeliveryOptions;
+            import java.util.List;
+
+            var config = new MailtrapConfig.Builder()
+                .token("YOUR_API_KEY")
+                .build();
+
+            var client = MailtrapClientFactory.createMailtrapClient(config);
+            var campaigns = client.emailCampaignsApi().emailCampaigns();
+
+            var updated = campaigns.updateEmailCampaign(4567L,
+                UpdateEmailCampaign.builder()
+                    .name("Spring Sale (updated)")
+                    .templateAttributes(TemplateAttributes.builder()
+                        .subject("New subject")
+                        .bodyHtml("<html><body><h1>Hi {{first_name}}!</h1>"
+                            + "<p><a href=\"__unsubscribe_url__\">Unsubscribe</a></p></body></html>")
+                        .mergeTags(List.of("first_name"))
+                        .build())
+                    .deliveryMode(DeliveryMode.GRADUAL)
+                    .deliveryOptions(DeliveryOptions.builder().emailsPerHour(1000).build())
+                    .contactListIds(List.of(55L, 56L))
+                    .contactSegmentIds(List.of(12L))
+                    .build());
+
+            System.out.println("Campaign updated: " + updated.getData().getName());
         - lang: go
           label: Go
           source: |
@@ -372,6 +858,79 @@ paths:
           source: |
             curl -X DELETE "https://mailtrap.io/api/email_campaigns/4567" \
               -H 'Api-Token: YOUR_API_KEY'
+        - lang: javascript
+          label: Node.js
+          source: |
+            import { MailtrapClient } from "mailtrap";
+
+            const client = new MailtrapClient({ token: "YOUR_API_KEY" });
+
+            await client.emailCampaigns.delete(4567);
+
+            console.log("Campaign deleted");
+        - lang: php
+          label: PHP
+          source: |
+            <?php
+            use Mailtrap\Config;
+            use Mailtrap\MailtrapGeneralClient;
+
+            $config = new Config($_ENV['MAILTRAP_API_KEY']);
+            $accountId = (int) $_ENV['MAILTRAP_ACCOUNT_ID'];
+            $emailCampaigns = (new MailtrapGeneralClient($config))->emailCampaigns($accountId);
+
+            $response = $emailCampaigns->deleteEmailCampaign(4567);
+
+            var_dump($response->getStatusCode()); // 204
+        - lang: python
+          label: Python
+          source: |
+            import mailtrap as mt
+
+            client = mt.MailtrapClient(token="YOUR_API_KEY")
+            campaigns = client.email_campaigns_api.email_campaigns
+
+            deleted = campaigns.delete(email_campaign_id=4567)
+
+            print(f"Campaign deleted: {deleted.id}")
+        - lang: ruby
+          label: Ruby
+          source: |
+            require 'mailtrap'
+
+            client = Mailtrap::Client.new(api_key: 'YOUR_API_KEY')
+            email_campaigns = Mailtrap::EmailCampaignsAPI.new(client)
+
+            email_campaigns.delete(4567)
+
+            puts 'Campaign deleted'
+        - lang: csharp
+          label: .NET
+          source: |
+            using Mailtrap;
+
+            using var mailtrapFactory = new MailtrapClientFactory("YOUR_API_KEY");
+            var client = mailtrapFactory.CreateClient();
+
+            await client.EmailCampaign(4567).Delete();
+
+            Console.WriteLine("Campaign deleted");
+        - lang: java
+          label: Java
+          source: |
+            import io.mailtrap.config.MailtrapConfig;
+            import io.mailtrap.factory.MailtrapClientFactory;
+
+            var config = new MailtrapConfig.Builder()
+                .token("YOUR_API_KEY")
+                .build();
+
+            var client = MailtrapClientFactory.createMailtrapClient(config);
+            var campaigns = client.emailCampaignsApi().emailCampaigns();
+
+            campaigns.deleteEmailCampaign(4567L);
+
+            System.out.println("Campaign deleted");
         - lang: go
           label: Go
           source: |
@@ -432,6 +991,80 @@ paths:
           source: |
             curl -X POST "https://mailtrap.io/api/email_campaigns/4567/start" \
               -H 'Api-Token: YOUR_API_KEY'
+        - lang: javascript
+          label: Node.js
+          source: |
+            import { MailtrapClient } from "mailtrap";
+
+            const client = new MailtrapClient({ token: "YOUR_API_KEY" });
+
+            const started = await client.emailCampaigns.start(4567);
+
+            console.log(`State after start: ${started.data.current_state}`);
+        - lang: php
+          label: PHP
+          source: |
+            <?php
+            use Mailtrap\Config;
+            use Mailtrap\MailtrapGeneralClient;
+            use Mailtrap\Helper\ResponseHelper;
+
+            $config = new Config($_ENV['MAILTRAP_API_KEY']);
+            $accountId = (int) $_ENV['MAILTRAP_ACCOUNT_ID'];
+            $emailCampaigns = (new MailtrapGeneralClient($config))->emailCampaigns($accountId);
+
+            $response = $emailCampaigns->startEmailCampaign(4567);
+
+            var_dump(ResponseHelper::toArray($response));
+        - lang: python
+          label: Python
+          source: |
+            import mailtrap as mt
+
+            client = mt.MailtrapClient(token="YOUR_API_KEY")
+            campaigns = client.email_campaigns_api.email_campaigns
+
+            started = campaigns.start(email_campaign_id=4567)
+
+            print(f"State after start: {started.current_state}")
+        - lang: ruby
+          label: Ruby
+          source: |
+            require 'mailtrap'
+
+            client = Mailtrap::Client.new(api_key: 'YOUR_API_KEY')
+            email_campaigns = Mailtrap::EmailCampaignsAPI.new(client)
+
+            campaign = email_campaigns.start(4567)
+
+            puts "State after start: #{campaign.current_state}"
+        - lang: csharp
+          label: .NET
+          source: |
+            using Mailtrap;
+
+            using var mailtrapFactory = new MailtrapClientFactory("YOUR_API_KEY");
+            var client = mailtrapFactory.CreateClient();
+
+            var campaign = await client.EmailCampaign(4567).Start();
+
+            Console.WriteLine($"State after start: {campaign.CurrentState}");
+        - lang: java
+          label: Java
+          source: |
+            import io.mailtrap.config.MailtrapConfig;
+            import io.mailtrap.factory.MailtrapClientFactory;
+
+            var config = new MailtrapConfig.Builder()
+                .token("YOUR_API_KEY")
+                .build();
+
+            var client = MailtrapClientFactory.createMailtrapClient(config);
+            var campaigns = client.emailCampaignsApi().emailCampaigns();
+
+            var started = campaigns.startEmailCampaign(4567L);
+
+            System.out.println("State after start: " + started.getData().getCurrentState());
         - lang: go
           label: Go
           source: |
@@ -497,10 +1130,118 @@ paths:
         - lang: shell
           label: "cURL"
           source: |
+            # Must be in the future and no more than 1 month ahead.
+            DATETIME=$(date -u -d '+1 day' +%Y-%m-%dT%H:%M:%S.000Z 2>/dev/null || date -u -v+1d +%Y-%m-%dT%H:%M:%S.000Z)
+
             curl -X POST "https://mailtrap.io/api/email_campaigns/4567/schedule" \
               -H 'Api-Token: YOUR_API_KEY' \
               -H 'Content-Type: application/json' \
-              -d '{ "datetime": "2026-06-01T09:00:00.000Z" }'
+              -d "{ \"datetime\": \"$DATETIME\" }"
+        - lang: javascript
+          label: Node.js
+          source: |
+            import { MailtrapClient } from "mailtrap";
+
+            const client = new MailtrapClient({ token: "YOUR_API_KEY" });
+
+            // Must be in the future and no more than 1 month ahead.
+            const scheduledAt = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
+
+            const scheduled = await client.emailCampaigns.schedule(4567, {
+              datetime: scheduledAt
+            });
+
+            console.log(`Scheduled for: ${scheduled.data.current_state_metadata.scheduled_at}`);
+        - lang: php
+          label: PHP
+          source: |
+            <?php
+            use Mailtrap\Config;
+            use Mailtrap\MailtrapGeneralClient;
+            use Mailtrap\Helper\ResponseHelper;
+
+            $config = new Config($_ENV['MAILTRAP_API_KEY']);
+            $accountId = (int) $_ENV['MAILTRAP_ACCOUNT_ID'];
+            $emailCampaigns = (new MailtrapGeneralClient($config))->emailCampaigns($accountId);
+
+            // Must be in the future and no more than 1 month ahead.
+            $response = $emailCampaigns->scheduleEmailCampaign(
+                4567,
+                new DateTimeImmutable('+1 day', new DateTimeZone('UTC'))
+            );
+
+            var_dump(ResponseHelper::toArray($response));
+        - lang: python
+          label: Python
+          source: |
+            from datetime import datetime, timedelta, timezone
+
+            import mailtrap as mt
+
+            client = mt.MailtrapClient(token="YOUR_API_KEY")
+            campaigns = client.email_campaigns_api.email_campaigns
+
+            # Must be in the future and no more than 1 month ahead.
+            send_at = datetime.now(timezone.utc) + timedelta(days=1)
+
+            scheduled = campaigns.schedule(
+                email_campaign_id=4567,
+                schedule_params=mt.ScheduleEmailCampaignParams(
+                    datetime=send_at.isoformat(timespec="milliseconds").replace("+00:00", "Z")
+                )
+            )
+
+            print(f"Scheduled for: {scheduled.current_state_metadata.scheduled_at}")
+        - lang: ruby
+          label: Ruby
+          source: |
+            require 'mailtrap'
+
+            client = Mailtrap::Client.new(api_key: 'YOUR_API_KEY')
+            email_campaigns = Mailtrap::EmailCampaignsAPI.new(client)
+
+            # Must be in the future and no more than 1 month ahead.
+            schedule_at = (Time.now.utc + 86_400).strftime('%Y-%m-%dT%H:%M:%S.000Z')
+
+            campaign = email_campaigns.schedule(4567, schedule_at)
+
+            puts "State after schedule: #{campaign.current_state}"
+        - lang: csharp
+          label: .NET
+          source: |
+            using Mailtrap;
+            using Mailtrap.EmailCampaigns.Requests;
+
+            using var mailtrapFactory = new MailtrapClientFactory("YOUR_API_KEY");
+            var client = mailtrapFactory.CreateClient();
+
+            // Must be in the future and no more than 1 month ahead.
+            var request = new ScheduleEmailCampaignRequest(DateTimeOffset.UtcNow.AddDays(1));
+
+            var campaign = await client.EmailCampaign(4567).Schedule(request);
+
+            Console.WriteLine($"State after schedule: {campaign.CurrentState}");
+        - lang: java
+          label: Java
+          source: |
+            import io.mailtrap.config.MailtrapConfig;
+            import io.mailtrap.factory.MailtrapClientFactory;
+            import io.mailtrap.model.request.emailcampaigns.ScheduleEmailCampaignRequest;
+            import java.time.OffsetDateTime;
+            import java.time.ZoneOffset;
+
+            var config = new MailtrapConfig.Builder()
+                .token("YOUR_API_KEY")
+                .build();
+
+            var client = MailtrapClientFactory.createMailtrapClient(config);
+            var campaigns = client.emailCampaignsApi().emailCampaigns();
+
+            // Must be in the future and no more than 1 month ahead.
+            var scheduled = campaigns.scheduleEmailCampaign(4567L,
+                new ScheduleEmailCampaignRequest(OffsetDateTime.now(ZoneOffset.UTC).plusDays(1)));
+
+            System.out.println(scheduled.getData().getCurrentStateMetadata().getScheduledAt());
         - lang: go
           label: Go
           source: |
@@ -560,6 +1301,80 @@ paths:
           source: |
             curl -X POST "https://mailtrap.io/api/email_campaigns/4567/cancel" \
               -H 'Api-Token: YOUR_API_KEY'
+        - lang: javascript
+          label: Node.js
+          source: |
+            import { MailtrapClient } from "mailtrap";
+
+            const client = new MailtrapClient({ token: "YOUR_API_KEY" });
+
+            const cancelled = await client.emailCampaigns.cancel(4567);
+
+            console.log(`State after cancel: ${cancelled.data.current_state}`);
+        - lang: php
+          label: PHP
+          source: |
+            <?php
+            use Mailtrap\Config;
+            use Mailtrap\MailtrapGeneralClient;
+            use Mailtrap\Helper\ResponseHelper;
+
+            $config = new Config($_ENV['MAILTRAP_API_KEY']);
+            $accountId = (int) $_ENV['MAILTRAP_ACCOUNT_ID'];
+            $emailCampaigns = (new MailtrapGeneralClient($config))->emailCampaigns($accountId);
+
+            $response = $emailCampaigns->cancelEmailCampaign(4567);
+
+            var_dump(ResponseHelper::toArray($response));
+        - lang: python
+          label: Python
+          source: |
+            import mailtrap as mt
+
+            client = mt.MailtrapClient(token="YOUR_API_KEY")
+            campaigns = client.email_campaigns_api.email_campaigns
+
+            cancelled = campaigns.cancel(email_campaign_id=4567)
+
+            print(f"State after cancel: {cancelled.current_state}")
+        - lang: ruby
+          label: Ruby
+          source: |
+            require 'mailtrap'
+
+            client = Mailtrap::Client.new(api_key: 'YOUR_API_KEY')
+            email_campaigns = Mailtrap::EmailCampaignsAPI.new(client)
+
+            campaign = email_campaigns.cancel(4567)
+
+            puts "State after cancel: #{campaign.current_state}"
+        - lang: csharp
+          label: .NET
+          source: |
+            using Mailtrap;
+
+            using var mailtrapFactory = new MailtrapClientFactory("YOUR_API_KEY");
+            var client = mailtrapFactory.CreateClient();
+
+            var campaign = await client.EmailCampaign(4567).Cancel();
+
+            Console.WriteLine($"State after cancel: {campaign.CurrentState}");
+        - lang: java
+          label: Java
+          source: |
+            import io.mailtrap.config.MailtrapConfig;
+            import io.mailtrap.factory.MailtrapClientFactory;
+
+            var config = new MailtrapConfig.Builder()
+                .token("YOUR_API_KEY")
+                .build();
+
+            var client = MailtrapClientFactory.createMailtrapClient(config);
+            var campaigns = client.emailCampaignsApi().emailCampaigns();
+
+            var cancelled = campaigns.cancelEmailCampaign(4567L);
+
+            System.out.println("State after cancel: " + cancelled.getData().getCurrentState());
         - lang: go
           label: Go
           source: |
@@ -619,6 +1434,80 @@ paths:
           source: |
             curl -X POST "https://mailtrap.io/api/email_campaigns/4567/terminate" \
               -H 'Api-Token: YOUR_API_KEY'
+        - lang: javascript
+          label: Node.js
+          source: |
+            import { MailtrapClient } from "mailtrap";
+
+            const client = new MailtrapClient({ token: "YOUR_API_KEY" });
+
+            const terminated = await client.emailCampaigns.terminate(4567);
+
+            console.log(`State after terminate: ${terminated.data.current_state}`);
+        - lang: php
+          label: PHP
+          source: |
+            <?php
+            use Mailtrap\Config;
+            use Mailtrap\MailtrapGeneralClient;
+            use Mailtrap\Helper\ResponseHelper;
+
+            $config = new Config($_ENV['MAILTRAP_API_KEY']);
+            $accountId = (int) $_ENV['MAILTRAP_ACCOUNT_ID'];
+            $emailCampaigns = (new MailtrapGeneralClient($config))->emailCampaigns($accountId);
+
+            $response = $emailCampaigns->terminateEmailCampaign(4567);
+
+            var_dump(ResponseHelper::toArray($response));
+        - lang: python
+          label: Python
+          source: |
+            import mailtrap as mt
+
+            client = mt.MailtrapClient(token="YOUR_API_KEY")
+            campaigns = client.email_campaigns_api.email_campaigns
+
+            terminated = campaigns.terminate(email_campaign_id=4567)
+
+            print(f"State after terminate: {terminated.current_state}")
+        - lang: ruby
+          label: Ruby
+          source: |
+            require 'mailtrap'
+
+            client = Mailtrap::Client.new(api_key: 'YOUR_API_KEY')
+            email_campaigns = Mailtrap::EmailCampaignsAPI.new(client)
+
+            campaign = email_campaigns.terminate(4567)
+
+            puts "State after terminate: #{campaign.current_state}"
+        - lang: csharp
+          label: .NET
+          source: |
+            using Mailtrap;
+
+            using var mailtrapFactory = new MailtrapClientFactory("YOUR_API_KEY");
+            var client = mailtrapFactory.CreateClient();
+
+            var campaign = await client.EmailCampaign(4567).Terminate();
+
+            Console.WriteLine($"State after terminate: {campaign.CurrentState}");
+        - lang: java
+          label: Java
+          source: |
+            import io.mailtrap.config.MailtrapConfig;
+            import io.mailtrap.factory.MailtrapClientFactory;
+
+            var config = new MailtrapConfig.Builder()
+                .token("YOUR_API_KEY")
+                .build();
+
+            var client = MailtrapClientFactory.createMailtrapClient(config);
+            var campaigns = client.emailCampaignsApi().emailCampaigns();
+
+            var terminated = campaigns.terminateEmailCampaign(4567L);
+
+            System.out.println("State after terminate: " + terminated.getData().getCurrentState());
         - lang: go
           label: Go
           source: |
@@ -677,6 +1566,80 @@ paths:
           source: |
             curl -X POST "https://mailtrap.io/api/email_campaigns/4567/reset" \
               -H 'Api-Token: YOUR_API_KEY'
+        - lang: javascript
+          label: Node.js
+          source: |
+            import { MailtrapClient } from "mailtrap";
+
+            const client = new MailtrapClient({ token: "YOUR_API_KEY" });
+
+            const reset = await client.emailCampaigns.reset(4567);
+
+            console.log(`State after reset: ${reset.data.current_state}`);
+        - lang: php
+          label: PHP
+          source: |
+            <?php
+            use Mailtrap\Config;
+            use Mailtrap\MailtrapGeneralClient;
+            use Mailtrap\Helper\ResponseHelper;
+
+            $config = new Config($_ENV['MAILTRAP_API_KEY']);
+            $accountId = (int) $_ENV['MAILTRAP_ACCOUNT_ID'];
+            $emailCampaigns = (new MailtrapGeneralClient($config))->emailCampaigns($accountId);
+
+            $response = $emailCampaigns->resetEmailCampaign(4567);
+
+            var_dump(ResponseHelper::toArray($response));
+        - lang: python
+          label: Python
+          source: |
+            import mailtrap as mt
+
+            client = mt.MailtrapClient(token="YOUR_API_KEY")
+            campaigns = client.email_campaigns_api.email_campaigns
+
+            reset = campaigns.reset(email_campaign_id=4567)
+
+            print(f"State after reset: {reset.current_state}")
+        - lang: ruby
+          label: Ruby
+          source: |
+            require 'mailtrap'
+
+            client = Mailtrap::Client.new(api_key: 'YOUR_API_KEY')
+            email_campaigns = Mailtrap::EmailCampaignsAPI.new(client)
+
+            campaign = email_campaigns.reset(4567)
+
+            puts "State after reset: #{campaign.current_state}"
+        - lang: csharp
+          label: .NET
+          source: |
+            using Mailtrap;
+
+            using var mailtrapFactory = new MailtrapClientFactory("YOUR_API_KEY");
+            var client = mailtrapFactory.CreateClient();
+
+            var campaign = await client.EmailCampaign(4567).Reset();
+
+            Console.WriteLine($"State after reset: {campaign.CurrentState}");
+        - lang: java
+          label: Java
+          source: |
+            import io.mailtrap.config.MailtrapConfig;
+            import io.mailtrap.factory.MailtrapClientFactory;
+
+            var config = new MailtrapConfig.Builder()
+                .token("YOUR_API_KEY")
+                .build();
+
+            var client = MailtrapClientFactory.createMailtrapClient(config);
+            var campaigns = client.emailCampaignsApi().emailCampaigns();
+
+            var reset = campaigns.resetEmailCampaign(4567L);
+
+            System.out.println("State after reset: " + reset.getData().getCurrentState());
         - lang: go
           label: Go
           source: |
@@ -743,6 +1706,102 @@ paths:
           source: |
             curl -X GET "https://mailtrap.io/api/email_campaigns/4567/stats?start_date=2026-05-01&end_date=2026-05-31" \
               -H 'Api-Token: YOUR_API_KEY'
+        - lang: javascript
+          label: Node.js
+          source: |
+            import { MailtrapClient } from "mailtrap";
+
+            const client = new MailtrapClient({ token: "YOUR_API_KEY" });
+
+            const stats = await client.emailCampaigns.getStats(4567, {
+              start_date: "2026-05-01",
+              end_date: "2026-05-31"
+            });
+
+            console.log(`Delivered: ${stats.data.delivery_count}, opened: ${stats.data.open_count}`);
+        - lang: php
+          label: PHP
+          source: |
+            <?php
+            use Mailtrap\Config;
+            use Mailtrap\MailtrapGeneralClient;
+            use Mailtrap\Helper\ResponseHelper;
+
+            $config = new Config($_ENV['MAILTRAP_API_KEY']);
+            $accountId = (int) $_ENV['MAILTRAP_ACCOUNT_ID'];
+            $emailCampaigns = (new MailtrapGeneralClient($config))->emailCampaigns($accountId);
+
+            $response = $emailCampaigns->getEmailCampaignStats(
+                4567,
+                startDate: '2026-05-01',
+                endDate: '2026-05-31'
+            );
+
+            var_dump(ResponseHelper::toArray($response));
+        - lang: python
+          label: Python
+          source: |
+            import mailtrap as mt
+
+            client = mt.MailtrapClient(token="YOUR_API_KEY")
+            campaigns = client.email_campaigns_api.email_campaigns
+
+            stats = campaigns.get_stats(
+                email_campaign_id=4567,
+                params=mt.EmailCampaignStatsParams(start_date="2026-05-01", end_date="2026-05-31")
+            )
+
+            print(f"Delivered: {stats.delivery_count}, opened: {stats.open_count}")
+        - lang: ruby
+          label: Ruby
+          source: |
+            require 'mailtrap'
+
+            client = Mailtrap::Client.new(api_key: 'YOUR_API_KEY')
+            email_campaigns = Mailtrap::EmailCampaignsAPI.new(client)
+
+            stats = email_campaigns.stats(4567, start_date: '2026-05-01', end_date: '2026-05-31')
+
+            puts "Delivered: #{stats.delivery_count}, opened: #{stats.open_count}"
+        - lang: csharp
+          label: .NET
+          source: |
+            using Mailtrap;
+            using Mailtrap.EmailCampaigns.Models;
+
+            using var mailtrapFactory = new MailtrapClientFactory("YOUR_API_KEY");
+            var client = mailtrapFactory.CreateClient();
+
+            var filter = new EmailCampaignStatsFilter
+            {
+                StartDate = "2026-05-01",
+                EndDate = "2026-05-31"
+            };
+
+            var stats = await client.EmailCampaign(4567).GetStats(filter);
+
+            Console.WriteLine($"Delivered: {stats.DeliveryCount}, opened: {stats.OpenCount}");
+        - lang: java
+          label: Java
+          source: |
+            import io.mailtrap.config.MailtrapConfig;
+            import io.mailtrap.factory.MailtrapClientFactory;
+            import io.mailtrap.api.emailcampaigns.EmailCampaignStatsFilter;
+
+            var config = new MailtrapConfig.Builder()
+                .token("YOUR_API_KEY")
+                .build();
+
+            var client = MailtrapClientFactory.createMailtrapClient(config);
+            var campaigns = client.emailCampaignsApi().emailCampaigns();
+
+            var stats = campaigns.getEmailCampaignStats(4567L,
+                EmailCampaignStatsFilter.builder()
+                    .startDate("2026-05-01")
+                    .endDate("2026-05-31")
+                    .build());
+
+            System.out.println(stats.getData());
         - lang: go
           label: Go
           source: |
@@ -940,7 +1999,7 @@ components:
           description: |-
             When to send the campaign (ISO 8601). Must be in the future and no more than 1 month
             ahead, otherwise the request is rejected with `422`.
-          example: "2026-06-01T09:00:00.000Z"
+          example: "2026-10-01T09:00:00.000Z"
     ReplyTo:
       type: object
       description: Reply-To address parts.
