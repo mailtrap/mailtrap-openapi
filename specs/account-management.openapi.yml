@@ -1724,7 +1724,76 @@ paths:
           label: 'cURL'
           source: |
             curl -X DELETE https://mailtrap.io/api/organizations/{organization_id}/sub_accounts/{sub_account_id} \
-              -H 'Authorization: Bearer YOUR_API_TOKEN'
+              -H 'Authorization: Bearer YOUR_API_KEY'
+        - lang: javascript
+          label: Node.js
+          source: |
+            import { MailtrapClient } from "mailtrap";
+
+            const organizationId = 2000002;
+            const client = new MailtrapClient({ token: "YOUR_API_KEY", organizationId });
+
+            const subAccountId = 12347;
+            await client.organizations.subAccounts.delete(subAccountId);
+        - lang: php
+          label: PHP
+          source: |
+            <?php
+            use Mailtrap\Config;
+            use Mailtrap\MailtrapGeneralClient;
+
+            $config = new Config($_ENV['MAILTRAP_API_KEY']);
+            $organizationId = $_ENV['MAILTRAP_ORGANIZATION_ID'];
+            $subAccounts = (new MailtrapGeneralClient($config))->organization($organizationId)->subAccounts();
+
+            $subAccountId = $_ENV['MAILTRAP_SUB_ACCOUNT_ID'];
+            $response = $subAccounts->deleteSubAccount($subAccountId);
+            echo $response->getStatusCode(); // 204
+        - lang: python
+          label: Python
+          source: |
+            import mailtrap as mt
+
+            organization_id = 2000002
+            client = mt.MailtrapClient(token="YOUR_API_KEY", organization_id=organization_id)
+
+            sub_account_id = 12347
+            client.organizations_api.sub_accounts.delete(sub_account_id)
+        - lang: ruby
+          label: Ruby
+          source: |
+            require 'mailtrap'
+
+            client = Mailtrap::Client.new(api_key: 'YOUR_API_KEY')
+            organization_id = 2000002
+            sub_accounts = Mailtrap::SubAccountsAPI.new(organization_id, client)
+
+            sub_account_id = 12347
+            sub_accounts.delete(sub_account_id)
+        - lang: csharp
+          label: .NET
+          source: |
+            using Mailtrap;
+
+            using var mailtrapFactory = new MailtrapClientFactory("YOUR_API_KEY");
+            // Sub-accounts live under /organizations/{id}, so use the organization client.
+            var client = mailtrapFactory.CreateOrganizationClient();
+
+            var organizationId = 2000002;
+            var subAccountId = 12347;
+            await client.Organization(organizationId).SubAccount(subAccountId).Delete();
+        - lang: java
+          label: Java
+          source: |
+            import io.mailtrap.config.MailtrapConfig;
+            import io.mailtrap.factory.MailtrapClientFactory;
+
+            var config = new MailtrapConfig.Builder().token("YOUR_API_KEY").build();
+            var client = MailtrapClientFactory.createMailtrapClient(config);
+
+            long organizationId = 2000002L;
+            long subAccountId = 12347L;
+            client.organizationsApi().subAccounts().deleteSubAccount(organizationId, subAccountId);
       responses:
         '204':
           description: Sub account deleted successfully. No content is returned.
