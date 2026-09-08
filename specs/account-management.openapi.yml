@@ -2492,6 +2492,7 @@ components:
       properties:
         name:
           type: string
+          maxLength: 100
           description: Display name for the token
         expires_at:
           type: string
