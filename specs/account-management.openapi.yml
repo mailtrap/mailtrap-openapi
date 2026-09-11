@@ -1707,7 +1707,8 @@ paths:
       summary: Delete organization sub account
       description: |-
         Delete a sub account of the specified organization. You must have sub account management
-        permissions for this organization.
+        permissions for this organization, and the organization must have the Organization &
+        Sub-accounts feature enabled.
 
         The sub account and all of its data – projects, sandboxes, emails and domains – are removed
         permanently and cannot be restored. Deleting the organization's last sub account also deletes
@@ -1800,7 +1801,9 @@ paths:
         '401':
           $ref: '#/components/responses/UNAUTHENTICATED'
         '403':
-          description: Insufficient organization permissions or wrong organization.
+          description: |-
+            Insufficient organization permissions, wrong organization, or the Organization &
+            Sub-accounts feature is disabled for this organization.
           content:
             application/json:
               schema:
