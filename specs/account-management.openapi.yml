@@ -1714,9 +1714,6 @@ paths:
         permanently and cannot be restored. Deleting the organization's last sub account also deletes
         the organization.
 
-        A repeated call for the same sub account returns `404`, because a sub account that is already
-        scheduled for deletion is no longer listed.
-
         Rate limit: 10 requests per minute per organization.
       tags:
         - Organizations
@@ -1812,6 +1809,14 @@ paths:
                 errors: Access forbidden
         '404':
           $ref: '#/components/responses/NOT_FOUND'
+        '409':
+          description: Another deletion of the same sub account is already in progress.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                errors: Another action in progress. Wait until it's finished
         '429':
           $ref: '#/components/responses/LIMIT_EXCEEDED'
     parameters:
