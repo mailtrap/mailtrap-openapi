@@ -394,8 +394,9 @@ paths:
         query parameter and follow the `next_token` and `prev_token` values returned in the
         `pagination` object to walk between pages.
 
-        A `per_page` above `100` is clamped to `100` rather than rejected, and a `token` past the
-        last page returns an empty `data` array rather than an error.
+        A `per_page` above `100` is clamped to `100` rather than rejected. A `token` past the last
+        page returns an empty `data` array rather than an error: the `pagination` object echoes the
+        `token` you asked for, and `prev_token` points at the last page that has data.
       operationId: getTemplates
       summary: Get a paginated list of Email Templates (Experimental)
       tags:
