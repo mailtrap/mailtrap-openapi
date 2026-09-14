@@ -397,7 +397,8 @@ paths:
         A `per_page` above `100` is clamped to `100` rather than rejected. A `token` past the last
         page returns an empty `data` array rather than an error: the `pagination` object echoes the
         `token` you asked for, and `prev_token` points at the last page that has data. Follow the
-        tokens returned by a previous response rather than constructing them by hand.
+        tokens returned by a previous response rather than constructing them by hand — a `token`
+        too large to paginate with is rejected with `422`.
       operationId: getTemplates
       summary: Get a paginated list of Email Templates (Experimental)
       tags:
@@ -429,6 +430,17 @@ paths:
           $ref: '#/components/responses/Unauthorized'
         '403':
           $ref: '#/components/responses/Forbidden'
+        '422':
+          description: The `token` is too large to paginate with.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  errors:
+                    type: string
+              example:
+                errors: token is out of range
         '429':
           $ref: '#/components/responses/RateLimited'
 
