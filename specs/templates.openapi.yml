@@ -25,12 +25,20 @@ tags:
   - name: templates
     x-page-title: Templates
     x-page-description: Manage email templates
-    description: Create and manage reusable email templates with dynamic content.
+    description: |-
+      Create and manage reusable email templates with dynamic content.
+
+      The number of templates you can hold is set by your subscription plan and counted across
+      every account in your organization.
 
 paths:
   /api/email_templates:
     get:
-      description: Get all email templates existing in your account
+      description: |-
+        Get all email templates existing in your account, as a single unpaginated array.
+
+        If your account holds enough templates for the response size to matter, see the
+        experimental `GET /api/templates`, which returns the same templates one page at a time.
       operationId: emailTemplates
       summary: Get all Email Templates
       tags:
@@ -149,6 +157,8 @@ paths:
           $ref: '#/components/responses/Unauthorized'
         '403':
           $ref: '#/components/responses/Forbidden'
+        '429':
+          $ref: '#/components/responses/RateLimited'
     post:
       description: Create a new email template
       operationId: createEmailTemplate
@@ -348,7 +358,28 @@ paths:
         '403':
           $ref: '#/components/responses/Forbidden'
         '422':
-          $ref: '#/components/responses/UnprocessableEntity'
+          description: Validation errors, or the account has reached its plan's template limit.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnprocessableEntity'
+              examples:
+                validation_error:
+                  summary: Required attributes are missing
+                  value:
+                    errors:
+                      category:
+                        - can't be blank
+                      subject:
+                        - can't be blank
+                template_limit_reached:
+                  summary: The plan's template limit is reached
+                  value:
+                    errors:
+                      base:
+                        - You've reached the maximum number of templates allowed. Please upgrade your plan to add more.
+        '429':
+          $ref: '#/components/responses/RateLimited'
 
   /api/email_templates/{email_template_id}:
     get:
@@ -482,6 +513,8 @@ paths:
           $ref: '#/components/responses/Forbidden'
         '404':
           $ref: '#/components/responses/NotFound'
+        '429':
+          $ref: '#/components/responses/RateLimited'
     patch:
       description: Update an email template
       operationId: updateEmailTemplate
@@ -660,6 +693,8 @@ paths:
           $ref: '#/components/responses/NotFound'
         '422':
           $ref: '#/components/responses/UnprocessableEntity'
+        '429':
+          $ref: '#/components/responses/RateLimited'
     delete:
       description: Delete an email template
       operationId: deleteEmailTemplate
@@ -782,8 +817,79 @@ paths:
           $ref: '#/components/responses/Forbidden'
         '404':
           $ref: '#/components/responses/NotFound'
+        '429':
+          $ref: '#/components/responses/RateLimited'
     parameters:
       - $ref: '#/components/parameters/email_template_id'
+
+  /api/templates:
+    get:
+      description: |-
+        Returns a paginated list of the email templates in your account.
+
+        {% hint style="warning" %}
+        This endpoint is experimental. Its parameters and response shape may change before it is
+        generally available, and no Mailtrap SDK covers it yet. Until then,
+        `GET /api/email_templates` remains the stable way to list templates.
+        {% endhint %}
+
+        This is the paginated counterpart to `GET /api/email_templates`, which returns every
+        template as a single unpaginated array. Pagination is page-token based: pass the `token`
+        query parameter and follow the `next_token` and `prev_token` values returned in the
+        `pagination` object to walk between pages.
+
+        A `per_page` above `100` is clamped to `100` rather than rejected. A `token` past the last
+        page returns an empty `data` array rather than an error: the `pagination` object echoes the
+        `token` you asked for, and `prev_token` points at the last page that has data. Follow the
+        tokens returned by a previous response rather than constructing them by hand — a `token`
+        whose offset (`(token - 1) * per_page`) overflows a 64-bit integer is rejected with `422`.
+      operationId: getTemplates
+      summary: Get a paginated list of Email Templates (Experimental)
+      tags:
+        - templates
+      parameters:
+        - $ref: '#/components/parameters/token'
+        - $ref: '#/components/parameters/per_page'
+      x-codeSamples:
+        - lang: shell
+          label: 'cURL'
+          source: |
+            curl -X GET "https://mailtrap.io/api/templates?per_page=50&token=1" \
+              -H "Api-Token: YOUR_API_KEY"
+      responses:
+        '200':
+          description: OK.
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - data
+                  - pagination
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/EmailTemplateResponse'
+                  pagination:
+                    $ref: '#/components/schemas/Pagination'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '422':
+          description: The `token` is too large to paginate with — its offset overflows a 64-bit integer.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  errors:
+                    type: string
+              example:
+                errors: token is out of range
+        '429':
+          $ref: '#/components/responses/RateLimited'
 
 components:
   securitySchemes:
@@ -808,6 +914,29 @@ components:
         type: integer
         format: int64
         example: 60927
+
+    token:
+      name: token
+      description: Page number to retrieve (page-token pagination). Defaults to `1`.
+      in: query
+      required: false
+      schema:
+        type: integer
+        minimum: 1
+        default: 1
+        example: 1
+
+    per_page:
+      name: per_page
+      description: Number of templates per page. Defaults to `50`, maximum `100`. Larger values are clamped to `100`.
+      in: query
+      required: false
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 100
+        default: 50
+        example: 50
 
   schemas:
     UnprocessableEntity:
@@ -935,6 +1064,50 @@ components:
         created_at: '2021-01-01T00:00:00Z'
         updated_at: '2021-01-01T00:00:00Z'
 
+    Pagination:
+      title: Pagination
+      type: object
+      description: Page-token pagination metadata.
+      properties:
+        token:
+          type: integer
+          description: Current page number.
+          example: 1
+        prev_token:
+          type: [integer, "null"]
+          description: Previous page number, or `null` on the first page.
+          example: null
+        next_token:
+          type: [integer, "null"]
+          description: Next page number, or `null` on the last page.
+          example: 2
+        first_url:
+          type: string
+          format: uri
+          example: 'https://mailtrap.io/api/templates?per_page=50&token=1'
+        prev_url:
+          type: [string, "null"]
+          format: uri
+          example: null
+        current_url:
+          type: string
+          format: uri
+          example: 'https://mailtrap.io/api/templates?per_page=50&token=1'
+        next_url:
+          type: [string, "null"]
+          format: uri
+          example: 'https://mailtrap.io/api/templates?per_page=50&token=2'
+
+    RateLimitedResponse:
+      title: RateLimitedResponse
+      type: object
+      # NOTE: the shared global throttle (Rack::Attack) returns the legacy singular `error` key.
+      # This diverges from the plural-`errors` convention; kept here to match the real response.
+      properties:
+        error:
+          type: string
+          example: Throttled
+
   responses:
     Unauthorized:
       description: Returns unauthorized error message. Check your credentials.
@@ -975,3 +1148,29 @@ components:
                 - can't be blank
               subject:
                 - can't be blank
+
+    RateLimited:
+      description: |-
+        Too many requests. The public API is rate limited to 150 requests per 10 seconds per
+        API token. Retry after the window resets (see the `x-ratelimit-reset` header).
+      headers:
+        x-ratelimit-limit:
+          description: Maximum number of requests allowed within the window.
+          schema:
+            type: integer
+            example: 150
+        x-ratelimit-remaining:
+          description: Requests remaining in the current window.
+          schema:
+            type: integer
+            example: 0
+        x-ratelimit-reset:
+          description: ISO 8601 timestamp when the current rate-limit window resets.
+          schema:
+            type: string
+            format: date-time
+            example: '2026-06-15T10:00:10.000000Z'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/RateLimitedResponse'
