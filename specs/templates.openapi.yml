@@ -397,7 +397,7 @@ paths:
         page returns an empty `data` array rather than an error: the `pagination` object echoes the
         `token` you asked for, and `prev_token` points at the last page that has data. Follow the
         tokens returned by a previous response rather than constructing them by hand — a `token`
-        too large to paginate with is rejected with `422`.
+        whose offset (`(token - 1) * per_page`) overflows a 64-bit integer is rejected with `422`.
       operationId: getTemplates
       summary: Get a paginated list of Email Templates (Experimental)
       tags:
@@ -430,7 +430,7 @@ paths:
         '403':
           $ref: '#/components/responses/Forbidden'
         '422':
-          description: The `token` is too large to paginate with.
+          description: The `token` is too large to paginate with — its offset overflows a 64-bit integer.
           content:
             application/json:
               schema:
