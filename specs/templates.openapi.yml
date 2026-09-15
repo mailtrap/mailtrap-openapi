@@ -381,72 +381,6 @@ paths:
         '429':
           $ref: '#/components/responses/RateLimited'
 
-  /api/templates:
-    get:
-      description: |-
-        Returns a paginated list of the email templates in your account.
-
-        {% hint style="warning" %}
-        This endpoint is experimental. Its parameters and response shape may change before it is
-        generally available, and no Mailtrap SDK covers it yet. Until then,
-        `GET /api/email_templates` remains the stable way to list templates.
-        {% endhint %}
-
-        This is the paginated counterpart to `GET /api/email_templates`, which returns every
-        template as a single unpaginated array. Pagination is page-token based: pass the `token`
-        query parameter and follow the `next_token` and `prev_token` values returned in the
-        `pagination` object to walk between pages.
-
-        A `per_page` above `100` is clamped to `100` rather than rejected. A `token` past the last
-        page returns an empty `data` array rather than an error: the `pagination` object echoes the
-        `token` you asked for, and `prev_token` points at the last page that has data. Follow the
-        tokens returned by a previous response rather than constructing them by hand — a `token`
-        whose offset (`(token - 1) * per_page`) overflows a 64-bit integer is rejected with `422`.
-      operationId: getTemplates
-      summary: Get a paginated list of Email Templates (Experimental)
-      tags:
-        - templates
-      parameters:
-        - $ref: '#/components/parameters/token'
-        - $ref: '#/components/parameters/per_page'
-      x-codeSamples:
-        - lang: shell
-          label: 'cURL'
-          source: |
-            curl -X GET "https://mailtrap.io/api/templates?per_page=50&token=1" \
-              -H "Api-Token: YOUR_API_KEY"
-      responses:
-        '200':
-          description: OK.
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  data:
-                    type: array
-                    items:
-                      $ref: '#/components/schemas/EmailTemplateResponse'
-                  pagination:
-                    $ref: '#/components/schemas/Pagination'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '403':
-          $ref: '#/components/responses/Forbidden'
-        '422':
-          description: The `token` is too large to paginate with — its offset overflows a 64-bit integer.
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  errors:
-                    type: string
-              example:
-                errors: token is out of range
-        '429':
-          $ref: '#/components/responses/RateLimited'
-
   /api/email_templates/{email_template_id}:
     get:
       description: Get an email template by ID
@@ -887,6 +821,72 @@ paths:
           $ref: '#/components/responses/RateLimited'
     parameters:
       - $ref: '#/components/parameters/email_template_id'
+
+  /api/templates:
+    get:
+      description: |-
+        Returns a paginated list of the email templates in your account.
+
+        {% hint style="warning" %}
+        This endpoint is experimental. Its parameters and response shape may change before it is
+        generally available, and no Mailtrap SDK covers it yet. Until then,
+        `GET /api/email_templates` remains the stable way to list templates.
+        {% endhint %}
+
+        This is the paginated counterpart to `GET /api/email_templates`, which returns every
+        template as a single unpaginated array. Pagination is page-token based: pass the `token`
+        query parameter and follow the `next_token` and `prev_token` values returned in the
+        `pagination` object to walk between pages.
+
+        A `per_page` above `100` is clamped to `100` rather than rejected. A `token` past the last
+        page returns an empty `data` array rather than an error: the `pagination` object echoes the
+        `token` you asked for, and `prev_token` points at the last page that has data. Follow the
+        tokens returned by a previous response rather than constructing them by hand — a `token`
+        whose offset (`(token - 1) * per_page`) overflows a 64-bit integer is rejected with `422`.
+      operationId: getTemplates
+      summary: Get a paginated list of Email Templates (Experimental)
+      tags:
+        - templates
+      parameters:
+        - $ref: '#/components/parameters/token'
+        - $ref: '#/components/parameters/per_page'
+      x-codeSamples:
+        - lang: shell
+          label: 'cURL'
+          source: |
+            curl -X GET "https://mailtrap.io/api/templates?per_page=50&token=1" \
+              -H "Api-Token: YOUR_API_KEY"
+      responses:
+        '200':
+          description: OK.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/EmailTemplateResponse'
+                  pagination:
+                    $ref: '#/components/schemas/Pagination'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '422':
+          description: The `token` is too large to paginate with — its offset overflows a 64-bit integer.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  errors:
+                    type: string
+              example:
+                errors: token is out of range
+        '429':
+          $ref: '#/components/responses/RateLimited'
 
 components:
   securitySchemes:
