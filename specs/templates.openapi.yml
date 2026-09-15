@@ -38,8 +38,7 @@ paths:
         Get all email templates existing in your account, as a single unpaginated array.
 
         If your account holds enough templates for the response size to matter, see the
-        experimental [`GET /api/templates`](#operation/getTemplates), which returns the same
-        templates one page at a time.
+        experimental `GET /api/templates`, which returns the same templates one page at a time.
       operationId: emailTemplates
       summary: Get all Email Templates
       tags:
