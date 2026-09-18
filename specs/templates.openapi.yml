@@ -1166,7 +1166,6 @@ components:
       schema:
         type: integer
         minimum: 1
-        maximum: 100
         default: 50
         example: 50
 
