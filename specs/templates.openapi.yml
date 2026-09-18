@@ -833,10 +833,14 @@ paths:
         `GET /api/email_templates` remains the stable way to list templates.
         {% endhint %}
 
-        This is the paginated counterpart to `GET /api/email_templates`, which returns every
-        template as a single unpaginated array. Pagination is page-token based: pass the `token`
-        query parameter and follow the `next_token` and `prev_token` values returned in the
-        `pagination` object to walk between pages.
+        `/api/templates` is the conventions-compliant replacement for `/api/email_templates`: it
+        wraps every response in a `data` envelope, takes a flat request body on writes, and
+        paginates this list, where `GET /api/email_templates` returns every template as a single
+        unpaginated array. `/api/email_templates` keeps its published shapes and is unaffected.
+
+        Pagination is page-token based: pass the `token` query parameter and follow the
+        `next_token` and `prev_token` values returned in the `pagination` object to walk between
+        pages.
 
         A `per_page` above `100` is clamped to `100` rather than rejected. A `token` past the last
         page returns an empty `data` array rather than an error: the `pagination` object echoes the
@@ -889,7 +893,7 @@ paths:
               example:
                 errors: token is out of range
         '429':
-          $ref: '#/components/responses/RateLimited'
+          $ref: '#/components/responses/TemplatesRateLimited'
 
 components:
   securitySchemes:
@@ -1098,6 +1102,14 @@ components:
           format: uri
           example: 'https://mailtrap.io/api/templates?per_page=50&token=2'
 
+    EndpointRateLimitedResponse:
+      title: EndpointRateLimitedResponse
+      type: object
+      properties:
+        errors:
+          type: string
+          example: Rate limit exceeded
+
     RateLimitedResponse:
       title: RateLimitedResponse
       type: object
@@ -1174,3 +1186,25 @@ components:
         application/json:
           schema:
             $ref: '#/components/schemas/RateLimitedResponse'
+
+    TemplatesRateLimited:
+      description: |-
+        Too many requests. Two limits apply: 150 requests per minute per account on this endpoint,
+        counted in separate allowances for listing and for creating, and the global 150 requests
+        per 10 seconds per API token. The response body tells them apart, and only the global
+        throttle sets the `x-ratelimit-*` headers.
+      content:
+        application/json:
+          schema:
+            oneOf:
+              - $ref: '#/components/schemas/EndpointRateLimitedResponse'
+              - $ref: '#/components/schemas/RateLimitedResponse'
+          examples:
+            endpoint_rate_limit:
+              summary: The per-account limit on this endpoint is reached
+              value:
+                errors: Rate limit exceeded
+            global_rate_limit:
+              summary: The global per-token throttle is reached
+              value:
+                error: Throttled
