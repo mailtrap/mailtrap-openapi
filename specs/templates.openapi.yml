@@ -368,6 +368,8 @@ paths:
                   summary: Required attributes are missing
                   value:
                     errors:
+                      name:
+                        - can't be blank
                       category:
                         - can't be blank
                       subject:
