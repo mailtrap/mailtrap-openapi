@@ -1487,6 +1487,23 @@ components:
         counted in separate allowances for listing and for creating, and the global 150 requests
         per 10 seconds per API token. The response body tells them apart, and only the global
         throttle sets the `x-ratelimit-*` headers.
+      headers:
+        x-ratelimit-limit:
+          description: Maximum number of requests allowed within the window. Sent by the global throttle only.
+          schema:
+            type: integer
+            example: 150
+        x-ratelimit-remaining:
+          description: Requests remaining in the current window. Sent by the global throttle only.
+          schema:
+            type: integer
+            example: 0
+        x-ratelimit-reset:
+          description: ISO 8601 timestamp when the current rate-limit window resets. Sent by the global throttle only.
+          schema:
+            type: string
+            format: date-time
+            example: '2026-06-15T10:00:10.000000Z'
       content:
         application/json:
           schema:
