@@ -25,12 +25,20 @@ tags:
   - name: templates
     x-page-title: Templates
     x-page-description: Manage email templates
-    description: Create and manage reusable email templates with dynamic content.
+    description: |-
+      Create and manage reusable email templates with dynamic content.
+
+      The number of templates you can hold is set by your subscription plan and counted across
+      every account in your organization.
 
 paths:
   /api/email_templates:
     get:
-      description: Get all email templates existing in your account
+      description: |-
+        Get all email templates existing in your account, as a single unpaginated array.
+
+        If your account holds enough templates for the response size to matter, see the
+        experimental `GET /api/templates`, which returns the same templates one page at a time.
       operationId: emailTemplates
       summary: Get all Email Templates
       tags:
@@ -149,6 +157,8 @@ paths:
           $ref: '#/components/responses/Unauthorized'
         '403':
           $ref: '#/components/responses/Forbidden'
+        '429':
+          $ref: '#/components/responses/RateLimited'
     post:
       description: Create a new email template
       operationId: createEmailTemplate
@@ -348,7 +358,30 @@ paths:
         '403':
           $ref: '#/components/responses/Forbidden'
         '422':
-          $ref: '#/components/responses/UnprocessableEntity'
+          description: Validation errors, or the account has reached its plan's template limit.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnprocessableEntity'
+              examples:
+                validation_error:
+                  summary: Required attributes are missing
+                  value:
+                    errors:
+                      name:
+                        - can't be blank
+                      category:
+                        - can't be blank
+                      subject:
+                        - can't be blank
+                template_limit_reached:
+                  summary: The plan's template limit is reached
+                  value:
+                    errors:
+                      base:
+                        - You've reached the maximum number of templates allowed. Please upgrade your plan to add more.
+        '429':
+          $ref: '#/components/responses/RateLimited'
 
   /api/email_templates/{email_template_id}:
     get:
@@ -482,6 +515,8 @@ paths:
           $ref: '#/components/responses/Forbidden'
         '404':
           $ref: '#/components/responses/NotFound'
+        '429':
+          $ref: '#/components/responses/RateLimited'
     patch:
       description: Update an email template
       operationId: updateEmailTemplate
@@ -660,6 +695,8 @@ paths:
           $ref: '#/components/responses/NotFound'
         '422':
           $ref: '#/components/responses/UnprocessableEntity'
+        '429':
+          $ref: '#/components/responses/RateLimited'
     delete:
       description: Delete an email template
       operationId: deleteEmailTemplate
@@ -782,8 +819,301 @@ paths:
           $ref: '#/components/responses/Forbidden'
         '404':
           $ref: '#/components/responses/NotFound'
+        '429':
+          $ref: '#/components/responses/RateLimited'
     parameters:
       - $ref: '#/components/parameters/email_template_id'
+
+  /api/templates:
+    get:
+      description: |-
+        Returns a paginated list of the email templates in your account.
+
+        {% hint style="warning" %}
+        This endpoint is experimental. Its parameters and response shape may change before it is
+        generally available, and no Mailtrap SDK covers it yet. Until then,
+        `GET /api/email_templates` remains the stable way to list templates.
+        {% endhint %}
+
+        `/api/templates` is the conventions-compliant replacement for `/api/email_templates`: it
+        wraps every response in a `data` envelope, takes a flat request body on writes, and
+        paginates this list, where `GET /api/email_templates` returns every template as a single
+        unpaginated array. `/api/email_templates` keeps its published shapes and is unaffected.
+
+        Pagination is page-token based: pass the `token` query parameter and follow the
+        `next_token` and `prev_token` values returned in the `pagination` object to walk between
+        pages.
+
+        A `per_page` above `100` is clamped to `100` rather than rejected. A `token` past the last
+        page returns an empty `data` array rather than an error: the `pagination` object echoes the
+        `token` you asked for, and `prev_token` points at the last page that has data. Follow the
+        tokens returned by a previous response rather than constructing them by hand — a `token`
+        whose offset (`(token - 1) * per_page`) overflows a 64-bit integer is rejected with `422`.
+      operationId: getTemplates
+      summary: Get a paginated list of Email Templates (Experimental)
+      tags:
+        - templates
+      parameters:
+        - $ref: '#/components/parameters/token'
+        - $ref: '#/components/parameters/per_page'
+      x-codeSamples:
+        - lang: shell
+          label: 'cURL'
+          source: |
+            curl -X GET "https://mailtrap.io/api/templates?per_page=50&token=1" \
+              -H "Api-Token: YOUR_API_KEY"
+      responses:
+        '200':
+          description: OK.
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - data
+                  - pagination
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/EmailTemplateResponse'
+                  pagination:
+                    $ref: '#/components/schemas/Pagination'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '422':
+          description: The `token` is too large to paginate with — its offset overflows a 64-bit integer.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  errors:
+                    type: string
+              example:
+                errors: token is out of range
+        '429':
+          $ref: '#/components/responses/TemplatesRateLimited'
+    post:
+      description: |-
+        Creates an email template and returns it in a `data` envelope.
+
+        {% hint style="warning" %}
+        This endpoint is experimental. Its request and response shapes may change before it is
+        generally available, and no Mailtrap SDK covers it yet. Until then,
+        `POST /api/email_templates` remains the stable way to create a template.
+        {% endhint %}
+
+        The request body is flat, where `POST /api/email_templates` expects the attributes wrapped
+        in `email_template`. That wrapper is still accepted here, so you can switch the path first
+        and flatten the body afterwards.
+      operationId: createTemplate
+      summary: Create Email Template (Experimental)
+      tags:
+        - templates
+      x-codeSamples:
+        - lang: shell
+          label: 'cURL'
+          source: |
+            curl -X POST "https://mailtrap.io/api/templates" \
+              -H "Api-Token: YOUR_API_KEY" \
+              -H "Content-Type: application/json" \
+              -d '{
+                "name": "Welcome Email",
+                "subject": "Welcome to {{company_name}}!",
+                "category": "onboarding",
+                "body_html": "<h1>Welcome {{user_name}}!</h1>",
+                "body_text": "Welcome {{user_name}}!"
+              }'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TemplateRequest'
+      responses:
+        '201':
+          description: Email template created successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TemplateResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '422':
+          description: Validation errors, or the account has reached its plan's template limit.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnprocessableEntity'
+              examples:
+                validation_error:
+                  summary: Required attributes are missing
+                  value:
+                    errors:
+                      name:
+                        - can't be blank
+                      category:
+                        - can't be blank
+                      subject:
+                        - can't be blank
+                template_limit_reached:
+                  summary: The plan's template limit is reached
+                  value:
+                    errors:
+                      base:
+                        - You've reached the maximum number of templates allowed. Please upgrade your plan to add more.
+        '429':
+          $ref: '#/components/responses/TemplatesRateLimited'
+
+  /api/templates/{template_id}:
+    get:
+      description: |-
+        Returns a single email template in a `data` envelope.
+
+        {% hint style="warning" %}
+        This endpoint is experimental. Its parameters and response shape may change before it is
+        generally available, and no Mailtrap SDK covers it yet. Until then,
+        `GET /api/email_templates/{email_template_id}` remains the stable way to read a template.
+        {% endhint %}
+      operationId: getTemplate
+      summary: Get Email Template (Experimental)
+      tags:
+        - templates
+      x-codeSamples:
+        - lang: shell
+          label: 'cURL'
+          source: |
+            curl -X GET "https://mailtrap.io/api/templates/{template_id}" \
+              -H "Api-Token: YOUR_API_KEY"
+      responses:
+        '200':
+          description: OK.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TemplateResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+    patch:
+      description: |-
+        Updates an email template and returns it in a `data` envelope. `PUT` is accepted on the
+        same path and behaves identically.
+
+        {% hint style="warning" %}
+        This endpoint is experimental. Its request and response shapes may change before it is
+        generally available, and no Mailtrap SDK covers it yet. Until then,
+        `PATCH /api/email_templates/{email_template_id}` remains the stable way to update a
+        template.
+        {% endhint %}
+
+        The request body is flat, where `PATCH /api/email_templates/{email_template_id}` expects
+        the attributes wrapped in `email_template`. That wrapper is still accepted here, so you can
+        switch the path first and flatten the body afterwards.
+
+        Every attribute is optional. A request carrying none of them returns `200` with the
+        template unchanged.
+      operationId: updateTemplate
+      summary: Update Email Template (Experimental)
+      tags:
+        - templates
+      x-codeSamples:
+        - lang: shell
+          label: 'cURL'
+          source: |
+            curl -X PATCH "https://mailtrap.io/api/templates/{template_id}" \
+              -H "Api-Token: YOUR_API_KEY" \
+              -H "Content-Type: application/json" \
+              -d '{
+                "name": "Welcome Email v2",
+                "subject": "Welcome aboard, {{user_name}}!"
+              }'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TemplateUpdateRequest'
+      responses:
+        '200':
+          description: OK.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TemplateResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '422':
+          description: Validation errors.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnprocessableEntity'
+              examples:
+                validation_error:
+                  summary: An attribute was blanked out
+                  value:
+                    errors:
+                      name:
+                        - can't be blank
+                      category:
+                        - can't be blank
+                      subject:
+                        - can't be blank
+                drag_and_drop_template:
+                  summary: The template was built in the drag-and-drop editor
+                  value:
+                    errors:
+                      body_html:
+                        - cannot update body_html of template created within UI editor
+                      body_text:
+                        - cannot update body_text of template created within UI editor
+        '429':
+          $ref: '#/components/responses/RateLimited'
+    delete:
+      description: |-
+        Deletes an email template.
+
+        {% hint style="warning" %}
+        This endpoint is experimental and no Mailtrap SDK covers it yet. Until then,
+        `DELETE /api/email_templates/{email_template_id}` remains the stable way to delete a
+        template.
+        {% endhint %}
+      operationId: deleteTemplate
+      summary: Delete Email Template (Experimental)
+      tags:
+        - templates
+      x-codeSamples:
+        - lang: shell
+          label: 'cURL'
+          source: |
+            curl -X DELETE "https://mailtrap.io/api/templates/{template_id}" \
+              -H "Api-Token: YOUR_API_KEY"
+      responses:
+        '204':
+          description: No Content
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+    parameters:
+      - $ref: '#/components/parameters/template_id'
 
 components:
   securitySchemes:
@@ -808,6 +1138,39 @@ components:
         type: integer
         format: int64
         example: 60927
+
+    template_id:
+      name: template_id
+      in: path
+      required: true
+      description: Email template ID
+      schema:
+        type: integer
+        format: int64
+        example: 60927
+
+    token:
+      name: token
+      description: Page number to retrieve (page-token pagination). Defaults to `1`.
+      in: query
+      required: false
+      schema:
+        type: integer
+        format: int64
+        minimum: 1
+        default: 1
+        example: 1
+
+    per_page:
+      name: per_page
+      description: Number of templates per page. Defaults to `50`, maximum `100`. Larger values are clamped to `100`.
+      in: query
+      required: false
+      schema:
+        type: integer
+        minimum: 1
+        default: 50
+        example: 50
 
   schemas:
     UnprocessableEntity:
@@ -935,6 +1298,124 @@ components:
         created_at: '2021-01-01T00:00:00Z'
         updated_at: '2021-01-01T00:00:00Z'
 
+    Pagination:
+      title: Pagination
+      type: object
+      description: Page-token pagination metadata.
+      properties:
+        token:
+          type: integer
+          description: Current page number.
+          example: 1
+        prev_token:
+          type: [integer, "null"]
+          description: Previous page number, or `null` on the first page.
+          example: null
+        next_token:
+          type: [integer, "null"]
+          description: Next page number, or `null` on the last page.
+          example: 2
+        first_url:
+          type: string
+          format: uri
+          example: 'https://mailtrap.io/api/templates?per_page=50&token=1'
+        prev_url:
+          type: [string, "null"]
+          format: uri
+          example: null
+        current_url:
+          type: string
+          format: uri
+          example: 'https://mailtrap.io/api/templates?per_page=50&token=1'
+        next_url:
+          type: [string, "null"]
+          format: uri
+          example: 'https://mailtrap.io/api/templates?per_page=50&token=2'
+
+    TemplateRequest:
+      title: TemplateRequest
+      type: object
+      required:
+        - name
+        - subject
+        - category
+      properties:
+        name:
+          type: string
+          maxLength: 255
+        category:
+          type: string
+          maxLength: 255
+        subject:
+          type: string
+          maxLength: 255
+        body_text:
+          type: string
+          maxLength: 10000000
+        body_html:
+          type: string
+          maxLength: 10000000
+      example:
+        name: My Email Template
+        subject: Promotional Email
+        category: Promotional
+        body_html: <div>Template Body</div>
+        body_text: Template Body
+
+    TemplateUpdateRequest:
+      title: TemplateUpdateRequest
+      type: object
+      properties:
+        name:
+          type: string
+          maxLength: 255
+        category:
+          type: string
+          maxLength: 255
+        subject:
+          type: string
+          maxLength: 255
+        body_text:
+          type: string
+          maxLength: 10000000
+        body_html:
+          type: string
+          maxLength: 10000000
+      example:
+        name: My Email Template
+        subject: Promotional Email
+
+    TemplateResponse:
+      title: TemplateResponse
+      type: object
+      required:
+        - data
+      properties:
+        data:
+          $ref: '#/components/schemas/EmailTemplateResponse'
+
+    EndpointRateLimitedResponse:
+      title: EndpointRateLimitedResponse
+      type: object
+      required:
+        - errors
+      properties:
+        errors:
+          type: string
+          example: Rate limit exceeded
+
+    RateLimitedResponse:
+      title: RateLimitedResponse
+      type: object
+      # NOTE: the shared global throttle (Rack::Attack) returns the legacy singular `error` key.
+      # This diverges from the plural-`errors` convention; kept here to match the real response.
+      required:
+        - error
+      properties:
+        error:
+          type: string
+          example: Throttled
+
   responses:
     Unauthorized:
       description: Returns unauthorized error message. Check your credentials.
@@ -975,3 +1456,68 @@ components:
                 - can't be blank
               subject:
                 - can't be blank
+
+    RateLimited:
+      description: |-
+        Too many requests. The public API is rate limited to 150 requests per 10 seconds per
+        API token. Retry after the window resets (see the `x-ratelimit-reset` header).
+      headers:
+        x-ratelimit-limit:
+          description: Maximum number of requests allowed within the window.
+          schema:
+            type: integer
+            example: 150
+        x-ratelimit-remaining:
+          description: Requests remaining in the current window.
+          schema:
+            type: integer
+            example: 0
+        x-ratelimit-reset:
+          description: ISO 8601 timestamp when the current rate-limit window resets.
+          schema:
+            type: string
+            format: date-time
+            example: '2026-06-15T10:00:10.000000Z'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/RateLimitedResponse'
+
+    TemplatesRateLimited:
+      description: |-
+        Too many requests. Two limits apply: 150 requests per minute per account on this endpoint,
+        counted in separate allowances for listing and for creating, and the global 150 requests
+        per 10 seconds per API token. The response body tells them apart, and only the global
+        throttle sets the `x-ratelimit-*` headers.
+      headers:
+        x-ratelimit-limit:
+          description: Maximum number of requests allowed within the window. Sent by the global throttle only.
+          schema:
+            type: integer
+            example: 150
+        x-ratelimit-remaining:
+          description: Requests remaining in the current window. Sent by the global throttle only.
+          schema:
+            type: integer
+            example: 0
+        x-ratelimit-reset:
+          description: ISO 8601 timestamp when the current rate-limit window resets. Sent by the global throttle only.
+          schema:
+            type: string
+            format: date-time
+            example: '2026-06-15T10:00:10.000000Z'
+      content:
+        application/json:
+          schema:
+            oneOf:
+              - $ref: '#/components/schemas/EndpointRateLimitedResponse'
+              - $ref: '#/components/schemas/RateLimitedResponse'
+          examples:
+            endpoint_rate_limit:
+              summary: The per-account limit on this endpoint is reached
+              value:
+                errors: Rate limit exceeded
+            global_rate_limit:
+              summary: The global per-token throttle is reached
+              value:
+                error: Throttled
