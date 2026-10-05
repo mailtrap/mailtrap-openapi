@@ -2532,6 +2532,73 @@ paths:
           source: |
             curl -X GET https://mailtrap.io/api/inbound/inboxes/{inbox_id}/forward_rules \
               -H 'Authorization: Bearer YOUR_API_KEY'
+        - lang: javascript
+          label: Node.js
+          source: |
+            import { MailtrapClient } from "mailtrap";
+
+            const client = new MailtrapClient({ token: "YOUR_API_KEY" });
+
+            const inboxId = 42;
+            const rules = await client.inbound.forwardRules.getList(inboxId);
+            console.log(rules.data);
+        - lang: php
+          label: PHP
+          source: |
+            <?php
+            use Mailtrap\Config;
+            use Mailtrap\Helper\ResponseHelper;
+            use Mailtrap\MailtrapInboundClient;
+
+            $config = new Config($_ENV['MAILTRAP_API_KEY']);
+            $inboxId = $_ENV['MAILTRAP_INBOUND_INBOX_ID'];
+            $forwardRules = (new MailtrapInboundClient($config))->forwardRules($inboxId);
+
+            $response = $forwardRules->getList();
+            var_dump(ResponseHelper::toArray($response));
+        - lang: python
+          label: Python
+          source: |
+            import mailtrap as mt
+
+            client = mt.MailtrapClient(token="YOUR_API_KEY")
+
+            inbox_id = 42
+            rules = client.inbound_api.forward_rules.get_list(inbox_id)
+            print(rules)
+        - lang: ruby
+          label: Ruby
+          source: |
+            require 'mailtrap'
+
+            client = Mailtrap::Client.new(api_key: 'YOUR_API_KEY')
+            forward_rules = Mailtrap::InboundForwardRulesAPI.new(client)
+
+            inbox_id = 42
+            puts forward_rules.list(inbox_id)
+        - lang: csharp
+          label: .NET
+          source: |
+            using Mailtrap;
+
+            using var mailtrapFactory = new MailtrapClientFactory("YOUR_API_KEY");
+            var client = mailtrapFactory.CreateClient();
+
+            var inboxId = 42;
+            var rules = await client.Inbound().Inbox(inboxId).ForwardRules().GetAll();
+            Console.WriteLine(rules.Count);
+        - lang: java
+          label: Java
+          source: |
+            import io.mailtrap.config.MailtrapConfig;
+            import io.mailtrap.factory.MailtrapClientFactory;
+
+            var config = new MailtrapConfig.Builder().token("YOUR_API_KEY").build();
+            var client = MailtrapClientFactory.createMailtrapClient(config);
+
+            long inboxId = 42L;
+            var rules = client.inboundApi().forwardRules().getList(inboxId);
+            System.out.println(rules);
       responses:
         "200":
           description: List of forward rules
@@ -2596,6 +2663,143 @@ paths:
                   { "email": "finance@example.com" }
                 ]
               }'
+        - lang: javascript
+          label: Node.js
+          source: |
+            import { MailtrapClient } from "mailtrap";
+
+            const client = new MailtrapClient({ token: "YOUR_API_KEY" });
+
+            const inboxId = 42;
+            const rule = await client.inbound.forwardRules.create(inboxId, {
+              name: "Copy billing mail to finance",
+              conditions: [
+                { match_type: "sender", operator: "ends_with", value: "@billing.example.com" },
+              ],
+              destinations: [{ email: "finance@example.com" }],
+            });
+            console.log(rule.data);
+        - lang: php
+          label: PHP
+          source: |
+            <?php
+            use Mailtrap\Config;
+            use Mailtrap\DTO\Request\Inbound\CreateInboundForwardRule;
+            use Mailtrap\DTO\Request\Inbound\InboundForwardRule;
+            use Mailtrap\DTO\Request\Inbound\InboundForwardRuleCondition;
+            use Mailtrap\DTO\Request\Inbound\InboundForwardRuleDestination;
+            use Mailtrap\Helper\ResponseHelper;
+            use Mailtrap\MailtrapInboundClient;
+
+            $config = new Config($_ENV['MAILTRAP_API_KEY']);
+            $inboxId = $_ENV['MAILTRAP_INBOUND_INBOX_ID'];
+            $forwardRules = (new MailtrapInboundClient($config))->forwardRules($inboxId);
+
+            $response = $forwardRules->create(new CreateInboundForwardRule(
+                name: 'Copy billing mail to finance',
+                conditions: [
+                    new InboundForwardRuleCondition(
+                        matchType: InboundForwardRule::MATCH_TYPE_SENDER,
+                        operator: InboundForwardRule::OPERATOR_ENDS_WITH,
+                        value: '@billing.example.com'
+                    ),
+                ],
+                destinations: [new InboundForwardRuleDestination('finance@example.com')],
+            ));
+            var_dump(ResponseHelper::toArray($response));
+        - lang: python
+          label: Python
+          source: |
+            import mailtrap as mt
+
+            client = mt.MailtrapClient(token="YOUR_API_KEY")
+
+            inbox_id = 42
+            rule = client.inbound_api.forward_rules.create(
+                inbox_id,
+                mt.CreateInboundForwardRuleParams(
+                    name="Copy billing mail to finance",
+                    conditions=[
+                        mt.InboundForwardRuleConditionParams(
+                            match_type="sender",
+                            operator="ends_with",
+                            value="@billing.example.com",
+                        )
+                    ],
+                    destinations=[mt.InboundForwardRuleDestination(email="finance@example.com")],
+                ),
+            )
+            print(rule)
+        - lang: ruby
+          label: Ruby
+          source: |
+            require 'mailtrap'
+
+            client = Mailtrap::Client.new(api_key: 'YOUR_API_KEY')
+            forward_rules = Mailtrap::InboundForwardRulesAPI.new(client)
+
+            inbox_id = 42
+            rule = forward_rules.create(
+              inbox_id,
+              name: 'Copy billing mail to finance',
+              conditions: [{ match_type: 'sender', operator: 'ends_with', value: '@billing.example.com' }],
+              destinations: [{ email: 'finance@example.com' }]
+            )
+            puts rule
+        - lang: csharp
+          label: .NET
+          source: |
+            using Mailtrap;
+            using Mailtrap.Inbound.Models;
+            using Mailtrap.Inbound.Requests;
+
+            using var mailtrapFactory = new MailtrapClientFactory("YOUR_API_KEY");
+            var client = mailtrapFactory.CreateClient();
+
+            var inboxId = 42;
+            var rule = await client.Inbound().Inbox(inboxId).ForwardRules()
+                .Create(new CreateInboundForwardRuleRequest
+                {
+                    Name = "Copy billing mail to finance",
+                    Conditions =
+                    [
+                        new InboundForwardRuleCondition
+                        {
+                            MatchType = ForwardRuleMatchType.Sender,
+                            Operator = ForwardRuleOperator.EndsWith,
+                            Value = "@billing.example.com"
+                        }
+                    ],
+                    Destinations = [new InboundForwardRuleDestination { Email = "finance@example.com" }]
+                });
+            Console.WriteLine(rule.Id);
+        - lang: java
+          label: Java
+          source: |
+            import io.mailtrap.config.MailtrapConfig;
+            import io.mailtrap.factory.MailtrapClientFactory;
+            import io.mailtrap.model.InboundForwardRuleMatchType;
+            import io.mailtrap.model.InboundForwardRuleOperator;
+            import io.mailtrap.model.request.inbound.CreateInboundForwardRuleRequest;
+            import io.mailtrap.model.request.inbound.InboundForwardRuleConditionInput;
+            import io.mailtrap.model.response.inbound.InboundForwardRuleDestination;
+
+            import java.util.List;
+
+            var config = new MailtrapConfig.Builder().token("YOUR_API_KEY").build();
+            var client = MailtrapClientFactory.createMailtrapClient(config);
+
+            long inboxId = 42L;
+            var rule = client.inboundApi().forwardRules().create(inboxId, CreateInboundForwardRuleRequest.builder()
+                .name("Copy billing mail to finance")
+                .conditions(List.of(InboundForwardRuleConditionInput.builder()
+                    .matchType(InboundForwardRuleMatchType.SENDER)
+                    .operator(InboundForwardRuleOperator.ENDS_WITH)
+                    .value("@billing.example.com")
+                    .build()))
+                .destinations(List.of(new InboundForwardRuleDestination("finance@example.com")))
+                .build());
+            System.out.println(rule);
       requestBody:
         required: true
         content:
@@ -2655,6 +2859,79 @@ paths:
           source: |
             curl -X GET https://mailtrap.io/api/inbound/inboxes/{inbox_id}/forward_rules/{id} \
               -H 'Authorization: Bearer YOUR_API_KEY'
+        - lang: javascript
+          label: Node.js
+          source: |
+            import { MailtrapClient } from "mailtrap";
+
+            const client = new MailtrapClient({ token: "YOUR_API_KEY" });
+
+            const inboxId = 42;
+            const ruleId = 7;
+            const rule = await client.inbound.forwardRules.get(inboxId, ruleId);
+            console.log(rule.data);
+        - lang: php
+          label: PHP
+          source: |
+            <?php
+            use Mailtrap\Config;
+            use Mailtrap\Helper\ResponseHelper;
+            use Mailtrap\MailtrapInboundClient;
+
+            $config = new Config($_ENV['MAILTRAP_API_KEY']);
+            $inboxId = $_ENV['MAILTRAP_INBOUND_INBOX_ID'];
+            $forwardRules = (new MailtrapInboundClient($config))->forwardRules($inboxId);
+
+            $ruleId = $_ENV['MAILTRAP_INBOUND_FORWARD_RULE_ID'];
+            $response = $forwardRules->getById($ruleId);
+            var_dump(ResponseHelper::toArray($response));
+        - lang: python
+          label: Python
+          source: |
+            import mailtrap as mt
+
+            client = mt.MailtrapClient(token="YOUR_API_KEY")
+
+            inbox_id = 42
+            rule_id = 7
+            rule = client.inbound_api.forward_rules.get_by_id(inbox_id, rule_id)
+            print(rule)
+        - lang: ruby
+          label: Ruby
+          source: |
+            require 'mailtrap'
+
+            client = Mailtrap::Client.new(api_key: 'YOUR_API_KEY')
+            forward_rules = Mailtrap::InboundForwardRulesAPI.new(client)
+
+            inbox_id = 42
+            rule_id = 7
+            puts forward_rules.get(inbox_id, rule_id)
+        - lang: csharp
+          label: .NET
+          source: |
+            using Mailtrap;
+
+            using var mailtrapFactory = new MailtrapClientFactory("YOUR_API_KEY");
+            var client = mailtrapFactory.CreateClient();
+
+            var inboxId = 42;
+            var ruleId = 7;
+            var rule = await client.Inbound().Inbox(inboxId).ForwardRule(ruleId).GetDetails();
+            Console.WriteLine(rule.Name);
+        - lang: java
+          label: Java
+          source: |
+            import io.mailtrap.config.MailtrapConfig;
+            import io.mailtrap.factory.MailtrapClientFactory;
+
+            var config = new MailtrapConfig.Builder().token("YOUR_API_KEY").build();
+            var client = MailtrapClientFactory.createMailtrapClient(config);
+
+            long inboxId = 42L;
+            long ruleId = 7L;
+            var rule = client.inboundApi().forwardRules().getById(inboxId, ruleId);
+            System.out.println(rule);
       responses:
         "200":
           description: Forward rule details
@@ -2720,6 +2997,122 @@ paths:
                   { "email": "accounting@example.com" }
                 ]
               }'
+        - lang: javascript
+          label: Node.js
+          source: |
+            import { MailtrapClient } from "mailtrap";
+
+            const client = new MailtrapClient({ token: "YOUR_API_KEY" });
+
+            const inboxId = 42;
+            const ruleId = 7;
+            const rule = await client.inbound.forwardRules.update(inboxId, ruleId, {
+              destinations: [
+                { email: "finance@example.com" },
+                { email: "accounting@example.com" },
+              ],
+            });
+            console.log(rule.data);
+        - lang: php
+          label: PHP
+          source: |
+            <?php
+            use Mailtrap\Config;
+            use Mailtrap\DTO\Request\Inbound\InboundForwardRuleDestination;
+            use Mailtrap\DTO\Request\Inbound\UpdateInboundForwardRule;
+            use Mailtrap\Helper\ResponseHelper;
+            use Mailtrap\MailtrapInboundClient;
+
+            $config = new Config($_ENV['MAILTRAP_API_KEY']);
+            $inboxId = $_ENV['MAILTRAP_INBOUND_INBOX_ID'];
+            $forwardRules = (new MailtrapInboundClient($config))->forwardRules($inboxId);
+
+            $ruleId = $_ENV['MAILTRAP_INBOUND_FORWARD_RULE_ID'];
+            $response = $forwardRules->update($ruleId, new UpdateInboundForwardRule(
+                destinations: [
+                    new InboundForwardRuleDestination('finance@example.com'),
+                    new InboundForwardRuleDestination('accounting@example.com'),
+                ],
+            ));
+            var_dump(ResponseHelper::toArray($response));
+        - lang: python
+          label: Python
+          source: |
+            import mailtrap as mt
+
+            client = mt.MailtrapClient(token="YOUR_API_KEY")
+
+            inbox_id = 42
+            rule_id = 7
+            rule = client.inbound_api.forward_rules.update(
+                inbox_id,
+                rule_id,
+                mt.UpdateInboundForwardRuleParams(
+                    destinations=[
+                        mt.InboundForwardRuleDestination(email="finance@example.com"),
+                        mt.InboundForwardRuleDestination(email="accounting@example.com"),
+                    ]
+                ),
+            )
+            print(rule)
+        - lang: ruby
+          label: Ruby
+          source: |
+            require 'mailtrap'
+
+            client = Mailtrap::Client.new(api_key: 'YOUR_API_KEY')
+            forward_rules = Mailtrap::InboundForwardRulesAPI.new(client)
+
+            inbox_id = 42
+            rule_id = 7
+            puts forward_rules.update(
+              inbox_id,
+              rule_id,
+              destinations: [{ email: 'finance@example.com' }, { email: 'accounting@example.com' }]
+            )
+        - lang: csharp
+          label: .NET
+          source: |
+            using Mailtrap;
+            using Mailtrap.Inbound.Models;
+            using Mailtrap.Inbound.Requests;
+
+            using var mailtrapFactory = new MailtrapClientFactory("YOUR_API_KEY");
+            var client = mailtrapFactory.CreateClient();
+
+            var inboxId = 42;
+            var ruleId = 7;
+            var rule = await client.Inbound().Inbox(inboxId).ForwardRule(ruleId)
+                .Update(new UpdateInboundForwardRuleRequest
+                {
+                    Destinations =
+                    [
+                        new InboundForwardRuleDestination { Email = "finance@example.com" },
+                        new InboundForwardRuleDestination { Email = "accounting@example.com" }
+                    ]
+                });
+            Console.WriteLine(rule.Destinations.Count);
+        - lang: java
+          label: Java
+          source: |
+            import io.mailtrap.config.MailtrapConfig;
+            import io.mailtrap.factory.MailtrapClientFactory;
+            import io.mailtrap.model.request.inbound.UpdateInboundForwardRuleRequest;
+            import io.mailtrap.model.response.inbound.InboundForwardRuleDestination;
+
+            import java.util.List;
+
+            var config = new MailtrapConfig.Builder().token("YOUR_API_KEY").build();
+            var client = MailtrapClientFactory.createMailtrapClient(config);
+
+            long inboxId = 42L;
+            long ruleId = 7L;
+            var rule = client.inboundApi().forwardRules().update(inboxId, ruleId, UpdateInboundForwardRuleRequest.builder()
+                .destinations(List.of(
+                    new InboundForwardRuleDestination("finance@example.com"),
+                    new InboundForwardRuleDestination("accounting@example.com")))
+                .build());
+            System.out.println(rule);
       requestBody:
         required: true
         content:
@@ -2777,6 +3170,74 @@ paths:
           source: |
             curl -X DELETE https://mailtrap.io/api/inbound/inboxes/{inbox_id}/forward_rules/{id} \
               -H 'Authorization: Bearer YOUR_API_KEY'
+        - lang: javascript
+          label: Node.js
+          source: |
+            import { MailtrapClient } from "mailtrap";
+
+            const client = new MailtrapClient({ token: "YOUR_API_KEY" });
+
+            const inboxId = 42;
+            const ruleId = 7;
+            await client.inbound.forwardRules.delete(inboxId, ruleId);
+        - lang: php
+          label: PHP
+          source: |
+            <?php
+            use Mailtrap\Config;
+            use Mailtrap\MailtrapInboundClient;
+
+            $config = new Config($_ENV['MAILTRAP_API_KEY']);
+            $inboxId = $_ENV['MAILTRAP_INBOUND_INBOX_ID'];
+            $forwardRules = (new MailtrapInboundClient($config))->forwardRules($inboxId);
+
+            $ruleId = $_ENV['MAILTRAP_INBOUND_FORWARD_RULE_ID'];
+            $response = $forwardRules->delete($ruleId);
+            echo $response->getStatusCode(); // 204
+        - lang: python
+          label: Python
+          source: |
+            import mailtrap as mt
+
+            client = mt.MailtrapClient(token="YOUR_API_KEY")
+
+            inbox_id = 42
+            rule_id = 7
+            client.inbound_api.forward_rules.delete(inbox_id, rule_id)
+        - lang: ruby
+          label: Ruby
+          source: |
+            require 'mailtrap'
+
+            client = Mailtrap::Client.new(api_key: 'YOUR_API_KEY')
+            forward_rules = Mailtrap::InboundForwardRulesAPI.new(client)
+
+            inbox_id = 42
+            rule_id = 7
+            forward_rules.delete(inbox_id, rule_id)
+        - lang: csharp
+          label: .NET
+          source: |
+            using Mailtrap;
+
+            using var mailtrapFactory = new MailtrapClientFactory("YOUR_API_KEY");
+            var client = mailtrapFactory.CreateClient();
+
+            var inboxId = 42;
+            var ruleId = 7;
+            await client.Inbound().Inbox(inboxId).ForwardRule(ruleId).Delete();
+        - lang: java
+          label: Java
+          source: |
+            import io.mailtrap.config.MailtrapConfig;
+            import io.mailtrap.factory.MailtrapClientFactory;
+
+            var config = new MailtrapConfig.Builder().token("YOUR_API_KEY").build();
+            var client = MailtrapClientFactory.createMailtrapClient(config);
+
+            long inboxId = 42L;
+            long ruleId = 7L;
+            client.inboundApi().forwardRules().delete(inboxId, ruleId);
       responses:
         "204":
           description: Forward rule deleted
