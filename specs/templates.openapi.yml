@@ -185,7 +185,7 @@ paths:
           label: Node.js
           source: |
             import { MailtrapClient } from "mailtrap";
-            const client = new MailtrapClient({ token: "YOUR_API_KEY" });
+            const client = new MailtrapClient({ token: "YOUR_API_KEY", accountId: YOUR_ACCOUNT_ID });
             
             async function createTemplate() {
               const template = await client.emailTemplates.create({
@@ -939,6 +939,7 @@ paths:
             var config = new MailtrapConfig.Builder().token("YOUR_API_KEY").build();
             var client = MailtrapClientFactory.createMailtrapClient(config);
             var templates = client.templatesApi().templates();
+            long accountId = YOUR_ACCOUNT_ID;
 
             var filter = TemplateListFilter.builder().perPage(50).token(1).build();
             var page = templates.getTemplates(accountId, filter);
@@ -1146,6 +1147,7 @@ paths:
             var config = new MailtrapConfig.Builder().token("YOUR_API_KEY").build();
             var client = MailtrapClientFactory.createMailtrapClient(config);
             var templates = client.templatesApi().templates();
+            long accountId = YOUR_ACCOUNT_ID;
 
             var request = CreateTemplateRequest.builder()
                 .name("Welcome Email")
@@ -1320,6 +1322,8 @@ paths:
             var config = new MailtrapConfig.Builder().token("YOUR_API_KEY").build();
             var client = MailtrapClientFactory.createMailtrapClient(config);
             var templates = client.templatesApi().templates();
+            long accountId = YOUR_ACCOUNT_ID;
+            long templateId = YOUR_TEMPLATE_ID;
 
             var template = templates.getTemplate(accountId, templateId).getData();
 
@@ -1491,6 +1495,8 @@ paths:
             var config = new MailtrapConfig.Builder().token("YOUR_API_KEY").build();
             var client = MailtrapClientFactory.createMailtrapClient(config);
             var templates = client.templatesApi().templates();
+            long accountId = YOUR_ACCOUNT_ID;
+            long templateId = YOUR_TEMPLATE_ID;
 
             var request = UpdateTemplateRequest.builder()
                 .name("Welcome Email v2")
@@ -1661,6 +1667,8 @@ paths:
             var config = new MailtrapConfig.Builder().token("YOUR_API_KEY").build();
             var client = MailtrapClientFactory.createMailtrapClient(config);
             var templates = client.templatesApi().templates();
+            long accountId = YOUR_ACCOUNT_ID;
+            long templateId = YOUR_TEMPLATE_ID;
 
             templates.deleteTemplate(accountId, templateId);
 
