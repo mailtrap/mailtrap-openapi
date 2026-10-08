@@ -56,7 +56,7 @@ paths:
             const client = new MailtrapClient({ token: "YOUR_API_KEY", accountId: YOUR_ACCOUNT_ID });
             
             async function getTemplates() {
-              const templates = await client.templates.getList();
+              const templates = await client.emailTemplates.getList();
 
               console.log("Templates:", templates);
             }
@@ -185,10 +185,10 @@ paths:
           label: Node.js
           source: |
             import { MailtrapClient } from "mailtrap";
-            const client = new MailtrapClient({ token: "YOUR_API_KEY" });
+            const client = new MailtrapClient({ token: "YOUR_API_KEY", accountId: YOUR_ACCOUNT_ID });
             
             async function createTemplate() {
-              const template = await client.templates.create({
+              const template = await client.emailTemplates.create({
                 name: "Welcome Email",
                 subject: "Welcome to {{company_name}}!",
                 category: "onboarding",
@@ -404,7 +404,7 @@ paths:
             
             async function getTemplate() {
               const templateId = 12345;
-              const template = await client.templates.get(templateId);
+              const template = await client.emailTemplates.get(templateId);
 
               console.log(`Template: ${template.name} (UUID: ${template.uuid})`);
             }
@@ -544,7 +544,7 @@ paths:
             
             async function updateTemplate() {
               const templateId = 12345;
-              const template = await client.templates.update(templateId, { name: "Updated Template", subject: "New Subject" });
+              const template = await client.emailTemplates.update(templateId, { name: "Updated Template", subject: "New Subject" });
 
               console.log(`Template updated: ${template.name} (UUID: ${template.uuid})`);
             }
@@ -717,7 +717,7 @@ paths:
             
             async function deleteTemplate() {
               const templateId = 12345;
-              await client.templates.delete(templateId);
+              await client.emailTemplates.delete(templateId);
 
               console.log("Template deleted successfully");
             }
@@ -831,7 +831,7 @@ paths:
 
         {% hint style="warning" %}
         This endpoint is experimental. Its parameters and response shape may change before it is
-        generally available, and no Mailtrap SDK covers it yet. Until then,
+        generally available.
         `GET /api/email_templates` remains the stable way to list templates.
         {% endhint %}
 
@@ -862,6 +862,122 @@ paths:
           source: |
             curl -X GET "https://mailtrap.io/api/templates?per_page=50&token=1" \
               -H "Api-Token: YOUR_API_KEY"
+        - lang: javascript
+          label: Node.js
+          source: |
+            import { MailtrapClient } from "mailtrap";
+
+            const client = new MailtrapClient({ token: "YOUR_API_KEY", accountId: YOUR_ACCOUNT_ID });
+
+            const page = await client.templates.getList({ per_page: 50, token: 1 });
+
+            console.log(`Templates: ${page.data.length}`, page.pagination);
+        - lang: php
+          label: PHP
+          source: |
+            <?php
+            use Mailtrap\Config;
+            use Mailtrap\Helper\ResponseHelper;
+            use Mailtrap\MailtrapGeneralClient;
+
+            $config = new Config($_ENV['MAILTRAP_API_KEY']);
+            $accountId = (int) $_ENV['MAILTRAP_ACCOUNT_ID'];
+            $templates = (new MailtrapGeneralClient($config))->templates($accountId);
+
+            $response = $templates->getTemplates(perPage: 50, token: 1);
+
+            var_dump(ResponseHelper::toArray($response));
+        - lang: python
+          label: Python
+          source: |
+            import mailtrap as mt
+
+            client = mt.MailtrapClient(token="YOUR_API_KEY", account_id="YOUR_ACCOUNT_ID")
+            templates = client.templates_api.templates
+
+            page = templates.get_list(mt.TemplateListParams(per_page=50, token=1))
+
+            for template in page.data:
+                print(f"{template.name}: {template.uuid}")
+            print(page.pagination)
+        - lang: ruby
+          label: Ruby
+          source: |
+            require 'mailtrap'
+
+            client = Mailtrap::Client.new(api_key: 'YOUR_API_KEY')
+            templates = Mailtrap::TemplatesAPI.new(YOUR_ACCOUNT_ID, client)
+
+            page = templates.list(per_page: 50, token: 1)
+
+            puts page.data
+            puts page.pagination
+        - lang: csharp
+          label: .NET
+          source: |
+            using Mailtrap;
+            using Mailtrap.Templates.Models;
+
+            using var mailtrapFactory = new MailtrapClientFactory("YOUR_API_KEY");
+            var client = mailtrapFactory.CreateClient();
+
+            var filter = new TemplateListFilter { PerPage = 50, Token = 1 };
+            var page = await client.Account(YOUR_ACCOUNT_ID).Templates().GetAll(filter);
+
+            foreach (var template in page.Data)
+            {
+                Console.WriteLine($"Template: {template.Name}, ID: {template.Id}");
+            }
+            Console.WriteLine($"Next page token: {page.Pagination?.NextToken}");
+        - lang: java
+          label: Java
+          source: |
+            import io.mailtrap.api.templates.TemplateListFilter;
+            import io.mailtrap.config.MailtrapConfig;
+            import io.mailtrap.factory.MailtrapClientFactory;
+
+            var config = new MailtrapConfig.Builder().token("YOUR_API_KEY").build();
+            var client = MailtrapClientFactory.createMailtrapClient(config);
+            var templates = client.templatesApi().templates();
+            long accountId = YOUR_ACCOUNT_ID;
+
+            var filter = TemplateListFilter.builder().perPage(50).token(1).build();
+            var page = templates.getTemplates(accountId, filter);
+
+            System.out.println(page.getData());
+            System.out.println(page.getPagination());
+        - lang: go
+          label: Go
+          source: |
+            package main
+
+            import (
+            	"context"
+            	"fmt"
+            	"log"
+            	"os"
+
+            	"github.com/mailtrap/mailtrap-go"
+            )
+
+            func main() {
+            	client, err := mailtrap.NewClient(os.Getenv("MAILTRAP_API_TOKEN"))
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	page, _, err := client.Templates.List(context.Background(), &mailtrap.TemplateListOptions{PerPage: 50, Token: 1})
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	for _, template := range page.Data {
+            		fmt.Printf("%d %s (%s)\n", template.ID, template.Name, template.Category)
+            	}
+            	if next := page.Pagination.NextToken; next != nil {
+            		fmt.Printf("next token: %d\n", *next)
+            	}
+            }
       responses:
         '200':
           description: OK.
@@ -902,7 +1018,7 @@ paths:
 
         {% hint style="warning" %}
         This endpoint is experimental. Its request and response shapes may change before it is
-        generally available, and no Mailtrap SDK covers it yet. Until then,
+        generally available.
         `POST /api/email_templates` remains the stable way to create a template.
         {% endhint %}
 
@@ -927,6 +1043,155 @@ paths:
                 "body_html": "<h1>Welcome {{user_name}}!</h1>",
                 "body_text": "Welcome {{user_name}}!"
               }'
+        - lang: javascript
+          label: Node.js
+          source: |
+            import { MailtrapClient } from "mailtrap";
+
+            const client = new MailtrapClient({ token: "YOUR_API_KEY", accountId: YOUR_ACCOUNT_ID });
+
+            const template = await client.templates.create({
+              name: "Welcome Email",
+              subject: "Welcome to {{company_name}}!",
+              category: "onboarding",
+              body_html: "<h1>Welcome {{user_name}}!</h1>",
+              body_text: "Welcome {{user_name}}!"
+            });
+
+            console.log(`Template created: ${template.data.uuid}`);
+        - lang: php
+          label: PHP
+          source: |
+            <?php
+            use Mailtrap\Config;
+            use Mailtrap\DTO\Request\Template\CreateTemplate;
+            use Mailtrap\Helper\ResponseHelper;
+            use Mailtrap\MailtrapGeneralClient;
+
+            $config = new Config($_ENV['MAILTRAP_API_KEY']);
+            $accountId = (int) $_ENV['MAILTRAP_ACCOUNT_ID'];
+            $templates = (new MailtrapGeneralClient($config))->templates($accountId);
+
+            $response = $templates->createTemplate(new CreateTemplate(
+                name: 'Welcome Email',
+                subject: 'Welcome to {{company_name}}!',
+                category: 'onboarding',
+                bodyHtml: '<h1>Welcome {{user_name}}!</h1>',
+                bodyText: 'Welcome {{user_name}}!',
+            ));
+
+            var_dump(ResponseHelper::toArray($response));
+        - lang: python
+          label: Python
+          source: |
+            import mailtrap as mt
+
+            client = mt.MailtrapClient(token="YOUR_API_KEY", account_id="YOUR_ACCOUNT_ID")
+            templates = client.templates_api.templates
+
+            template = templates.create(
+                mt.CreateTemplateParams(
+                    name="Welcome Email",
+                    subject="Welcome to {{company_name}}!",
+                    category="onboarding",
+                    body_html="<h1>Welcome {{user_name}}!</h1>",
+                    body_text="Welcome {{user_name}}!",
+                )
+            )
+
+            print(f"Template created: {template.uuid}")
+        - lang: ruby
+          label: Ruby
+          source: |
+            require 'mailtrap'
+
+            client = Mailtrap::Client.new(api_key: 'YOUR_API_KEY')
+            templates = Mailtrap::TemplatesAPI.new(YOUR_ACCOUNT_ID, client)
+
+            template = templates.create(
+              name: 'Welcome Email',
+              subject: 'Welcome to {{company_name}}!',
+              category: 'onboarding',
+              body_html: '<h1>Welcome {{user_name}}!</h1>',
+              body_text: 'Welcome {{user_name}}!'
+            )
+
+            puts "Template created: #{template.uuid}"
+        - lang: csharp
+          label: .NET
+          source: |
+            using Mailtrap;
+            using Mailtrap.Templates.Requests;
+
+            using var mailtrapFactory = new MailtrapClientFactory("YOUR_API_KEY");
+            var client = mailtrapFactory.CreateClient();
+
+            var request = new CreateTemplateRequest
+            {
+                Name = "Welcome Email",
+                Category = "onboarding",
+                Subject = "Welcome to {{company_name}}!",
+                BodyHtml = "<h1>Welcome {{user_name}}!</h1>",
+                BodyText = "Welcome {{user_name}}!"
+            };
+            var template = await client.Account(YOUR_ACCOUNT_ID).Templates().Create(request);
+
+            Console.WriteLine($"Template created: {template.Uuid}");
+        - lang: java
+          label: Java
+          source: |
+            import io.mailtrap.model.request.templates.CreateTemplateRequest;
+            import io.mailtrap.config.MailtrapConfig;
+            import io.mailtrap.factory.MailtrapClientFactory;
+
+            var config = new MailtrapConfig.Builder().token("YOUR_API_KEY").build();
+            var client = MailtrapClientFactory.createMailtrapClient(config);
+            var templates = client.templatesApi().templates();
+            long accountId = YOUR_ACCOUNT_ID;
+
+            var request = CreateTemplateRequest.builder()
+                .name("Welcome Email")
+                .category("onboarding")
+                .subject("Welcome to {{company_name}}!")
+                .bodyHtml("<h1>Welcome {{user_name}}!</h1>")
+                .bodyText("Welcome {{user_name}}!")
+                .build();
+            var template = templates.createTemplate(accountId, request).getData();
+
+            System.out.println(template.getUuid());
+        - lang: go
+          label: Go
+          source: |
+            package main
+
+            import (
+            	"context"
+            	"fmt"
+            	"log"
+            	"os"
+
+            	"github.com/mailtrap/mailtrap-go"
+            )
+
+            func main() {
+            	client, err := mailtrap.NewClient(os.Getenv("MAILTRAP_API_TOKEN"))
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	template, _, err := client.Templates.Create(context.Background(), &mailtrap.CreateTemplateRequest{
+            		Name:     "Welcome Email",
+            		Category: "onboarding",
+            		Subject:  "Welcome to {{company_name}}!",
+            		BodyHTML: "<h1>Welcome {{user_name}}!</h1>",
+            		BodyText: "Welcome {{user_name}}!",
+            	})
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	fmt.Printf("created template %d (uuid %s)\n", template.ID, template.UUID)
+            }
       requestBody:
         content:
           application/json:
@@ -976,7 +1241,7 @@ paths:
 
         {% hint style="warning" %}
         This endpoint is experimental. Its parameters and response shape may change before it is
-        generally available, and no Mailtrap SDK covers it yet. Until then,
+        generally available.
         `GET /api/email_templates/{email_template_id}` remains the stable way to read a template.
         {% endhint %}
       operationId: getTemplate
@@ -989,6 +1254,107 @@ paths:
           source: |
             curl -X GET "https://mailtrap.io/api/templates/{template_id}" \
               -H "Api-Token: YOUR_API_KEY"
+        - lang: javascript
+          label: Node.js
+          source: |
+            import { MailtrapClient } from "mailtrap";
+
+            const client = new MailtrapClient({ token: "YOUR_API_KEY", accountId: YOUR_ACCOUNT_ID });
+
+            const template = await client.templates.get(YOUR_TEMPLATE_ID);
+
+            console.log(`Template: ${template.data.name} (UUID: ${template.data.uuid})`);
+        - lang: php
+          label: PHP
+          source: |
+            <?php
+            use Mailtrap\Config;
+            use Mailtrap\Helper\ResponseHelper;
+            use Mailtrap\MailtrapGeneralClient;
+
+            $config = new Config($_ENV['MAILTRAP_API_KEY']);
+            $accountId = (int) $_ENV['MAILTRAP_ACCOUNT_ID'];
+            $templates = (new MailtrapGeneralClient($config))->templates($accountId);
+
+            $templateId = (int) $_ENV['MAILTRAP_TEMPLATE_ID'];
+            $response = $templates->getTemplate($templateId);
+
+            var_dump(ResponseHelper::toArray($response));
+        - lang: python
+          label: Python
+          source: |
+            import mailtrap as mt
+
+            client = mt.MailtrapClient(token="YOUR_API_KEY", account_id="YOUR_ACCOUNT_ID")
+            templates = client.templates_api.templates
+
+            template = templates.get_by_id(YOUR_TEMPLATE_ID)
+
+            print(f"Template: {template.name} (UUID: {template.uuid})")
+        - lang: ruby
+          label: Ruby
+          source: |
+            require 'mailtrap'
+
+            client = Mailtrap::Client.new(api_key: 'YOUR_API_KEY')
+            templates = Mailtrap::TemplatesAPI.new(YOUR_ACCOUNT_ID, client)
+
+            template = templates.get(YOUR_TEMPLATE_ID)
+
+            puts "Template: #{template.name} (UUID: #{template.uuid})"
+        - lang: csharp
+          label: .NET
+          source: |
+            using Mailtrap;
+
+            using var mailtrapFactory = new MailtrapClientFactory("YOUR_API_KEY");
+            var client = mailtrapFactory.CreateClient();
+
+            var template = await client.Account(YOUR_ACCOUNT_ID).Template(YOUR_TEMPLATE_ID).GetDetails();
+
+            Console.WriteLine($"Template: {template.Name} (UUID: {template.Uuid})");
+        - lang: java
+          label: Java
+          source: |
+            import io.mailtrap.config.MailtrapConfig;
+            import io.mailtrap.factory.MailtrapClientFactory;
+
+            var config = new MailtrapConfig.Builder().token("YOUR_API_KEY").build();
+            var client = MailtrapClientFactory.createMailtrapClient(config);
+            var templates = client.templatesApi().templates();
+            long accountId = YOUR_ACCOUNT_ID;
+            long templateId = YOUR_TEMPLATE_ID;
+
+            var template = templates.getTemplate(accountId, templateId).getData();
+
+            System.out.println(template.getName() + " (" + template.getUuid() + ")");
+        - lang: go
+          label: Go
+          source: |
+            package main
+
+            import (
+            	"context"
+            	"fmt"
+            	"log"
+            	"os"
+
+            	"github.com/mailtrap/mailtrap-go"
+            )
+
+            func main() {
+            	client, err := mailtrap.NewClient(os.Getenv("MAILTRAP_API_TOKEN"))
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	template, _, err := client.Templates.Get(context.Background(), 12345)
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	fmt.Printf("%s (uuid %s)\n", template.Name, template.UUID)
+            }
       responses:
         '200':
           description: OK.
@@ -1011,7 +1377,7 @@ paths:
 
         {% hint style="warning" %}
         This endpoint is experimental. Its request and response shapes may change before it is
-        generally available, and no Mailtrap SDK covers it yet. Until then,
+        generally available.
         `PATCH /api/email_templates/{email_template_id}` remains the stable way to update a
         template.
         {% endhint %}
@@ -1037,6 +1403,138 @@ paths:
                 "name": "Welcome Email v2",
                 "subject": "Welcome aboard, {{user_name}}!"
               }'
+        - lang: javascript
+          label: Node.js
+          source: |
+            import { MailtrapClient } from "mailtrap";
+
+            const client = new MailtrapClient({ token: "YOUR_API_KEY", accountId: YOUR_ACCOUNT_ID });
+
+            const template = await client.templates.update(YOUR_TEMPLATE_ID, {
+              name: "Welcome Email v2",
+              subject: "Welcome aboard, {{user_name}}!"
+            });
+
+            console.log(`Template updated: ${template.data.name}`);
+        - lang: php
+          label: PHP
+          source: |
+            <?php
+            use Mailtrap\Config;
+            use Mailtrap\DTO\Request\Template\UpdateTemplate;
+            use Mailtrap\Helper\ResponseHelper;
+            use Mailtrap\MailtrapGeneralClient;
+
+            $config = new Config($_ENV['MAILTRAP_API_KEY']);
+            $accountId = (int) $_ENV['MAILTRAP_ACCOUNT_ID'];
+            $templates = (new MailtrapGeneralClient($config))->templates($accountId);
+
+            $templateId = (int) $_ENV['MAILTRAP_TEMPLATE_ID'];
+            $response = $templates->updateTemplate($templateId, new UpdateTemplate(
+                name: 'Welcome Email v2',
+                subject: 'Welcome aboard, {{user_name}}!',
+            ));
+
+            var_dump(ResponseHelper::toArray($response));
+        - lang: python
+          label: Python
+          source: |
+            import mailtrap as mt
+
+            client = mt.MailtrapClient(token="YOUR_API_KEY", account_id="YOUR_ACCOUNT_ID")
+            templates = client.templates_api.templates
+
+            template = templates.update(
+                YOUR_TEMPLATE_ID,
+                mt.UpdateTemplateParams(
+                    name="Welcome Email v2",
+                    subject="Welcome aboard, {{user_name}}!",
+                ),
+            )
+
+            print(f"Template updated: {template.name}")
+        - lang: ruby
+          label: Ruby
+          source: |
+            require 'mailtrap'
+
+            client = Mailtrap::Client.new(api_key: 'YOUR_API_KEY')
+            templates = Mailtrap::TemplatesAPI.new(YOUR_ACCOUNT_ID, client)
+
+            template = templates.update(
+              YOUR_TEMPLATE_ID,
+              name: 'Welcome Email v2',
+              subject: 'Welcome aboard, {{user_name}}!'
+            )
+
+            puts "Template updated: #{template.name}"
+        - lang: csharp
+          label: .NET
+          source: |
+            using Mailtrap;
+            using Mailtrap.Templates.Requests;
+
+            using var mailtrapFactory = new MailtrapClientFactory("YOUR_API_KEY");
+            var client = mailtrapFactory.CreateClient();
+
+            var request = new UpdateTemplateRequest
+            {
+                Name = "Welcome Email v2",
+                Subject = "Welcome aboard, {{user_name}}!"
+            };
+            var template = await client.Account(YOUR_ACCOUNT_ID).Template(YOUR_TEMPLATE_ID).Update(request);
+
+            Console.WriteLine($"Template updated: {template.Name}");
+        - lang: java
+          label: Java
+          source: |
+            import io.mailtrap.model.request.templates.UpdateTemplateRequest;
+            import io.mailtrap.config.MailtrapConfig;
+            import io.mailtrap.factory.MailtrapClientFactory;
+
+            var config = new MailtrapConfig.Builder().token("YOUR_API_KEY").build();
+            var client = MailtrapClientFactory.createMailtrapClient(config);
+            var templates = client.templatesApi().templates();
+            long accountId = YOUR_ACCOUNT_ID;
+            long templateId = YOUR_TEMPLATE_ID;
+
+            var request = UpdateTemplateRequest.builder()
+                .name("Welcome Email v2")
+                .subject("Welcome aboard, {{user_name}}!")
+                .build();
+            var template = templates.updateTemplate(accountId, templateId, request).getData();
+
+            System.out.println(template.getName());
+        - lang: go
+          label: Go
+          source: |
+            package main
+
+            import (
+            	"context"
+            	"fmt"
+            	"log"
+            	"os"
+
+            	"github.com/mailtrap/mailtrap-go"
+            )
+
+            func main() {
+            	client, err := mailtrap.NewClient(os.Getenv("MAILTRAP_API_TOKEN"))
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	template, _, err := client.Templates.Update(context.Background(), 12345, &mailtrap.UpdateTemplateRequest{
+            		Name:    "Welcome Email v2",
+            		Subject: "Welcome aboard, {{user_name}}!",
+            	})
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	fmt.Printf("updated template %d: %s\n", template.ID, template.Name)
+            }
       requestBody:
         content:
           application/json:
@@ -1087,7 +1585,7 @@ paths:
         Deletes an email template.
 
         {% hint style="warning" %}
-        This endpoint is experimental and no Mailtrap SDK covers it yet. Until then,
+        This endpoint is experimental.
         `DELETE /api/email_templates/{email_template_id}` remains the stable way to delete a
         template.
         {% endhint %}
@@ -1101,6 +1599,106 @@ paths:
           source: |
             curl -X DELETE "https://mailtrap.io/api/templates/{template_id}" \
               -H "Api-Token: YOUR_API_KEY"
+        - lang: javascript
+          label: Node.js
+          source: |
+            import { MailtrapClient } from "mailtrap";
+
+            const client = new MailtrapClient({ token: "YOUR_API_KEY", accountId: YOUR_ACCOUNT_ID });
+
+            await client.templates.delete(YOUR_TEMPLATE_ID);
+
+            console.log("Template deleted successfully");
+        - lang: php
+          label: PHP
+          source: |
+            <?php
+            use Mailtrap\Config;
+            use Mailtrap\Helper\ResponseHelper;
+            use Mailtrap\MailtrapGeneralClient;
+
+            $config = new Config($_ENV['MAILTRAP_API_KEY']);
+            $accountId = (int) $_ENV['MAILTRAP_ACCOUNT_ID'];
+            $templates = (new MailtrapGeneralClient($config))->templates($accountId);
+
+            $templateId = (int) $_ENV['MAILTRAP_TEMPLATE_ID'];
+            $response = $templates->deleteTemplate($templateId);
+
+            var_dump($response->getStatusCode()); // 204
+        - lang: python
+          label: Python
+          source: |
+            import mailtrap as mt
+
+            client = mt.MailtrapClient(token="YOUR_API_KEY", account_id="YOUR_ACCOUNT_ID")
+            templates = client.templates_api.templates
+
+            templates.delete(YOUR_TEMPLATE_ID)
+
+            print("Template deleted successfully")
+        - lang: ruby
+          label: Ruby
+          source: |
+            require 'mailtrap'
+
+            client = Mailtrap::Client.new(api_key: 'YOUR_API_KEY')
+            templates = Mailtrap::TemplatesAPI.new(YOUR_ACCOUNT_ID, client)
+
+            templates.delete(YOUR_TEMPLATE_ID)
+
+            puts 'Template deleted successfully'
+        - lang: csharp
+          label: .NET
+          source: |
+            using Mailtrap;
+
+            using var mailtrapFactory = new MailtrapClientFactory("YOUR_API_KEY");
+            var client = mailtrapFactory.CreateClient();
+
+            await client.Account(YOUR_ACCOUNT_ID).Template(YOUR_TEMPLATE_ID).Delete();
+
+            Console.WriteLine("Template deleted successfully");
+        - lang: java
+          label: Java
+          source: |
+            import io.mailtrap.config.MailtrapConfig;
+            import io.mailtrap.factory.MailtrapClientFactory;
+
+            var config = new MailtrapConfig.Builder().token("YOUR_API_KEY").build();
+            var client = MailtrapClientFactory.createMailtrapClient(config);
+            var templates = client.templatesApi().templates();
+            long accountId = YOUR_ACCOUNT_ID;
+            long templateId = YOUR_TEMPLATE_ID;
+
+            templates.deleteTemplate(accountId, templateId);
+
+            System.out.println("Template deleted successfully");
+        - lang: go
+          label: Go
+          source: |
+            package main
+
+            import (
+            	"context"
+            	"fmt"
+            	"log"
+            	"os"
+
+            	"github.com/mailtrap/mailtrap-go"
+            )
+
+            func main() {
+            	client, err := mailtrap.NewClient(os.Getenv("MAILTRAP_API_TOKEN"))
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	if _, err := client.Templates.Delete(context.Background(), 12345); err != nil {
+            		log.Fatal(err)
+            	}
+
+            	fmt.Println("deleted template")
+            }
       responses:
         '204':
           description: No Content
