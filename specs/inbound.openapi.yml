@@ -62,12 +62,31 @@ tags:
       threads, fetch a single thread with its messages embedded, or delete a
       thread.
 
+  - name: forward-rules
+    x-page-title: Forward Rules
+    x-page-description: Automatically forward received messages
+    description: |
+      Forward rules automatically forward copies of an inbox's incoming
+      messages to other addresses. Each rule has a set of conditions and a
+      set of destinations. A rule matches a message when all of its
+      conditions match (a rule without conditions matches every message),
+      and every matching rule forwards the message. An address named by
+      several matching rules receives a single copy.
+
+      An inbox can have up to 5 rules, each with up to 5 conditions and 5
+      destinations. The outcome for each destination is reported in the
+      `forwards` field of each received message in the Messages and
+      Threads endpoints.
+
 paths:
   /api/inbound/folders:
     get:
       operationId: listInboundFolders
       summary: List folders
-      description: Returns all inbound folders in the account.
+      description: |
+        Returns the inbound folders in the account that the API token has
+        access to, oldest first. Folders the token can reach only through an
+        inbox-level permission are not included. The list is not paginated.
       tags:
         - folders
       x-codeSamples:
@@ -474,7 +493,9 @@ paths:
       operationId: deleteInboundFolder
       summary: Delete a folder
       description: |
-        Permanently delete an inbound folder along with all of its inboxes.
+        Permanently delete an inbound folder along with all of its inboxes,
+        including their `inbound_receiving` webhooks and forward rules.
+        Requires admin access to the folder.
       tags:
         - folders
       parameters:
@@ -561,7 +582,10 @@ paths:
     get:
       operationId: listInboundInboxes
       summary: List inboxes
-      description: Returns all inboxes in a folder.
+      description: |
+        Returns the inboxes in a folder that the API token has access to,
+        oldest first. The list is not paginated. Returns `404` when the token
+        has no access to the folder itself.
       tags:
         - inboxes
       parameters:
@@ -668,13 +692,17 @@ paths:
       operationId: createInboundInbox
       summary: Create an inbox
       description: |
-        Create a new inbox in a folder. By default Mailtrap generates the
-        inbox `address` automatically based on the `name`.
+        Create a new inbox in a folder. Requires admin access to the folder.
+        An account can have at most 300 inboxes.
+
+        By default Mailtrap generates the inbox `address` automatically based
+        on the `name`.
 
         To create a catch-all inbox on your own domain, pass `domain_id` — the
-        ID of a verified custom sending domain with inbound enabled. The inbox
-        then receives mail sent to any address on that domain, and its `address`
-        is returned as `*@your-domain.com`.
+        ID of one of the account's custom sending domains. The inbox then
+        receives mail sent to any address on that domain, and its `address` is
+        returned as `*@your-domain.com`. Each domain can be attached to only one
+        inbox.
       tags:
         - inboxes
       parameters:
@@ -803,7 +831,36 @@ paths:
         "404":
           $ref: "#/components/responses/NotFound"
         "422":
-          $ref: "#/components/responses/UnprocessableEntity"
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnprocessableEntity"
+              examples:
+                name_taken:
+                  summary: Name already used in the account
+                  value:
+                    errors:
+                      name:
+                        - has already been taken
+                domain_not_found:
+                  summary: Unknown or inaccessible domain_id
+                  value:
+                    errors:
+                      domain_id:
+                        - does not exist
+                domain_taken:
+                  summary: Domain already attached to another inbox
+                  value:
+                    errors:
+                      domain_id:
+                        - has already been taken
+                inbox_limit:
+                  summary: Account inbox limit reached
+                  value:
+                    errors:
+                      base:
+                        - account cannot have more than 300 inboxes
 
   /api/inbound/folders/{folder_id}/inboxes/{inbox_id}:
     get:
@@ -912,7 +969,8 @@ paths:
       operationId: updateInboundInbox
       summary: Update an inbox
       description: |
-        Rename an inbox. The generated `address` does not change.
+        Rename an inbox. Only `name` can be changed: `address` and `domain_id`
+        are fixed at creation, and a `domain_id` sent here is ignored.
       tags:
         - inboxes
       parameters:
@@ -1127,8 +1185,9 @@ paths:
       operationId: listInboundMessages
       summary: List messages
       description: |
-        Returns inbound messages received by the inbox, ordered by
-        `received_at` descending.
+        Returns inbound messages received by the inbox within your account's
+        log retention window, ordered by `received_at` descending, up to 100
+        per page.
 
         List responses use cursor pagination. When more results are available
         the response includes a `last_id`; pass it back as the `last_id` query
@@ -1142,12 +1201,12 @@ paths:
           in: query
           required: false
           description: |
-            ID of the last message from the previous page. Pass the `last_id`
-            value returned by the previous response to fetch the next page.
-            Omit on the first request.
+            Opaque cursor from the previous response's `last_id`. Pass it back
+            unchanged to fetch the next page; omit on the first request. A
+            malformed cursor returns `400`.
           schema:
             type: string
-            example: "1700000000000123"
+            example: "WzE3NzgyMzYyMDAwMDAsIjxhYmNAc2VuZGVyLmV4YW1wbGU-Il0="
       x-codeSamples:
         - lang: shell
           label: "cURL"
@@ -1262,8 +1321,25 @@ paths:
                         content_type: image/png
                         content_disposition: inline
                         content_id: "logo@example.com"
+                    forwards:
+                      - rule_id: 7
+                        rule_name: "Copy to support team"
+                        destination: "team@example.com"
+                        status: forwarded
+                        reason: null
+                        message_id: "f47ac10b-58cc-4372-a567-0e02b2c3d479"
                 total_count: 1
                 last_id: null
+        "400":
+          description: Invalid `last_id` cursor
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnprocessableEntity"
+              example:
+                errors:
+                  base:
+                    - Invalid last_id cursor
         "401":
           $ref: "#/components/responses/Unauthorized"
         "403":
@@ -1491,7 +1567,8 @@ paths:
         - **Mailtrap-hosted inbox** — always sends from the inbox's own
           generated address. Supplying `from` is rejected with `400`.
         - **Custom-domain inbox** — you supply `from`, whose address must
-          belong to the inbox's domain.
+          belong to the inbox's domain. The token needs admin access on that
+          sending domain.
       tags:
         - messages
       parameters:
@@ -1644,8 +1721,9 @@ paths:
         except `cc` defaults to the original's `To` + `Cc` — minus the inbox's
         own addresses and the sender (already in `To`).
 
-        Pass `to`, `cc`, or `bcc` to override the computed recipients. As with a
-        plain reply, the subject is prefixed with `Re:`.
+        Pass `to` or `cc` to override the computed recipients (an explicit
+        empty `cc` sends no copies), or add `bcc`. As with a plain reply, the
+        subject is prefixed with `Re:`.
       tags:
         - messages
       parameters:
@@ -1786,8 +1864,8 @@ paths:
         note and its attachments are re-attached (any attachments you supply are
         added on top).
 
-        A forward has no implicit recipient — you must address it with `to`
-        (and optionally `cc`/`bcc`). The `from` rules match those of the Reply operation:
+        A forward has no implicit recipient — address it with `to` (and/or
+        `cc`/`bcc`). The `from` rules match those of the Reply operation:
         rejected for Mailtrap-hosted inboxes, required-and-domain-bound for
         custom-domain inboxes.
       tags:
@@ -1950,10 +2028,15 @@ paths:
         included; the per-thread aggregates (message count, size, senders,
         recipients, attachments) are computed over those accessible messages.
 
-        Results use cursor pagination. When more results are available the
-        response includes a `last_id`; pass it back as the `last_id` query
-        parameter to get the next page. When `last_id` is `null` you have
-        reached the end.
+        Use `search` to narrow the list to threads whose subject, or any
+        message's `from`, `to`, `cc`, or `bcc` address, contains the given
+        text.
+
+        Results use cursor pagination, up to 100 threads per page. When more
+        results are available the response includes a `last_id`; pass it
+        back as the `last_id` query parameter (together with the same
+        `search`, if any) to get the next page. When `last_id` is `null` you
+        have reached the end.
       tags:
         - threads
       parameters:
@@ -1962,11 +2045,24 @@ paths:
           in: query
           required: false
           description: |
-            Cursor from the previous response's `last_id`. Omit on the first
-            request.
+            Opaque cursor from the previous response's `last_id`. Omit on the
+            first request. A malformed cursor returns `400`.
           schema:
             type: string
-            example: "eyJsYXN0X2FjdGl2aXR5X2F0IjoxNzQ2NzAwMjAwMDAwLCJpZCI6IjE3MDAwMDAwMDAwMDAxMjMifQ"
+            example: "WzE3NzgyNDE5MDAwMDAsIjE3MDAwMDAwMDAwMDAxMjMiXQ=="
+        - name: search
+          in: query
+          required: false
+          description: |
+            Case-insensitive substring match against the thread subject and
+            the `from`, `to`, `cc`, and `bcc` addresses of its messages.
+            Wildcard characters (`*`, `?`) are matched literally. Leading and
+            trailing whitespace is ignored; a blank value returns the
+            unfiltered list. `total_count` reflects the filtered result.
+          schema:
+            type: string
+            maxLength: 256
+            example: "acme"
       x-codeSamples:
         - lang: shell
           label: "cURL"
@@ -2055,15 +2151,15 @@ paths:
                 $ref: "#/components/schemas/ThreadsListResponse"
               example:
                 data:
-                  - id: "1700000000000123"
+                  - id: "1700000000000124"
                     subject: "Support request"
-                    message_count: 3
-                    size: 24576
-                    first_message_at: "2026-05-08T10:30:00.000Z"
-                    last_received_at: "2026-05-08T12:05:00.000Z"
+                    message_count: 2
+                    size: 16384
+                    first_message_at: "2026-04-01T09:00:00.000Z"
+                    last_received_at: "2026-05-08T10:30:00.000Z"
                     last_sent_at: "2026-05-08T11:40:00.000Z"
-                    last_activity_at: "2026-05-08T12:05:00.000Z"
-                    last_message_id: "1700000000000789"
+                    last_activity_at: "2026-05-08T11:40:00.000Z"
+                    last_message_id: "1700000000000456"
                     senders:
                       - "customer@example.com"
                       - "support-tickets-1a2b3c4d@inbound-mailtrap.io"
@@ -2081,6 +2177,31 @@ paths:
                         download_url_expires_at: "2026-05-08T13:05:00.000Z"
                 total_count: 1
                 last_id: null
+        "400":
+          description: Invalid `last_id` cursor or `search` value
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnprocessableEntity"
+              examples:
+                invalid_cursor:
+                  summary: Malformed cursor
+                  value:
+                    errors:
+                      base:
+                        - Invalid last_id cursor
+                search_too_long:
+                  summary: Search text over 256 characters
+                  value:
+                    errors:
+                      search:
+                        - is too long (maximum is 256 characters)
+                search_not_string:
+                  summary: Search passed as an array or object
+                  value:
+                    errors:
+                      search:
+                        - must be a string
         "401":
           $ref: "#/components/responses/Unauthorized"
         "403":
@@ -2100,11 +2221,17 @@ paths:
 
         - `available` — the message is within your plan's retention window. The
           full envelope, subject, RFC headers, decoded bodies, and attachment
-          download URLs are included; sent messages also carry their
-          delivery lifecycle (`delivery_status`, `delivered_at`, `bounced_at`).
-        - `placeholder` — the message is outside the retention window. Only
-          `visibility_status` and `direction` are returned; every other field is
-          omitted and no attachment download URLs are issued.
+          download URLs are included. Sent messages also carry their delivery
+          outcome in `delivery`; received messages carry their forward-rule
+          outcomes in `forwards`.
+        - `placeholder` — the message is outside the retention window, or is
+          no longer stored. Only `visibility_status` and `direction` are
+          returned; every other field is omitted and no attachment download
+          URLs are issued.
+
+        The thread-level aggregates (`message_count`, `size`, `senders`,
+        `recipients`, `attachments`, `last_message_id`) are computed over the
+        `available` messages only.
       tags:
         - threads
       parameters:
@@ -2197,15 +2324,15 @@ paths:
               schema:
                 $ref: "#/components/schemas/Thread"
               example:
-                id: "1700000000000123"
+                id: "1700000000000124"
                 subject: "Support request"
-                message_count: 3
-                size: 24576
-                first_message_at: "2026-05-08T10:30:00.000Z"
-                last_received_at: "2026-05-08T12:05:00.000Z"
+                message_count: 2
+                size: 16384
+                first_message_at: "2026-04-01T09:00:00.000Z"
+                last_received_at: "2026-05-08T10:30:00.000Z"
                 last_sent_at: "2026-05-08T11:40:00.000Z"
-                last_activity_at: "2026-05-08T12:05:00.000Z"
-                last_message_id: "1700000000000789"
+                last_activity_at: "2026-05-08T11:40:00.000Z"
+                last_message_id: "1700000000000456"
                 senders:
                   - "customer@example.com"
                   - "support-tickets-1a2b3c4d@inbound-mailtrap.io"
@@ -2222,13 +2349,17 @@ paths:
                     download_url: "https://s3.amazonaws.com/inbound-mail/att-1?X-Amz-Signature=..."
                     download_url_expires_at: "2026-05-08T13:05:00.000Z"
                 messages:
+                  - visibility_status: placeholder
+                    direction: inbound
                   - visibility_status: available
                     direction: inbound
                     id: "1700000000000123"
-                    subject: "Support request"
+                    message_group_id: null
+                    subject: "Re: Support request"
                     rfc_message_id: "<abc@customer.example>"
-                    in_reply_to: null
-                    references: []
+                    in_reply_to: "<root@customer.example>"
+                    references:
+                      - "<root@customer.example>"
                     from: "customer@example.com"
                     to:
                       - "support-tickets-1a2b3c4d@inbound-mailtrap.io"
@@ -2237,16 +2368,33 @@ paths:
                     reply_to: null
                     created_at: "2026-05-08T10:30:00.000Z"
                     email_size: 8192
-                    text_body: "I need help with my order."
-                    html_body: "<p>I need help with my order.</p>"
-                    attachments: []
+                    text_body: "I still need help with my order. Invoice attached."
+                    html_body: "<p>I still need help with my order. Invoice attached.</p>"
+                    attachments:
+                      - attachment_id: att-1
+                        filename: invoice.pdf
+                        size: 20480
+                        content_type: application/pdf
+                        content_disposition: attachment
+                        content_id: null
+                        download_url: "https://s3.amazonaws.com/inbound-mail/att-1?X-Amz-Signature=..."
+                        download_url_expires_at: "2026-05-08T13:05:00.000Z"
+                    forwards:
+                      - rule_id: 7
+                        rule_name: "Copy to support team"
+                        destination: "team@example.com"
+                        status: forwarded
+                        reason: null
+                        message_id: "f47ac10b-58cc-4372-a567-0e02b2c3d479"
                   - visibility_status: available
                     direction: outbound
                     id: "1a2b3c4d-5e6f-7a8b-9c0d-1e2f3a4b5c6d"
+                    message_group_id: "98f7e6d5-4c3b-2a1b-0c9d-8e7f6a5b4c3d"
                     subject: "Re: Support request"
                     rfc_message_id: "<def@send.example>"
                     in_reply_to: "<abc@customer.example>"
                     references:
+                      - "<root@customer.example>"
                       - "<abc@customer.example>"
                     from: "support-tickets-1a2b3c4d@inbound-mailtrap.io"
                     to:
@@ -2259,11 +2407,11 @@ paths:
                     text_body: "Happy to help — could you share your order ID?"
                     html_body: "<p>Happy to help — could you share your order ID?</p>"
                     attachments: []
-                    delivery_status: delivered
-                    delivered_at: "2026-05-08T11:40:05.000Z"
-                    bounced_at: null
-                  - visibility_status: placeholder
-                    direction: inbound
+                    delivery:
+                      to: "customer@example.com"
+                      status: delivered
+                      delivered_at: "2026-05-08T11:40:05.000Z"
+                      bounced_at: null
         "401":
           $ref: "#/components/responses/Unauthorized"
         "403":
@@ -2275,8 +2423,9 @@ paths:
       operationId: deleteInboundThread
       summary: Delete a thread
       description: |
-        Delete a thread. Inbound messages in the thread are removed; sent
-        messages are preserved.
+        Delete a thread. The thread stops appearing in list and get
+        responses immediately; the inbound messages it contains are then
+        deleted in the background. Sent messages are not deleted.
       tags:
         - threads
       parameters:
@@ -2366,6 +2515,739 @@ paths:
         "404":
           $ref: "#/components/responses/NotFound"
 
+  /api/inbound/inboxes/{inbox_id}/forward_rules:
+    get:
+      operationId: listInboundForwardRules
+      summary: List forward rules
+      description: |
+        Returns the inbox's forward rules, ordered by creation (oldest first).
+        The list is not paginated; an inbox holds at most 5 rules.
+      tags:
+        - forward-rules
+      parameters:
+        - $ref: "#/components/parameters/inbox_id"
+      x-codeSamples:
+        - lang: shell
+          label: "cURL"
+          source: |
+            curl -X GET https://mailtrap.io/api/inbound/inboxes/{inbox_id}/forward_rules \
+              -H 'Authorization: Bearer YOUR_API_KEY'
+        - lang: javascript
+          label: Node.js
+          source: |
+            import { MailtrapClient } from "mailtrap";
+
+            const client = new MailtrapClient({ token: "YOUR_API_KEY" });
+
+            const inboxId = 42;
+            const rules = await client.inbound.forwardRules.getList(inboxId);
+            console.log(rules.data);
+        - lang: php
+          label: PHP
+          source: |
+            <?php
+            use Mailtrap\Config;
+            use Mailtrap\Helper\ResponseHelper;
+            use Mailtrap\MailtrapInboundClient;
+
+            $config = new Config($_ENV['MAILTRAP_API_KEY']);
+            $inboxId = $_ENV['MAILTRAP_INBOUND_INBOX_ID'];
+            $forwardRules = (new MailtrapInboundClient($config))->forwardRules($inboxId);
+
+            $response = $forwardRules->getList();
+            var_dump(ResponseHelper::toArray($response));
+        - lang: python
+          label: Python
+          source: |
+            import mailtrap as mt
+
+            client = mt.MailtrapClient(token="YOUR_API_KEY")
+
+            inbox_id = 42
+            rules = client.inbound_api.forward_rules.get_list(inbox_id)
+            print(rules)
+        - lang: ruby
+          label: Ruby
+          source: |
+            require 'mailtrap'
+
+            client = Mailtrap::Client.new(api_key: 'YOUR_API_KEY')
+            forward_rules = Mailtrap::InboundForwardRulesAPI.new(client)
+
+            inbox_id = 42
+            puts forward_rules.list(inbox_id)
+        - lang: csharp
+          label: .NET
+          source: |
+            using Mailtrap;
+
+            using var mailtrapFactory = new MailtrapClientFactory("YOUR_API_KEY");
+            var client = mailtrapFactory.CreateClient();
+
+            var inboxId = 42;
+            var rules = await client.Inbound().Inbox(inboxId).ForwardRules().GetAll();
+            Console.WriteLine(rules.Count);
+        - lang: java
+          label: Java
+          source: |
+            import io.mailtrap.config.MailtrapConfig;
+            import io.mailtrap.factory.MailtrapClientFactory;
+
+            var config = new MailtrapConfig.Builder().token("YOUR_API_KEY").build();
+            var client = MailtrapClientFactory.createMailtrapClient(config);
+
+            long inboxId = 42L;
+            var rules = client.inboundApi().forwardRules().getList(inboxId);
+            System.out.println(rules);
+      responses:
+        "200":
+          description: List of forward rules
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ForwardRulesListResponse"
+              example:
+                data:
+                  - id: 7
+                    name: Copy billing mail to finance
+                    created_at: "2026-05-08T10:30:00.000Z"
+                    updated_at: "2026-05-08T10:30:00.000Z"
+                    conditions:
+                      - match_type: sender
+                        operator: ends_with
+                        value: "@billing.example.com"
+                        header_key: null
+                    destinations:
+                      - email: "finance@example.com"
+                  - id: 8
+                    name: Forward everything to archive
+                    created_at: "2026-05-08T11:00:00.000Z"
+                    updated_at: "2026-05-08T11:00:00.000Z"
+                    conditions: []
+                    destinations:
+                      - email: "archive@example.com"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+    post:
+      operationId: createInboundForwardRule
+      summary: Create a forward rule
+      description: |
+        Create a forward rule on the inbox. The rule, its conditions, and its
+        destinations are validated and saved together: if any part is
+        invalid, nothing is created.
+
+        An inbox can have at most 5 forward rules; each rule can have at most
+        5 conditions and 5 destinations.
+      tags:
+        - forward-rules
+      parameters:
+        - $ref: "#/components/parameters/inbox_id"
+      x-codeSamples:
+        - lang: shell
+          label: "cURL"
+          source: |
+            curl -X POST https://mailtrap.io/api/inbound/inboxes/{inbox_id}/forward_rules \
+              -H 'Authorization: Bearer YOUR_API_KEY' \
+              -H 'Content-Type: application/json' \
+              -d '{
+                "name": "Copy billing mail to finance",
+                "conditions": [
+                  { "match_type": "sender", "operator": "ends_with", "value": "@billing.example.com" }
+                ],
+                "destinations": [
+                  { "email": "finance@example.com" }
+                ]
+              }'
+        - lang: javascript
+          label: Node.js
+          source: |
+            import { MailtrapClient } from "mailtrap";
+
+            const client = new MailtrapClient({ token: "YOUR_API_KEY" });
+
+            const inboxId = 42;
+            const rule = await client.inbound.forwardRules.create(inboxId, {
+              name: "Copy billing mail to finance",
+              conditions: [
+                { match_type: "sender", operator: "ends_with", value: "@billing.example.com" },
+              ],
+              destinations: [{ email: "finance@example.com" }],
+            });
+            console.log(rule.data);
+        - lang: php
+          label: PHP
+          source: |
+            <?php
+            use Mailtrap\Config;
+            use Mailtrap\DTO\Request\Inbound\CreateInboundForwardRule;
+            use Mailtrap\DTO\Request\Inbound\InboundForwardRule;
+            use Mailtrap\DTO\Request\Inbound\InboundForwardRuleCondition;
+            use Mailtrap\DTO\Request\Inbound\InboundForwardRuleDestination;
+            use Mailtrap\Helper\ResponseHelper;
+            use Mailtrap\MailtrapInboundClient;
+
+            $config = new Config($_ENV['MAILTRAP_API_KEY']);
+            $inboxId = $_ENV['MAILTRAP_INBOUND_INBOX_ID'];
+            $forwardRules = (new MailtrapInboundClient($config))->forwardRules($inboxId);
+
+            $response = $forwardRules->create(new CreateInboundForwardRule(
+                name: 'Copy billing mail to finance',
+                conditions: [
+                    new InboundForwardRuleCondition(
+                        matchType: InboundForwardRule::MATCH_TYPE_SENDER,
+                        operator: InboundForwardRule::OPERATOR_ENDS_WITH,
+                        value: '@billing.example.com'
+                    ),
+                ],
+                destinations: [new InboundForwardRuleDestination('finance@example.com')],
+            ));
+            var_dump(ResponseHelper::toArray($response));
+        - lang: python
+          label: Python
+          source: |
+            import mailtrap as mt
+
+            client = mt.MailtrapClient(token="YOUR_API_KEY")
+
+            inbox_id = 42
+            rule = client.inbound_api.forward_rules.create(
+                inbox_id,
+                mt.CreateInboundForwardRuleParams(
+                    name="Copy billing mail to finance",
+                    conditions=[
+                        mt.InboundForwardRuleConditionParams(
+                            match_type="sender",
+                            operator="ends_with",
+                            value="@billing.example.com",
+                        )
+                    ],
+                    destinations=[mt.InboundForwardRuleDestination(email="finance@example.com")],
+                ),
+            )
+            print(rule)
+        - lang: ruby
+          label: Ruby
+          source: |
+            require 'mailtrap'
+
+            client = Mailtrap::Client.new(api_key: 'YOUR_API_KEY')
+            forward_rules = Mailtrap::InboundForwardRulesAPI.new(client)
+
+            inbox_id = 42
+            rule = forward_rules.create(
+              inbox_id,
+              name: 'Copy billing mail to finance',
+              conditions: [{ match_type: 'sender', operator: 'ends_with', value: '@billing.example.com' }],
+              destinations: [{ email: 'finance@example.com' }]
+            )
+            puts rule
+        - lang: csharp
+          label: .NET
+          source: |
+            using Mailtrap;
+            using Mailtrap.Inbound.Models;
+            using Mailtrap.Inbound.Requests;
+
+            using var mailtrapFactory = new MailtrapClientFactory("YOUR_API_KEY");
+            var client = mailtrapFactory.CreateClient();
+
+            var inboxId = 42;
+            var rule = await client.Inbound().Inbox(inboxId).ForwardRules()
+                .Create(new CreateInboundForwardRuleRequest
+                {
+                    Name = "Copy billing mail to finance",
+                    Conditions =
+                    [
+                        new InboundForwardRuleCondition
+                        {
+                            MatchType = ForwardRuleMatchType.Sender,
+                            Operator = ForwardRuleOperator.EndsWith,
+                            Value = "@billing.example.com"
+                        }
+                    ],
+                    Destinations = [new InboundForwardRuleDestination { Email = "finance@example.com" }]
+                });
+            Console.WriteLine(rule.Id);
+        - lang: java
+          label: Java
+          source: |
+            import io.mailtrap.config.MailtrapConfig;
+            import io.mailtrap.factory.MailtrapClientFactory;
+            import io.mailtrap.model.InboundForwardRuleMatchType;
+            import io.mailtrap.model.InboundForwardRuleOperator;
+            import io.mailtrap.model.request.inbound.CreateInboundForwardRuleRequest;
+            import io.mailtrap.model.request.inbound.InboundForwardRuleConditionInput;
+            import io.mailtrap.model.response.inbound.InboundForwardRuleDestination;
+
+            import java.util.List;
+
+            var config = new MailtrapConfig.Builder().token("YOUR_API_KEY").build();
+            var client = MailtrapClientFactory.createMailtrapClient(config);
+
+            long inboxId = 42L;
+            var rule = client.inboundApi().forwardRules().create(inboxId, CreateInboundForwardRuleRequest.builder()
+                .name("Copy billing mail to finance")
+                .conditions(List.of(InboundForwardRuleConditionInput.builder()
+                    .matchType(InboundForwardRuleMatchType.SENDER)
+                    .operator(InboundForwardRuleOperator.ENDS_WITH)
+                    .value("@billing.example.com")
+                    .build()))
+                .destinations(List.of(new InboundForwardRuleDestination("finance@example.com")))
+                .build());
+            System.out.println(rule);
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ForwardRuleCreateInput"
+            example:
+              name: Copy billing mail to finance
+              conditions:
+                - match_type: sender
+                  operator: ends_with
+                  value: "@billing.example.com"
+              destinations:
+                - email: "finance@example.com"
+      responses:
+        "201":
+          description: Forward rule created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ForwardRuleResponse"
+              example:
+                data:
+                  id: 7
+                  name: Copy billing mail to finance
+                  created_at: "2026-05-08T10:30:00.000Z"
+                  updated_at: "2026-05-08T10:30:00.000Z"
+                  conditions:
+                    - match_type: sender
+                      operator: ends_with
+                      value: "@billing.example.com"
+                      header_key: null
+                  destinations:
+                    - email: "finance@example.com"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "422":
+          $ref: "#/components/responses/ForwardRuleUnprocessableEntity"
+
+  /api/inbound/inboxes/{inbox_id}/forward_rules/{id}:
+    get:
+      operationId: getInboundForwardRule
+      summary: Get a forward rule
+      description: Returns a single forward rule with its conditions and destinations.
+      tags:
+        - forward-rules
+      parameters:
+        - $ref: "#/components/parameters/inbox_id"
+        - $ref: "#/components/parameters/forward_rule_id"
+      x-codeSamples:
+        - lang: shell
+          label: "cURL"
+          source: |
+            curl -X GET https://mailtrap.io/api/inbound/inboxes/{inbox_id}/forward_rules/{id} \
+              -H 'Authorization: Bearer YOUR_API_KEY'
+        - lang: javascript
+          label: Node.js
+          source: |
+            import { MailtrapClient } from "mailtrap";
+
+            const client = new MailtrapClient({ token: "YOUR_API_KEY" });
+
+            const inboxId = 42;
+            const ruleId = 7;
+            const rule = await client.inbound.forwardRules.get(inboxId, ruleId);
+            console.log(rule.data);
+        - lang: php
+          label: PHP
+          source: |
+            <?php
+            use Mailtrap\Config;
+            use Mailtrap\Helper\ResponseHelper;
+            use Mailtrap\MailtrapInboundClient;
+
+            $config = new Config($_ENV['MAILTRAP_API_KEY']);
+            $inboxId = $_ENV['MAILTRAP_INBOUND_INBOX_ID'];
+            $forwardRules = (new MailtrapInboundClient($config))->forwardRules($inboxId);
+
+            $ruleId = $_ENV['MAILTRAP_INBOUND_FORWARD_RULE_ID'];
+            $response = $forwardRules->getById($ruleId);
+            var_dump(ResponseHelper::toArray($response));
+        - lang: python
+          label: Python
+          source: |
+            import mailtrap as mt
+
+            client = mt.MailtrapClient(token="YOUR_API_KEY")
+
+            inbox_id = 42
+            rule_id = 7
+            rule = client.inbound_api.forward_rules.get_by_id(inbox_id, rule_id)
+            print(rule)
+        - lang: ruby
+          label: Ruby
+          source: |
+            require 'mailtrap'
+
+            client = Mailtrap::Client.new(api_key: 'YOUR_API_KEY')
+            forward_rules = Mailtrap::InboundForwardRulesAPI.new(client)
+
+            inbox_id = 42
+            rule_id = 7
+            puts forward_rules.get(inbox_id, rule_id)
+        - lang: csharp
+          label: .NET
+          source: |
+            using Mailtrap;
+
+            using var mailtrapFactory = new MailtrapClientFactory("YOUR_API_KEY");
+            var client = mailtrapFactory.CreateClient();
+
+            var inboxId = 42;
+            var ruleId = 7;
+            var rule = await client.Inbound().Inbox(inboxId).ForwardRule(ruleId).GetDetails();
+            Console.WriteLine(rule.Name);
+        - lang: java
+          label: Java
+          source: |
+            import io.mailtrap.config.MailtrapConfig;
+            import io.mailtrap.factory.MailtrapClientFactory;
+
+            var config = new MailtrapConfig.Builder().token("YOUR_API_KEY").build();
+            var client = MailtrapClientFactory.createMailtrapClient(config);
+
+            long inboxId = 42L;
+            long ruleId = 7L;
+            var rule = client.inboundApi().forwardRules().getById(inboxId, ruleId);
+            System.out.println(rule);
+      responses:
+        "200":
+          description: Forward rule details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ForwardRuleResponse"
+              example:
+                data:
+                  id: 9
+                  name: Escalate urgent tickets
+                  created_at: "2026-05-08T10:30:00.000Z"
+                  updated_at: "2026-05-08T12:15:00.000Z"
+                  conditions:
+                    - match_type: header
+                      operator: equal
+                      value: "high"
+                      header_key: "X-Priority-Level"
+                    - match_type: recipient
+                      operator: starts_with
+                      value: "support"
+                      header_key: null
+                  destinations:
+                    - email: "oncall@example.com"
+                    - email: "lead@example.com"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+    patch:
+      operationId: updateInboundForwardRule
+      summary: Update a forward rule
+      description: |
+        Partially update a forward rule. Only the fields present in the
+        request are changed:
+
+        - `name` renames the rule.
+        - `conditions`, when present, replaces the whole condition set. An
+          empty array removes every condition, so the rule matches all
+          messages.
+        - `destinations`, when present, replaces the whole destination set.
+
+        Omitted fields are left unchanged. The update is applied atomically:
+        if any part is invalid, the rule is left as it was.
+      tags:
+        - forward-rules
+      parameters:
+        - $ref: "#/components/parameters/inbox_id"
+        - $ref: "#/components/parameters/forward_rule_id"
+      x-codeSamples:
+        - lang: shell
+          label: "cURL"
+          source: |
+            curl -X PATCH https://mailtrap.io/api/inbound/inboxes/{inbox_id}/forward_rules/{id} \
+              -H 'Authorization: Bearer YOUR_API_KEY' \
+              -H 'Content-Type: application/json' \
+              -d '{
+                "destinations": [
+                  { "email": "finance@example.com" },
+                  { "email": "accounting@example.com" }
+                ]
+              }'
+        - lang: javascript
+          label: Node.js
+          source: |
+            import { MailtrapClient } from "mailtrap";
+
+            const client = new MailtrapClient({ token: "YOUR_API_KEY" });
+
+            const inboxId = 42;
+            const ruleId = 7;
+            const rule = await client.inbound.forwardRules.update(inboxId, ruleId, {
+              destinations: [
+                { email: "finance@example.com" },
+                { email: "accounting@example.com" },
+              ],
+            });
+            console.log(rule.data);
+        - lang: php
+          label: PHP
+          source: |
+            <?php
+            use Mailtrap\Config;
+            use Mailtrap\DTO\Request\Inbound\InboundForwardRuleDestination;
+            use Mailtrap\DTO\Request\Inbound\UpdateInboundForwardRule;
+            use Mailtrap\Helper\ResponseHelper;
+            use Mailtrap\MailtrapInboundClient;
+
+            $config = new Config($_ENV['MAILTRAP_API_KEY']);
+            $inboxId = $_ENV['MAILTRAP_INBOUND_INBOX_ID'];
+            $forwardRules = (new MailtrapInboundClient($config))->forwardRules($inboxId);
+
+            $ruleId = $_ENV['MAILTRAP_INBOUND_FORWARD_RULE_ID'];
+            $response = $forwardRules->update($ruleId, new UpdateInboundForwardRule(
+                destinations: [
+                    new InboundForwardRuleDestination('finance@example.com'),
+                    new InboundForwardRuleDestination('accounting@example.com'),
+                ],
+            ));
+            var_dump(ResponseHelper::toArray($response));
+        - lang: python
+          label: Python
+          source: |
+            import mailtrap as mt
+
+            client = mt.MailtrapClient(token="YOUR_API_KEY")
+
+            inbox_id = 42
+            rule_id = 7
+            rule = client.inbound_api.forward_rules.update(
+                inbox_id,
+                rule_id,
+                mt.UpdateInboundForwardRuleParams(
+                    destinations=[
+                        mt.InboundForwardRuleDestination(email="finance@example.com"),
+                        mt.InboundForwardRuleDestination(email="accounting@example.com"),
+                    ]
+                ),
+            )
+            print(rule)
+        - lang: ruby
+          label: Ruby
+          source: |
+            require 'mailtrap'
+
+            client = Mailtrap::Client.new(api_key: 'YOUR_API_KEY')
+            forward_rules = Mailtrap::InboundForwardRulesAPI.new(client)
+
+            inbox_id = 42
+            rule_id = 7
+            puts forward_rules.update(
+              inbox_id,
+              rule_id,
+              destinations: [{ email: 'finance@example.com' }, { email: 'accounting@example.com' }]
+            )
+        - lang: csharp
+          label: .NET
+          source: |
+            using Mailtrap;
+            using Mailtrap.Inbound.Models;
+            using Mailtrap.Inbound.Requests;
+
+            using var mailtrapFactory = new MailtrapClientFactory("YOUR_API_KEY");
+            var client = mailtrapFactory.CreateClient();
+
+            var inboxId = 42;
+            var ruleId = 7;
+            var rule = await client.Inbound().Inbox(inboxId).ForwardRule(ruleId)
+                .Update(new UpdateInboundForwardRuleRequest
+                {
+                    Destinations =
+                    [
+                        new InboundForwardRuleDestination { Email = "finance@example.com" },
+                        new InboundForwardRuleDestination { Email = "accounting@example.com" }
+                    ]
+                });
+            Console.WriteLine(rule.Destinations.Count);
+        - lang: java
+          label: Java
+          source: |
+            import io.mailtrap.config.MailtrapConfig;
+            import io.mailtrap.factory.MailtrapClientFactory;
+            import io.mailtrap.model.request.inbound.UpdateInboundForwardRuleRequest;
+            import io.mailtrap.model.response.inbound.InboundForwardRuleDestination;
+
+            import java.util.List;
+
+            var config = new MailtrapConfig.Builder().token("YOUR_API_KEY").build();
+            var client = MailtrapClientFactory.createMailtrapClient(config);
+
+            long inboxId = 42L;
+            long ruleId = 7L;
+            var rule = client.inboundApi().forwardRules().update(inboxId, ruleId, UpdateInboundForwardRuleRequest.builder()
+                .destinations(List.of(
+                    new InboundForwardRuleDestination("finance@example.com"),
+                    new InboundForwardRuleDestination("accounting@example.com")))
+                .build());
+            System.out.println(rule);
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ForwardRuleUpdateInput"
+            example:
+              destinations:
+                - email: "finance@example.com"
+                - email: "accounting@example.com"
+      responses:
+        "200":
+          description: Forward rule updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ForwardRuleResponse"
+              example:
+                data:
+                  id: 7
+                  name: Copy billing mail to finance
+                  created_at: "2026-05-08T10:30:00.000Z"
+                  updated_at: "2026-05-08T12:15:00.000Z"
+                  conditions:
+                    - match_type: sender
+                      operator: ends_with
+                      value: "@billing.example.com"
+                      header_key: null
+                  destinations:
+                    - email: "finance@example.com"
+                    - email: "accounting@example.com"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "422":
+          $ref: "#/components/responses/ForwardRuleUnprocessableEntity"
+
+    delete:
+      operationId: deleteInboundForwardRule
+      summary: Delete a forward rule
+      description: |
+        Permanently delete a forward rule along with its conditions and
+        destinations. Messages already forwarded are not affected.
+      tags:
+        - forward-rules
+      parameters:
+        - $ref: "#/components/parameters/inbox_id"
+        - $ref: "#/components/parameters/forward_rule_id"
+      x-codeSamples:
+        - lang: shell
+          label: "cURL"
+          source: |
+            curl -X DELETE https://mailtrap.io/api/inbound/inboxes/{inbox_id}/forward_rules/{id} \
+              -H 'Authorization: Bearer YOUR_API_KEY'
+        - lang: javascript
+          label: Node.js
+          source: |
+            import { MailtrapClient } from "mailtrap";
+
+            const client = new MailtrapClient({ token: "YOUR_API_KEY" });
+
+            const inboxId = 42;
+            const ruleId = 7;
+            await client.inbound.forwardRules.delete(inboxId, ruleId);
+        - lang: php
+          label: PHP
+          source: |
+            <?php
+            use Mailtrap\Config;
+            use Mailtrap\MailtrapInboundClient;
+
+            $config = new Config($_ENV['MAILTRAP_API_KEY']);
+            $inboxId = $_ENV['MAILTRAP_INBOUND_INBOX_ID'];
+            $forwardRules = (new MailtrapInboundClient($config))->forwardRules($inboxId);
+
+            $ruleId = $_ENV['MAILTRAP_INBOUND_FORWARD_RULE_ID'];
+            $response = $forwardRules->delete($ruleId);
+            echo $response->getStatusCode(); // 204
+        - lang: python
+          label: Python
+          source: |
+            import mailtrap as mt
+
+            client = mt.MailtrapClient(token="YOUR_API_KEY")
+
+            inbox_id = 42
+            rule_id = 7
+            client.inbound_api.forward_rules.delete(inbox_id, rule_id)
+        - lang: ruby
+          label: Ruby
+          source: |
+            require 'mailtrap'
+
+            client = Mailtrap::Client.new(api_key: 'YOUR_API_KEY')
+            forward_rules = Mailtrap::InboundForwardRulesAPI.new(client)
+
+            inbox_id = 42
+            rule_id = 7
+            forward_rules.delete(inbox_id, rule_id)
+        - lang: csharp
+          label: .NET
+          source: |
+            using Mailtrap;
+
+            using var mailtrapFactory = new MailtrapClientFactory("YOUR_API_KEY");
+            var client = mailtrapFactory.CreateClient();
+
+            var inboxId = 42;
+            var ruleId = 7;
+            await client.Inbound().Inbox(inboxId).ForwardRule(ruleId).Delete();
+        - lang: java
+          label: Java
+          source: |
+            import io.mailtrap.config.MailtrapConfig;
+            import io.mailtrap.factory.MailtrapClientFactory;
+
+            var config = new MailtrapConfig.Builder().token("YOUR_API_KEY").build();
+            var client = MailtrapClientFactory.createMailtrapClient(config);
+
+            long inboxId = 42L;
+            long ruleId = 7L;
+            client.inboundApi().forwardRules().delete(inboxId, ruleId);
+      responses:
+        "204":
+          description: Forward rule deleted
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
 components:
   securitySchemes:
     HeaderAuth:
@@ -2416,9 +3298,21 @@ components:
         type: string
         example: "1700000000000123"
 
+    forward_rule_id:
+      name: id
+      in: path
+      required: true
+      description: Forward rule ID
+      schema:
+        type: integer
+        example: 7
+
   schemas:
     Folder:
       type: object
+      required:
+        - id
+        - name
       properties:
         id:
           type: integer
@@ -2434,11 +3328,18 @@ components:
       properties:
         name:
           type: string
+          minLength: 1
           maxLength: 100
+          description: Folder name. Must be unique within the account.
           example: Support
 
     Inbox:
       type: object
+      required:
+        - id
+        - name
+        - address
+        - domain_id
       properties:
         id:
           type: integer
@@ -2469,7 +3370,9 @@ components:
       properties:
         name:
           type: string
+          minLength: 1
           maxLength: 100
+          description: Inbox name. Must be unique within the account, across all folders.
           example: Support tickets
 
     InboxCreateInput:
@@ -2479,15 +3382,18 @@ components:
       properties:
         name:
           type: string
+          minLength: 1
           maxLength: 100
+          description: Inbox name. Must be unique within the account, across all folders.
           example: Support tickets
         domain_id:
           type: integer
           description: |
-            Attach the inbox to a verified custom sending domain (one with
-            inbound enabled), creating a catch-all inbox that receives mail for
-            any address on that domain. Omit to create a standard Mailtrap-hosted
-            inbox. Requires the custom domains feature.
+            ID of one of the account's custom sending domains. Attaches the
+            inbox to that domain, creating a catch-all inbox that receives mail
+            for any address on it. Omit to create a standard Mailtrap-hosted
+            inbox. A domain can be attached to only one inbox; an unknown or
+            inaccessible ID returns `422` with `domain_id: ["does not exist"]`.
           example: 894
 
     Attachment:
@@ -2650,6 +3556,13 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/Attachment"
+        forwards:
+          type: array
+          description: |
+            Outcome of each forward-rule destination this message was
+            forwarded to. An empty array when no forward rule matched.
+          items:
+            $ref: "#/components/schemas/ForwardOutcome"
 
     MessageDetails:
       allOf:
@@ -2759,9 +3672,10 @@ components:
       description: |
         Options for the sent message. All fields are optional. `reply` and
         `reply_all` must carry a body (`text` and/or `html`); `forward` may omit
-        it, since the original message is quoted automatically. `forward` also
-        requires at least one recipient in `to`. Addresses use the Email
-        Sending API `{ email, name }` shape.
+        it, since the original message is quoted automatically. `forward` has
+        no default recipient, so supply at least one in `to`, `cc`, or `bcc`.
+        Addresses use the Email Sending API `{ email, name }` shape. Missing
+        bodies or recipients are rejected by the Email API with `400`.
       properties:
         from:
           allOf:
@@ -2808,7 +3722,10 @@ components:
           type: object
           additionalProperties:
             type: string
-          description: Custom headers to add to the sent message.
+          description: |
+            Custom headers to add to the sent message. `In-Reply-To` and
+            `References` are always set from the original message and cannot be
+            overridden.
           example:
             X-Custom-Header: "value"
         custom_variables:
@@ -2849,11 +3766,26 @@ components:
       type: object
       description: |
         Summary of a thread. All aggregates are computed over the messages you
-        can still access (those within the plan's retention window).
+        can still access (those within the plan's retention window). The
+        `subject` and the `*_at` timestamps describe the whole thread,
+        including messages outside the retention window.
+      required:
+        - id
+        - subject
+        - message_count
+        - size
+        - first_message_at
+        - last_received_at
+        - last_sent_at
+        - last_activity_at
+        - last_message_id
+        - senders
+        - recipients
+        - attachments
       properties:
         id:
           type: string
-          example: "1700000000000123"
+          example: "1700000000000124"
         subject:
           type:
             - string
@@ -2865,22 +3797,22 @@ components:
           description: |
             Number of accessible messages in the thread. Messages sent together
             (reply-all fan-out) count once.
-          example: 3
+          example: 2
         size:
           type: integer
           description: Combined size of the accessible messages, in bytes.
-          example: 24576
+          example: 16384
         first_message_at:
           type: string
           format: date-time
-          example: "2026-05-08T10:30:00.000Z"
+          example: "2026-04-01T09:00:00.000Z"
         last_received_at:
           type:
             - string
             - "null"
           format: date-time
           description: When the most recent inbound message arrived, if any.
-          example: "2026-05-08T12:05:00.000Z"
+          example: "2026-05-08T10:30:00.000Z"
         last_sent_at:
           type:
             - string
@@ -2892,13 +3824,13 @@ components:
           type: string
           format: date-time
           description: Timestamp of the most recent message in either direction.
-          example: "2026-05-08T12:05:00.000Z"
+          example: "2026-05-08T11:40:00.000Z"
         last_message_id:
           type:
             - string
             - "null"
           description: ID of the most recent accessible message in the thread.
-          example: "1700000000000789"
+          example: "1700000000000456"
         senders:
           type: array
           description: Distinct `from` addresses across the accessible messages.
@@ -2925,10 +3857,11 @@ components:
       type: object
       description: |
         A message in a thread. `placeholder` entries (outside the retention
-        window) carry only `visibility_status` and `direction`. `available`
-        entries add the full envelope, subject, RFC headers, bodies, and
-        attachments; `available` sent entries additionally carry the
-        delivery lifecycle.
+        window, or no longer stored) carry only `visibility_status` and
+        `direction`. `available` entries add the full envelope, subject, RFC
+        headers, bodies, and attachments. `available` sent (`outbound`)
+        entries additionally carry `delivery`; `available` received
+        (`inbound`) entries additionally carry `forwards`.
       required:
         - visibility_status
         - direction
@@ -3032,26 +3965,106 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/AttachmentWithDownloadUrl"
-        delivery_status:
-          type:
-            - string
-            - "null"
-          description: Delivery status. Sent messages only.
+        delivery:
+          $ref: "#/components/schemas/ThreadMessageDelivery"
+        forwards:
+          type: array
+          description: |
+            Outcome of each forward-rule destination this message was
+            forwarded to. Received (`inbound`) messages only; an empty array
+            when no forward rule matched.
+          items:
+            $ref: "#/components/schemas/ForwardOutcome"
+
+    ThreadMessageDelivery:
+      type: object
+      description: |
+        Delivery outcome of a sent message. Sent (`outbound`) messages only.
+      required:
+        - to
+        - status
+        - delivered_at
+        - bounced_at
+      properties:
+        to:
+          type: string
+          description: Recipient address this copy of the message was sent to.
+          example: "customer@example.com"
+        status:
+          type: string
+          enum:
+            - delivered
+            - not_delivered
+            - enqueued
+            - opted_out
+          description: |
+            Delivery status, as shown in Email Logs.
           example: delivered
         delivered_at:
           type:
             - string
             - "null"
           format: date-time
-          description: When the message was delivered. Sent messages only.
+          description: When the message was delivered. `null` if it was not.
           example: "2026-05-08T11:40:05.000Z"
         bounced_at:
           type:
             - string
             - "null"
           format: date-time
-          description: When the message hard-bounced, if it did. Sent messages only.
+          description: When the message hard-bounced. `null` if it did not.
           example: null
+
+    ForwardOutcome:
+      type: object
+      required:
+        - rule_id
+        - rule_name
+        - destination
+        - status
+        - reason
+        - message_id
+      properties:
+        rule_id:
+          type: integer
+          description: ID of the forward rule that selected this destination.
+          example: 7
+        rule_name:
+          type:
+            - string
+            - "null"
+          description: Name of the forward rule at the time of forwarding.
+          example: "Copy to support team"
+        destination:
+          type: string
+          description: Address the message was forwarded to.
+          example: "team@example.com"
+        status:
+          type: string
+          enum:
+            - forwarded
+            - rejected
+          description: |
+            `forwarded` when the copy was accepted for sending; `rejected`
+            when it could not be sent.
+          example: forwarded
+        reason:
+          type:
+            - string
+            - "null"
+          description: |
+            Why the forward was rejected, e.g. `loop_prevention` or
+            `fetch_failed`, or the rejection reason returned by the Email API.
+            `null` when `status` is `forwarded`.
+          example: null
+        message_id:
+          type:
+            - string
+            - "null"
+          description: |
+            Email API UUID of the forwarded (sent) message. `null` when
+            `status` is `rejected`.
+          example: "f47ac10b-58cc-4372-a567-0e02b2c3d479"
 
     Thread:
       allOf:
@@ -3087,6 +4100,234 @@ components:
             Cursor for the next page. `null` when there are no more results.
           example: null
 
+    ForwardRuleCondition:
+      type: object
+      description: |
+        One condition of a forward rule. A rule matches a message only when
+        all of its conditions match. Comparisons are case-insensitive and
+        ignore surrounding whitespace.
+
+        - `match_type: sender` compares against the address in the `From`
+          header.
+        - `match_type: recipient` compares against each address in the `To`
+          and `Cc` headers; `equal`, `contains`, `starts_with`, and
+          `ends_with` match when any address matches, `not_equal` when none
+          is equal to `value`.
+        - `match_type: header` compares against the values of the header
+          named by `header_key` (header names are matched case-insensitively).
+
+        `empty` and `not_empty` test whether the header is absent/blank or
+        present; they are only valid for `header` conditions and take no
+        `value`. Every other operator requires a `value`.
+      required:
+        - match_type
+        - operator
+      properties:
+        match_type:
+          type: string
+          enum:
+            - sender
+            - recipient
+            - header
+          example: sender
+        operator:
+          type: string
+          enum:
+            - equal
+            - not_equal
+            - contains
+            - starts_with
+            - ends_with
+            - empty
+            - not_empty
+          example: ends_with
+        value:
+          type:
+            - string
+            - "null"
+          description: |
+            Text to compare against. Required for every operator except
+            `empty` and `not_empty`, for which it must be omitted.
+          example: "@billing.example.com"
+        header_key:
+          type:
+            - string
+            - "null"
+          description: |
+            Name of the header to inspect. Required when `match_type` is
+            `header`; not used by other match types.
+          example: null
+
+    ForwardRuleDestination:
+      type: object
+      required:
+        - email
+      properties:
+        email:
+          type: string
+          format: email
+          description: |
+            Address that matching messages are forwarded to. Stored
+            lower-cased with surrounding whitespace removed; each address can
+            appear only once per rule (compared case-insensitively).
+          example: "finance@example.com"
+
+    ForwardRule:
+      type: object
+      required:
+        - id
+        - name
+        - created_at
+        - updated_at
+        - conditions
+        - destinations
+      properties:
+        id:
+          type: integer
+          example: 7
+        name:
+          type: string
+          example: Copy billing mail to finance
+        created_at:
+          type: string
+          format: date-time
+          example: "2026-05-08T10:30:00.000Z"
+        updated_at:
+          type: string
+          format: date-time
+          description: |
+            When the rule was last changed, including changes to its
+            conditions or destinations.
+          example: "2026-05-08T10:30:00.000Z"
+        conditions:
+          type: array
+          description: |
+            The rule's conditions, in creation order. An empty array means the
+            rule matches every message.
+          items:
+            $ref: "#/components/schemas/ForwardRuleCondition"
+        destinations:
+          type: array
+          description: |
+            Addresses that matching messages are forwarded to, in creation
+            order. A rule with no destinations forwards nothing.
+          items:
+            $ref: "#/components/schemas/ForwardRuleDestination"
+
+    ForwardRuleCreateInput:
+      type: object
+      required:
+        - name
+      properties:
+        name:
+          type: string
+          maxLength: 100
+          description: Rule name. Must be unique within the inbox.
+          example: Copy billing mail to finance
+        conditions:
+          type: array
+          maxItems: 5
+          description: |
+            Conditions that must all match. Omit or pass an empty array to
+            match every message.
+          items:
+            $ref: "#/components/schemas/ForwardRuleConditionInput"
+        destinations:
+          type: array
+          maxItems: 5
+          description: Addresses to forward matching messages to.
+          items:
+            $ref: "#/components/schemas/ForwardRuleDestination"
+
+    ForwardRuleUpdateInput:
+      type: object
+      description: |
+        All fields are optional. A present `conditions` or `destinations`
+        array replaces the whole set; an omitted one is left unchanged.
+      properties:
+        name:
+          type: string
+          maxLength: 100
+          description: Rule name. Must be unique within the inbox.
+          example: Copy billing mail to finance
+        conditions:
+          type: array
+          maxItems: 5
+          description: |
+            Replacement condition set. Pass an empty array to remove all
+            conditions, so the rule matches every message.
+          items:
+            $ref: "#/components/schemas/ForwardRuleConditionInput"
+        destinations:
+          type: array
+          maxItems: 5
+          description: |
+            Replacement destination set. Pass an empty array to remove all
+            destinations.
+          items:
+            $ref: "#/components/schemas/ForwardRuleDestination"
+
+    ForwardRuleConditionInput:
+      type: object
+      description: |
+        A condition to set on a rule. See `ForwardRuleCondition` for how
+        each `match_type` and `operator` is evaluated.
+      required:
+        - match_type
+        - operator
+      properties:
+        match_type:
+          type: string
+          enum:
+            - sender
+            - recipient
+            - header
+          example: sender
+        operator:
+          type: string
+          enum:
+            - equal
+            - not_equal
+            - contains
+            - starts_with
+            - ends_with
+            - empty
+            - not_empty
+          description: |
+            `empty` and `not_empty` are only valid when `match_type` is
+            `header`.
+          example: ends_with
+        value:
+          type: string
+          description: |
+            Required for every operator except `empty` and `not_empty`, for
+            which it must be omitted.
+          example: "@billing.example.com"
+        header_key:
+          type: string
+          description: |
+            Name of the header to inspect. Required when `match_type` is
+            `header`; omit it for other match types.
+          example: "X-Priority-Level"
+
+    ForwardRuleResponse:
+      type: object
+      required:
+        - data
+      properties:
+        data:
+          $ref: "#/components/schemas/ForwardRule"
+
+    ForwardRulesListResponse:
+      type: object
+      required:
+        - data
+      properties:
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/ForwardRule"
+
     UnprocessableEntity:
       type: object
       properties:
@@ -3120,13 +4361,24 @@ components:
             error: Incorrect API token
 
     Forbidden:
-      description: Forbidden
+      description: |
+        Forbidden. The token lacks the permission required for this operation
+        (`Access forbidden`), has no access to the account
+        (`Account access forbidden`), or Email API/SMTP is not enabled for the
+        organization (empty response body).
       content:
         application/json:
           schema:
             $ref: "#/components/schemas/ForbiddenError"
-          example:
-            errors: Access forbidden
+          examples:
+            insufficient_permissions:
+              summary: Token lacks the required permission
+              value:
+                errors: Access forbidden
+            no_account_access:
+              summary: Token has no access to the account
+              value:
+                errors: Account access forbidden
 
     NotFound:
       description: Not found
@@ -3147,6 +4399,52 @@ components:
             errors:
               name:
                 - has already been taken
+
+    ForwardRuleUnprocessableEntity:
+      description: |
+        Validation error. Errors on a condition or destination are keyed by
+        the request field and attribute (for example `conditions.operator`
+        or `destinations.email`); the per-inbox rule limit is reported under
+        `base`.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/UnprocessableEntity"
+          examples:
+            invalid_fields:
+              summary: Invalid name and condition
+              value:
+                errors:
+                  name:
+                    - has already been taken
+                  conditions.operator:
+                    - is not included in the list
+                  conditions.value:
+                    - can't be blank
+            invalid_destination:
+              summary: Invalid destination address
+              value:
+                errors:
+                  destinations.email:
+                    - is not a valid email
+            duplicate_destination:
+              summary: Same destination address given twice
+              value:
+                errors:
+                  destinations:
+                    - must be unique
+            too_many_conditions:
+              summary: More than 5 conditions
+              value:
+                errors:
+                  conditions:
+                    - must have at most 5
+            rule_limit:
+              summary: Inbox already has 5 rules
+              value:
+                errors:
+                  base:
+                    - inbox cannot have more than 5 forward rules
 
     SendMessageAccepted:
       description: |
@@ -3175,15 +4473,26 @@ components:
 
     SendMessageForbidden:
       description: |
-        The caller lacks permission on the inbox, or the inbox's monthly sending
-        limit has been reached.
+        The token lacks admin access (on the inbox for a Mailtrap-hosted inbox,
+        or on the inbox's sending domain for a custom-domain inbox), the
+        Mailtrap-hosted sending limit has been reached, or the Email API
+        rejected the message.
       content:
         application/json:
           schema:
-            $ref: "#/components/schemas/SendMessageError"
-          example:
-            errors:
-              - "Sending usage of this inbox has reached its limit."
+            oneOf:
+              - $ref: "#/components/schemas/SendMessageError"
+              - $ref: "#/components/schemas/ForbiddenError"
+          examples:
+            permission:
+              summary: Missing admin access
+              value:
+                errors: Access forbidden
+            sending_limit:
+              summary: Mailtrap-hosted sending limit reached
+              value:
+                errors:
+                  - "Sending usage of this inbox has reached its limit."
 
     PayloadTooLarge:
       description: The message exceeds the maximum allowed size.
