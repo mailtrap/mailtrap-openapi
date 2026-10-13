@@ -1,0 +1,14 @@
+specs/templates.openapi.yml
+  h_528f385bc37cd6 188,942,1150,1325-1326,1498-1499,1670-1671
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "9b086f77966f04e43cd290c1eb0aa872ea27f0b5",
+  "prompts": {},
+  "humans": {
+    "h_528f385bc37cd6": {
+      "author": "IzikAJ <izikaj@gmail.com>"
+    }
+  }
+}
