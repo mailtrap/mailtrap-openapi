@@ -1,6 +1,6 @@
 openapi: 3.1.0
 info:
-  description: Manage email marketing campaigns and retrieve their performance statistics
+  description: Manage email marketing campaigns and retrieve campaign and Email Marketing statistics
   version: 2.0.0
   title: Email Campaigns
   contact:
@@ -1849,7 +1849,7 @@ paths:
         and automations together: counts and rates for deliveries, bounces, opens, clicks, spam
         complaints, and unsubscriptions over a date range. The numbers match Email Marketing > Stats
         Overview in the app for the same filters. Email API/SMTP traffic is not included;
-        `GET /api/stats` reports it. When nothing matches the filters, every count and rate is `0`.
+        `GET /api/stats` reports it.
 
         Open, click, spam, and unsubscription rates are shares of `delivery_count`, unlike
         `GET /api/email_campaigns/{email_campaign_id}/stats`, which divides every rate by
@@ -1967,6 +1967,7 @@ paths:
         - lang: csharp
           label: .NET
           source: |
+            using System.Globalization;
             using Mailtrap;
             using Mailtrap.Marketing.Models;
 
@@ -1977,8 +1978,8 @@ paths:
             var today = DateTime.UtcNow;
             var filter = new MarketingStatsFilter
             {
-                StartDate = today.AddDays(-30).ToString("yyyy-MM-dd"),
-                EndDate = today.ToString("yyyy-MM-dd"),
+                StartDate = today.AddDays(-30).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture),
+                EndDate = today.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture),
                 Sources = { "campaigns" }
             };
 
@@ -2037,7 +2038,7 @@ paths:
             	stats, _, err := client.MarketingStats.Get(context.Background(), &mailtrap.MarketingStatsOptions{
             		StartDate: now.AddDate(0, 0, -30).Format(time.DateOnly),
             		EndDate:   now.Format(time.DateOnly),
-            		Sources:   []string{"campaigns"},
+            		Sources:   []string{mailtrap.MarketingStatsSourceCampaigns},
             	})
             	if err != nil {
             		log.Fatal(err)
@@ -2154,9 +2155,7 @@ components:
           - 3939
     sources:
       name: "sources[]"
-      description: |-
-        Email Marketing sources to include. One value narrows the results to that source; omit the
-        parameter, or pass both values, to include campaigns and automations together.
+      description: Email Marketing sources to include. If omitted, campaigns and automations are both included.
       in: query
       required: false
       schema:
