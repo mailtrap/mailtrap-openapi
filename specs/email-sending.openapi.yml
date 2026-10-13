@@ -2601,9 +2601,8 @@ paths:
             	}
 
             	stats, _, err := client.Stats.ByDate(context.Background(), &mailtrap.StatsOptions{
-            		StartDate:        "2026-01-01",
-            		EndDate:          "2026-01-31",
-            		SendingDomainIDs: []int64{1000001},
+            		StartDate: "2026-01-01",
+            		EndDate:   "2026-01-31",
             	})
             	if err != nil {
             		log.Fatal(err)

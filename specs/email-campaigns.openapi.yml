@@ -1881,7 +1881,7 @@ paths:
         - lang: shell
           label: "cURL"
           source: |
-            # The last 30 days, campaigns only.
+            # From 30 days ago through today, campaigns only.
             START_DATE=$(date -u -d '-30 days' +%F 2>/dev/null || date -u -v-30d +%F)
             END_DATE=$(date -u +%F)
 
@@ -1897,7 +1897,7 @@ paths:
 
             const client = new MailtrapClient({ token: process.env.MAILTRAP_API_KEY });
 
-            // The last 30 days, campaigns only.
+            // From 30 days ago through today, campaigns only.
             const endDate = new Date();
             const startDate = new Date(endDate.getTime() - 30 * 24 * 60 * 60 * 1000);
 
@@ -1920,7 +1920,7 @@ paths:
             $config = new Config($_ENV['MAILTRAP_API_KEY']);
             $marketingStats = (new MailtrapGeneralClient($config))->marketingStats();
 
-            // The last 30 days, campaigns only.
+            // From 30 days ago through today, campaigns only.
             $today = new DateTimeImmutable();
             $response = $marketingStats->getMarketingStats(new MarketingStatsFilter(
                 startDate: $today->modify('-30 days')->format('Y-m-d'),
@@ -1940,7 +1940,7 @@ paths:
             client = mt.MailtrapClient(token=os.environ["MAILTRAP_API_KEY"])
             marketing_stats = client.marketing_stats_api.marketing_stats
 
-            # The last 30 days, campaigns only.
+            # From 30 days ago through today, campaigns only.
             end_date = date.today()
             stats = marketing_stats.get(
                 params=mt.MarketingStatsFilterParams(
@@ -1959,7 +1959,7 @@ paths:
             client = Mailtrap::Client.new(api_key: ENV['MAILTRAP_API_KEY'])
             marketing_stats = Mailtrap::MarketingStatsAPI.new(client)
 
-            # The last 30 days, campaigns only.
+            # From 30 days ago through today, campaigns only.
             today = Date.today
             stats = marketing_stats.get(start_date: today - 30, end_date: today, sources: ['campaigns'])
 
@@ -1974,7 +1974,7 @@ paths:
             using var mailtrapFactory = new MailtrapClientFactory(Environment.GetEnvironmentVariable("MAILTRAP_API_KEY"));
             var client = mailtrapFactory.CreateClient();
 
-            // The last 30 days, campaigns only.
+            // From 30 days ago through today, campaigns only.
             var today = DateTime.UtcNow;
             var filter = new MarketingStatsFilter
             {
@@ -2002,7 +2002,7 @@ paths:
 
             var client = MailtrapClientFactory.createMailtrapClient(config);
 
-            // The last 30 days, campaigns only.
+            // From 30 days ago through today, campaigns only.
             var today = LocalDate.now();
             var stats = client.marketingApi().stats().getMarketingStats(
                 MarketingStatsFilter.builder()
@@ -2033,7 +2033,7 @@ paths:
             		log.Fatal(err)
             	}
 
-            	// The last 30 days, campaigns only.
+            	// From 30 days ago through today, campaigns only.
             	now := time.Now()
             	stats, _, err := client.MarketingStats.Get(context.Background(), &mailtrap.MarketingStatsOptions{
             		StartDate: now.AddDate(0, 0, -30).Format(time.DateOnly),
@@ -2169,7 +2169,9 @@ components:
           - campaigns
     email_service_providers:
       name: "email_service_providers[]"
-      description: Recipient email service providers to include. If omitted, all providers are included.
+      description: |-
+        Recipient email service providers to include. If omitted, all providers are included. A
+        value outside the list is not rejected; it matches nothing, so every count is `0`.
       in: query
       required: false
       schema:
@@ -2518,6 +2520,7 @@ components:
         bounce_rate:
           type: number
           format: float
+          description: Share of sent messages that bounced (0–1).
           example: 0.02
         open_count:
           type: integer
@@ -2525,6 +2528,7 @@ components:
         open_rate:
           type: number
           format: float
+          description: Share of sent messages that were opened (0–1).
           example: 0.5467
         click_count:
           type: integer
@@ -2532,6 +2536,7 @@ components:
         click_rate:
           type: number
           format: float
+          description: Share of sent messages that were clicked (0–1).
           example: 0.2067
         spam_count:
           type: integer
@@ -2539,6 +2544,7 @@ components:
         spam_rate:
           type: number
           format: float
+          description: Share of sent messages that were reported as spam (0–1).
           example: 0.0033
         unsubscription_count:
           type: integer
@@ -2546,6 +2552,7 @@ components:
         unsubscription_rate:
           type: number
           format: float
+          description: Share of sent messages that led to an unsubscription (0–1).
           example: 0.008
         sent_count:
           type: integer
@@ -2774,7 +2781,9 @@ components:
               data:
                 $ref: "#/components/schemas/MarketingStats"
     MARKETING_STATS_BAD_REQUEST:
-      description: A filter is missing or invalid; `errors` names the parameter and the rejected value.
+      description: |-
+        A date is missing or invalid, a sending domain ID is not in the account, or a source is
+        unknown; `errors` names the parameter and, where there is one, the rejected value.
       content:
         application/json:
           schema:
