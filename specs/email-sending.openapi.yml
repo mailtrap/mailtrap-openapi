@@ -47,7 +47,9 @@ tags:
   - name: stats
     x-page-title: Stats
     x-page-description: Email sending stats
-    description: Email sending aggregated stats. The same you see in your Stats dashboard.
+    description: |-
+      Email API/SMTP aggregated stats, the same you see in your Stats dashboard. Campaign and
+      automation traffic is not included; it is reported by `GET /api/marketing/stats`.
 
   - name: email-logs
     x-page-title: Email Logs
@@ -2028,7 +2030,7 @@ paths:
       parameters:
         - $ref: '#/components/parameters/StartDateQueryFilter'
         - $ref: '#/components/parameters/EndDateQueryFilter'
-        - $ref: '#/components/parameters/DomainIDsQueryFilter'
+        - $ref: '#/components/parameters/SendingDomainIDsQueryFilter'
         - $ref: '#/components/parameters/SendingStreamsQueryFilter'
         - $ref: '#/components/parameters/CategoriesQueryFilter'
         - $ref: '#/components/parameters/ESPsQueryFilter'
@@ -2167,7 +2169,7 @@ paths:
       parameters:
         - $ref: '#/components/parameters/StartDateQueryFilter'
         - $ref: '#/components/parameters/EndDateQueryFilter'
-        - $ref: '#/components/parameters/DomainIDsQueryFilter'
+        - $ref: '#/components/parameters/SendingDomainIDsQueryFilter'
         - $ref: '#/components/parameters/SendingStreamsQueryFilter'
         - $ref: '#/components/parameters/CategoriesQueryFilter'
         - $ref: '#/components/parameters/ESPsQueryFilter'
@@ -2321,7 +2323,7 @@ paths:
       parameters:
         - $ref: '#/components/parameters/StartDateQueryFilter'
         - $ref: '#/components/parameters/EndDateQueryFilter'
-        - $ref: '#/components/parameters/DomainIDsQueryFilter'
+        - $ref: '#/components/parameters/SendingDomainIDsQueryFilter'
         - $ref: '#/components/parameters/SendingStreamsQueryFilter'
         - $ref: '#/components/parameters/CategoriesQueryFilter'
         - $ref: '#/components/parameters/ESPsQueryFilter'
@@ -2467,7 +2469,7 @@ paths:
       parameters:
         - $ref: '#/components/parameters/StartDateQueryFilter'
         - $ref: '#/components/parameters/EndDateQueryFilter'
-        - $ref: '#/components/parameters/DomainIDsQueryFilter'
+        - $ref: '#/components/parameters/SendingDomainIDsQueryFilter'
         - $ref: '#/components/parameters/SendingStreamsQueryFilter'
         - $ref: '#/components/parameters/CategoriesQueryFilter'
         - $ref: '#/components/parameters/ESPsQueryFilter'
@@ -2614,7 +2616,7 @@ paths:
       parameters:
         - $ref: '#/components/parameters/StartDateQueryFilter'
         - $ref: '#/components/parameters/EndDateQueryFilter'
-        - $ref: '#/components/parameters/DomainIDsQueryFilter'
+        - $ref: '#/components/parameters/SendingDomainIDsQueryFilter'
         - $ref: '#/components/parameters/SendingStreamsQueryFilter'
         - $ref: '#/components/parameters/CategoriesQueryFilter'
         - $ref: '#/components/parameters/ESPsQueryFilter'
@@ -3987,7 +3989,7 @@ components:
         type: string
         format: date
         example: '2025-12-31'
-    DomainIDsQueryFilter:
+    SendingDomainIDsQueryFilter:
       name: 'sending_domain_ids[]'
       description: |-
         IDs of the sending domains for which to include the results, as returned by the Sending

@@ -1849,10 +1849,7 @@ paths:
         and automations together: counts and rates for deliveries, bounces, opens, clicks, spam
         complaints, and unsubscriptions over a date range. The numbers match Email Marketing > Stats
         Overview in the app for the same filters. Email API/SMTP traffic is not included;
-        `GET /api/stats` reports it.
-
-        Pass one `sources[]` value to narrow the results to campaigns or to automations. When
-        nothing matches the filters, every count and rate is `0`.
+        `GET /api/stats` reports it. When nothing matches the filters, every count and rate is `0`.
 
         Open, click, spam, and unsubscription rates are shares of `delivery_count`, unlike
         `GET /api/email_campaigns/{email_campaign_id}/stats`, which divides every rate by
@@ -1873,13 +1870,13 @@ paths:
         "200":
           $ref: "#/components/responses/MarketingStatsResponse"
         "400":
-          $ref: "#/components/responses/BAD_REQUEST"
+          $ref: "#/components/responses/MARKETING_STATS_BAD_REQUEST"
         "401":
           $ref: "#/components/responses/UNAUTHENTICATED"
         "403":
           $ref: "#/components/responses/PERMISSION_DENIED"
         "429":
-          $ref: "#/components/responses/STATS_RATE_LIMITED"
+          $ref: "#/components/responses/MARKETING_STATS_RATE_LIMITED"
       x-codeSamples:
         - lang: shell
           label: "cURL"
@@ -1889,7 +1886,7 @@ paths:
             END_DATE=$(date -u +%F)
 
             curl -G "https://mailtrap.io/api/marketing/stats" \
-              -H 'Api-Token: YOUR_API_KEY' \
+              -H "Api-Token: $MAILTRAP_API_KEY" \
               --data-urlencode "start_date=$START_DATE" \
               --data-urlencode "end_date=$END_DATE" \
               --data-urlencode 'sources[]=campaigns'
@@ -1898,7 +1895,7 @@ paths:
           source: |
             import { MailtrapClient } from "mailtrap";
 
-            const client = new MailtrapClient({ token: "YOUR_API_KEY" });
+            const client = new MailtrapClient({ token: process.env.MAILTRAP_API_KEY });
 
             // The last 30 days, campaigns only.
             const endDate = new Date();
@@ -1935,11 +1932,12 @@ paths:
         - lang: python
           label: Python
           source: |
+            import os
             from datetime import date, timedelta
 
             import mailtrap as mt
 
-            client = mt.MailtrapClient(token="YOUR_API_KEY")
+            client = mt.MailtrapClient(token=os.environ["MAILTRAP_API_KEY"])
             marketing_stats = client.marketing_stats_api.marketing_stats
 
             # The last 30 days, campaigns only.
@@ -1958,7 +1956,7 @@ paths:
           source: |
             require 'mailtrap'
 
-            client = Mailtrap::Client.new(api_key: 'YOUR_API_KEY')
+            client = Mailtrap::Client.new(api_key: ENV['MAILTRAP_API_KEY'])
             marketing_stats = Mailtrap::MarketingStatsAPI.new(client)
 
             # The last 30 days, campaigns only.
@@ -1972,7 +1970,7 @@ paths:
             using Mailtrap;
             using Mailtrap.Marketing.Models;
 
-            using var mailtrapFactory = new MailtrapClientFactory("YOUR_API_KEY");
+            using var mailtrapFactory = new MailtrapClientFactory(Environment.GetEnvironmentVariable("MAILTRAP_API_KEY"));
             var client = mailtrapFactory.CreateClient();
 
             // The last 30 days, campaigns only.
@@ -1998,7 +1996,7 @@ paths:
             import java.util.List;
 
             var config = new MailtrapConfig.Builder()
-                .token("YOUR_API_KEY")
+                .token(System.getenv("MAILTRAP_API_KEY"))
                 .build();
 
             var client = MailtrapClientFactory.createMailtrapClient(config);
@@ -2122,7 +2120,7 @@ components:
         example: "2026-05-31"
     marketing_stats_start_date:
       name: start_date
-      description: Start of the period (inclusive), in `YYYY-MM-DD` format.
+      description: Start of the aggregation window (inclusive), in `YYYY-MM-DD` format.
       in: query
       required: true
       schema:
@@ -2131,7 +2129,7 @@ components:
         example: "2026-05-01"
     marketing_stats_end_date:
       name: end_date
-      description: End of the period (inclusive), in `YYYY-MM-DD` format.
+      description: End of the aggregation window (inclusive), in `YYYY-MM-DD` format.
       in: query
       required: true
       schema:
@@ -2528,14 +2526,14 @@ components:
         open_rate:
           type: number
           format: float
-          example: 0.5655
+          example: 0.5467
         click_count:
           type: integer
           example: 310
         click_rate:
           type: number
           format: float
-          example: 0.2138
+          example: 0.2067
         spam_count:
           type: integer
           example: 5
@@ -2549,7 +2547,7 @@ components:
         unsubscription_rate:
           type: number
           format: float
-          example: 0.0083
+          example: 0.008
         sent_count:
           type: integer
           example: 1500
@@ -2558,6 +2556,20 @@ components:
       description: |-
         Aggregated Email Marketing metrics for the requested period and filters. Rates are fractions
         from 0 to 1, not rounded. Every count and rate is `0` when nothing matched.
+      required:
+        - delivery_count
+        - delivery_rate
+        - bounce_count
+        - bounce_rate
+        - open_count
+        - open_rate
+        - click_count
+        - click_rate
+        - spam_count
+        - spam_rate
+        - unsubscription_count
+        - unsubscription_rate
+        - sent_count
       properties:
         delivery_count:
           type: integer
@@ -2663,6 +2675,8 @@ components:
           example: Rate limit exceeded
     BadRequestResponse:
       type: object
+      required:
+        - errors
       properties:
         errors:
           type: string
@@ -2755,10 +2769,12 @@ components:
         application/json:
           schema:
             type: object
+            required:
+              - data
             properties:
               data:
                 $ref: "#/components/schemas/MarketingStats"
-    BAD_REQUEST:
+    MARKETING_STATS_BAD_REQUEST:
       description: A filter is missing or invalid; `errors` names the parameter and the rejected value.
       content:
         application/json:
@@ -2770,7 +2786,7 @@ components:
               value:
                 errors: "Missing required parameter: start_date"
             invalid_date:
-              summary: A date is not in YYYY-MM-DD format
+              summary: A date cannot be parsed as a calendar date
               value:
                 errors: "Invalid end_date: '2026-13-01'"
             unknown_sending_domain:
@@ -2838,7 +2854,7 @@ components:
         application/json:
           schema:
             $ref: "#/components/schemas/RateLimitedResponse"
-    STATS_RATE_LIMITED:
+    MARKETING_STATS_RATE_LIMITED:
       description: |-
         Too many requests. Two limits apply: 10 requests per minute per account on this endpoint, and
         the global 150 requests per 10 seconds per API token. The response body tells them apart,
