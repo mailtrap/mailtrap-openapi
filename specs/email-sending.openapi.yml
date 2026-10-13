@@ -3988,8 +3988,11 @@ components:
         format: date
         example: '2025-12-31'
     DomainIDsQueryFilter:
-      name: 'domain_ids[]'
-      description: 'IDs of the domains for which to include the results. If not provided, results for all domains will be included.'
+      name: 'sending_domain_ids[]'
+      description: |-
+        IDs of the sending domains for which to include the results, as returned by the Sending
+        Domains API. If not provided, results for every sending domain the API token can access are
+        included. An ID outside those returns `400`.
       in: query
       schema:
         type: array
@@ -4001,7 +4004,10 @@ components:
           - 3939
     SendingStreamsQueryFilter:
       name: 'sending_streams[]'
-      description: 'Sending streams for which to include the results. If not provided, results for all sending streams will be included.'
+      description: |-
+        Sending streams for which to include the results. If not provided, results for both streams
+        are included. Campaign and automation traffic is in neither stream; it is reported by
+        `GET /api/marketing/stats`.
       in: query
       schema:
         type: array
