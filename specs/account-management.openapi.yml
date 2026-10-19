@@ -1449,7 +1449,7 @@ paths:
     get:
       operationId: getOrganizationSubAccounts
       summary: Get organization sub accounts
-      description: Get a list of sub accounts for the specified organization. You must have sub account management permissions for this organization.
+      description: Get a list of sub accounts for the specified organization. You must have sub account management or organization access permissions for this organization.
       tags:
         - Organizations
       x-codeSamples:
@@ -1553,7 +1553,7 @@ paths:
     post:
       operationId: createOrganizationSubAccount
       summary: Create organization sub account
-      description: Create a new sub account under the specified organization. You must have sub account management permissions for this organization.
+      description: Create a new sub account under the specified organization. You must have sub account management or organization access permissions for this organization.
       tags:
         - Organizations
       x-codeSamples:
@@ -1706,9 +1706,9 @@ paths:
       operationId: deleteOrganizationSubAccount
       summary: Delete organization sub account
       description: |-
-        Delete a sub account of the specified organization. You must have sub account management
-        permissions for this organization, and the organization must have the Organization &
-        Sub-accounts feature enabled.
+        Delete a sub account of the specified organization. You must have sub account management or
+        organization access permissions for this organization, and the organization must have the
+        Organization & Sub-accounts feature enabled.
 
         The sub account and all of its data – projects, sandboxes, emails and domains – are removed
         permanently and cannot be restored. Deleting the organization's last sub account also deletes
