@@ -1,0 +1,19 @@
+specs/templates.openapi.yml
+  s_07bca0b2e8b630::t_22472563986817 59,191,407,547,720,834,865-979,1020,1045-1192,1242,1255-1353,1376,1402-1531,1582,1596-1693
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "793c2be2d6e0ddfa875c960ea81314d0ae716539",
+  "prompts": {},
+  "sessions": {
+    "s_07bca0b2e8b630": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "0a006bd6-afbf-4cb8-bd79-d3e271bf6624",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "IzikAJ <izikaj@gmail.com>"
+    }
+  }
+}

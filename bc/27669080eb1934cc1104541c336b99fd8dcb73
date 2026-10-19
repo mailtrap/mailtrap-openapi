@@ -1,0 +1,24 @@
+specs/email-campaigns.openapi.yml
+  s_a71642df98d870::t_c2827f4ba145ec 2556-2612
+  s_a71642df98d870::t_3a4d309f6cf85d 29-33
+  s_a71642df98d870::t_caf04645f9c0c6 1847,2752-2767,2769-2771,2775-2777,2781-2783
+  s_a71642df98d870::t_5569f594cad659 2123-2210
+  s_a71642df98d870::t_7e7896c1d23299 2651,2656-2669
+  s_a71642df98d870::t_6d48c10ce3bf22 1840-1846,1848-2047,2211,2613,2650,2768,2772-2774,2778-2780,2841-2877
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "bc27669080eb1934cc1104541c336b99fd8dcb73",
+  "prompts": {},
+  "sessions": {
+    "s_a71642df98d870": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "c47fafdf-32c5-48e2-97b3-9006c703a849",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Maciej Walusiak <maciej.walusiak@railsware.com>"
+    }
+  }
+}
