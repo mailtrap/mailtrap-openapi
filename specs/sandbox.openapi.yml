@@ -4688,6 +4688,14 @@ paths:
               schema:
                 type: string
                 example: Conflict
+        '429':
+          description: Mailtrap is sanitizing too many large HTML bodies at the same time. Retry after the number of seconds in `Retry-After`.
+          headers:
+            Retry-After:
+              description: The number of seconds to wait before you retry.
+              schema:
+                type: integer
+                example: 2
       x-codeSamples:
         - lang: shell
           label: 'cURL'
