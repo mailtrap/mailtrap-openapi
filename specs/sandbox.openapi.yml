@@ -4600,10 +4600,11 @@ paths:
 
         - The response is always a full HTML document with `html`, `head` and `body` elements.
         - The first element in `head` is a `<meta http-equiv="Content-Security-Policy" content="script-src 'none'">` tag.
-        - HTML entities are escaped. For example, a raw `&` in a link URL comes back as `&amp;`.
+        - Entities such as `&copy;` come back as the character (`©`). `&`, `<`, `>`, non-breaking spaces and quotes in attribute values stay escaped, so a raw `&` in a link URL comes back as `&amp;`.
         - Scripts and stylesheet links are removed. Stylesheet links to Google Fonts stay.
-        - Each `@import` rule in a `<style>` element is renamed to `@x-import`, so the browser does not load it.
-        - Links get `target="_blank"` and `rel="noopener noreferrer"`.
+        - Each `@import` rule in a `<style>` element is renamed to `@x-import`, so the browser does not load it. An `@import` from Google Fonts stays.
+        - Each `cid:` image reference with a matching attachment points to a Mailtrap attachment URL. A reference without one becomes `data:,`.
+        - Links with a URL get `target="_blank"` and `rel="noopener noreferrer"`. A link with no URL or only a `#fragment` loses its `target`.
 
         The `X-Blocked-Content` response header lists the content that Mailtrap removed or disabled.
 
@@ -4626,7 +4627,7 @@ paths:
 
                 - `script`: a script that loads an external file. Mailtrap also removes inline scripts, but does not count them.
                 - `stylesheet`: a stylesheet link.
-                - `css_import`: an `@import` rule. The count is an upper bound. It includes every disabled `@import`, also one that applies only under a media query, and one that the browser ignores.
+                - `css_import`: an `@import` rule. The count is an upper bound. It includes every disabled `@import`, also one that applies only under a media query, and one that the browser ignores. An `@import` from Google Fonts stays and is not counted.
                 - `unparseable`: Mailtrap could not sanitize the HTML and returned a placeholder page. The value is then always `unparseable=1`.
                 - `truncated`: the HTML was too complex to sanitize in full. The body holds the sanitized first part of it. The count is always `1`.
               schema:
