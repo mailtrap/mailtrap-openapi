@@ -4628,6 +4628,7 @@ paths:
                 - `stylesheet`: a stylesheet link.
                 - `css_import`: an `@import` rule. The count is an upper bound. It includes every disabled `@import`, also one that applies only under a media query, and one that the browser ignores.
                 - `unparseable`: Mailtrap could not sanitize the HTML and returned a placeholder page. The value is then always `unparseable=1`.
+                - `truncated`: the HTML was too complex to sanitize in full. The body holds the sanitized first part of it. The count is always `1`.
               schema:
                 type: string
                 example: stylesheet=1,script=1,css_import=1
