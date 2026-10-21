@@ -4410,12 +4410,12 @@ paths:
   '/api/sandboxes/{sandbox_id}/messages/{message_id}/body.htmlsource':
     get:
       summary: Get message source
-      description: Get HTML source of email.
+      description: Get the HTML body of an email as it was sent. Not applicable for plain text emails.
       tags:
         - Messages
       responses:
         '200':
-          description: Returns HTML source of a message.
+          description: Returns the HTML body as it was sent.
           content:
             text/html:
               schema:
@@ -4426,6 +4426,8 @@ paths:
                     <head>
                       <meta http-equiv="Content-Type"
                         content="text/html; charset=UTF-8">
+                      <link rel="stylesheet" href="https://example.com/styles.css">
+                      <script src="https://example.com/tracker.js"></script>
                     </head>
                     <body style="font-family:
                       sans-serif;">
@@ -4441,11 +4443,13 @@ paths:
                         <p>Now send your email using our fake SMTP server
                           and integration of your choice!
                         </p>
+                        <p><a href="https://example.com/confirm?token=abc&user=1">Confirm your email</a></p>
                         <p>Good luck! Hope it works.</p>
                       </div>
                       <!-- Example of invalid for email html/css, will be detected
                         by Mailtrap: -->
-                      <style> .main { background-color: white; } a:hover
+                      <style> @import url("https://example.com/theme.css");
+                        .main { background-color: white; } a:hover
                         { border-left-width: 1em; min-height: 2em; }
                       </style>
                     </body>
@@ -4589,22 +4593,55 @@ paths:
   '/api/sandboxes/{sandbox_id}/messages/{message_id}/body.html':
     get:
       summary: Get HTML message
-      description: Get formatted HTML email body. Not applicable for plain text emails.
+      description: |
+        Get the HTML body of an email, sanitized for preview. Not applicable for plain text emails.
+
+        The response is not the email as it was sent. Mailtrap changes it as follows:
+
+        - The response is always a full HTML document with `html`, `head` and `body` elements.
+        - The first element in `head` is a `<meta http-equiv="Content-Security-Policy" content="script-src 'none'">` tag.
+        - Entities such as `&copy;` come back as the character (`©`). `&`, `<`, `>`, non-breaking spaces and quotes in attribute values stay escaped, so a raw `&` in a link URL comes back as `&amp;`.
+        - Scripts and stylesheet links are removed. Stylesheet links to Google Fonts stay.
+        - Each `@import` rule in a `<style>` element is renamed to `@x-import`, so the browser does not load it. An `@import` from Google Fonts stays.
+        - Each `cid:` image reference with a matching attachment points to a Mailtrap attachment URL. A reference without one becomes `data:,`.
+        - Links with a URL get `target="_blank"` and `rel="noopener noreferrer"`. A link with no URL or only a `#fragment` loses its `target`.
+
+        The `X-Blocked-Content` response header lists the content that Mailtrap removed or disabled.
+
+        If Mailtrap cannot sanitize the HTML, the response is still `200`. The body is then a placeholder page, and `X-Blocked-Content` is `unparseable=1`.
+
+        {% hint style="info" %}
+        To get the email as it was sent, use `GET /api/sandboxes/{sandbox_id}/messages/{message_id}/body.htmlsource`. For example, use it to read links in your tests.
+        {% endhint %}
       tags:
         - Messages
       responses:
         '200':
-          description: Returns message body in html format.
+          description: Returns the HTML body, sanitized for preview.
+          headers:
+            X-Blocked-Content:
+              description: |
+                The content that Mailtrap removed from the HTML or disabled. The header is absent if nothing was blocked.
+
+                The value is a comma-separated list of `type=count` pairs. The order of the pairs is not fixed. The types are:
+
+                - `script`: a script that loads an external file. Mailtrap also removes inline scripts, but does not count them.
+                - `stylesheet`: a stylesheet link.
+                - `css_import`: an `@import` rule. The count is an upper bound. It includes every disabled `@import`, also one that applies only under a media query, and one that the browser ignores. An `@import` from Google Fonts stays and is not counted.
+                - `unparseable`: Mailtrap could not sanitize the HTML and returned a placeholder page. The value is then always `unparseable=1`.
+                - `truncated`: the HTML was too complex to sanitize in full. The body holds the sanitized first part of it. The count is always `1`.
+              schema:
+                type: string
+                example: stylesheet=1,script=1,css_import=1
           content:
             text/html:
               schema:
                 type: string
                 example: |
-                  <!doctype html>
-                  <html>
-                    <head>
-                      <meta http-equiv="Content-Type"
-                        content="text/html; charset=UTF-8">
+                  <!DOCTYPE html><html><head><meta http-equiv="Content-Security-Policy" content="script-src 'none'">
+                      <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
+
                     </head>
                     <body style="font-family:
                       sans-serif;">
@@ -4615,20 +4652,22 @@ paths:
                         <p>Inspect it using the tabs you see above and learn how this email
                           can be improved.
                         </p>
-                        <img alt="Inspect with Tabs" src="https://assets-examples.mailtrap.io/integration-examples/welcome.png"
-                          style="width: 100%;">
+                        <img alt="Inspect with Tabs" src="https://assets-examples.mailtrap.io/integration-examples/welcome.png" style="width: 100%;">
                         <p>Now send your email using our fake SMTP server
                           and integration of your choice!
                         </p>
+                        <p><a href="https://example.com/confirm?token=abc&amp;user=1" target="_blank" rel="noopener noreferrer">Confirm your email</a></p>
                         <p>Good luck! Hope it works.</p>
                       </div>
                       <!-- Example of invalid for email html/css, will be detected
                         by Mailtrap: -->
-                      <style> .main { background-color: white; } a:hover
+                      <style> @x-import url("https://example.com/theme.css");
+                        .main { background-color: white; } a:hover
                         { border-left-width: 1em; min-height: 2em; }
                       </style>
-                    </body>
-                  </html>
+
+
+                  </body></html>
         '401':
           $ref: '#/components/responses/UNAUTHENTICATED'
         '403':
@@ -4650,6 +4689,14 @@ paths:
               schema:
                 type: string
                 example: Conflict
+        '429':
+          description: Mailtrap is sanitizing too many large HTML bodies at the same time. Retry after the number of seconds in `Retry-After`.
+          headers:
+            Retry-After:
+              description: The number of seconds to wait before you retry.
+              schema:
+                type: integer
+                example: 2
       x-codeSamples:
         - lang: shell
           label: 'cURL'
