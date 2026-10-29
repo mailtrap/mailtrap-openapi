@@ -4364,8 +4364,8 @@ components:
       description: |
         Forbidden. The token lacks the permission required for this operation
         (`Access forbidden`), has no access to the account
-        (`Account access forbidden`), or Email Live Sending (API/SMTP) is not
-        enabled for the organization (empty response body).
+        (`Account access forbidden`), or Email Live Sending is not enabled for
+        the organization (empty response body).
       content:
         application/json:
           schema:

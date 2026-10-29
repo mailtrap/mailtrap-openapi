@@ -264,7 +264,7 @@ tags:
 ## Product Names
 
 Follow official product naming:
-- **Email Live Sending (API/SMTP)** (can shorten to "Live Sending")
+- **Email Live Sending** (can shorten to "Live Sending")
 - **Email Sandbox** (can shorten to "Sandbox")
 - **Email Marketing** (can shorten to "Marketing")
 
