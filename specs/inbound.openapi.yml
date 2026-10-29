@@ -3674,8 +3674,8 @@ components:
         `reply_all` must carry a body (`text` and/or `html`); `forward` may omit
         it, since the original message is quoted automatically. `forward` has
         no default recipient, so supply at least one in `to`, `cc`, or `bcc`.
-        Addresses use the Email Sending API `{ email, name }` shape. Missing
-        bodies or recipients are rejected by the Email API with `400`.
+        Addresses use the Email Live Sending API `{ email, name }` shape.
+        Missing bodies or recipients are rejected by the Email API with `400`.
       properties:
         from:
           allOf:
@@ -4364,8 +4364,8 @@ components:
       description: |
         Forbidden. The token lacks the permission required for this operation
         (`Access forbidden`), has no access to the account
-        (`Account access forbidden`), or Email API/SMTP is not enabled for the
-        organization (empty response body).
+        (`Account access forbidden`), or Email Live Sending (API/SMTP) is not
+        enabled for the organization (empty response body).
       content:
         application/json:
           schema:
