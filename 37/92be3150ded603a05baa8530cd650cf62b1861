@@ -1,0 +1,23 @@
+specs/inbound.openapi.yml
+  s_45464f11bf32c9::t_30c27d6bf7336d 3677-3678,4367-4368
+specs/account-management.openapi.yml
+  s_45464f11bf32c9::t_3d6dab1ee855ce 1665,1769
+CLAUDE.md
+  s_45464f11bf32c9::t_3d6dab1ee855ce 267
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "3792be3150ded603a05baa8530cd650cf62b1861",
+  "prompts": {},
+  "sessions": {
+    "s_45464f11bf32c9": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "e4ea9f9b-ffc8-47cc-a46b-80e366060ee5",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "IzikAJ <izikaj@gmail.com>"
+    }
+  }
+}
