@@ -47,7 +47,9 @@ tags:
   - name: stats
     x-page-title: Stats
     x-page-description: Email sending stats
-    description: Email sending aggregated stats. The same you see in your Stats dashboard.
+    description: |-
+      Email API/SMTP aggregated stats, the same you see in your Stats dashboard. Campaign and
+      automation traffic is not included; it is reported by `GET /api/marketing/stats`.
 
   - name: email-logs
     x-page-title: Email Logs
@@ -2028,7 +2030,7 @@ paths:
       parameters:
         - $ref: '#/components/parameters/StartDateQueryFilter'
         - $ref: '#/components/parameters/EndDateQueryFilter'
-        - $ref: '#/components/parameters/DomainIDsQueryFilter'
+        - $ref: '#/components/parameters/SendingDomainIDsQueryFilter'
         - $ref: '#/components/parameters/SendingStreamsQueryFilter'
         - $ref: '#/components/parameters/CategoriesQueryFilter'
         - $ref: '#/components/parameters/ESPsQueryFilter'
@@ -2167,7 +2169,7 @@ paths:
       parameters:
         - $ref: '#/components/parameters/StartDateQueryFilter'
         - $ref: '#/components/parameters/EndDateQueryFilter'
-        - $ref: '#/components/parameters/DomainIDsQueryFilter'
+        - $ref: '#/components/parameters/SendingDomainIDsQueryFilter'
         - $ref: '#/components/parameters/SendingStreamsQueryFilter'
         - $ref: '#/components/parameters/CategoriesQueryFilter'
         - $ref: '#/components/parameters/ESPsQueryFilter'
@@ -2181,7 +2183,7 @@ paths:
                 items:
                   type: object
                   properties:
-                    domain_id:
+                    sending_domain_id:
                       type: integer
                       format: int64
                       example: 3938
@@ -2321,7 +2323,7 @@ paths:
       parameters:
         - $ref: '#/components/parameters/StartDateQueryFilter'
         - $ref: '#/components/parameters/EndDateQueryFilter'
-        - $ref: '#/components/parameters/DomainIDsQueryFilter'
+        - $ref: '#/components/parameters/SendingDomainIDsQueryFilter'
         - $ref: '#/components/parameters/SendingStreamsQueryFilter'
         - $ref: '#/components/parameters/CategoriesQueryFilter'
         - $ref: '#/components/parameters/ESPsQueryFilter'
@@ -2467,7 +2469,7 @@ paths:
       parameters:
         - $ref: '#/components/parameters/StartDateQueryFilter'
         - $ref: '#/components/parameters/EndDateQueryFilter'
-        - $ref: '#/components/parameters/DomainIDsQueryFilter'
+        - $ref: '#/components/parameters/SendingDomainIDsQueryFilter'
         - $ref: '#/components/parameters/SendingStreamsQueryFilter'
         - $ref: '#/components/parameters/CategoriesQueryFilter'
         - $ref: '#/components/parameters/ESPsQueryFilter'
@@ -2614,7 +2616,7 @@ paths:
       parameters:
         - $ref: '#/components/parameters/StartDateQueryFilter'
         - $ref: '#/components/parameters/EndDateQueryFilter'
-        - $ref: '#/components/parameters/DomainIDsQueryFilter'
+        - $ref: '#/components/parameters/SendingDomainIDsQueryFilter'
         - $ref: '#/components/parameters/SendingStreamsQueryFilter'
         - $ref: '#/components/parameters/CategoriesQueryFilter'
         - $ref: '#/components/parameters/ESPsQueryFilter'
@@ -2657,7 +2659,7 @@ paths:
         - lang: shell
           label: 'cURL'
           source: |
-            curl -X GET -g 'https://mailtrap.io/api/email_logs?filters[sent_after]=2025-01-01T00:00:00Z&filters[sent_before]=2025-01-31T23:59:59Z&filters[to][operator]=ci_equal&filters[to][value]=recipient@example.com&filters[domain_id][operator]=equal&filters[domain_id][value][]=3938&filters[domain_id][value][]=3939' \
+            curl -X GET -g 'https://mailtrap.io/api/email_logs?filters[sent_after]=2025-01-01T00:00:00Z&filters[sent_before]=2025-01-31T23:59:59Z&filters[to][operator]=ci_equal&filters[to][value]=recipient@example.com&filters[sending_domain_id][operator]=equal&filters[sending_domain_id][value][]=3938&filters[sending_domain_id][value][]=3939' \
               -H 'Authorization: Bearer YOUR_API_KEY'
         - lang: javascript
           label: Node.js
@@ -3987,9 +3989,12 @@ components:
         type: string
         format: date
         example: '2025-12-31'
-    DomainIDsQueryFilter:
-      name: 'domain_ids[]'
-      description: 'IDs of the domains for which to include the results. If not provided, results for all domains will be included.'
+    SendingDomainIDsQueryFilter:
+      name: 'sending_domain_ids[]'
+      description: |-
+        IDs of the sending domains for which to include the results, as returned by the Sending
+        Domains API. If not provided, results for every sending domain the API token can access are
+        included. An ID outside those returns `400`.
       in: query
       schema:
         type: array
@@ -4001,7 +4006,10 @@ components:
           - 3939
     SendingStreamsQueryFilter:
       name: 'sending_streams[]'
-      description: 'Sending streams for which to include the results. If not provided, results for all sending streams will be included.'
+      description: |-
+        Sending streams for which to include the results. If not provided, results for both streams
+        are included. Campaign and automation traffic is in neither stream; it is reported by
+        `GET /api/marketing/stats`.
       in: query
       schema:
         type: array
@@ -4741,7 +4749,7 @@ components:
               sending_stream:
                 type: string
                 enum: [transactional, bulk]
-              domain_id:
+              sending_domain_id:
                 type: integer
               template_id:
                 type: integer
@@ -4772,7 +4780,7 @@ components:
             category: Welcome Email
             custom_variables: {}
             sending_stream: transactional
-            domain_id: 3938
+            sending_domain_id: 3938
             template_id: 100
             template_variables: {}
             opens_count: 2
@@ -4787,7 +4795,7 @@ components:
             category: Order Confirmation
             custom_variables: { order_id: '12345' }
             sending_stream: transactional
-            domain_id: 3938
+            sending_domain_id: 3938
             template_id: null
             template_variables: {}
             opens_count: 0
@@ -4845,7 +4853,7 @@ components:
         sending_stream:
           type: string
           enum: [transactional, bulk]
-        domain_id:
+        sending_domain_id:
           type: integer
         template_id:
           type: integer
@@ -4875,7 +4883,7 @@ components:
         category: Welcome Email
         custom_variables: {}
         sending_stream: transactional
-        domain_id: 3938
+        sending_domain_id: 3938
         template_id: 100
         template_variables: {}
         opens_count: 2
@@ -5164,8 +5172,8 @@ components:
           $ref: '#/components/schemas/FilterRecipientMx'
         category:
           $ref: '#/components/schemas/FilterCategory'
-        domain_id:
-          $ref: '#/components/schemas/FilterDomainId'
+        sending_domain_id:
+          $ref: '#/components/schemas/FilterSendingDomainId'
         sending_stream:
           $ref: '#/components/schemas/FilterSendingStream'
 
@@ -5427,7 +5435,7 @@ components:
         operator: equal
         value: Welcome Email
 
-    FilterDomainId:
+    FilterSendingDomainId:
       type: object
       required: [operator, value]
       properties:
