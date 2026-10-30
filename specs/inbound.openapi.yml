@@ -3675,7 +3675,7 @@ components:
         it, since the original message is quoted automatically. `forward` has
         no default recipient, so supply at least one in `to`, `cc`, or `bcc`.
         Addresses use the Email Live Sending API `{ email, name }` shape.
-        Missing bodies or recipients are rejected by the Email API with `400`.
+        Email Live Sending rejects missing bodies or recipients with `400`.
       properties:
         from:
           allOf:
@@ -3712,7 +3712,7 @@ components:
         category:
           type: string
           maxLength: 255
-          description: Email API category for the sent message.
+          description: Email Live Sending category for the sent message.
           example: "Support reply"
         attachments:
           type: array
@@ -3732,7 +3732,7 @@ components:
           type: object
           additionalProperties:
             type: string
-          description: Email API custom variables for the sent message.
+          description: Email Live Sending custom variables for the sent message.
           example:
             ticket_id: "12345"
 
@@ -3744,7 +3744,7 @@ components:
         message_ids:
           type: array
           description: |
-            UUIDs assigned by the Email API to the sent message, one per
+            UUIDs assigned by Email Live Sending to the sent message, one per
             recipient. These are the sent message's UUIDs — not the inbound
             message ID acted on, nor an RFC `Message-ID` header value.
           items:
@@ -3882,7 +3882,7 @@ components:
           type: string
           description: |
             For inbound messages, the Mailtrap object ID. For sent messages,
-            the Email API message UUID.
+            the Email Live Sending message UUID.
           example: "1700000000000123"
         message_group_id:
           type:
@@ -4054,7 +4054,8 @@ components:
             - "null"
           description: |
             Why the forward was rejected, e.g. `loop_prevention` or
-            `fetch_failed`, or the rejection reason returned by the Email API.
+            `fetch_failed`, or the rejection reason returned by Email Live
+            Sending.
             `null` when `status` is `forwarded`.
           example: null
         message_id:
@@ -4062,7 +4063,7 @@ components:
             - string
             - "null"
           description: |
-            Email API UUID of the forwarded (sent) message. `null` when
+            Email Live Sending UUID of the forwarded (sent) message. `null` when
             `status` is `rejected`.
           example: "f47ac10b-58cc-4372-a567-0e02b2c3d479"
 
@@ -4448,8 +4449,8 @@ components:
 
     SendMessageAccepted:
       description: |
-        Message queued for delivery. Returns the UUID(s) the Email API
-        assigned to the sent message, one per recipient.
+        Message queued for delivery. Returns the UUID(s) that Email Live
+        Sending assigned to the sent message, one per recipient.
       content:
         application/json:
           schema:
@@ -4462,7 +4463,7 @@ components:
       description: |
         The message could not be sent. Returned for an invalid sender (for
         example a `from` on a Mailtrap-hosted inbox, or one outside the inbox's
-        domain) and for validation errors rejected by the Email API.
+        domain) and for validation errors rejected by Email Live Sending.
       content:
         application/json:
           schema:
@@ -4475,7 +4476,7 @@ components:
       description: |
         The token lacks admin access (on the inbox for a Mailtrap-hosted inbox,
         or on the inbox's sending domain for a custom-domain inbox), the
-        Mailtrap-hosted sending limit has been reached, or the Email API
+        Mailtrap-hosted sending limit has been reached, or Email Live Sending
         rejected the message.
       content:
         application/json:
