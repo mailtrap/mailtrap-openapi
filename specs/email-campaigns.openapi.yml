@@ -26,6 +26,11 @@ tags:
     x-page-title: Campaign Stats
     x-page-description: Retrieve aggregated performance metrics for a campaign
     description: Retrieve campaign statistics
+
+  - name: Marketing Stats
+    x-page-title: Marketing Stats
+    x-page-description: Aggregated Email Marketing statistics across campaigns and automations
+    description: Retrieve aggregated Email Marketing statistics
 paths:
   "/api/email_campaigns":
     get:
@@ -1835,6 +1840,213 @@ paths:
             	fmt.Printf("delivered %d (%.2f), opened %d (%.2f), clicked %d (%.2f)\n",
             		stats.DeliveryCount, stats.DeliveryRate, stats.OpenCount, stats.OpenRate, stats.ClickCount, stats.ClickRate)
             }
+  "/api/marketing/stats":
+    get:
+      operationId: getMarketingStats
+      summary: Get Email Marketing stats
+      description: |-
+        Returns aggregated performance metrics for the account's Email Marketing traffic, campaigns
+        and automations together: counts and rates for deliveries, bounces, opens, clicks, spam
+        complaints, and unsubscriptions over a date range. The numbers match Email Marketing > Stats
+        Overview in the app for the same filters. Email API/SMTP traffic is not included;
+        `GET /api/stats` reports it.
+
+        Open, click, spam, and unsubscription rates are shares of `delivery_count`, unlike
+        `GET /api/email_campaigns/{email_campaign_id}/stats`, which divides every rate by
+        `sent_count`.
+
+        The API token needs at least viewer access to the account; a token with access only to
+        specific sending domains or sandboxes gets `403`. The endpoint allows 10 requests per minute
+        per account, counted separately from `GET /api/stats`.
+      tags:
+        - Marketing Stats
+      parameters:
+        - $ref: "#/components/parameters/marketing_stats_start_date"
+        - $ref: "#/components/parameters/marketing_stats_end_date"
+        - $ref: "#/components/parameters/sending_domain_ids"
+        - $ref: "#/components/parameters/sources"
+        - $ref: "#/components/parameters/email_service_providers"
+      responses:
+        "200":
+          $ref: "#/components/responses/MarketingStatsResponse"
+        "400":
+          $ref: "#/components/responses/MARKETING_STATS_BAD_REQUEST"
+        "401":
+          $ref: "#/components/responses/UNAUTHENTICATED"
+        "403":
+          $ref: "#/components/responses/PERMISSION_DENIED"
+        "429":
+          $ref: "#/components/responses/MARKETING_STATS_RATE_LIMITED"
+      x-codeSamples:
+        - lang: shell
+          label: "cURL"
+          source: |
+            # From 30 days ago through today, campaigns only.
+            START_DATE=$(date -u -d '-30 days' +%F 2>/dev/null || date -u -v-30d +%F)
+            END_DATE=$(date -u +%F)
+
+            curl -G "https://mailtrap.io/api/marketing/stats" \
+              -H "Api-Token: $MAILTRAP_API_KEY" \
+              --data-urlencode "start_date=$START_DATE" \
+              --data-urlencode "end_date=$END_DATE" \
+              --data-urlencode 'sources[]=campaigns'
+        - lang: javascript
+          label: Node.js
+          source: |
+            import { MailtrapClient } from "mailtrap";
+
+            const client = new MailtrapClient({ token: process.env.MAILTRAP_API_KEY });
+
+            // From 30 days ago through today, campaigns only.
+            const endDate = new Date();
+            const startDate = new Date(endDate.getTime() - 30 * 24 * 60 * 60 * 1000);
+
+            const stats = await client.marketingStats.get({
+              start_date: startDate.toISOString().slice(0, 10),
+              end_date: endDate.toISOString().slice(0, 10),
+              sources: ["campaigns"]
+            });
+
+            console.log(`Delivered: ${stats.data.delivery_count}, opened: ${stats.data.open_count}`);
+        - lang: php
+          label: PHP
+          source: |
+            <?php
+            use Mailtrap\Config;
+            use Mailtrap\DTO\Request\MarketingStats\MarketingStatsFilter;
+            use Mailtrap\Helper\ResponseHelper;
+            use Mailtrap\MailtrapGeneralClient;
+
+            $config = new Config($_ENV['MAILTRAP_API_KEY']);
+            $marketingStats = (new MailtrapGeneralClient($config))->marketingStats();
+
+            // From 30 days ago through today, campaigns only.
+            $today = new DateTimeImmutable();
+            $response = $marketingStats->getMarketingStats(new MarketingStatsFilter(
+                startDate: $today->modify('-30 days')->format('Y-m-d'),
+                endDate: $today->format('Y-m-d'),
+                sources: ['campaigns']
+            ));
+
+            var_dump(ResponseHelper::toArray($response));
+        - lang: python
+          label: Python
+          source: |
+            import os
+            from datetime import date, timedelta
+
+            import mailtrap as mt
+
+            client = mt.MailtrapClient(token=os.environ["MAILTRAP_API_KEY"])
+            marketing_stats = client.marketing_stats_api.marketing_stats
+
+            # From 30 days ago through today, campaigns only.
+            end_date = date.today()
+            stats = marketing_stats.get(
+                params=mt.MarketingStatsFilterParams(
+                    start_date=(end_date - timedelta(days=30)).isoformat(),
+                    end_date=end_date.isoformat(),
+                    sources=["campaigns"]
+                )
+            )
+
+            print(f"Delivered: {stats.delivery_count}, opened: {stats.open_count}")
+        - lang: ruby
+          label: Ruby
+          source: |
+            require 'mailtrap'
+
+            client = Mailtrap::Client.new(api_key: ENV['MAILTRAP_API_KEY'])
+            marketing_stats = Mailtrap::MarketingStatsAPI.new(client)
+
+            # From 30 days ago through today, campaigns only.
+            today = Date.today
+            stats = marketing_stats.get(start_date: today - 30, end_date: today, sources: ['campaigns'])
+
+            puts "Delivered: #{stats.delivery_count}, opened: #{stats.open_count}"
+        - lang: csharp
+          label: .NET
+          source: |
+            using System.Globalization;
+            using Mailtrap;
+            using Mailtrap.Marketing.Models;
+
+            using var mailtrapFactory = new MailtrapClientFactory(Environment.GetEnvironmentVariable("MAILTRAP_API_KEY"));
+            var client = mailtrapFactory.CreateClient();
+
+            // From 30 days ago through today, campaigns only.
+            var today = DateTime.UtcNow;
+            var filter = new MarketingStatsFilter
+            {
+                StartDate = today.AddDays(-30).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture),
+                EndDate = today.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture),
+                Sources = { "campaigns" }
+            };
+
+            var stats = await client.MarketingStats().GetStats(filter);
+
+            Console.WriteLine($"Delivered: {stats.DeliveryCount}, opened: {stats.OpenCount}");
+        - lang: java
+          label: Java
+          source: |
+            import io.mailtrap.api.marketingstats.MarketingStatsFilter;
+            import io.mailtrap.config.MailtrapConfig;
+            import io.mailtrap.factory.MailtrapClientFactory;
+            import io.mailtrap.model.MarketingStatsSource;
+            import java.time.LocalDate;
+            import java.util.List;
+
+            var config = new MailtrapConfig.Builder()
+                .token(System.getenv("MAILTRAP_API_KEY"))
+                .build();
+
+            var client = MailtrapClientFactory.createMailtrapClient(config);
+
+            // From 30 days ago through today, campaigns only.
+            var today = LocalDate.now();
+            var stats = client.marketingApi().stats().getMarketingStats(
+                MarketingStatsFilter.builder()
+                    .startDate(today.minusDays(30).toString())
+                    .endDate(today.toString())
+                    .sources(List.of(MarketingStatsSource.CAMPAIGNS))
+                    .build());
+
+            System.out.println(stats.getData());
+        - lang: go
+          label: Go
+          source: |
+            package main
+
+            import (
+            	"context"
+            	"fmt"
+            	"log"
+            	"os"
+            	"time"
+
+            	"github.com/mailtrap/mailtrap-go"
+            )
+
+            func main() {
+            	client, err := mailtrap.NewClient(os.Getenv("MAILTRAP_API_TOKEN"))
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	// From 30 days ago through today, campaigns only.
+            	now := time.Now()
+            	stats, _, err := client.MarketingStats.Get(context.Background(), &mailtrap.MarketingStatsOptions{
+            		StartDate: now.AddDate(0, 0, -30).Format(time.DateOnly),
+            		EndDate:   now.Format(time.DateOnly),
+            		Sources:   []string{mailtrap.MarketingStatsSourceCampaigns},
+            	})
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	fmt.Printf("delivered %d (%.2f), opened %d (%.2f), clicked %d (%.2f)\n",
+            		stats.DeliveryCount, stats.DeliveryRate, stats.OpenCount, stats.OpenRate, stats.ClickCount, stats.ClickRate)
+            }
 components:
   securitySchemes:
     HeaderAuth:
@@ -1907,6 +2119,95 @@ components:
         type: string
         format: date
         example: "2026-05-31"
+    marketing_stats_start_date:
+      name: start_date
+      description: Start of the aggregation window (inclusive), in `YYYY-MM-DD` format.
+      in: query
+      required: true
+      schema:
+        type: string
+        format: date
+        example: "2026-05-01"
+    marketing_stats_end_date:
+      name: end_date
+      description: End of the aggregation window (inclusive), in `YYYY-MM-DD` format.
+      in: query
+      required: true
+      schema:
+        type: string
+        format: date
+        example: "2026-05-31"
+    sending_domain_ids:
+      name: "sending_domain_ids[]"
+      description: |-
+        IDs of the sending domains to include, as returned by the Sending Domains API. If omitted,
+        every sending domain of the account is included. An ID that is not a sending domain of the
+        account returns `400`.
+      in: query
+      required: false
+      schema:
+        type: array
+        items:
+          type: integer
+          format: int64
+        example:
+          - 3938
+          - 3939
+    sources:
+      name: "sources[]"
+      description: Email Marketing sources to include. If omitted, campaigns and automations are both included.
+      in: query
+      required: false
+      schema:
+        type: array
+        items:
+          type: string
+          enum:
+            - campaigns
+            - automations
+        example:
+          - campaigns
+    email_service_providers:
+      name: "email_service_providers[]"
+      description: |-
+        Recipient email service providers to include. If omitted, all providers are included. A
+        value outside the list is not rejected; it matches nothing, so every count is `0`.
+      in: query
+      required: false
+      schema:
+        type: array
+        items:
+          type: string
+          enum:
+            - Google
+            - Yahoo
+            - Outlook
+            - Hey
+            - Google Workspace
+            - Zoho Email
+            - ProtonMail
+            - Yandex
+            - iCloud
+            - Office 365
+            - Amazon SES (Simple Email Service)
+            - Proofpoint Email Protection
+            - Mimecast Email Protection
+            - GMX.net
+            - Rackspace
+            - OVH hosted
+            - Linode hosted
+            - GoDaddy
+            - Symantec Email Protection
+            - Barracuda Email Protection
+            - Cisco Email Protection
+            - FastMail
+            - Naver
+            - Seznam
+            - Comcast
+            - Spectrum
+        example:
+          - Google
+          - Yahoo
   schemas:
     EmailCampaignWritableAttributes:
       type: object
@@ -2219,6 +2520,7 @@ components:
         bounce_rate:
           type: number
           format: float
+          description: Share of sent messages that bounced (0–1).
           example: 0.02
         open_count:
           type: integer
@@ -2226,20 +2528,23 @@ components:
         open_rate:
           type: number
           format: float
-          example: 0.5655
+          description: Share of sent messages that were opened (0–1).
+          example: 0.5467
         click_count:
           type: integer
           example: 310
         click_rate:
           type: number
           format: float
-          example: 0.2138
+          description: Share of sent messages that were clicked (0–1).
+          example: 0.2067
         spam_count:
           type: integer
           example: 5
         spam_rate:
           type: number
           format: float
+          description: Share of sent messages that were reported as spam (0–1).
           example: 0.0033
         unsubscription_count:
           type: integer
@@ -2247,10 +2552,83 @@ components:
         unsubscription_rate:
           type: number
           format: float
-          example: 0.0083
+          description: Share of sent messages that led to an unsubscription (0–1).
+          example: 0.008
         sent_count:
           type: integer
           example: 1500
+    MarketingStats:
+      type: object
+      description: |-
+        Aggregated Email Marketing metrics for the requested period and filters. Rates are fractions
+        from 0 to 1, not rounded. Every count and rate is `0` when nothing matched.
+      required:
+        - delivery_count
+        - delivery_rate
+        - bounce_count
+        - bounce_rate
+        - open_count
+        - open_rate
+        - click_count
+        - click_rate
+        - spam_count
+        - spam_rate
+        - unsubscription_count
+        - unsubscription_rate
+        - sent_count
+      properties:
+        delivery_count:
+          type: integer
+          example: 1200
+        delivery_rate:
+          type: number
+          format: double
+          description: "`delivery_count` / `sent_count`."
+          example: 0.96
+        bounce_count:
+          type: integer
+          example: 50
+        bounce_rate:
+          type: number
+          format: double
+          description: "`bounce_count` / `sent_count`."
+          example: 0.04
+        open_count:
+          type: integer
+          example: 600
+        open_rate:
+          type: number
+          format: double
+          description: "`open_count` / `delivery_count`."
+          example: 0.5
+        click_count:
+          type: integer
+          example: 240
+        click_rate:
+          type: number
+          format: double
+          description: "`click_count` / `delivery_count`."
+          example: 0.2
+        spam_count:
+          type: integer
+          example: 3
+        spam_rate:
+          type: number
+          format: double
+          description: "`spam_count` / `delivery_count`."
+          example: 0.0025
+        unsubscription_count:
+          type: integer
+          example: 12
+        unsubscription_rate:
+          type: number
+          format: double
+          description: "`unsubscription_count` / `delivery_count`."
+          example: 0.01
+        sent_count:
+          type: integer
+          description: Delivered plus bounced messages.
+          example: 1250
     Pagination:
       type: object
       description: Page-token pagination metadata.
@@ -2287,10 +2665,28 @@ components:
       type: object
       # NOTE: the shared global throttle (Rack::Attack) returns the legacy singular `error` key.
       # This diverges from the plural-`errors` convention; kept here to match the real response.
+      required:
+        - error
       properties:
         error:
           type: string
           example: Throttled
+    EndpointRateLimitedResponse:
+      type: object
+      required:
+        - errors
+      properties:
+        errors:
+          type: string
+          example: Rate limit exceeded
+    BadRequestResponse:
+      type: object
+      required:
+        - errors
+      properties:
+        errors:
+          type: string
+          example: "Missing required parameter: start_date"
     UnauthenticatedResponse:
       type: object
       properties:
@@ -2373,6 +2769,42 @@ components:
             properties:
               data:
                 $ref: "#/components/schemas/EmailCampaignStats"
+    MarketingStatsResponse:
+      description: Aggregated Email Marketing statistics.
+      content:
+        application/json:
+          schema:
+            type: object
+            required:
+              - data
+            properties:
+              data:
+                $ref: "#/components/schemas/MarketingStats"
+    MARKETING_STATS_BAD_REQUEST:
+      description: |-
+        A date is missing or invalid, a sending domain ID is not in the account, or a source is
+        unknown; `errors` names the parameter and, where there is one, the rejected value.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/BadRequestResponse"
+          examples:
+            missing_date:
+              summary: A required date is missing
+              value:
+                errors: "Missing required parameter: start_date"
+            invalid_date:
+              summary: A date cannot be parsed as a calendar date
+              value:
+                errors: "Invalid end_date: '2026-13-01'"
+            unknown_sending_domain:
+              summary: A sending domain ID is not in the account
+              value:
+                errors: "Sending domain does not exist: '3938'"
+            invalid_source:
+              summary: A source is not campaigns or automations
+              value:
+                errors: "Invalid source: 'newsletters'"
     UNAUTHENTICATED:
       description: Authentication failed — missing or invalid API token.
       content:
@@ -2430,3 +2862,40 @@ components:
         application/json:
           schema:
             $ref: "#/components/schemas/RateLimitedResponse"
+    MARKETING_STATS_RATE_LIMITED:
+      description: |-
+        Too many requests. Two limits apply: 10 requests per minute per account on this endpoint, and
+        the global 150 requests per 10 seconds per API token. The response body tells them apart,
+        and only the global throttle sets the `x-ratelimit-*` headers.
+      headers:
+        x-ratelimit-limit:
+          description: Maximum number of requests allowed within the window. Sent by the global throttle only.
+          schema:
+            type: integer
+            example: 150
+        x-ratelimit-remaining:
+          description: Requests remaining in the current window. Sent by the global throttle only.
+          schema:
+            type: integer
+            example: 0
+        x-ratelimit-reset:
+          description: ISO 8601 timestamp when the current rate-limit window resets. Sent by the global throttle only.
+          schema:
+            type: string
+            format: date-time
+            example: "2026-06-15T10:00:10.000000Z"
+      content:
+        application/json:
+          schema:
+            oneOf:
+              - $ref: "#/components/schemas/EndpointRateLimitedResponse"
+              - $ref: "#/components/schemas/RateLimitedResponse"
+          examples:
+            endpoint_rate_limit:
+              summary: The per-account limit on this endpoint is reached
+              value:
+                errors: Rate limit exceeded
+            global_rate_limit:
+              summary: The global per-token throttle is reached
+              value:
+                error: Throttled
