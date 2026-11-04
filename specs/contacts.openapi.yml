@@ -215,8 +215,6 @@ paths:
                     errors: Invalid token
         '429':
           $ref: '#/components/responses/LIMIT_EXCEEDED'
-        '500':
-          $ref: '#/components/responses/INTERNAL_ERROR'
     post:
       operationId: createContact
       summary: Create a new Contact
@@ -449,8 +447,6 @@ paths:
                     - Email is invalid
         '429':
           $ref: '#/components/responses/LIMIT_EXCEEDED'
-        '500':
-          $ref: '#/components/responses/INTERNAL_ERROR'
   '/api/contacts/{contact_identifier}':
     get:
       description: Get contact using UUID or email (URL encoded)
@@ -634,8 +630,6 @@ paths:
           $ref: '#/components/responses/NOT_FOUND'
         '429':
           $ref: '#/components/responses/LIMIT_EXCEEDED'
-        '500':
-          $ref: '#/components/responses/INTERNAL_ERROR'
     patch:
       description: Update contact using UUID or email (URL encoded)
       operationId: updateContact
@@ -799,8 +793,6 @@ paths:
                     - - contains invalid data
         '429':
           $ref: '#/components/responses/LIMIT_EXCEEDED'
-        '500':
-          $ref: '#/components/responses/INTERNAL_ERROR'
     delete:
       description: Delete contact using UUID or email (URL encoded)
       operationId: deleteContact
@@ -912,8 +904,6 @@ paths:
                 errors: Contact(s) not found
         '429':
           $ref: '#/components/responses/LIMIT_EXCEEDED'
-        '500':
-          $ref: '#/components/responses/INTERNAL_ERROR'
     parameters:
       - $ref: '#/components/parameters/contact_identifier'
   '/api/contacts/{contact_identifier}/events':
@@ -1082,8 +1072,6 @@ paths:
                       - value for 'bar' is too long
         '429':
           $ref: '#/components/responses/LIMIT_EXCEEDED'
-        '500':
-          $ref: '#/components/responses/INTERNAL_ERROR'
     parameters:
       - $ref: '#/components/parameters/contact_identifier'
   '/api/contacts/exports':
@@ -1252,8 +1240,6 @@ paths:
                     - There is a previous export initiated. You will be notified by email once it is completed.
         '429':
           $ref: '#/components/responses/LIMIT_EXCEEDED'
-        '500':
-          $ref: '#/components/responses/INTERNAL_ERROR'
   '/api/contacts/exports/{export_id}':
     get:
       description: Get Contact Export
@@ -1391,8 +1377,6 @@ paths:
           $ref: '#/components/responses/NOT_FOUND'
         '429':
           $ref: '#/components/responses/LIMIT_EXCEEDED'
-        '500':
-          $ref: '#/components/responses/INTERNAL_ERROR'
     parameters:
       - $ref: '#/components/parameters/export_id'
   '/api/contacts/imports':
@@ -1575,8 +1559,6 @@ paths:
                         - 'contains invalid values: invalid_field'
                       field_merge_tag:
                         - is invalid
-        '500':
-          $ref: '#/components/responses/INTERNAL_ERROR'
   '/api/contacts/imports/{import_id}':
     get:
       description: Get Contact Import
@@ -1700,8 +1682,6 @@ paths:
           $ref: '#/components/responses/PERMISSION_DENIED'
         '404':
           $ref: '#/components/responses/NOT_FOUND'
-        '500':
-          $ref: '#/components/responses/INTERNAL_ERROR'
     parameters:
       - $ref: '#/components/parameters/import_id'
   '/api/contacts/lists':
@@ -1838,8 +1818,6 @@ paths:
           $ref: '#/components/responses/PERMISSION_DENIED'
         '429':
           $ref: '#/components/responses/LIMIT_EXCEEDED'
-        '500':
-          $ref: '#/components/responses/INTERNAL_ERROR'
     post:
       description: Create new Contact Lists
       operationId: createContactList
@@ -1984,8 +1962,6 @@ paths:
           $ref: '#/components/responses/PERMISSION_DENIED'
         '429':
           $ref: '#/components/responses/LIMIT_EXCEEDED'
-        '500':
-          $ref: '#/components/responses/INTERNAL_ERROR'
   '/api/contacts/lists/{list_id}':
     get:
       description: Get a contact list by ID
@@ -2097,8 +2073,6 @@ paths:
           $ref: '#/components/responses/NOT_FOUND'
         '429':
           $ref: '#/components/responses/LIMIT_EXCEEDED'
-        '500':
-          $ref: '#/components/responses/INTERNAL_ERROR'
     patch:
       description: Update existing Contact List
       operationId: updateContactList
@@ -2228,8 +2202,6 @@ paths:
           $ref: '#/components/responses/NOT_FOUND'
         '429':
           $ref: '#/components/responses/LIMIT_EXCEEDED'
-        '500':
-          $ref: '#/components/responses/INTERNAL_ERROR'
     delete:
       description: Delete existing Contact List
       operationId: deleteContactList
@@ -2333,8 +2305,6 @@ paths:
           $ref: '#/components/responses/NOT_FOUND'
         '429':
           $ref: '#/components/responses/LIMIT_EXCEEDED'
-        '500':
-          $ref: '#/components/responses/INTERNAL_ERROR'
     parameters:
       - $ref: '#/components/parameters/list_id'
   '/api/contacts/fields':
@@ -2461,8 +2431,6 @@ paths:
           $ref: '#/components/responses/PERMISSION_DENIED'
         '429':
           $ref: '#/components/responses/LIMIT_EXCEEDED'
-        '500':
-          $ref: '#/components/responses/INTERNAL_ERROR'
     post:
       description: |
         Create new Contact Fields. Please note, you can have up to 40 fields.
@@ -2648,8 +2616,6 @@ paths:
                       - has already been taken
         '429':
           $ref: '#/components/responses/LIMIT_EXCEEDED'
-        '500':
-          $ref: '#/components/responses/INTERNAL_ERROR'
   '/api/contacts/fields/{field_id}':
     get:
       description: Get a contact Field by ID
@@ -2764,8 +2730,6 @@ paths:
           $ref: '#/components/responses/NOT_FOUND'
         '429':
           $ref: '#/components/responses/LIMIT_EXCEEDED'
-        '500':
-          $ref: '#/components/responses/INTERNAL_ERROR'
     patch:
       description: |
         Update existing Contact Field. Please note, you cannot change data_type of the field.
@@ -2921,8 +2885,6 @@ paths:
                       - has already been taken
         '429':
           $ref: '#/components/responses/LIMIT_EXCEEDED'
-        '500':
-          $ref: '#/components/responses/INTERNAL_ERROR'
     delete:
       description: |
         Delete existing Contact Field Please, note, you cannot delete a Contact Field which is used in Automations, Email Campaigns (started or scheduled), and in conditions of Contact Segments (you'll see the corresponding error)
@@ -3038,8 +3000,6 @@ paths:
                     - 'This field is used in the conditions of segment(s): {segment names}.'
         '429':
           $ref: '#/components/responses/LIMIT_EXCEEDED'
-        '500':
-          $ref: '#/components/responses/INTERNAL_ERROR'
     parameters:
       - $ref: '#/components/parameters/field_id'
 components:
@@ -3659,14 +3619,6 @@ components:
             $ref: '#/components/schemas/PermissionsDeniedResponse'
           example:
             errors: Account access forbidden
-    INTERNAL_ERROR:
-      description: Internal error. Retry later or contact support.
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ErrorResponse'
-          example:
-            errors: Unexpected error
     NOT_FOUND:
       description: Resource not found
       content:
