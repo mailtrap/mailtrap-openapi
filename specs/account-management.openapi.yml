@@ -1706,9 +1706,10 @@ paths:
       operationId: deleteOrganizationSubAccount
       summary: Delete organization sub account
       description: |-
-        Delete a sub account of the specified organization. You must have sub account management or
-        organization access permissions for this organization, and the organization must have the
-        Organization & Sub-accounts feature enabled.
+        Delete a sub account of the specified organization. You must have admin permissions for the
+        organization (organization or organization access permissions); sub account management
+        permissions are not enough. The organization must also have the Organization & Sub-accounts
+        feature enabled.
 
         The sub account and all of its data – projects, sandboxes, emails and domains – are removed
         permanently and cannot be restored. Deleting the organization's last sub account also deletes
