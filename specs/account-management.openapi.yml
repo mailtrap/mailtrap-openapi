@@ -1741,10 +1741,10 @@ paths:
             use Mailtrap\MailtrapGeneralClient;
 
             $config = new Config($_ENV['MAILTRAP_API_KEY']);
-            $organizationId = $_ENV['MAILTRAP_ORGANIZATION_ID'];
+            $organizationId = (int) $_ENV['MAILTRAP_ORGANIZATION_ID'];
             $subAccounts = (new MailtrapGeneralClient($config))->organization($organizationId)->subAccounts();
 
-            $subAccountId = $_ENV['MAILTRAP_SUB_ACCOUNT_ID'];
+            $subAccountId = (int) $_ENV['MAILTRAP_SUB_ACCOUNT_ID'];
             $response = $subAccounts->deleteSubAccount($subAccountId);
             echo $response->getStatusCode(); // 204
         - lang: python
