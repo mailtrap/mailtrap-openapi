@@ -3536,9 +3536,9 @@ components:
         errors:
           type: string
           description: Error message
-          example: Unexpected error
+          example: Invalid token
       example:
-        errors: Unexpected error
+        errors: Invalid token
     NotFoundResponse:
       title: NotFoundResponse
       type: object
