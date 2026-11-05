@@ -1,0 +1,19 @@
+specs/sandbox.openapi.yml
+  s_9f8a1218f766eb::t_b8c1893418b5b7 4691-4698
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "ba5194c54a6dbc75aec5823b7faf6a97c7fc2e94",
+  "prompts": {},
+  "sessions": {
+    "s_9f8a1218f766eb": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "4f67c5c3-1bac-48b4-8cbb-3473debf0a42",
+        "model": "unknown"
+      },
+      "human_author": "IzikAJ <izikaj@gmail.com>"
+    }
+  }
+}
