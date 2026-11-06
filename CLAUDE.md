@@ -264,9 +264,16 @@ tags:
 ## Product Names
 
 Follow official product naming:
-- **Email API/SMTP** (can shorten to "Email API" or "API/SMTP")
+- **Email Live Sending** (can shorten to "Live Sending")
 - **Email Sandbox** (can shorten to "Sandbox")
 - **Email Marketing** (can shorten to "Marketing")
+
+Use one set in a sentence: "Email Live Sending, Email Sandbox, Email Marketing" or "Live Sending,
+Sandbox, Marketing". Do not mix them.
+
+"Email API/SMTP", "API/SMTP", "Email API", "Email Sending" and "Sending" are old names of Email Live
+Sending. Replace them where they name the product. Keep "API" and "SMTP" where they name a send
+method or protocol, for example "send with the API or SMTP", "SMTP credentials" or "API token".
 
 ## Validation Workflow
 
