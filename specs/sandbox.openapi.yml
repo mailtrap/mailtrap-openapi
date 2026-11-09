@@ -3679,7 +3679,6 @@ paths:
                         type: array
                         items:
                           type: object
-                          nullable: true
                           properties:
                             Pts:
                               type: number
@@ -3857,7 +3856,6 @@ paths:
                         type: array
                         items:
                           type: object
-                          nullable: true
                           properties:
                             error_line:
                               type: number
@@ -5209,11 +5207,9 @@ paths:
                     content_type:
                       type: string
                     content_id:
-                      type: string
-                      nullable: true
+                      type: [string, 'null']
                     transfer_encoding:
-                      type: string
-                      nullable: true
+                      type: [string, 'null']
                     attachment_size:
                       type: integer
                     created_at:
@@ -5395,11 +5391,9 @@ paths:
                   content_type:
                     type: string
                   content_id:
-                    type: string
-                    nullable: true
+                    type: [string, 'null']
                   transfer_encoding:
-                    type: string
-                    nullable: true
+                    type: [string, 'null']
                   attachment_size:
                     type: integer
                   created_at:
@@ -5591,8 +5585,7 @@ components:
         template_id:
           type: integer
         template_variables:
-          type: object
-          nullable: true
+          type: [object, 'null']
           additionalProperties: true
         html_body_size:
           type: integer
@@ -5668,7 +5661,6 @@ components:
         sandboxes:
           type: array
           items:
-            nullable: true
             $ref: '#/components/schemas/TestingSandbox'
         permissions:
           type: object
@@ -5724,8 +5716,7 @@ components:
         username:
           type: string
         password:
-          type: string
-          nullable: true
+          type: [string, 'null']
           description: Password is only available if you have admin permissions for the sandbox.
         max_size:
           type: integer
@@ -5762,8 +5753,7 @@ components:
         emails_unread_count:
           type: integer
         last_message_sent_at:
-          nullable: true
-          type: string
+          type: [string, 'null']
         smtp_ports:
           type: array
           items:

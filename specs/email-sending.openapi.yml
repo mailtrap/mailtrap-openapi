@@ -4709,15 +4709,12 @@ components:
                 type: string
                 enum: [delivered, not_delivered, enqueued, opted_out]
               subject:
-                type: string
-                nullable: true
+                type: [string, 'null']
               rfc_message_id:
-                type: string
-                nullable: true
+                type: [string, 'null']
                 description: Value of the RFC 5322 `Message-ID` header.
               in_reply_to:
-                type: string
-                nullable: true
+                type: [string, 'null']
                 description: Value of the RFC 5322 `In-Reply-To` header.
               references:
                 type: array
@@ -4725,8 +4722,7 @@ components:
                   type: string
                 description: Values of the RFC 5322 `References` header.
               thread_id:
-                type: string
-                nullable: true
+                type: [string, 'null']
                 description: |
                   ID of the inbound thread this message belongs to, or null if
                   the message is not part of one. Use it with the Inbound
@@ -4739,11 +4735,9 @@ components:
                 type: string
                 format: date-time
               client_ip:
-                type: string
-                nullable: true
+                type: [string, 'null']
               category:
-                type: string
-                nullable: true
+                type: [string, 'null']
               custom_variables:
                 type: object
               sending_stream:
@@ -4752,8 +4746,7 @@ components:
               sending_domain_id:
                 type: integer
               template_id:
-                type: integer
-                nullable: true
+                type: [integer, 'null']
               template_variables:
                 type: object
               opens_count:
@@ -4764,9 +4757,8 @@ components:
           type: integer
           description: Total number of messages matching the filters (before pagination).
         next_page_cursor:
-          type: string
+          type: [string, 'null']
           format: uuid
-          nullable: true
           description: Message UUID to use as search_after for the next page. Null if no more pages.
       example:
         messages:
@@ -4813,15 +4805,12 @@ components:
           type: string
           enum: [delivered, not_delivered, enqueued, opted_out]
         subject:
-          type: string
-          nullable: true
+          type: [string, 'null']
         rfc_message_id:
-          type: string
-          nullable: true
+          type: [string, 'null']
           description: Value of the RFC 5322 `Message-ID` header.
         in_reply_to:
-          type: string
-          nullable: true
+          type: [string, 'null']
           description: Value of the RFC 5322 `In-Reply-To` header.
         references:
           type: array
@@ -4829,8 +4818,7 @@ components:
             type: string
           description: Values of the RFC 5322 `References` header.
         thread_id:
-          type: string
-          nullable: true
+          type: [string, 'null']
           description: |
             ID of the inbound thread this message belongs to, or null if the
             message is not part of one. Use it with the Inbound Threads
@@ -4843,11 +4831,9 @@ components:
           type: string
           format: date-time
         client_ip:
-          type: string
-          nullable: true
+          type: [string, 'null']
         category:
-          type: string
-          nullable: true
+          type: [string, 'null']
         custom_variables:
           type: object
         sending_stream:
@@ -4856,8 +4842,7 @@ components:
         sending_domain_id:
           type: integer
         template_id:
-          type: integer
-          nullable: true
+          type: [integer, 'null']
         template_variables:
           type: object
         opens_count:
@@ -5026,14 +5011,11 @@ components:
       additionalProperties: false
       properties:
         sending_ip:
-          type: string
-          nullable: true
+          type: [string, 'null']
         recipient_mx:
-          type: string
-          nullable: true
+          type: [string, 'null']
         email_service_provider:
-          type: string
-          nullable: true
+          type: [string, 'null']
       example:
         sending_ip: 192.0.2.1
         recipient_mx: gmail-smtp-in.l.google.com
@@ -5045,8 +5027,7 @@ components:
       additionalProperties: false
       properties:
         web_ip_address:
-          type: string
-          nullable: true
+          type: [string, 'null']
       example:
         web_ip_address: 198.51.100.50
 
@@ -5056,11 +5037,9 @@ components:
       additionalProperties: false
       properties:
         click_url:
-          type: string
-          nullable: true
+          type: [string, 'null']
         web_ip_address:
-          type: string
-          nullable: true
+          type: [string, 'null']
       example:
         click_url: 'https://example.com/track/click/abc123'
         web_ip_address: 198.51.100.50
@@ -5071,23 +5050,17 @@ components:
       additionalProperties: false
       properties:
         sending_ip:
-          type: string
-          nullable: true
+          type: [string, 'null']
         recipient_mx:
-          type: string
-          nullable: true
+          type: [string, 'null']
         email_service_provider:
-          type: string
-          nullable: true
+          type: [string, 'null']
         email_service_provider_status:
-          type: string
-          nullable: true
+          type: [string, 'null']
         email_service_provider_response:
-          type: string
-          nullable: true
+          type: [string, 'null']
         bounce_category:
-          type: string
-          nullable: true
+          type: [string, 'null']
       example:
         sending_ip: 192.0.2.1
         recipient_mx: mx.example.com
@@ -5102,8 +5075,7 @@ components:
       additionalProperties: false
       properties:
         spam_feedback_type:
-          type: string
-          nullable: true
+          type: [string, 'null']
       example:
         spam_feedback_type: abuse
 
@@ -5113,8 +5085,7 @@ components:
       additionalProperties: false
       properties:
         web_ip_address:
-          type: string
-          nullable: true
+          type: [string, 'null']
       example:
         web_ip_address: 198.51.100.50
 
@@ -5124,8 +5095,7 @@ components:
       additionalProperties: false
       properties:
         reject_reason:
-          type: string
-          nullable: true
+          type: [string, 'null']
       example:
         reject_reason: Policy rejection
 
