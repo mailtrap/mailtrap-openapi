@@ -1662,7 +1662,7 @@ paths:
     get:
       operationId: getAccountBillingUsage
       summary: Get current billing cycle usage
-      description: Get current billing cycle usage for Email Sandbox, Email Sending (Email API/SMTP), and Email Marketing.
+      description: Get current billing cycle usage for Email Sandbox, Email Live Sending, and Email Marketing.
       tags:
         - Billing
       x-codeSamples:
@@ -1766,7 +1766,7 @@ paths:
             }
       responses:
         '200':
-          description: Returns an object with current billing cycle usage for Sandbox, Email Sending (Email API/SMTP), and Email Marketing if available.
+          description: Returns an object with current billing cycle usage for Email Sandbox, Email Live Sending, and Email Marketing if available.
           content:
             application/json:
               schema:
