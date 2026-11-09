@@ -13,12 +13,11 @@ rules:
   # OpenAPI 3.1 schemas are JSON Schema 2020-12, which has no `nullable`: a schema that
   # still carries the 3.0 keyword rejects null without any warning.
   no-nullable-keyword:
-    message: "`nullable` is ignored in OpenAPI 3.1: add 'null' to the type instead, e.g. type: [string, 'null']"
+    message: "`nullable` is ignored since OpenAPI 3.1: add 'null' to the type instead, e.g. type: [string, 'null']"
     severity: error
-    formats: [oas3.1]
+    formats: [oas3.1, oas3.2]
     # Unresolved, so a `nullable` next to a `$ref` is reported too instead of vanishing with the resolved ref.
     resolved: false
     given: $..nullable
     then:
       function: undefined
-
