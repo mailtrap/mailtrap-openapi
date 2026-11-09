@@ -2401,9 +2401,9 @@ components:
                   type: string
                   description: The token value with all but the last characters masked
                 expires_at:
-                  type: string
+                  type: [string, 'null']
                   format: date-time
-                  description: Api token expiration time
+                  description: Api token expiration time; null if the token does not expire
           description: Entity that has permissions to the resources
           type: object
         resources:
