@@ -48,7 +48,7 @@ tags:
     x-page-title: Stats
     x-page-description: Email sending stats
     description: |-
-      Email API/SMTP aggregated stats, the same you see in your Stats dashboard. Campaign and
+      Email Live Sending aggregated stats, the same you see in your Stats dashboard. Campaign and
       automation traffic is not included; it is reported by `GET /api/marketing/stats`.
 
   - name: email-logs

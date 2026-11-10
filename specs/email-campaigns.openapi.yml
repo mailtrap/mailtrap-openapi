@@ -1859,7 +1859,7 @@ paths:
         Returns aggregated performance metrics for the account's Email Marketing traffic, campaigns
         and automations together: counts and rates for deliveries, bounces, opens, clicks, spam
         complaints, and unsubscriptions over a date range. The numbers match Email Marketing > Stats
-        Overview in the app for the same filters. Email API/SMTP traffic is not included;
+        Overview in the app for the same filters. Email Live Sending traffic is not included;
         `GET /api/stats` reports it.
 
         Open, click, spam, and unsubscription rates are shares of `delivery_count`, unlike
