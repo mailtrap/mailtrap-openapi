@@ -52,7 +52,7 @@ paths:
 
             const client = new MailtrapClient({
               token: "YOUR_API_KEY",
-              testInboxId: TEST_INBOX_ID,
+              sandboxId: SANDBOX_ID,
               sandbox: true
             });
 
@@ -79,7 +79,7 @@ paths:
             $mailtrap = MailtrapClient::initSendingEmails(
                 apiKey: $_ENV['MAILTRAP_API_KEY'],
                 isSandbox: true,
-                inboxId: $_ENV['MAILTRAP_INBOX_ID']
+                sandboxId: $_ENV['MAILTRAP_SANDBOX_ID']
             );
 
             $email = (new MailtrapEmail())
@@ -97,12 +97,12 @@ paths:
           source: |
             import mailtrap as mt
 
-            inbox_id = 123456
+            sandbox_id = 123456
 
             client = mt.MailtrapClient(
                 token="YOUR_API_KEY",
                 sandbox=True,
-                inbox_id=inbox_id
+                sandbox_id=sandbox_id
             )
 
             mail = mt.Mail(
@@ -119,7 +119,7 @@ paths:
           source: |
             require 'mailtrap'
 
-            client = Mailtrap::Client.new(api_key: 'YOUR_API_KEY', sandbox: true, inbox_id: TEST_INBOX_ID)
+            client = Mailtrap::Client.new(api_key: 'YOUR_API_KEY', sandbox: true, sandbox_id: SANDBOX_ID)
 
             mail = Mailtrap::Mail.new(
               from: { email: 'test@example.com', name: 'Test Sender' },
@@ -140,7 +140,7 @@ paths:
             var options = new MailtrapClientOptions
             {
                 ApiToken = "YOUR_API_KEY",
-                InboxId = TEST_INBOX_ID // Sandbox inbox ID
+                SandboxId = SANDBOX_ID // Specify the sandbox ID to send test emails
             };
             using var mailtrapFactory = new MailtrapClientFactory(options);
             var client = mailtrapFactory.CreateClient();
@@ -156,9 +156,9 @@ paths:
                 .Email()
                 .Send(email);
 
-            // Or using test email client directly
+            // Or using the sandbox email client directly
             await client
-                .Test(TEST_INBOX_ID)
+                .Sandbox(SANDBOX_ID)
                 .Send(email);
         - lang: java
           label: Java
@@ -171,7 +171,7 @@ paths:
 
             var config = new MailtrapConfig.Builder()
                 .token("YOUR_API_KEY")
-                .inboxId(TEST_INBOX_ID)
+                .sandboxId(SANDBOX_ID)
                 .build();
 
             var client = MailtrapClientFactory
@@ -185,7 +185,7 @@ paths:
                 .html("<p>This is a <b>test email</b> for sandbox.</p>")
                 .build();
 
-            client.testingApi().emails().send(mail, config.getInboxId());
+            client.sandboxApi().emails().send(mail, config.getSandboxId());
         - lang: go
           label: Go
           source: |
@@ -305,12 +305,12 @@ paths:
             const { MailtrapClient } = require("mailtrap");
 
             const TOKEN = "YOUR_API_KEY";
-            const TEST_INBOX_ID = 12345;
+            const SANDBOX_ID = 12345;
 
             const client = new MailtrapClient({
               token: TOKEN,
               sandbox: true,
-              testInboxId: TEST_INBOX_ID
+              sandboxId: SANDBOX_ID
             });
 
             client.batchSend({
@@ -344,7 +344,7 @@ paths:
             $mailtrap = MailtrapClient::initSendingEmails(
                 apiKey: $_ENV['MAILTRAP_API_KEY'],
                 isSandbox: true,
-                inboxId: $_ENV['MAILTRAP_INBOX_ID']
+                sandboxId: $_ENV['MAILTRAP_SANDBOX_ID']
             );
 
             $baseEmail = (new MailtrapEmail())
@@ -366,12 +366,12 @@ paths:
             import mailtrap as mt
 
             API_TOKEN = "YOUR_API_KEY"
-            inbox_id = 12345
+            sandbox_id = 12345
 
             client = mt.MailtrapClient(
                 token=API_TOKEN,
                 sandbox=True,
-                inbox_id=inbox_id
+                sandbox_id=sandbox_id
             )
 
             batch_mail = mt.BatchSendEmailParams(
@@ -400,7 +400,7 @@ paths:
             client = Mailtrap::Client.new(
               api_key: 'YOUR_API_KEY',
               sandbox: true,
-              inbox_id: 12345
+              sandbox_id: 12345
             )
 
             base_mail = {
@@ -426,7 +426,7 @@ paths:
             var options = new MailtrapClientOptions
             {
                 ApiToken = "YOUR_API_KEY",
-                InboxId = TEST_INBOX_ID // Specify Sandbox inbox ID to send test emails
+                SandboxId = SANDBOX_ID // Specify the sandbox ID to send test emails
             };
             using var mailtrapFactory = new MailtrapClientFactory(options);
             var client = mailtrapFactory.CreateClient();
@@ -450,9 +450,9 @@ paths:
 
             Console.WriteLine(response);
 
-            // Or using test email client directly
+            // Or using the sandbox email client directly
             response = await client
-                .BatchTest(TEST_INBOX_ID)
+                .BatchSandbox(SANDBOX_ID)
                 .Send(request);
 
             Console.WriteLine(response);
@@ -469,7 +469,7 @@ paths:
 
             var config = new MailtrapConfig.Builder()
                 .token("YOUR_API_KEY")
-                .inboxId(12345L)
+                .sandboxId(12345L)
                 .build();
 
             var client = MailtrapClientFactory.createMailtrapClient(config);
@@ -489,8 +489,8 @@ paths:
                 .requests(List.of(mail))
                 .build();
 
-            var response = client.testingApi().emails()
-                .batchSend(batchMail, config.getInboxId());
+            var response = client.sandboxApi().emails()
+                .batchSend(batchMail, config.getSandboxId());
 
             System.out.println(response);
         - lang: go
