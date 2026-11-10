@@ -149,7 +149,7 @@ paths:
 
             domain = domains.create(domain_name: 'example.com')
 
-            puts "Created domain: #{domain.name}"
+            puts "Created domain: #{domain.domain_name}"
         - lang: csharp
           label: .NET
           source: |
@@ -342,7 +342,7 @@ paths:
             domains = Mailtrap::DomainsAPI.new(YOUR_ACCOUNT_ID, client)
 
             domains.list.each do |domain|
-              puts "Domain: #{domain.name}"
+              puts "Domain: #{domain.domain_name}"
             end
         - lang: csharp
           label: .NET
@@ -488,7 +488,7 @@ paths:
 
             domain = domains.get(DOMAIN_ID)
 
-            puts "Domain: #{domain.name}"
+            puts "Domain: #{domain.domain_name}"
         - lang: csharp
           label: .NET
           source: |

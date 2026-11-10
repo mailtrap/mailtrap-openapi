@@ -87,6 +87,8 @@ paths:
 
             async function getSandboxes() {
               const sandboxes = await client.sandbox.sandboxes.getList();
+
+              console.log(sandboxes);
             }
 
             getSandboxes();
@@ -264,9 +266,9 @@ paths:
             });
 
             async function createProject() {
-              const project = await client.sandbox.projects.create({
-                name: 'My New Project'
-              });
+              const project = await client.sandbox.projects.create('My New Project');
+
+              console.log("Project created:", project);
             }
 
             createProject();
@@ -431,6 +433,8 @@ paths:
 
             async function getProjects() {
               const projects = await client.sandbox.projects.getList();
+
+              console.log(projects);
             }
 
             getProjects();
@@ -1552,7 +1556,7 @@ paths:
 
             long sandboxId = 12345L;
             var deletedSandbox = client.sandboxApi().sandboxes()
-                .deleteSandbox(ACCOUNT_ID, sandboxId);
+                .deleteSandbox(accountId, sandboxId);
 
             System.out.println(deletedSandbox);
         - lang: go
@@ -3362,6 +3366,7 @@ paths:
           source: |
             import io.mailtrap.config.MailtrapConfig;
             import io.mailtrap.factory.MailtrapClientFactory;
+            import io.mailtrap.model.request.accountaccesses.ListMessagesQueryParams;
 
             var config = new MailtrapConfig.Builder()
                 .token("YOUR_API_KEY")
@@ -3372,7 +3377,7 @@ paths:
 
             long sandboxId = 12345L;
             var messages = client.sandboxApi().messages()
-                .getMessages(accountId, sandboxId);
+                .getMessages(accountId, sandboxId, ListMessagesQueryParams.empty());
 
             for (var message : messages) {
                 System.out.println("From: " + message.getFromEmail());
@@ -3999,6 +4004,8 @@ paths:
             var client = MailtrapClientFactory.createMailtrapClient(config);
 
             long sandboxId = 12345L;
+            long messageId = 67890L;
+
             var htmlAnalysis = client.sandboxApi().messages().getMessageHtmlAnalysis(accountId, sandboxId, messageId);
             System.out.println(htmlAnalysis);
         - lang: go
@@ -4700,8 +4707,6 @@ paths:
             const { MailtrapClient } = require("mailtrap");
             const client = new MailtrapClient({ token: "YOUR_API_KEY", accountId: "YOUR_ACCOUNT_ID" });
 
-            const ACCOUNT_ID = "YOUR_ACCOUNT_ID";
-
             async function getHtmlMessage() {
               const htmlBody = await client.sandbox.messages.getHtmlMessage(12345, 67890);
 
@@ -4770,7 +4775,8 @@ paths:
             var client = MailtrapClientFactory.createMailtrapClient(config);
             
             long sandboxId = 12345L;
-            long messageId = 12345L;
+            long messageId = 67890L;
+
             String htmlBody = client.sandboxApi().messages().getHtmlMessage(accountId, sandboxId, messageId);
             System.out.println(htmlBody);
         - lang: go
