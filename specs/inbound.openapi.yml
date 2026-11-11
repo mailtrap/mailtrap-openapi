@@ -9,7 +9,7 @@ info:
     with an `inbound_receiving` webhook to be notified the moment a new
     message arrives.
 
-    For a complete guide, see [Inbound](https://docs.mailtrap.io/getting-started/inbound-email).
+    For a complete guide, see [Inbound](https://docs.mailtrap.io/inbound-email/overview).
   contact:
     name: Mailtrap Support
     url: "https://docs.mailtrap.io"
