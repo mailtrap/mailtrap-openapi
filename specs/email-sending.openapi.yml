@@ -1,6 +1,6 @@
 openapi: 3.1.0
 info:
-  title: Email Sending
+  title: Email Live Sending
   version: 2.0.0
   description: |
     Manage domains, suppressions, tracking opt-outs, and email sending logs for your Mailtrap account.
@@ -46,9 +46,9 @@ tags:
 
   - name: stats
     x-page-title: Stats
-    x-page-description: Email sending stats
+    x-page-description: Email Live Sending stats
     description: |-
-      Email API/SMTP aggregated stats, the same you see in your Stats dashboard. Campaign and
+      Email Live Sending aggregated stats, the same you see in your Stats dashboard. Campaign and
       automation traffic is not included; it is reported by `GET /api/marketing/stats`.
 
   - name: email-logs
