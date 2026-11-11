@@ -15,7 +15,8 @@ rules:
   no-nullable-keyword:
     message: "`nullable` is ignored since OpenAPI 3.1: add 'null' to the type instead, e.g. type: [string, 'null']"
     severity: error
-    formats: [oas3.1, oas3.2]
+    # oas3 rather than [oas3.1, oas3.2]: spectral-formats before 1.9.0 has no oas3.2 and won't load the ruleset.
+    formats: [oas3]
     # Unresolved, so a `nullable` next to a `$ref` is reported too instead of vanishing with the resolved ref.
     resolved: false
     given: $..nullable
