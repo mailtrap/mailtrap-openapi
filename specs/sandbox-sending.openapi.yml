@@ -121,7 +121,7 @@ paths:
 
             client = Mailtrap::Client.new(api_key: 'YOUR_API_KEY', sandbox: true, sandbox_id: SANDBOX_ID)
 
-            mail = Mailtrap::Mail.new(
+            mail = Mailtrap::Mail.from_content(
               from: { email: 'test@example.com', name: 'Test Sender' },
               to: [{ email: 'user@example.com', name: 'Test User' }],
               subject: 'Test Email',
@@ -403,18 +403,23 @@ paths:
               sandbox_id: 12345
             )
 
-            base_mail = {
+            batch_base = Mailtrap::Mail.batch_base_from_content(
               from: { email: 'sender@example.com', name: 'Test Sender' },
               subject: 'Batch Email',
               text: 'Batch email content'
-            }
+            )
 
-            requests = [
-              { to: [{ email: 'recipient1@example.com' }] },
-              { to: [{ email: 'recipient2@example.com' }] }
-            ]
-
-            result = client.batch_send(base: base_mail, requests: requests)
+            result = client.send_batch(
+              batch_base,
+              [
+                Mailtrap::Mail.from_content(
+                  to: [{ email: 'recipient1@example.com' }]
+                ),
+                Mailtrap::Mail.from_content(
+                  to: [{ email: 'recipient2@example.com' }]
+                )
+              ]
+            )
             puts result
         - lang: csharp
           label: .NET
