@@ -1,0 +1,20 @@
+.spectral.yaml
+  s_9bbc9dae4c6514::t_3569dd4eac20d6 18
+  s_9bbc9dae4c6514::t_bcfdd3ecb07262 19
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "26ba7bc4924894672eccf402f640059e6cd2f308",
+  "prompts": {},
+  "sessions": {
+    "s_9bbc9dae4c6514": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "0904dcd2-3e9a-46a5-b624-ddf5a8f80c5c",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Maciej Walusiak <maciej.walusiak@railsware.com>"
+    }
+  }
+}
