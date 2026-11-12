@@ -1504,6 +1504,9 @@ paths:
         `expires_at` must be in the future and no more than 5 years ahead;
         past or unparseable values are rejected with a 422 error.
         Tokens that have already expired cannot be reset (returns a 422 error).
+        To reset a different token, the calling token must have Admin access to
+        everything that token can access; otherwise the request is rejected with
+        a 403 error.
       tags:
         - API Tokens
       x-codeSamples:
