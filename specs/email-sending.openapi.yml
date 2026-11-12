@@ -719,6 +719,16 @@ paths:
           $ref: '#/components/responses/Forbidden'
         '404':
           $ref: '#/components/responses/NotFound'
+        '422':
+          description: The domain can't be deleted while inbound inboxes use it.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnprocessableEntity'
+              example:
+                errors:
+                  base:
+                    - Can't delete the domain because there are inbound inboxes depending on it.
 
     patch:
       summary: Update domain
@@ -1005,7 +1015,29 @@ paths:
         '404':
           $ref: '#/components/responses/NotFound'
         '422':
-          $ref: '#/components/responses/UnprocessableEntity'
+          description: |-
+            The instructions weren't sent: the email address is invalid, or the domain is blocked
+            although its DNS records are verified. Each key holds a single message.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  errors:
+                    type: object
+                    additionalProperties:
+                      type: string
+              examples:
+                invalid_email:
+                  summary: The email address is invalid
+                  value:
+                    errors:
+                      email: Invalid email address
+                domain_not_eligible:
+                  summary: The domain is blocked
+                  value:
+                    errors:
+                      base: Domain is not eligible to send emails
 
   /api/domains/{domain_id}/company_info:
     get:

@@ -500,6 +500,14 @@ paths:
           $ref: '#/components/responses/PERMISSION_DENIED'
         '404':
           $ref: '#/components/responses/NOT_FOUND'
+        '422':
+          description: The access belongs to the account owner, who can't be removed.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                errors: You can not remove the owner of the account
     parameters:
       - schema:
           type: integer
@@ -746,7 +754,15 @@ paths:
         '404':
           $ref: '#/components/responses/NOT_FOUND'
         '422':
-          $ref: '#/components/responses/UNPROCESSABLE_ENTITY'
+          description: |-
+            The permissions can't be updated: the access belongs to the account owner or to an expired
+            API token, or a permission names a resource that doesn't exist or the owner access level.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                errors: You can't update the permissions of an account owner
     parameters:
       - schema:
           type: integer
@@ -1246,7 +1262,27 @@ paths:
         '403':
           $ref: '#/components/responses/PERMISSION_DENIED'
         '422':
-          $ref: '#/components/responses/UNPROCESSABLE_ENTITY'
+          description: |-
+            The token wasn't created. Validation errors of the token itself (no permissions, the
+            account's active token limit, the name or expiration) come per attribute; an invalid
+            permission (an unknown resource, an access level of owner) comes as a single message.
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/UnprocessableEntity'
+                  - $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                validation_errors:
+                  summary: The token is invalid
+                  value:
+                    errors:
+                      base:
+                        - No permissions selected. Please choose at least one.
+                invalid_permission:
+                  summary: A permission is invalid
+                  value:
+                    errors: "Resource of type 'project' and ID #123 not found"
   '/api/api_tokens/{id}':
     get:
       operationId: getApiToken
@@ -2181,11 +2217,21 @@ paths:
               example:
                 errors: Access forbidden
         '422':
-          description: Unprocessable entity - validation errors.
+          description: |-
+            The sub account wasn't created: the organization reached its sub-account limit, or the
+            account is invalid (e.g. a name longer than 80 characters).
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/UnprocessableEntity'
+                type: object
+                properties:
+                  errors:
+                    type: array
+                    items:
+                      type: string
+              example:
+                errors:
+                  - Accounts limit reached
     parameters:
       - $ref: '#/components/parameters/organization_id'
   '/api/organizations/{organization_id}/sub_accounts/{sub_account_id}':
