@@ -2764,32 +2764,11 @@ components:
               - can't be blank
     ActionValidationErrorResponse:
       type: object
-      description: |-
-        Validation error returned by the cancel, terminate and reset actions: a single message,
-        such as an invalid state transition.
+      description: A lifecycle action's validation error as a single message, such as an invalid state transition.
       properties:
         errors:
           type: string
           example: "Cannot transition from 'under_review' to 'draft'"
-    SendingActionValidationErrorResponse:
-      type: object
-      description: |-
-        Validation error returned by the start and schedule actions. `errors` is either a single
-        message (an invalid state transition or an invalid `datetime`) or the sending-validation
-        failures, as messages per attribute, with campaign-wide ones under `base`.
-      properties:
-        errors:
-          oneOf:
-            - type: string
-              example: "Cannot transition from 'started' to 'scheduled'"
-            - type: object
-              additionalProperties:
-                type: array
-                items:
-                  type: string
-              example:
-                base:
-                  - Your account has no company information. Add it in the account settings ("Company Information" tab) before sending.
   responses:
     EmailCampaignsResponse:
       description: A paginated list of email campaigns.
@@ -2891,11 +2870,25 @@ components:
     SENDING_ACTION_VALIDATION_ERROR:
       description: |-
         The campaign wasn't started or scheduled — it was in a state that does not allow the
-        action, the `datetime` was invalid, or sending validation failed.
+        action or the `datetime` was invalid (a single message), or sending validation failed
+        (messages per attribute, campaign-wide ones under `base`).
       content:
         application/json:
           schema:
-            $ref: "#/components/schemas/SendingActionValidationErrorResponse"
+            oneOf:
+              - $ref: "#/components/schemas/ActionValidationErrorResponse"
+              - $ref: "#/components/schemas/ValidationErrorResponse"
+          examples:
+            invalid_transition:
+              summary: The campaign can't be started or scheduled from its state
+              value:
+                errors: "Cannot transition from 'started' to 'scheduled'"
+            sending_validation:
+              summary: Sending validation failed
+              value:
+                errors:
+                  base:
+                    - Your account has no company information. Add it in the account settings ("Company Information" tab) before sending.
     RATE_LIMITED:
       description: |-
         Too many requests. The public API is rate limited to 150 requests per 10 seconds per

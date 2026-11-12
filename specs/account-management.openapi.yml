@@ -756,7 +756,8 @@ paths:
         '422':
           description: |-
             The permissions can't be updated: the access belongs to the account owner or to an expired
-            API token, or a permission names a resource that doesn't exist or the owner access level.
+            API token, a permission names a resource that doesn't exist or an invalid or owner access
+            level, or the update would leave the access with no permissions.
           content:
             application/json:
               schema:
@@ -1265,7 +1266,8 @@ paths:
           description: |-
             The token wasn't created. Validation errors of the token itself (no permissions, the
             account's active token limit, the name or expiration) come per attribute; an invalid
-            permission (an unknown resource, an access level of owner) comes as a single message.
+            permission (an unknown resource, an invalid or owner access level) comes as a single
+            message.
           content:
             application/json:
               schema:
@@ -2218,8 +2220,8 @@ paths:
                 errors: Access forbidden
         '422':
           description: |-
-            The sub account wasn't created: the organization reached its sub-account limit, or the
-            account is invalid (e.g. a name longer than 80 characters).
+            The sub account wasn't created: the organization reached its sub-account limit or is
+            scheduled for deletion, or the account is invalid (e.g. a name longer than 80 characters).
           content:
             application/json:
               schema:
