@@ -2520,7 +2520,7 @@ paths:
                 is_read: false
                 created_at: '2022-07-01T19:29:59.295Z'
                 updated_at: '2022-07-01T19:29:59.295Z'
-                template_id: 0
+                template_id: null
                 template_variables: null
                 html_body_size: 150
                 text_body_size: 100
@@ -3235,7 +3235,7 @@ paths:
                   is_read: false
                   created_at: '2022-08-19T11:34:33.841Z'
                   updated_at: '2022-08-19T11:34:33.841Z'
-                  template_id: 0
+                  template_id: null
                   template_variables: null
                   html_body_size: 150
                   text_body_size: 100
@@ -3679,7 +3679,6 @@ paths:
                         type: array
                         items:
                           type: object
-                          nullable: true
                           properties:
                             Pts:
                               type: number
@@ -3857,7 +3856,6 @@ paths:
                         type: array
                         items:
                           type: object
-                          nullable: true
                           properties:
                             error_line:
                               type: number
@@ -5209,11 +5207,9 @@ paths:
                     content_type:
                       type: string
                     content_id:
-                      type: string
-                      nullable: true
+                      type: [string, 'null']
                     transfer_encoding:
-                      type: string
-                      nullable: true
+                      type: [string, 'null']
                     attachment_size:
                       type: integer
                     created_at:
@@ -5395,11 +5391,9 @@ paths:
                   content_type:
                     type: string
                   content_id:
-                    type: string
-                    nullable: true
+                    type: [string, 'null']
                   transfer_encoding:
-                    type: string
-                    nullable: true
+                    type: [string, 'null']
                   attachment_size:
                     type: integer
                   created_at:
@@ -5562,7 +5556,7 @@ components:
       type: object
       description: |
         Email message captured in a Sandbox. Body URLs are often under `/api/testing_message_parts/...` rather than nested under `/api/accounts/.../messages/...`.
-        `blacklists_report_info` may contain only `result` or the full report. `template_variables` is set when the message was sent from a template.
+        `blacklists_report_info` may contain only `result` or the full report. `template_id` and `template_variables` are set when the message was sent from a template.
       properties:
         id:
           type: integer
@@ -5589,10 +5583,9 @@ components:
         updated_at:
           type: string
         template_id:
-          type: integer
+          type: [integer, 'null']
         template_variables:
-          type: object
-          nullable: true
+          type: [object, 'null']
           additionalProperties: true
         html_body_size:
           type: integer
@@ -5668,7 +5661,6 @@ components:
         sandboxes:
           type: array
           items:
-            nullable: true
             $ref: '#/components/schemas/TestingSandbox'
         permissions:
           type: object
@@ -5724,8 +5716,7 @@ components:
         username:
           type: string
         password:
-          type: string
-          nullable: true
+          type: [string, 'null']
           description: Password is only available if you have admin permissions for the sandbox.
         max_size:
           type: integer
@@ -5762,8 +5753,7 @@ components:
         emails_unread_count:
           type: integer
         last_message_sent_at:
-          nullable: true
-          type: string
+          type: [string, 'null']
         smtp_ports:
           type: array
           items:
