@@ -3675,7 +3675,7 @@ components:
         it, since the original message is quoted automatically. `forward` has
         no default recipient, so supply at least one in `to`, `cc`, or `bcc`.
         Addresses use the Email Live Sending API `{ email, name }` shape.
-        Email Live Sending rejects missing bodies or recipients with `400`.
+        Missing bodies or recipients are rejected by the Email API with `400`.
       properties:
         from:
           allOf:
@@ -3744,7 +3744,7 @@ components:
         message_ids:
           type: array
           description: |
-            UUIDs assigned by Email Live Sending to the sent message, one per
+            UUIDs assigned by the Email API to the sent message, one per
             recipient. These are the sent message's UUIDs — not the inbound
             message ID acted on, nor an RFC `Message-ID` header value.
           items:
@@ -4054,8 +4054,7 @@ components:
             - "null"
           description: |
             Why the forward was rejected, e.g. `loop_prevention` or
-            `fetch_failed`, or the rejection reason returned by Email Live
-            Sending.
+            `fetch_failed`, or the rejection reason returned by the Email API.
             `null` when `status` is `forwarded`.
           example: null
         message_id:
@@ -4449,8 +4448,8 @@ components:
 
     SendMessageAccepted:
       description: |
-        Message queued for delivery. Returns the UUID(s) that Email Live
-        Sending assigned to the sent message, one per recipient.
+        Message queued for delivery. Returns the UUID(s) the Email API
+        assigned to the sent message, one per recipient.
       content:
         application/json:
           schema:
@@ -4463,7 +4462,7 @@ components:
       description: |
         The message could not be sent. Returned for an invalid sender (for
         example a `from` on a Mailtrap-hosted inbox, or one outside the inbox's
-        domain) and for validation errors rejected by Email Live Sending.
+        domain) and for validation errors rejected by the Email API.
       content:
         application/json:
           schema:
@@ -4476,7 +4475,7 @@ components:
       description: |
         The token lacks admin access (on the inbox for a Mailtrap-hosted inbox,
         or on the inbox's sending domain for a custom-domain inbox), the
-        Mailtrap-hosted sending limit has been reached, or Email Live Sending
+        Mailtrap-hosted sending limit has been reached, or the Email API
         rejected the message.
       content:
         application/json:
