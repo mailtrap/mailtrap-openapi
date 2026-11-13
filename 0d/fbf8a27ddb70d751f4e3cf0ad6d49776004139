@@ -1,0 +1,19 @@
+specs/inbound.openapi.yml
+  s_7a5ea234978737::t_33cf779ccf467c 3678-3679,3748-3749,4058-4059,4453-4454,4467-4468,4481-4482
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "0dfbf8a27ddb70d751f4e3cf0ad6d49776004139",
+  "prompts": {},
+  "sessions": {
+    "s_7a5ea234978737": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "235018ee-3280-4cfe-8e0c-2062c1398b18",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "IzikAJ <izikaj@gmail.com>"
+    }
+  }
+}
