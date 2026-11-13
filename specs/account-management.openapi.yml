@@ -2199,7 +2199,8 @@ paths:
 
         The sub account and all of its data – projects, sandboxes, emails and domains – are removed
         permanently and cannot be restored. Deleting the organization's last sub account also deletes
-        the organization.
+        the organization. If the organization is on a paid plan, its last sub account can't be deleted
+        through the API: only the organization owner can delete it, in the Mailtrap app.
 
         Rate limit: 10 requests per minute per organization.
       tags:
@@ -2304,6 +2305,16 @@ paths:
                 $ref: '#/components/schemas/ErrorResponse'
               example:
                 errors: Another action in progress. Wait until it's finished
+        '422':
+          description: |-
+            The sub account is the last one of an organization on a paid plan. Only the organization
+            owner can delete it, in the Mailtrap app.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                errors: Only the organization owner can delete the organization's last sub-account.
         '429':
           $ref: '#/components/responses/LIMIT_EXCEEDED'
     parameters:
