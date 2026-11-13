@@ -55,6 +55,17 @@ paths:
           $ref: "#/components/responses/UNAUTHENTICATED"
         "403":
           $ref: "#/components/responses/PERMISSION_DENIED"
+        "422":
+          description: The `token` is too large to paginate with — its offset overflows a 64-bit integer.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  errors:
+                    type: string
+              example:
+                errors: token is out of range
         "429":
           $ref: "#/components/responses/RATE_LIMITED"
       x-codeSamples:
@@ -992,7 +1003,7 @@ paths:
         "404":
           $ref: "#/components/responses/NOT_FOUND"
         "422":
-          $ref: "#/components/responses/ACTION_VALIDATION_ERROR"
+          $ref: "#/components/responses/SENDING_ACTION_VALIDATION_ERROR"
         "429":
           $ref: "#/components/responses/RATE_LIMITED"
       x-codeSamples:
@@ -1137,7 +1148,7 @@ paths:
         "404":
           $ref: "#/components/responses/NOT_FOUND"
         "422":
-          $ref: "#/components/responses/ACTION_VALIDATION_ERROR"
+          $ref: "#/components/responses/SENDING_ACTION_VALIDATION_ERROR"
         "429":
           $ref: "#/components/responses/RATE_LIMITED"
       x-codeSamples:
@@ -2390,7 +2401,8 @@ components:
           type: string
           example: news
         from_display_name:
-          type: string
+          type: [string, "null"]
+          description: Display name shown in the From header. `null` when the campaign has none.
           example: Acme Marketing
         reply_to:
           $ref: "#/components/schemas/ReplyTo"
@@ -2752,20 +2764,11 @@ components:
               - can't be blank
     ActionValidationErrorResponse:
       type: object
-      description: |-
-        Validation error returned by the lifecycle action endpoints. `errors` is either a single
-        message (an invalid state transition or an invalid `datetime`) or a list of messages
-        (sending-validation failures).
+      description: A lifecycle action's validation error as a single message, such as an invalid state transition.
       properties:
         errors:
-          oneOf:
-            - type: string
-              example: "Cannot transition from 'started' to 'scheduled'"
-            - type: array
-              items:
-                type: string
-              example:
-                - Campaign design can't be blank
+          type: string
+          example: "Cannot transition from 'under_review' to 'draft'"
   responses:
     EmailCampaignsResponse:
       description: A paginated list of email campaigns.
@@ -2859,13 +2862,33 @@ components:
           schema:
             $ref: "#/components/schemas/ValidationErrorResponse"
     ACTION_VALIDATION_ERROR:
-      description: |-
-        The lifecycle action was rejected — the campaign was in a state that does not allow the
-        action, the `datetime` was invalid, or sending validation failed.
+      description: The lifecycle action was rejected — the campaign was in a state that does not allow the action.
       content:
         application/json:
           schema:
             $ref: "#/components/schemas/ActionValidationErrorResponse"
+    SENDING_ACTION_VALIDATION_ERROR:
+      description: |-
+        The campaign wasn't started or scheduled — it was in a state that does not allow the
+        action or the `datetime` was invalid (a single message), or sending validation failed
+        (messages per attribute, campaign-wide ones under `base`).
+      content:
+        application/json:
+          schema:
+            oneOf:
+              - $ref: "#/components/schemas/ActionValidationErrorResponse"
+              - $ref: "#/components/schemas/ValidationErrorResponse"
+          examples:
+            invalid_transition:
+              summary: The campaign can't be started or scheduled from its state
+              value:
+                errors: "Cannot transition from 'started' to 'scheduled'"
+            sending_validation:
+              summary: Sending validation failed
+              value:
+                errors:
+                  base:
+                    - Your account has no company information. Add it in the account settings ("Company Information" tab) before sending.
     RATE_LIMITED:
       description: |-
         Too many requests. The public API is rate limited to 150 requests per 10 seconds per
