@@ -2204,11 +2204,11 @@ paths:
                 id: 12347
                 name: New Team Account
         '400':
-          description: Bad request - invalid parameters.
+          description: "`account.name` is missing or empty."
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: '#/components/schemas/BadRequest'
         '401':
           $ref: '#/components/responses/UNAUTHENTICATED'
         '403':
@@ -2542,6 +2542,18 @@ components:
           example: Incorrect API token
       example:
         error: Incorrect API token
+    BadRequest:
+      title: BadRequestResponse
+      type: object
+      required:
+        - error
+      properties:
+        status:
+          type: integer
+          example: 400
+        error:
+          type: string
+          example: Bad Request
     ErrorResponse:
       title: ErrorResponse
       type: object
