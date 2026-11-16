@@ -2248,7 +2248,7 @@ components:
           description: ID of the verified sending domain used for the campaign, as returned by the Sending Domains endpoints.
           example: 4321
         from_display_name:
-          type: string
+          type: [string, "null"]
           description: Display name shown in the From header.
           example: Acme Marketing
         from_local_part:
@@ -2328,7 +2328,8 @@ components:
       description: Reply-To address parts.
       properties:
         display_name:
-          type: string
+          type: [string, "null"]
+          description: Display name of the Reply-To address. `null` when the address has none.
           example: Acme Support
         local_part:
           type: string
@@ -2748,6 +2749,8 @@ components:
           example: Not Found
     ValidationErrorResponse:
       type: object
+      required:
+        - errors
       properties:
         errors:
           type: object
@@ -2765,6 +2768,8 @@ components:
     ActionValidationErrorResponse:
       type: object
       description: A lifecycle action's validation error as a single message, such as an invalid state transition.
+      required:
+        - errors
       properties:
         errors:
           type: string
@@ -2870,8 +2875,8 @@ components:
     SENDING_ACTION_VALIDATION_ERROR:
       description: |-
         The campaign wasn't started or scheduled — it was in a state that does not allow the
-        action or the `datetime` was invalid (a single message), or sending validation failed
-        (messages per attribute, campaign-wide ones under `base`).
+        action or, when scheduling, the `datetime` was invalid (a single message), or sending
+        validation failed (a list of messages under `base`).
       content:
         application/json:
           schema:

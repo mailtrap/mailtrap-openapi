@@ -757,7 +757,8 @@ paths:
           description: |-
             The permissions can't be updated: the access belongs to the account owner or to an expired
             API token, a permission names a resource that doesn't exist or an invalid or owner access
-            level, or the update would leave the access with no permissions.
+            level, or the update would leave the access with no permissions or with billing as its only
+            permission in an organization without the Organizations and Sub-Accounts feature.
           content:
             application/json:
               schema:
@@ -2544,6 +2545,8 @@ components:
     ErrorResponse:
       title: ErrorResponse
       type: object
+      required:
+        - errors
       properties:
         errors:
           type: string
@@ -2552,6 +2555,8 @@ components:
     UnprocessableEntity:
       title: UnprocessableEntity
       type: object
+      required:
+        - errors
       properties:
         errors:
           type: object
