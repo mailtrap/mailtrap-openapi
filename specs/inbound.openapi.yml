@@ -2412,6 +2412,7 @@ paths:
                       status: delivered
                       delivered_at: "2026-05-08T11:40:05.000Z"
                       bounced_at: null
+                      rejected_at: null
         "401":
           $ref: "#/components/responses/Unauthorized"
         "403":
@@ -3986,6 +3987,7 @@ components:
         - status
         - delivered_at
         - bounced_at
+        - rejected_at
       properties:
         to:
           type: string
@@ -4014,6 +4016,13 @@ components:
             - "null"
           format: date-time
           description: When the message hard-bounced. `null` if it did not.
+          example: null
+        rejected_at:
+          type:
+            - string
+            - "null"
+          format: date-time
+          description: When the message was rejected before sending, e.g. a suppressed recipient. `null` if it was not.
           example: null
 
     ForwardOutcome:
