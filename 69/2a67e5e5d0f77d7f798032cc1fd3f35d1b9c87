@@ -1,0 +1,19 @@
+specs/account-management.openapi.yml
+  s_7c2acf16dc0385::t_65e6acb8239fbc 2404,2406
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "692a67e5e5d0f77d7f798032cc1fd3f35d1b9c87",
+  "prompts": {},
+  "sessions": {
+    "s_7c2acf16dc0385": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "89513e52-4699-4c16-8eac-ab704441cbe0",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Maciej Walusiak <maciej.walusiak@railsware.com>"
+    }
+  }
+}

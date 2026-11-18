@@ -1,0 +1,27 @@
+CLAUDE.md
+  s_8f15e87752f5a8::t_ec62b1a770be2c 267
+README.md
+  s_8f15e87752f5a8::t_acb128eb0e9c92 11-22
+specs/account-management.openapi.yml
+  s_8f15e87752f5a8::t_49c2d639038b7a 1665,1769
+specs/email-sending.openapi.yml
+  s_8f15e87752f5a8::t_40eebb066e8fbe 3
+specs/inbound.openapi.yml
+  s_8f15e87752f5a8::t_b67e0eaf48134a 3677-3678,3715,3735,3747,3885,4057,4065,4367-4368,4451-4452,4465,4478
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "001375243d3e748dca3e2d3859f03eaf8334f865",
+  "prompts": {},
+  "sessions": {
+    "s_8f15e87752f5a8": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "ad39f9a0-4138-4b9f-a4d4-0cccec1c4a69",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "IzikAJ <izikaj@gmail.com>"
+    }
+  }
+}
