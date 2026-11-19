@@ -85,11 +85,13 @@ paths:
 
             const client = new MailtrapClient({ token: TOKEN, accountId: ACCOUNT_ID });
 
-            async function getInboxes() {
-              const inboxes = await client.testing.inboxes.getList();
+            async function getSandboxes() {
+              const sandboxes = await client.sandbox.sandboxes.getList();
+
+              console.log(sandboxes);
             }
 
-            getInboxes();
+            getSandboxes();
         - lang: php
           label: PHP
           source: |
@@ -99,12 +101,12 @@ paths:
             use Mailtrap\MailtrapSandboxClient;
 
             $config = new Config($_ENV['MAILTRAP_API_KEY']);
-            $accountId = $_ENV['MAILTRAP_ACCOUNT_ID'];
+            $accountId = (int) $_ENV['MAILTRAP_ACCOUNT_ID'];
 
-            $sandboxInboxes = (new MailtrapSandboxClient($config))
-                ->inboxes($accountId);
+            $sandboxes = (new MailtrapSandboxClient($config))
+                ->sandboxes($accountId);
 
-            $response = $sandboxInboxes->getList();
+            $response = $sandboxes->getList();
             var_dump(ResponseHelper::toArray($response));
         - lang: python
           label: Python
@@ -115,21 +117,21 @@ paths:
             ACCOUNT_ID = "YOUR_ACCOUNT_ID"
 
             client = mt.MailtrapClient(token=API_TOKEN, account_id=ACCOUNT_ID)
-            inboxes_api = client.testing_api.inboxes
+            sandboxes_api = client.sandbox_api.sandboxes
 
-            inboxes = inboxes_api.get_list()
+            sandboxes = sandboxes_api.get_list()
 
-            print(inboxes)
+            print(sandboxes)
         - lang: ruby
           label: Ruby
           source: |
             require 'mailtrap'
 
             client = Mailtrap::Client.new(api_key: ENV['MAILTRAP_API_KEY'])
-            inboxes = Mailtrap::InboxesAPI.new(YOUR_ACCOUNT_ID, client)
+            sandboxes = Mailtrap::SandboxesAPI.new(YOUR_ACCOUNT_ID, client)
 
-            inboxes.list.each do |inbox|
-              puts "Inbox: #{inbox.name} (ID: #{inbox.id})"
+            sandboxes.list.each do |sandbox|
+              puts "Sandbox: #{sandbox.name} (ID: #{sandbox.id})"
             end
         - lang: csharp
           label: .NET
@@ -138,12 +140,12 @@ paths:
 
             using var mailtrapFactory = new MailtrapClientFactory("YOUR_API_KEY");
             var client = mailtrapFactory.CreateClient();
-            var inboxes = await client
+            var sandboxes = await client
                 .Account(YOUR_ACCOUNT_ID)
-                .Inboxes()
+                .Sandboxes()
                 .GetAll();
 
-            Console.WriteLine(inboxes);
+            Console.WriteLine(sandboxes);
         - lang: java
           label: Java
           source: |
@@ -157,10 +159,10 @@ paths:
             var client = MailtrapClientFactory
                 .createMailtrapClient(config);
 
-            var inboxes = client.testingApi().inboxes()
-                .getInboxes(accountId);
+            var sandboxes = client.sandboxApi().sandboxes()
+                .getSandboxes(accountId);
 
-            System.out.println(inboxes);
+            System.out.println(sandboxes);
         - lang: go
           label: Go
           source: |
@@ -264,9 +266,9 @@ paths:
             });
 
             async function createProject() {
-              const project = await client.testing.projects.create({
-                name: 'My New Project'
-              });
+              const project = await client.sandbox.projects.create('My New Project');
+
+              console.log("Project created:", project);
             }
 
             createProject();
@@ -279,7 +281,7 @@ paths:
             use Mailtrap\MailtrapSandboxClient;
 
             $config = new Config($_ENV['MAILTRAP_API_KEY']);
-            $accountId = $_ENV['MAILTRAP_ACCOUNT_ID'];
+            $accountId = (int) $_ENV['MAILTRAP_ACCOUNT_ID'];
 
             $sandboxProjects = (new MailtrapSandboxClient($config))
                 ->projects($accountId);
@@ -296,7 +298,7 @@ paths:
                 account_id="YOUR_ACCOUNT_ID"
             )
 
-            project = client.testing_api.projects.create(
+            project = client.sandbox_api.projects.create(
                 project_params=mt.ProjectParams(name="My New Project")
             )
 
@@ -350,7 +352,7 @@ paths:
                 new ProjectRequest.ProjectData("My New Project")
             );
 
-            var project = client.testingApi().projects()
+            var project = client.sandboxApi().projects()
                 .createProject(accountId, request);
 
             System.out.println(project);
@@ -430,7 +432,9 @@ paths:
             });
 
             async function getProjects() {
-              const projects = await client.testing.projects.getList();
+              const projects = await client.sandbox.projects.getList();
+
+              console.log(projects);
             }
 
             getProjects();
@@ -443,7 +447,7 @@ paths:
             use Mailtrap\MailtrapSandboxClient;
 
             $config = new Config($_ENV['MAILTRAP_API_KEY']);
-            $accountId = $_ENV['MAILTRAP_ACCOUNT_ID'];
+            $accountId = (int) $_ENV['MAILTRAP_ACCOUNT_ID'];
 
             $sandboxProjects = (new MailtrapSandboxClient($config))
                 ->projects($accountId);
@@ -460,7 +464,7 @@ paths:
                 account_id="YOUR_ACCOUNT_ID"
             )
 
-            projects = client.testing_api.projects.get_list()
+            projects = client.sandbox_api.projects.get_list()
 
             for project in projects:
                 print(f"Project: {project.name}, ID: {project.id}")
@@ -510,7 +514,7 @@ paths:
             var client = MailtrapClientFactory
                 .createMailtrapClient(config);
 
-            var projects = client.testingApi().projects().getProjects(accountId);
+            var projects = client.sandboxApi().projects().getProjects(accountId);
 
             for (var project : projects) {
                 System.out.println("Project: " + project.getName() +
@@ -601,7 +605,7 @@ paths:
 
             async function getProject() {
               const projectId = 12345;
-              const project = await client.testing.projects.get(projectId);
+              const project = await client.sandbox.projects.getById(projectId);
 
               console.log("Project:", project);
             }
@@ -616,12 +620,12 @@ paths:
             use Mailtrap\MailtrapSandboxClient;
 
             $config = new Config($_ENV['MAILTRAP_API_KEY']);
-            $accountId = $_ENV['MAILTRAP_ACCOUNT_ID'];
+            $accountId = (int) $_ENV['MAILTRAP_ACCOUNT_ID'];
 
             $sandboxProjects = (new MailtrapSandboxClient($config))
                 ->projects($accountId);
 
-            $projectId = $_ENV['MAILTRAP_PROJECT_ID'];
+            $projectId = (int) $_ENV['MAILTRAP_PROJECT_ID'];
             $response = $sandboxProjects->getById($projectId);
             var_dump(ResponseHelper::toArray($response));
         - lang: python
@@ -636,7 +640,7 @@ paths:
 
             # Get project by ID
             project_id = 12345
-            project = client.testing_api.projects.get_by_id(project_id)
+            project = client.sandbox_api.projects.get_by_id(project_id)
 
             print(f"Project: {project.name}")
         - lang: ruby
@@ -683,7 +687,7 @@ paths:
                 .createMailtrapClient(config);
 
             long projectId = 12345L;
-            var project = client.testingApi().projects()
+            var project = client.sandboxApi().projects()
                 .getProject(accountId, projectId);
 
             System.out.println("Project: " + project.getName());
@@ -765,7 +769,7 @@ paths:
 
             async function updateProject() {
               const projectId = 12345;
-              const updatedProject = await client.testing.projects.update(
+              const updatedProject = await client.sandbox.projects.update(
                 projectId,
                 "Updated Project Name"
               );
@@ -782,12 +786,12 @@ paths:
             use Mailtrap\MailtrapSandboxClient;
 
             $config = new Config($_ENV['MAILTRAP_API_KEY']);
-            $accountId = $_ENV['MAILTRAP_ACCOUNT_ID'];
+            $accountId = (int) $_ENV['MAILTRAP_ACCOUNT_ID'];
 
             $sandboxProjects = (new MailtrapSandboxClient($config))
                 ->projects($accountId);
 
-            $projectId = $_ENV['MAILTRAP_PROJECT_ID'];
+            $projectId = (int) $_ENV['MAILTRAP_PROJECT_ID'];
             $newProjectName = 'Updated Project Name';
 
             $response = $sandboxProjects->updateName($projectId, $newProjectName);
@@ -804,7 +808,7 @@ paths:
 
             # Update project
             project_id = 12345
-            updated_project = client.testing_api.projects.update(
+            updated_project = client.sandbox_api.projects.update(
                 project_id,
                 mt.ProjectParams(name="Updated Project Name")
             )
@@ -864,7 +868,7 @@ paths:
                 new ProjectRequest.ProjectData("Updated Project Name")
             );
 
-            var updatedProject = client.testingApi().projects()
+            var updatedProject = client.sandboxApi().projects()
                 .updateProject(accountId, projectId, request);
 
             System.out.println("Project updated: " + updatedProject.getName());
@@ -942,7 +946,7 @@ paths:
 
             async function deleteProject() {
               const projectId = 12345;
-              const result = await client.testing.projects.delete(projectId);
+              const result = await client.sandbox.projects.delete(projectId);
 
               console.log("Project deleted:", result);
             }
@@ -956,12 +960,12 @@ paths:
             use Mailtrap\MailtrapSandboxClient;
 
             $config = new Config($_ENV['MAILTRAP_API_KEY']);
-            $accountId = $_ENV['MAILTRAP_ACCOUNT_ID'];
+            $accountId = (int) $_ENV['MAILTRAP_ACCOUNT_ID'];
 
             $sandboxProjects = (new MailtrapSandboxClient($config))
                 ->projects($accountId);
 
-            $projectId = $_ENV['MAILTRAP_PROJECT_ID'];
+            $projectId = (int) $_ENV['MAILTRAP_PROJECT_ID'];
             $response = $sandboxProjects->delete($projectId);
             var_dump($response->getStatusCode());
         - lang: python
@@ -976,7 +980,7 @@ paths:
 
             # Delete project
             project_id = 12345
-            result = client.testing_api.projects.delete(project_id)
+            result = client.sandbox_api.projects.delete(project_id)
 
             print(f"Project deleted: {result.id}")
         - lang: ruby
@@ -1023,7 +1027,7 @@ paths:
                 .createMailtrapClient(config);
 
             long projectId = 12345L;
-            var deletedProject = client.testingApi().projects()
+            var deletedProject = client.sandboxApi().projects()
                 .deleteProject(accountId, projectId);
 
             System.out.println("Project deleted: " + deletedProject.getId());
@@ -1129,18 +1133,18 @@ paths:
               accountId: ACCOUNT_ID
             });
 
-            async function createInbox() {
+            async function createSandbox() {
               const projectId = 12345;
-              const inbox = await client.testing.inboxes.create(
+              const sandbox = await client.sandbox.sandboxes.create(
                 projectId,
-                'My Test Inbox'
+                'My Test Sandbox'
               );
 
-              console.log(`Inbox created: ${inbox.name}`);
-              console.log(`SMTP credentials - User: ${inbox.username}`);
+              console.log(`Sandbox created: ${sandbox.name}`);
+              console.log(`SMTP credentials - User: ${sandbox.username}`);
             }
 
-            createInbox();
+            createSandbox();
         - lang: php
           label: PHP
           source: |
@@ -1150,13 +1154,13 @@ paths:
             use Mailtrap\MailtrapSandboxClient;
 
             $config = new Config($_ENV['MAILTRAP_API_KEY']);
-            $accountId = $_ENV['MAILTRAP_ACCOUNT_ID'];
-            $projectId = $_ENV['MAILTRAP_PROJECT_ID'];
+            $accountId = (int) $_ENV['MAILTRAP_ACCOUNT_ID'];
+            $projectId = (int) $_ENV['MAILTRAP_PROJECT_ID'];
 
-            $sandboxInboxes = (new MailtrapSandboxClient($config))
-                ->inboxes($accountId);
+            $sandboxes = (new MailtrapSandboxClient($config))
+                ->sandboxes($accountId);
 
-            $response = $sandboxInboxes->create($projectId, 'My Test Inbox');
+            $response = $sandboxes->create($projectId, 'My Test Sandbox');
             var_dump(ResponseHelper::toArray($response));
         - lang: python
           label: Python
@@ -1168,24 +1172,24 @@ paths:
                 account_id="YOUR_ACCOUNT_ID"
             )
             project_id = 12345
-            inbox = client.testing_api.inboxes.create(
+            sandbox = client.sandbox_api.sandboxes.create(
                 project_id=project_id,
-                inbox_params=mt.InboxParams(name="My Test Inbox")
+                sandbox_params=mt.CreateSandboxParams(name="My Test Sandbox")
             )
 
-            print(f"Inbox created: {inbox.name}")
-            print(f"SMTP credentials - User: {inbox.username}")
+            print(f"Sandbox created: {sandbox.name}")
+            print(f"SMTP credentials - User: {sandbox.username}")
         - lang: ruby
           label: Ruby
           source: |
             require 'mailtrap'
 
             client = Mailtrap::Client.new(api_key: ENV['MAILTRAP_API_KEY'])
-            inboxes = Mailtrap::InboxesAPI.new(YOUR_ACCOUNT_ID, client)
+            sandboxes = Mailtrap::SandboxesAPI.new(YOUR_ACCOUNT_ID, client)
 
-            inbox = inboxes.create(name: 'My Test Inbox', project_id: PROJECT_ID)
+            sandbox = sandboxes.create(name: 'My Test Sandbox', project_id: PROJECT_ID)
 
-            puts "Inbox created: #{inbox.name}"
+            puts "Sandbox created: #{sandbox.name}"
         - lang: csharp
           label: .NET
           source: |
@@ -1196,19 +1200,19 @@ paths:
             var client = mailtrapFactory.CreateClient();
 
             var projectId = 12345;
-            var inbox = await client
+            var sandbox = await client
                 .Account(YOUR_ACCOUNT_ID)
-                .Inboxes()
-                .Create(new CreateInboxRequest(projectId, "My Test Inbox"));
+                .Sandboxes()
+                .Create(new CreateInboxRequest(projectId, "My Test Sandbox"));
 
-            Console.WriteLine($"Inbox created: {inbox.Name}");
-            Console.WriteLine($"SMTP credentials - User: {inbox.UserName}");
+            Console.WriteLine($"Sandbox created: {sandbox.Name}");
+            Console.WriteLine($"SMTP credentials - User: {sandbox.UserName}");
         - lang: java
           label: Java
           source: |
             import io.mailtrap.config.MailtrapConfig;
             import io.mailtrap.factory.MailtrapClientFactory;
-            import io.mailtrap.model.request.inbox.CreateInboxRequest;
+            import io.mailtrap.model.request.inboxes.CreateInboxRequest;
 
             var config = new MailtrapConfig.Builder()
                 .token("YOUR_API_KEY")
@@ -1218,15 +1222,15 @@ paths:
                 .createMailtrapClient(config);
 
             var request = new CreateInboxRequest(
-                new CreateInboxRequest.InboxCreateData("My Test Inbox")
+                new CreateInboxRequest.InboxCreateData("My Test Sandbox")
             );
 
             long projectId = 12345L;
-            var inbox = client.testingApi().inboxes()
-                .createInbox(accountId, projectId, request);
+            var sandbox = client.sandboxApi().sandboxes()
+                .createSandbox(accountId, projectId, request);
 
-            System.out.println("Inbox created: " + inbox.getName());
-            System.out.println("SMTP credentials - User: " + inbox.getUsername());
+            System.out.println("Sandbox created: " + sandbox.getName());
+            System.out.println("SMTP credentials - User: " + sandbox.getUsername());
         - lang: go
           label: Go
           source: |
@@ -1313,14 +1317,14 @@ paths:
 
             const client = new MailtrapClient({ token: TOKEN, accountId: ACCOUNT_ID });
 
-            async function getInboxAttributes() {
-              const inboxId = 12345;
-              const inboxAttributes = await client.testing.inboxes.getInboxAttributes(inboxId);
+            async function getSandboxAttributes() {
+              const sandboxId = 12345;
+              const sandboxAttributes = await client.sandbox.sandboxes.getSandboxAttributes(sandboxId);
 
-              console.log(inboxAttributes);
+              console.log(sandboxAttributes);
             }
 
-            getInboxAttributes();
+            getSandboxAttributes();
         - lang: php
           label: PHP
           source: |
@@ -1330,13 +1334,13 @@ paths:
             use Mailtrap\MailtrapSandboxClient;
 
             $config = new Config($_ENV['MAILTRAP_API_KEY']);
-            $accountId = $_ENV['MAILTRAP_ACCOUNT_ID'];
+            $accountId = (int) $_ENV['MAILTRAP_ACCOUNT_ID'];
 
-            $sandboxInboxes = (new MailtrapSandboxClient($config))
-                ->inboxes($accountId);
+            $sandboxes = (new MailtrapSandboxClient($config))
+                ->sandboxes($accountId);
 
-            $inboxId = $_ENV['MAILTRAP_INBOX_ID'];
-            $response = $sandboxInboxes->getInboxAttributes($inboxId);
+            $sandboxId = (int) $_ENV['MAILTRAP_SANDBOX_ID'];
+            $response = $sandboxes->getSandboxAttributes($sandboxId);
             var_dump(ResponseHelper::toArray($response));
         - lang: python
           label: Python
@@ -1347,22 +1351,22 @@ paths:
             ACCOUNT_ID = "YOUR_ACCOUNT_ID"
 
             client = mt.MailtrapClient(token=API_TOKEN, account_id=ACCOUNT_ID)
-            inboxes_api = client.testing_api.inboxes
+            sandboxes_api = client.sandbox_api.sandboxes
 
-            inbox_id = 12345
-            inbox_attributes = inboxes_api.get_by_id(inbox_id)
+            sandbox_id = 12345
+            sandbox_attributes = sandboxes_api.get_by_id(sandbox_id)
 
-            print(inbox_attributes)
+            print(sandbox_attributes)
         - lang: ruby
           label: Ruby
           source: |
             require 'mailtrap'
 
             client = Mailtrap::Client.new(api_key: ENV['MAILTRAP_API_KEY'])
-            inboxes = Mailtrap::InboxesAPI.new(YOUR_ACCOUNT_ID, client)
+            sandboxes = Mailtrap::SandboxesAPI.new(YOUR_ACCOUNT_ID, client)
 
-            inbox = inboxes.get(INBOX_ID)
-            puts "Inbox: #{inbox}"
+            sandbox = sandboxes.get(SANDBOX_ID)
+            puts "Sandbox: #{sandbox}"
         - lang: csharp
           label: .NET
           source: |
@@ -1370,13 +1374,13 @@ paths:
 
             using var mailtrapFactory = new MailtrapClientFactory("YOUR_API_KEY");
             var client = mailtrapFactory.CreateClient();
-            var inboxId = 12345;
-            var inbox = await client
+            var sandboxId = 12345;
+            var sandbox = await client
                 .Account(YOUR_ACCOUNT_ID)
-                .Inbox(inboxId)
+                .Sandbox(sandboxId)
                 .GetDetails();
 
-            Console.WriteLine(inbox);
+            Console.WriteLine(sandbox);
         - lang: java
           label: Java
           source: |
@@ -1390,11 +1394,11 @@ paths:
             var client = MailtrapClientFactory
                 .createMailtrapClient(config);
 
-            long inboxId = 12345L;
-            var inboxAttributes = client.testingApi().inboxes()
-                .getInboxAttributes(accountId, inboxId);
+            long sandboxId = 12345L;
+            var sandboxAttributes = client.sandboxApi().sandboxes()
+                .getSandboxAttributes(accountId, sandboxId);
 
-            System.out.println(inboxAttributes);
+            System.out.println(sandboxAttributes);
         - lang: go
           label: Go
           source: |
@@ -1475,14 +1479,14 @@ paths:
 
             const client = new MailtrapClient({ token: TOKEN, accountId: ACCOUNT_ID });
 
-            async function deleteInbox() {
-              const inboxId = 12345;
-              const result = await client.testing.inboxes.delete(inboxId);
+            async function deleteSandbox() {
+              const sandboxId = 12345;
+              const result = await client.sandbox.sandboxes.delete(sandboxId);
               
               console.log(result);
             }
 
-            deleteInbox();
+            deleteSandbox();
         - lang: php
           label: PHP
           source: |
@@ -1491,13 +1495,13 @@ paths:
             use Mailtrap\MailtrapSandboxClient;
 
             $config = new Config($_ENV['MAILTRAP_API_KEY']);
-            $accountId = $_ENV['MAILTRAP_ACCOUNT_ID'];
+            $accountId = (int) $_ENV['MAILTRAP_ACCOUNT_ID'];
 
-            $sandboxInboxes = (new MailtrapSandboxClient($config))
-                ->inboxes($accountId);
+            $sandboxes = (new MailtrapSandboxClient($config))
+                ->sandboxes($accountId);
 
-            $inboxId = $_ENV['MAILTRAP_INBOX_ID'];
-            $response = $sandboxInboxes->delete($inboxId);
+            $sandboxId = (int) $_ENV['MAILTRAP_SANDBOX_ID'];
+            $response = $sandboxes->delete($sandboxId);
             var_dump($response->getStatusCode());
         - lang: python
           label: Python
@@ -1508,10 +1512,10 @@ paths:
             ACCOUNT_ID = "YOUR_ACCOUNT_ID"
 
             client = mt.MailtrapClient(token=API_TOKEN, account_id=ACCOUNT_ID)
-            inboxes_api = client.testing_api.inboxes
+            sandboxes_api = client.sandbox_api.sandboxes
 
-            inbox_id = 12345
-            result = inboxes_api.delete(inbox_id)
+            sandbox_id = 12345
+            result = sandboxes_api.delete(sandbox_id)
 
             print(result)
         - lang: ruby
@@ -1520,9 +1524,9 @@ paths:
             require 'mailtrap'
 
             client = Mailtrap::Client.new(api_key: ENV['MAILTRAP_API_KEY'])
-            inboxes = Mailtrap::InboxesAPI.new(YOUR_ACCOUNT_ID, client)
+            sandboxes = Mailtrap::SandboxesAPI.new(YOUR_ACCOUNT_ID, client)
 
-            inboxes.delete(INBOX_ID)
+            sandboxes.delete(SANDBOX_ID)
         - lang: csharp
           label: .NET
           source: |
@@ -1530,13 +1534,13 @@ paths:
 
             using var mailtrapFactory = new MailtrapClientFactory("YOUR_API_KEY");
             var client = mailtrapFactory.CreateClient();
-            var inboxId = 12345;
-            var deletedInbox = await client
+            var sandboxId = 12345;
+            var deletedSandbox = await client
                 .Account(YOUR_ACCOUNT_ID)
-                .Inbox(inboxId)
+                .Sandbox(sandboxId)
                 .Delete();
 
-            Console.WriteLine(deletedInbox);
+            Console.WriteLine(deletedSandbox);
         - lang: java
           label: Java
           source: |
@@ -1550,11 +1554,11 @@ paths:
             var client = MailtrapClientFactory
                 .createMailtrapClient(config);
 
-            long inboxId = 12345L;
-            var deletedInbox = client.testingApi().inboxes()
-                .deleteInbox(ACCOUNT_ID, inboxId);
+            long sandboxId = 12345L;
+            var deletedSandbox = client.sandboxApi().sandboxes()
+                .deleteSandbox(accountId, sandboxId);
 
-            System.out.println(deletedInbox);
+            System.out.println(deletedSandbox);
         - lang: go
           label: Go
           source: |
@@ -1638,35 +1642,35 @@ paths:
 
             const client = new MailtrapClient({ token: TOKEN, accountId: ACCOUNT_ID });
 
-            async function updateInbox() {
-              const inboxId = 12345;
-              const updatedInbox = await client.testing.inboxes.updateInbox(
-                inboxId,
-                { name: 'Updated Inbox Name', emailUsername: 'new-username' }
+            async function updateSandbox() {
+              const sandboxId = 12345;
+              const updatedSandbox = await client.sandbox.sandboxes.updateSandbox(
+                sandboxId,
+                { name: 'Updated Sandbox Name', emailUsername: 'new-username' }
               );
-              console.log(updatedInbox);
+              console.log(updatedSandbox);
             }
 
-            updateInbox();
+            updateSandbox();
         - lang: php
           label: PHP
           source: |
             <?php
             use Mailtrap\Config;
-            use Mailtrap\DTO\Request\Inbox;
+            use Mailtrap\DTO\Request\Sandbox;
             use Mailtrap\Helper\ResponseHelper;
             use Mailtrap\MailtrapSandboxClient;
 
             $config = new Config($_ENV['MAILTRAP_API_KEY']);
-            $accountId = $_ENV['MAILTRAP_ACCOUNT_ID'];
+            $accountId = (int) $_ENV['MAILTRAP_ACCOUNT_ID'];
 
-            $sandboxInboxes = (new MailtrapSandboxClient($config))
-                ->inboxes($accountId);
+            $sandboxes = (new MailtrapSandboxClient($config))
+                ->sandboxes($accountId);
 
-            $inboxId = $_ENV['MAILTRAP_INBOX_ID'];
-            $response = $sandboxInboxes->update(
-                $inboxId,
-                new Inbox('Updated Inbox Name', 'new-username')
+            $sandboxId = (int) $_ENV['MAILTRAP_SANDBOX_ID'];
+            $response = $sandboxes->update(
+                $sandboxId,
+                new Sandbox('Updated Sandbox Name', 'new-username')
             );
 
             var_dump(ResponseHelper::toArray($response));
@@ -1679,24 +1683,24 @@ paths:
             ACCOUNT_ID = "YOUR_ACCOUNT_ID"
 
             client = mt.MailtrapClient(token=API_TOKEN, account_id=ACCOUNT_ID)
-            inboxes_api = client.testing_api.inboxes
+            sandboxes_api = client.sandbox_api.sandboxes
 
-            inbox_id = 12345
-            updated_inbox = inboxes_api.update(
-                inbox_id,
-                mt.UpdateInboxParams(name="Updated Inbox Name", email_username="new-username")
+            sandbox_id = 12345
+            updated_sandbox = sandboxes_api.update(
+                sandbox_id,
+                mt.UpdateSandboxParams(name="Updated Sandbox Name", email_username="new-username")
             )
 
-            print(updated_inbox)
+            print(updated_sandbox)
         - lang: ruby
           label: Ruby
           source: |
             require 'mailtrap'
 
             client = Mailtrap::Client.new(api_key: ENV['MAILTRAP_API_KEY'])
-            inboxes = Mailtrap::InboxesAPI.new(YOUR_ACCOUNT_ID, client)
+            sandboxes = Mailtrap::SandboxesAPI.new(YOUR_ACCOUNT_ID, client)
 
-            inboxes.update(INBOX_ID, name: 'Updated Inbox Name')
+            sandboxes.update(SANDBOX_ID, name: 'Updated Sandbox Name')
         - lang: csharp
           label: .NET
           source: |
@@ -1705,19 +1709,19 @@ paths:
 
             using var mailtrapFactory = new MailtrapClientFactory("YOUR_API_KEY");
             var client = mailtrapFactory.CreateClient();
-            var inboxId = 12345;
+            var sandboxId = 12345;
             var updateRequest = new UpdateInboxRequest
             {
-                Name = "Updated Inbox Name",
+                Name = "Updated Sandbox Name",
                 EmailUsername = "new-username"
             };
 
-            var updatedInbox = await client
+            var updatedSandbox = await client
                 .Account(YOUR_ACCOUNT_ID)
-                .Inbox(inboxId)
+                .Sandbox(sandboxId)
                 .Update(updateRequest);
 
-            Console.WriteLine(updatedInbox);
+            Console.WriteLine(updatedSandbox);
         - lang: java
           label: Java
           source: |
@@ -1732,15 +1736,15 @@ paths:
             var client = MailtrapClientFactory
                 .createMailtrapClient(config);
 
-            long inboxId = 12345L;
+            long sandboxId = 12345L;
             var updateRequest = new UpdateInboxRequest(
-                new UpdateInboxRequest.InboxUpdateData("Updated Inbox Name", "new-username")
+                new UpdateInboxRequest.InboxUpdateData("Updated Sandbox Name", "new-username")
             );
 
-            var updatedInbox = client.testingApi().inboxes()
-                .updateInbox(accountId, inboxId, updateRequest);
+            var updatedSandbox = client.sandboxApi().sandboxes()
+                .updateSandbox(accountId, sandboxId, updateRequest);
 
-            System.out.println(updatedInbox);
+            System.out.println(updatedSandbox);
         - lang: go
           label: Go
           source: |
@@ -1805,14 +1809,14 @@ paths:
 
             const client = new MailtrapClient({ token: TOKEN, accountId: ACCOUNT_ID });
 
-            async function cleanInbox() {
-              const inboxId = 12345;
-              const result = await client.testing.inboxes.clean(inboxId);
+            async function cleanSandbox() {
+              const sandboxId = 12345;
+              const result = await client.sandbox.sandboxes.cleanSandbox(sandboxId);
 
               console.log(result);
             }
 
-            cleanInbox();
+            cleanSandbox();
         - lang: php
           label: PHP
           source: |
@@ -1822,13 +1826,13 @@ paths:
             use Mailtrap\MailtrapSandboxClient;
 
             $config = new Config($_ENV['MAILTRAP_API_KEY']);
-            $accountId = $_ENV['MAILTRAP_ACCOUNT_ID'];
+            $accountId = (int) $_ENV['MAILTRAP_ACCOUNT_ID'];
 
-            $sandboxInboxes = (new MailtrapSandboxClient($config))
-                ->inboxes($accountId);
+            $sandboxes = (new MailtrapSandboxClient($config))
+                ->sandboxes($accountId);
 
-            $inboxId = $_ENV['MAILTRAP_INBOX_ID'];
-            $response = $sandboxInboxes->clean($inboxId);
+            $sandboxId = (int) $_ENV['MAILTRAP_SANDBOX_ID'];
+            $response = $sandboxes->clean($sandboxId);
 
             var_dump(ResponseHelper::toArray($response));
         - lang: python
@@ -1840,10 +1844,10 @@ paths:
             ACCOUNT_ID = "YOUR_ACCOUNT_ID"
 
             client = mt.MailtrapClient(token=API_TOKEN, account_id=ACCOUNT_ID)
-            inboxes_api = client.testing_api.inboxes
+            sandboxes_api = client.sandbox_api.sandboxes
 
-            inbox_id = 12345
-            result = inboxes_api.clean(inbox_id)
+            sandbox_id = 12345
+            result = sandboxes_api.clean(sandbox_id)
 
             print(result)
         - lang: ruby
@@ -1852,9 +1856,9 @@ paths:
             require 'mailtrap'
 
             client = Mailtrap::Client.new(api_key: ENV['MAILTRAP_API_KEY'])
-            inboxes = Mailtrap::InboxesAPI.new(YOUR_ACCOUNT_ID, client)
+            sandboxes = Mailtrap::SandboxesAPI.new(YOUR_ACCOUNT_ID, client)
 
-            inboxes.clean(INBOX_ID)
+            sandboxes.clean(SANDBOX_ID)
         - lang: csharp
           label: .NET
           source: |
@@ -1862,13 +1866,13 @@ paths:
 
             using var mailtrapFactory = new MailtrapClientFactory("YOUR_API_KEY");
             var client = mailtrapFactory.CreateClient();
-            var inboxId = 12345;
-            var cleanedInbox = await client
+            var sandboxId = 12345;
+            var cleanedSandbox = await client
                 .Account(YOUR_ACCOUNT_ID)
-                .Inbox(inboxId)
+                .Sandbox(sandboxId)
                 .Clean();
 
-            Console.WriteLine(cleanedInbox);
+            Console.WriteLine(cleanedSandbox);
         - lang: java
           label: Java
           source: |
@@ -1882,11 +1886,11 @@ paths:
             var client = MailtrapClientFactory
                 .createMailtrapClient(config);
 
-            long inboxId = 12345L;
-            var cleanedInbox = client.testingApi().inboxes()
-                .cleanInbox(accountId, inboxId);
+            long sandboxId = 12345L;
+            var cleanedSandbox = client.sandboxApi().sandboxes()
+                .cleanSandbox(accountId, sandboxId);
 
-            System.out.println(cleanedInbox);
+            System.out.println(cleanedSandbox);
         - lang: go
           label: Go
           source: |
@@ -1949,8 +1953,8 @@ paths:
             const client = new MailtrapClient({ token: TOKEN, accountId: ACCOUNT_ID });
 
             async function markAsRead() {
-              const inboxId = 12345;
-              const result = await client.testing.inboxes.markAsRead(inboxId);
+              const sandboxId = 12345;
+              const result = await client.sandbox.sandboxes.markAsRead(sandboxId);
 
               console.log(result);
             }
@@ -1965,13 +1969,13 @@ paths:
             use Mailtrap\MailtrapSandboxClient;
 
             $config = new Config($_ENV['MAILTRAP_API_KEY']);
-            $accountId = $_ENV['MAILTRAP_ACCOUNT_ID'];
+            $accountId = (int) $_ENV['MAILTRAP_ACCOUNT_ID'];
 
-            $sandboxInboxes = (new MailtrapSandboxClient($config))
-                ->inboxes($accountId);
+            $sandboxes = (new MailtrapSandboxClient($config))
+                ->sandboxes($accountId);
 
-            $inboxId = $_ENV['MAILTRAP_INBOX_ID'];
-            $response = $sandboxInboxes->markAsRead($inboxId);
+            $sandboxId = (int) $_ENV['MAILTRAP_SANDBOX_ID'];
+            $response = $sandboxes->markAsRead($sandboxId);
             
             var_dump(ResponseHelper::toArray($response));
         - lang: python
@@ -1983,10 +1987,10 @@ paths:
             ACCOUNT_ID = "YOUR_ACCOUNT_ID"
 
             client = mt.MailtrapClient(token=API_TOKEN, account_id=ACCOUNT_ID)
-            inboxes_api = client.testing_api.inboxes
+            sandboxes_api = client.sandbox_api.sandboxes
 
-            inbox_id = 12345
-            result = inboxes_api.mark_as_read(inbox_id)
+            sandbox_id = 12345
+            result = sandboxes_api.mark_as_read(sandbox_id)
 
             print(result)
         - lang: ruby
@@ -1995,9 +1999,9 @@ paths:
             require 'mailtrap'
 
             client = Mailtrap::Client.new(api_key: ENV['MAILTRAP_API_KEY'])
-            inboxes = Mailtrap::InboxesAPI.new(YOUR_ACCOUNT_ID, client)
+            sandboxes = Mailtrap::SandboxesAPI.new(YOUR_ACCOUNT_ID, client)
 
-            inboxes.mark_as_read(INBOX_ID)
+            sandboxes.mark_as_read(SANDBOX_ID)
         - lang: csharp
           label: .NET
           source: |
@@ -2005,13 +2009,13 @@ paths:
 
             using var mailtrapFactory = new MailtrapClientFactory("YOUR_API_KEY");
             var client = mailtrapFactory.CreateClient();
-            var inboxId = 12345;
-            var markedInbox = await client
+            var sandboxId = 12345;
+            var markedSandbox = await client
                 .Account(YOUR_ACCOUNT_ID)
-                .Inbox(inboxId)
+                .Sandbox(sandboxId)
                 .MarkAsRead();
 
-            Console.WriteLine(markedInbox);
+            Console.WriteLine(markedSandbox);
         - lang: java
           label: Java
           source: |
@@ -2025,11 +2029,11 @@ paths:
             var client = MailtrapClientFactory
                 .createMailtrapClient(config);
 
-            long inboxId = 12345L;
-            var markedInbox = client.testingApi().inboxes()
-                .markAsRead(accountId, inboxId);
+            long sandboxId = 12345L;
+            var markedSandbox = client.sandboxApi().sandboxes()
+                .markAsRead(accountId, sandboxId);
 
-            System.out.println(markedInbox);
+            System.out.println(markedSandbox);
         - lang: go
           label: Go
           source: |
@@ -2092,8 +2096,8 @@ paths:
             const client = new MailtrapClient({ token: TOKEN, accountId: ACCOUNT_ID });
 
             async function resetCredentials() {
-              const inboxId = 12345;
-              const result = await client.testing.inboxes.resetCredentials(inboxId);
+              const sandboxId = 12345;
+              const result = await client.sandbox.sandboxes.resetCredentials(sandboxId);
 
               console.log(result);
             }
@@ -2108,13 +2112,13 @@ paths:
             use Mailtrap\MailtrapSandboxClient;
 
             $config = new Config($_ENV['MAILTRAP_API_KEY']);
-            $accountId = $_ENV['MAILTRAP_ACCOUNT_ID'];
+            $accountId = (int) $_ENV['MAILTRAP_ACCOUNT_ID'];
 
-            $sandboxInboxes = (new MailtrapSandboxClient($config))
-                ->inboxes($accountId);
+            $sandboxes = (new MailtrapSandboxClient($config))
+                ->sandboxes($accountId);
 
-            $inboxId = $_ENV['MAILTRAP_INBOX_ID'];
-            $response = $sandboxInboxes->resetSmtpCredentials($inboxId);
+            $sandboxId = (int) $_ENV['MAILTRAP_SANDBOX_ID'];
+            $response = $sandboxes->resetSmtpCredentials($sandboxId);
 
             var_dump(ResponseHelper::toArray($response));
         - lang: python
@@ -2126,10 +2130,10 @@ paths:
             ACCOUNT_ID = "YOUR_ACCOUNT_ID"
 
             client = mt.MailtrapClient(token=API_TOKEN, account_id=ACCOUNT_ID)
-            inboxes_api = client.testing_api.inboxes
+            sandboxes_api = client.sandbox_api.sandboxes
 
-            inbox_id = 12345
-            result = inboxes_api.reset_credentials(inbox_id)
+            sandbox_id = 12345
+            result = sandboxes_api.reset_credentials(sandbox_id)
 
             print(result)
         - lang: ruby
@@ -2138,9 +2142,9 @@ paths:
             require 'mailtrap'
 
             client = Mailtrap::Client.new(api_key: ENV['MAILTRAP_API_KEY'])
-            inboxes = Mailtrap::InboxesAPI.new(YOUR_ACCOUNT_ID, client)
+            sandboxes = Mailtrap::SandboxesAPI.new(YOUR_ACCOUNT_ID, client)
 
-            inboxes.reset_credentials(INBOX_ID)
+            sandboxes.reset_credentials(SANDBOX_ID)
         - lang: csharp
           label: .NET
           source: |
@@ -2148,13 +2152,13 @@ paths:
 
             using var mailtrapFactory = new MailtrapClientFactory("YOUR_API_KEY");
             var client = mailtrapFactory.CreateClient();
-            var inboxId = 12345;
-            var updatedInbox = await client
+            var sandboxId = 12345;
+            var updatedSandbox = await client
                 .Account(YOUR_ACCOUNT_ID)
-                .Inbox(inboxId)
+                .Sandbox(sandboxId)
                 .ResetCredentials();
 
-            Console.WriteLine(updatedInbox);
+            Console.WriteLine(updatedSandbox);
         - lang: java
           label: Java
           source: |
@@ -2168,11 +2172,11 @@ paths:
             var client = MailtrapClientFactory
                 .createMailtrapClient(config);
 
-            long inboxId = 12345L;
-            var updatedInbox = client.testingApi().inboxes()
-                .resetCredentials(accountId, inboxId);
+            long sandboxId = 12345L;
+            var updatedSandbox = client.sandboxApi().sandboxes()
+                .resetCredentials(accountId, sandboxId);
 
-            System.out.println(updatedInbox);
+            System.out.println(updatedSandbox);
         - lang: go
           label: Go
           source: |
@@ -2235,8 +2239,8 @@ paths:
             const client = new MailtrapClient({ token: TOKEN, accountId: ACCOUNT_ID });
 
             async function enableEmailAddress() {
-              const inboxId = 12345;
-              const result = await client.testing.inboxes.enableEmailAddress(inboxId);
+              const sandboxId = 12345;
+              const result = await client.sandbox.sandboxes.enableEmailAddress(sandboxId);
 
               console.log(result);
             }
@@ -2251,13 +2255,13 @@ paths:
             use Mailtrap\MailtrapSandboxClient;
 
             $config = new Config($_ENV['MAILTRAP_API_KEY']);
-            $accountId = $_ENV['MAILTRAP_ACCOUNT_ID'];
+            $accountId = (int) $_ENV['MAILTRAP_ACCOUNT_ID'];
 
-            $sandboxInboxes = (new MailtrapSandboxClient($config))
-                ->inboxes($accountId);
+            $sandboxes = (new MailtrapSandboxClient($config))
+                ->sandboxes($accountId);
 
-            $inboxId = $_ENV['MAILTRAP_INBOX_ID'];
-            $response = $sandboxInboxes->toggleEmailAddress($inboxId);
+            $sandboxId = (int) $_ENV['MAILTRAP_SANDBOX_ID'];
+            $response = $sandboxes->toggleEmailAddress($sandboxId);
 
             var_dump(ResponseHelper::toArray($response));
         - lang: python
@@ -2269,10 +2273,10 @@ paths:
             ACCOUNT_ID = "YOUR_ACCOUNT_ID"
 
             client = mt.MailtrapClient(token=API_TOKEN, account_id=ACCOUNT_ID)
-            inboxes_api = client.testing_api.inboxes
+            sandboxes_api = client.sandbox_api.sandboxes
 
-            inbox_id = 12345
-            result = inboxes_api.enable_email_address(inbox_id)
+            sandbox_id = 12345
+            result = sandboxes_api.enable_email_address(sandbox_id)
 
             print(result)
         - lang: ruby
@@ -2282,10 +2286,10 @@ paths:
 
             client = Mailtrap::Client.new(api_key: 'YOUR_API_KEY')
             account_id = 1000001
-            inboxes = Mailtrap::InboxesAPI.new(account_id, client)
+            sandboxes = Mailtrap::SandboxesAPI.new(account_id, client)
 
-            inbox_id = 12345
-            puts inboxes.toggle_email_username(inbox_id)
+            sandbox_id = 12345
+            puts sandboxes.toggle_email_username(sandbox_id)
         - lang: csharp
           label: .NET
           source: |
@@ -2293,13 +2297,13 @@ paths:
 
             using var mailtrapFactory = new MailtrapClientFactory("YOUR_API_KEY");
             var client = mailtrapFactory.CreateClient();
-            var inboxId = 12345;
-            var updatedInbox = await client
+            var sandboxId = 12345;
+            var updatedSandbox = await client
                 .Account(YOUR_ACCOUNT_ID)
-                .Inbox(inboxId)
+                .Sandbox(sandboxId)
                 .ToggleEmailAddress();
 
-            Console.WriteLine(updatedInbox);
+            Console.WriteLine(updatedSandbox);
         - lang: java
           label: Java
           source: |
@@ -2313,11 +2317,11 @@ paths:
             var client = MailtrapClientFactory
                 .createMailtrapClient(config);
 
-            long inboxId = 12345L;
-            var updatedInbox = client.testingApi().inboxes()
-                .enableEmailAddress(accountId, inboxId);
+            long sandboxId = 12345L;
+            var updatedSandbox = client.sandboxApi().sandboxes()
+                .enableEmailAddress(accountId, sandboxId);
 
-            System.out.println(updatedInbox);
+            System.out.println(updatedSandbox);
         - lang: go
           label: Go
           source: |
@@ -2380,8 +2384,8 @@ paths:
             const client = new MailtrapClient({ token: TOKEN, accountId: ACCOUNT_ID });
 
             async function resetEmailAddress() {
-              const inboxId = 12345;
-              const result = await client.testing.inboxes.resetEmailAddress(inboxId);
+              const sandboxId = 12345;
+              const result = await client.sandbox.sandboxes.resetEmailAddress(sandboxId);
 
               console.log(result);
             }
@@ -2396,13 +2400,13 @@ paths:
             use Mailtrap\MailtrapSandboxClient;
 
             $config = new Config($_ENV['MAILTRAP_API_KEY']);
-            $accountId = $_ENV['MAILTRAP_ACCOUNT_ID'];
+            $accountId = (int) $_ENV['MAILTRAP_ACCOUNT_ID'];
 
-            $sandboxInboxes = (new MailtrapSandboxClient($config))
-                ->inboxes($accountId);
+            $sandboxes = (new MailtrapSandboxClient($config))
+                ->sandboxes($accountId);
 
-            $inboxId = $_ENV['MAILTRAP_INBOX_ID'];
-            $response = $sandboxInboxes->resetEmailAddress($inboxId);
+            $sandboxId = (int) $_ENV['MAILTRAP_SANDBOX_ID'];
+            $response = $sandboxes->resetEmailAddress($sandboxId);
 
             var_dump(ResponseHelper::toArray($response));
         - lang: python
@@ -2414,10 +2418,10 @@ paths:
             ACCOUNT_ID = "YOUR_ACCOUNT_ID"
 
             client = mt.MailtrapClient(token=API_TOKEN, account_id=ACCOUNT_ID)
-            inboxes_api = client.testing_api.inboxes
+            sandboxes_api = client.sandbox_api.sandboxes
 
-            inbox_id = 12345
-            result = inboxes_api.reset_email_username(inbox_id)
+            sandbox_id = 12345
+            result = sandboxes_api.reset_email_username(sandbox_id)
 
             print(result)
         - lang: ruby
@@ -2427,10 +2431,10 @@ paths:
 
             client = Mailtrap::Client.new(api_key: 'YOUR_API_KEY')
             account_id = 1000001
-            inboxes = Mailtrap::InboxesAPI.new(account_id, client)
+            sandboxes = Mailtrap::SandboxesAPI.new(account_id, client)
 
-            inbox_id = 12345
-            puts inboxes.reset_email_username(inbox_id)
+            sandbox_id = 12345
+            puts sandboxes.reset_email_username(sandbox_id)
         - lang: csharp
           label: .NET
           source: |
@@ -2439,13 +2443,13 @@ paths:
             using var mailtrapFactory = new MailtrapClientFactory("YOUR_API_KEY");
             var client = mailtrapFactory.CreateClient();
 
-            var inboxId = 12345;
-            var updatedInbox = await client
+            var sandboxId = 12345;
+            var updatedSandbox = await client
                 .Account(YOUR_ACCOUNT_ID)
-                .Inbox(inboxId)
+                .Sandbox(sandboxId)
                 .ResetEmailAddress();
 
-            Console.WriteLine(updatedInbox);
+            Console.WriteLine(updatedSandbox);
         - lang: java
           label: Java
           source: |
@@ -2459,11 +2463,11 @@ paths:
             var client = MailtrapClientFactory
                 .createMailtrapClient(config);
 
-            long inboxId = 12345L;
-            var updatedInbox = client.testingApi().inboxes()
-                .resetEmailAddresses(accountId, inboxId);
+            long sandboxId = 12345L;
+            var updatedSandbox = client.sandboxApi().sandboxes()
+                .resetEmailAddresses(accountId, sandboxId);
 
-            System.out.println(updatedInbox);
+            System.out.println(updatedSandbox);
         - lang: go
           label: Go
           source: |
@@ -2573,9 +2577,9 @@ paths:
             const client = new MailtrapClient({ token: TOKEN, accountId: ACCOUNT_ID });
 
             async function showMessage() {
-              const inboxId = 12345;
+              const sandboxId = 12345;
               const messageId = 67890;
-              const message = await client.testing.messages.showEmailMessage(inboxId, messageId);
+              const message = await client.sandbox.messages.showEmailMessage(sandboxId, messageId);
 
               console.log(message);
             }
@@ -2590,13 +2594,13 @@ paths:
             use Mailtrap\MailtrapSandboxClient;
 
             $config = new Config($_ENV['MAILTRAP_API_KEY']);
-            $accountId = $_ENV['MAILTRAP_ACCOUNT_ID'];
-            $inboxId = $_ENV['MAILTRAP_INBOX_ID'];
+            $accountId = (int) $_ENV['MAILTRAP_ACCOUNT_ID'];
+            $sandboxId = (int) $_ENV['MAILTRAP_SANDBOX_ID'];
 
             $sandboxMessages = (new MailtrapSandboxClient($config))
-                ->messages($accountId, $inboxId);
+                ->messages($accountId, $sandboxId);
 
-            $messageId = $_ENV['MAILTRAP_MESSAGE_ID'];
+            $messageId = (int) $_ENV['MAILTRAP_MESSAGE_ID'];
             $response = $sandboxMessages->getById($messageId);
 
             var_dump(ResponseHelper::toArray($response));
@@ -2609,12 +2613,12 @@ paths:
             ACCOUNT_ID = "YOUR_ACCOUNT_ID"
 
             client = mt.MailtrapClient(token=API_TOKEN, account_id=ACCOUNT_ID)
-            messages_api = client.testing_api.messages
+            messages_api = client.sandbox_api.messages
 
-            inbox_id = 12345
+            sandbox_id = 12345
             message_id = 67890
 
-            message = messages_api.show_message(inbox_id=inbox_id, message_id=message_id)
+            message = messages_api.show_message(sandbox_id=sandbox_id, message_id=message_id)
 
             print(message)
         - lang: ruby
@@ -2623,7 +2627,7 @@ paths:
             require 'mailtrap'
 
             client = Mailtrap::Client.new(api_key: ENV['MAILTRAP_API_KEY'])
-            messages = Mailtrap::SandboxMessagesAPI.new(YOUR_ACCOUNT_ID, INBOX_ID, client)
+            messages = Mailtrap::SandboxMessagesAPI.new(YOUR_ACCOUNT_ID, SANDBOX_ID, client)
 
             message = messages.get(MESSAGE_ID)
             puts message
@@ -2634,11 +2638,11 @@ paths:
 
             using var mailtrapFactory = new MailtrapClientFactory("YOUR_API_KEY");
             var client = mailtrapFactory.CreateClient();
-            var inboxId = 54321;
+            var sandboxId = 54321;
             var messageId = 67890;
             var message = await client
                 .Account(YOUR_ACCOUNT_ID)
-                .Inbox(inboxId)
+                .Sandbox(sandboxId)
                 .Message(messageId)
                 .GetDetails();
 
@@ -2656,11 +2660,11 @@ paths:
             var client = MailtrapClientFactory
                 .createMailtrapClient(config);
 
-            long inboxId = 12345L;
+            long sandboxId = 12345L;
             long messageId = 67890L;
 
-            var message = client.testingApi().messages()
-                .getMessage(accountId, inboxId, messageId);
+            var message = client.sandboxApi().messages()
+                .getMessage(accountId, sandboxId, messageId);
 
             System.out.println(message);
         - lang: go
@@ -2831,14 +2835,11 @@ paths:
 
             const client = new MailtrapClient({ token: TOKEN, accountId: ACCOUNT_ID });
 
-            const inboxId = 12345;
-            const messageId = 67890;
-
             async function updateMessage() {
-              const inboxId = 12345;
+              const sandboxId = 12345;
               const messageId = 67890;
-              const updatedMessage = await client.testing.messages.updateMessage(
-                inboxId,
+              const updatedMessage = await client.sandbox.messages.updateMessage(
+                sandboxId,
                 messageId,
                 { isRead: true }
               );
@@ -2856,13 +2857,13 @@ paths:
             use Mailtrap\MailtrapSandboxClient;
 
             $config = new Config($_ENV['MAILTRAP_API_KEY']);
-            $accountId = $_ENV['MAILTRAP_ACCOUNT_ID'];
-            $inboxId = $_ENV['MAILTRAP_INBOX_ID'];
+            $accountId = (int) $_ENV['MAILTRAP_ACCOUNT_ID'];
+            $sandboxId = (int) $_ENV['MAILTRAP_SANDBOX_ID'];
 
             $sandboxMessages = (new MailtrapSandboxClient($config))
-                ->messages($accountId, $inboxId);
+                ->messages($accountId, $sandboxId);
 
-            $messageId = $_ENV['MAILTRAP_MESSAGE_ID'];
+            $messageId = (int) $_ENV['MAILTRAP_MESSAGE_ID'];
             $response = $sandboxMessages->markAsRead($messageId);
 
             var_dump(ResponseHelper::toArray($response));
@@ -2875,13 +2876,13 @@ paths:
             ACCOUNT_ID = "YOUR_ACCOUNT_ID"
 
             client = mt.MailtrapClient(token=API_TOKEN, account_id=ACCOUNT_ID)
-            messages_api = client.testing_api.messages
+            messages_api = client.sandbox_api.messages
 
-            inbox_id = 12345
+            sandbox_id = 12345
             message_id = 67890
 
             updated_message = messages_api.update(
-                inbox_id=inbox_id,
+                sandbox_id=sandbox_id,
                 message_id=message_id,
                 message_params=mt.UpdateEmailMessageParams(is_read=True)
             )
@@ -2893,7 +2894,7 @@ paths:
             require 'mailtrap'
 
             client = Mailtrap::Client.new(api_key: ENV['MAILTRAP_API_KEY'])
-            messages = Mailtrap::SandboxMessagesAPI.new(YOUR_ACCOUNT_ID, INBOX_ID, client)
+            messages = Mailtrap::SandboxMessagesAPI.new(YOUR_ACCOUNT_ID, SANDBOX_ID, client)
 
             messages.mark_as_read(MESSAGE_ID)
         - lang: csharp
@@ -2904,12 +2905,12 @@ paths:
 
             using var mailtrapFactory = new MailtrapClientFactory("YOUR_API_KEY");
             var client = mailtrapFactory.CreateClient();
-            var inboxId = 54321;
+            var sandboxId = 54321;
             var messageId = 67890;
             var updateRequest = new UpdateTestingMessageRequest(true);
             var updatedMessage = await client
                 .Account(YOUR_ACCOUNT_ID)
-                .Inbox(inboxId)
+                .Sandbox(sandboxId)
                 .Message(messageId)
                 .Update(updateRequest);
 
@@ -2928,15 +2929,15 @@ paths:
             var client = MailtrapClientFactory
                 .createMailtrapClient(config);
 
-            long inboxId = 12345L;
+            long sandboxId = 12345L;
             long messageId = 67890L;
 
             var updateRequest = new UpdateMessageRequest(
                 new UpdateMessageRequest.MessageUpdateData("true")
             );
 
-            var updatedMessage = client.testingApi().messages()
-                .updateMessage(accountId, inboxId, messageId, updateRequest);
+            var updatedMessage = client.sandboxApi().messages()
+                .updateMessage(accountId, sandboxId, messageId, updateRequest);
 
             System.out.println(updatedMessage);
         - lang: go
@@ -3083,13 +3084,10 @@ paths:
 
             const client = new MailtrapClient({ token: TOKEN, accountId: ACCOUNT_ID });
 
-            const inboxId = 12345;
-            const messageId = 67890;
-
             async function deleteMessage() {
-              const inboxId = 12345;
+              const sandboxId = 12345;
               const messageId = 67890;
-              const result = await client.testing.messages.deleteMessage(inboxId, messageId);
+              const result = await client.sandbox.messages.deleteMessage(sandboxId, messageId);
 
               console.log(result);
             }
@@ -3103,13 +3101,13 @@ paths:
             use Mailtrap\MailtrapSandboxClient;
 
             $config = new Config($_ENV['MAILTRAP_API_KEY']);
-            $accountId = $_ENV['MAILTRAP_ACCOUNT_ID'];
-            $inboxId = $_ENV['MAILTRAP_INBOX_ID'];
+            $accountId = (int) $_ENV['MAILTRAP_ACCOUNT_ID'];
+            $sandboxId = (int) $_ENV['MAILTRAP_SANDBOX_ID'];
 
             $sandboxMessages = (new MailtrapSandboxClient($config))
-                ->messages($accountId, $inboxId);
+                ->messages($accountId, $sandboxId);
 
-            $messageId = $_ENV['MAILTRAP_MESSAGE_ID'];
+            $messageId = (int) $_ENV['MAILTRAP_MESSAGE_ID'];
             $response = $sandboxMessages->delete($messageId);
 
             var_dump($response->getStatusCode());
@@ -3122,12 +3120,12 @@ paths:
             ACCOUNT_ID = "YOUR_ACCOUNT_ID"
 
             client = mt.MailtrapClient(token=API_TOKEN, account_id=ACCOUNT_ID)
-            messages_api = client.testing_api.messages
+            messages_api = client.sandbox_api.messages
 
-            inbox_id = 12345
+            sandbox_id = 12345
             message_id = 67890
 
-            result = messages_api.delete(inbox_id=inbox_id, message_id=message_id)
+            result = messages_api.delete(sandbox_id=sandbox_id, message_id=message_id)
 
             print(result)
         - lang: ruby
@@ -3136,7 +3134,7 @@ paths:
             require 'mailtrap'
 
             client = Mailtrap::Client.new(api_key: ENV['MAILTRAP_API_KEY'])
-            messages = Mailtrap::SandboxMessagesAPI.new(YOUR_ACCOUNT_ID, INBOX_ID, client)
+            messages = Mailtrap::SandboxMessagesAPI.new(YOUR_ACCOUNT_ID, SANDBOX_ID, client)
 
             messages.delete(MESSAGE_ID)
         - lang: csharp
@@ -3146,11 +3144,11 @@ paths:
 
             using var mailtrapFactory = new MailtrapClientFactory("YOUR_API_KEY");
             var client = mailtrapFactory.CreateClient();
-            var inboxId = 54321;
+            var sandboxId = 54321;
             var messageId = 67890;
             var deletedMessage = await client
               .Account(YOUR_ACCOUNT_ID)
-              .Inbox(inboxId)
+              .Sandbox(sandboxId)
               .Message(messageId)
               .Delete();
 
@@ -3168,11 +3166,11 @@ paths:
             var client = MailtrapClientFactory
                 .createMailtrapClient(config);
 
-            long inboxId = 12345L;
+            long sandboxId = 12345L;
             long messageId = 67890L;
 
-            var deletedMessage = client.testingApi().messages()
-                .deleteMessage(accountId, inboxId, messageId);
+            var deletedMessage = client.sandboxApi().messages()
+                .deleteMessage(accountId, sandboxId, messageId);
 
             System.out.println(deletedMessage);
         - lang: go
@@ -3284,8 +3282,8 @@ paths:
             });
 
             async function getMessages() {
-              const inboxId = 12345;
-              const messages = await client.testing.messages.get(inboxId);
+              const sandboxId = 12345;
+              const messages = await client.sandbox.messages.get(sandboxId);
 
               console.log(messages);
             }
@@ -3300,11 +3298,11 @@ paths:
             use Mailtrap\MailtrapSandboxClient;
 
             $config = new Config($_ENV['MAILTRAP_API_KEY']);
-            $accountId = $_ENV['MAILTRAP_ACCOUNT_ID'];
-            $inboxId = $_ENV['MAILTRAP_INBOX_ID'];
+            $accountId = (int) $_ENV['MAILTRAP_ACCOUNT_ID'];
+            $sandboxId = (int) $_ENV['MAILTRAP_SANDBOX_ID'];
 
             $sandboxMessages = (new MailtrapSandboxClient($config))
-                ->messages($accountId, $inboxId);
+                ->messages($accountId, $sandboxId);
 
             $response = $sandboxMessages->getList();
             var_dump(ResponseHelper::toArray($response));
@@ -3318,9 +3316,9 @@ paths:
                 account_id="YOUR_ACCOUNT_ID"
             )
 
-            inbox_id = 12345
-            messages = client.testing_api.messages.get_list(
-                inbox_id=inbox_id
+            sandbox_id = 12345
+            messages = client.sandbox_api.messages.get_list(
+                sandbox_id=sandbox_id
             )
 
             for message in messages:
@@ -3333,7 +3331,7 @@ paths:
             require 'mailtrap'
 
             client = Mailtrap::Client.new(api_key: ENV['MAILTRAP_API_KEY'])
-            messages = Mailtrap::SandboxMessagesAPI.new(YOUR_ACCOUNT_ID, INBOX_ID, client)
+            messages = Mailtrap::SandboxMessagesAPI.new(YOUR_ACCOUNT_ID, SANDBOX_ID, client)
 
             messages.list.each do |message|
               puts "From: #{message.from_email}"
@@ -3350,10 +3348,10 @@ paths:
 
             using var mailtrapFactory = new MailtrapClientFactory("YOUR_API_KEY");
             var client = mailtrapFactory.CreateClient();
-            var inboxId = 54321;
+            var sandboxId = 54321;
             var messages = await client
                 .Account(YOUR_ACCOUNT_ID)
-                .Inbox(inboxId)
+                .Sandbox(sandboxId)
                 .Messages()
                 .Fetch();
 
@@ -3368,6 +3366,7 @@ paths:
           source: |
             import io.mailtrap.config.MailtrapConfig;
             import io.mailtrap.factory.MailtrapClientFactory;
+            import io.mailtrap.model.request.accountaccesses.ListMessagesQueryParams;
 
             var config = new MailtrapConfig.Builder()
                 .token("YOUR_API_KEY")
@@ -3376,9 +3375,9 @@ paths:
             var client = MailtrapClientFactory
                 .createMailtrapClient(config);
 
-            long inboxId = 12345L;
-            var messages = client.testingApi().messages()
-                .getMessages(accountId, inboxId);
+            long sandboxId = 12345L;
+            var messages = client.sandboxApi().messages()
+                .getMessages(accountId, sandboxId, ListMessagesQueryParams.empty());
 
             for (var message : messages) {
                 System.out.println("From: " + message.getFromEmail());
@@ -3508,14 +3507,11 @@ paths:
 
             const client = new MailtrapClient({ token: TOKEN, accountId: ACCOUNT_ID });
 
-            const inboxId = 12345;
-            const messageId = 67890;
-
             async function forwardMessage() {
-              const inboxId = 12345;
+              const sandboxId = 12345;
               const messageId = 67890;
-              const result = await client.testing.messages.forward(
-                inboxId,
+              const result = await client.sandbox.messages.forward(
+                sandboxId,
                 messageId,
                 'recipient@example.com'
               );
@@ -3533,13 +3529,13 @@ paths:
             use Mailtrap\MailtrapSandboxClient;
 
             $config = new Config($_ENV['MAILTRAP_API_KEY']);
-            $accountId = $_ENV['MAILTRAP_ACCOUNT_ID'];
-            $inboxId = $_ENV['MAILTRAP_INBOX_ID'];
+            $accountId = (int) $_ENV['MAILTRAP_ACCOUNT_ID'];
+            $sandboxId = (int) $_ENV['MAILTRAP_SANDBOX_ID'];
 
             $sandboxMessages = (new MailtrapSandboxClient($config))
-                ->messages($accountId, $inboxId);
+                ->messages($accountId, $sandboxId);
 
-            $messageId = $_ENV['MAILTRAP_MESSAGE_ID'];
+            $messageId = (int) $_ENV['MAILTRAP_MESSAGE_ID'];
             $response = $sandboxMessages->forward($messageId, 'recipient@example.com');
 
             var_dump(ResponseHelper::toArray($response));
@@ -3552,13 +3548,13 @@ paths:
             ACCOUNT_ID = "YOUR_ACCOUNT_ID"
 
             client = mt.MailtrapClient(token=API_TOKEN, account_id=ACCOUNT_ID)
-            messages_api = client.testing_api.messages
+            messages_api = client.sandbox_api.messages
 
-            inbox_id = 12345
+            sandbox_id = 12345
             message_id = 67890
 
             result = messages_api.forward(
-                inbox_id=inbox_id,
+                sandbox_id=sandbox_id,
                 message_id=message_id,
                 email="recipient@example.com"
             )
@@ -3570,7 +3566,7 @@ paths:
             require 'mailtrap'
 
             client = Mailtrap::Client.new(api_key: ENV['MAILTRAP_API_KEY'])
-            messages = Mailtrap::SandboxMessagesAPI.new(YOUR_ACCOUNT_ID, INBOX_ID, client)
+            messages = Mailtrap::SandboxMessagesAPI.new(YOUR_ACCOUNT_ID, SANDBOX_ID, client)
 
             puts messages.forward_message(MESSAGE_ID, email: 'recipient@example.com')
         - lang: csharp
@@ -3581,12 +3577,12 @@ paths:
 
             using var mailtrapFactory = new MailtrapClientFactory("YOUR_API_KEY");
             var client = mailtrapFactory.CreateClient();
-            var inboxId = 54321;
+            var sandboxId = 54321;
             var messageId = 67890;
             var forwardRequest = new ForwardTestingMessageRequest("recipient@example.com");
             var forwardedMessage = await client
                 .Account(YOUR_ACCOUNT_ID)
-                .Inbox(inboxId)
+                .Sandbox(sandboxId)
                 .Message(messageId)
                 .Forward(forwardRequest);
 
@@ -3605,12 +3601,12 @@ paths:
             var client = MailtrapClientFactory
                 .createMailtrapClient(config);
 
-            long inboxId = 12345L;
+            long sandboxId = 12345L;
             long messageId = 67890L;
 
             var forwardRequest = new ForwardMessageRequest("recipient@example.com");
-            var forwardedMessage = client.testingApi().messages()
-                .forwardMessage(accountId, inboxId, messageId, forwardRequest);
+            var forwardedMessage = client.sandboxApi().messages()
+                .forwardMessage(accountId, sandboxId, messageId, forwardRequest);
 
             System.out.println(forwardedMessage);
         - lang: go
@@ -3728,7 +3724,7 @@ paths:
             const client = new MailtrapClient({ token: "YOUR_API_KEY", accountId: "YOUR_ACCOUNT_ID" });
 
             async function getSpamScore() {
-              const spamReport = await client.testing.messages.getSpamScore(12345, 67890);
+              const spamReport = await client.sandbox.messages.getSpamScore(12345, 67890);
 
               console.log(spamReport);
             }
@@ -3743,13 +3739,13 @@ paths:
             use Mailtrap\MailtrapSandboxClient;
 
             $config = new Config($_ENV['MAILTRAP_API_KEY']);
-            $accountId = $_ENV['MAILTRAP_ACCOUNT_ID'];
-            $inboxId = $_ENV['MAILTRAP_INBOX_ID'];
+            $accountId = (int) $_ENV['MAILTRAP_ACCOUNT_ID'];
+            $sandboxId = (int) $_ENV['MAILTRAP_SANDBOX_ID'];
 
             $sandboxMessages = (new MailtrapSandboxClient($config))
-                ->messages($accountId, $inboxId);
+                ->messages($accountId, $sandboxId);
 
-            $messageId = $_ENV['MAILTRAP_MESSAGE_ID'];
+            $messageId = (int) $_ENV['MAILTRAP_MESSAGE_ID'];
             $response = $sandboxMessages->getSpamScore($messageId);
 
             var_dump(ResponseHelper::toArray($response));
@@ -3759,7 +3755,7 @@ paths:
             import mailtrap as mt
 
             client = mt.MailtrapClient(token="YOUR_API_KEY", account_id="YOUR_ACCOUNT_ID")
-            spam_report = client.testing_api.messages.get_spam_report(inbox_id=12345, message_id=67890)
+            spam_report = client.sandbox_api.messages.get_spam_report(sandbox_id=12345, message_id=67890)
             print(spam_report)
         - lang: ruby
           label: Ruby
@@ -3767,7 +3763,7 @@ paths:
             require 'mailtrap'
 
             client = Mailtrap::Client.new(api_key: ENV['MAILTRAP_API_KEY'])
-            messages = Mailtrap::SandboxMessagesAPI.new(YOUR_ACCOUNT_ID, INBOX_ID, client)
+            messages = Mailtrap::SandboxMessagesAPI.new(YOUR_ACCOUNT_ID, SANDBOX_ID, client)
 
             puts messages.spam_score(MESSAGE_ID)
         - lang: csharp
@@ -3777,11 +3773,11 @@ paths:
 
             using var mailtrapFactory = new MailtrapClientFactory("YOUR_API_KEY");
             var client = mailtrapFactory.CreateClient();
-            var inboxId = 54321;
+            var sandboxId = 54321;
             var messageId = 67890;
             var spamReport = await client
                 .Account(YOUR_ACCOUNT_ID)
-                .Inbox(inboxId)
+                .Sandbox(sandboxId)
                 .Message(messageId)
                 .GetSpamReport();
 
@@ -3795,10 +3791,10 @@ paths:
             var config = new MailtrapConfig.Builder().token("YOUR_API_KEY").build();
             var client = MailtrapClientFactory.createMailtrapClient(config);
 
-            long inboxId = 12345L;
+            long sandboxId = 12345L;
             long messageId = 67890L;
 
-            var spamReport = client.testingApi().messages().getSpamScore(accountId, inboxId, messageId);
+            var spamReport = client.sandboxApi().messages().getSpamScore(accountId, sandboxId, messageId);
             System.out.println(spamReport);
         - lang: go
           label: Go
@@ -3940,7 +3936,7 @@ paths:
             const client = new MailtrapClient({ token: "YOUR_API_KEY", accountId: "YOUR_ACCOUNT_ID" });
 
             async function getHtmlAnalysis() {
-              const htmlAnalysis = await client.testing.messages.getHtmlAnalysis(12345, 67890);
+              const htmlAnalysis = await client.sandbox.messages.getHtmlAnalysis(12345, 67890);
 
               console.log(htmlAnalysis);
             }
@@ -3955,13 +3951,13 @@ paths:
             use Mailtrap\MailtrapSandboxClient;
 
             $config = new Config($_ENV['MAILTRAP_API_KEY']);
-            $accountId = $_ENV['MAILTRAP_ACCOUNT_ID'];
-            $inboxId = $_ENV['MAILTRAP_INBOX_ID'];
+            $accountId = (int) $_ENV['MAILTRAP_ACCOUNT_ID'];
+            $sandboxId = (int) $_ENV['MAILTRAP_SANDBOX_ID'];
 
             $sandboxMessages = (new MailtrapSandboxClient($config))
-                ->messages($accountId, $inboxId);
+                ->messages($accountId, $sandboxId);
 
-            $messageId = $_ENV['MAILTRAP_MESSAGE_ID'];
+            $messageId = (int) $_ENV['MAILTRAP_MESSAGE_ID'];
             $response = $sandboxMessages->getHtmlAnalysis($messageId);
 
             var_dump(ResponseHelper::toArray($response));
@@ -3971,7 +3967,7 @@ paths:
             import mailtrap as mt
 
             client = mt.MailtrapClient(token="YOUR_API_KEY", account_id="YOUR_ACCOUNT_ID")
-            html_analysis = client.testing_api.messages.get_html_analysis(inbox_id=12345, message_id=67890)
+            html_analysis = client.sandbox_api.messages.get_html_analysis(sandbox_id=12345, message_id=67890)
             print(html_analysis)
         - lang: ruby
           label: Ruby
@@ -3979,7 +3975,7 @@ paths:
             require 'mailtrap'
 
             client = Mailtrap::Client.new(api_key: ENV['MAILTRAP_API_KEY'])
-            messages = Mailtrap::SandboxMessagesAPI.new(YOUR_ACCOUNT_ID, INBOX_ID, client)
+            messages = Mailtrap::SandboxMessagesAPI.new(YOUR_ACCOUNT_ID, SANDBOX_ID, client)
 
             puts messages.html_analysis(MESSAGE_ID)
         - lang: csharp
@@ -3989,11 +3985,11 @@ paths:
 
             using var mailtrapFactory = new MailtrapClientFactory("YOUR_API_KEY");
             var client = mailtrapFactory.CreateClient();
-            var inboxId = 54321;
+            var sandboxId = 54321;
             var messageId = 67890;
             var htmlReport = await client
                 .Account(YOUR_ACCOUNT_ID)
-                .Inbox(inboxId)
+                .Sandbox(sandboxId)
                 .Message(messageId)
                 .GetHtmlAnalysisReport();
 
@@ -4007,8 +4003,10 @@ paths:
             var config = new MailtrapConfig.Builder().token("YOUR_API_KEY").build();
             var client = MailtrapClientFactory.createMailtrapClient(config);
 
-            long inboxId = 12345L;
-            var htmlAnalysis = client.testingApi().messages().getMessageHtmlAnalysis(accountId, inboxId, messageId);
+            long sandboxId = 12345L;
+            long messageId = 67890L;
+
+            var htmlAnalysis = client.sandboxApi().messages().getMessageHtmlAnalysis(accountId, sandboxId, messageId);
             System.out.println(htmlAnalysis);
         - lang: go
           label: Go
@@ -4099,7 +4097,7 @@ paths:
             const client = new MailtrapClient({ token: "YOUR_API_KEY", accountId: "YOUR_ACCOUNT_ID" });
 
             async function getTextMessage() {
-              const textBody = await client.testing.messages.getTextMessage(12345, 67890);
+              const textBody = await client.sandbox.messages.getTextMessage(12345, 67890);
 
               console.log(textBody);
             }
@@ -4114,13 +4112,13 @@ paths:
             use Mailtrap\MailtrapSandboxClient;
 
             $config = new Config($_ENV['MAILTRAP_API_KEY']);
-            $accountId = $_ENV['MAILTRAP_ACCOUNT_ID'];
-            $inboxId = $_ENV['MAILTRAP_INBOX_ID'];
+            $accountId = (int) $_ENV['MAILTRAP_ACCOUNT_ID'];
+            $sandboxId = (int) $_ENV['MAILTRAP_SANDBOX_ID'];
 
             $sandboxMessages = (new MailtrapSandboxClient($config))
-                ->messages($accountId, $inboxId);
+                ->messages($accountId, $sandboxId);
 
-            $messageId = $_ENV['MAILTRAP_MESSAGE_ID'];
+            $messageId = (int) $_ENV['MAILTRAP_MESSAGE_ID'];
             $textBody = ResponseHelper::toString(
                 $sandboxMessages->getText($messageId)
             );
@@ -4131,7 +4129,7 @@ paths:
           source: |
             import mailtrap as mt
             client = mt.MailtrapClient(token="YOUR_API_KEY", account_id="YOUR_ACCOUNT_ID")
-            text_body = client.testing_api.messages.get_text_message(inbox_id=12345, message_id=67890)
+            text_body = client.sandbox_api.messages.get_text_message(sandbox_id=12345, message_id=67890)
             print(text_body)
         - lang: ruby
           label: Ruby
@@ -4139,7 +4137,7 @@ paths:
             require 'mailtrap'
 
             client = Mailtrap::Client.new(api_key: ENV['MAILTRAP_API_KEY'])
-            messages = Mailtrap::SandboxMessagesAPI.new(YOUR_ACCOUNT_ID, INBOX_ID, client)
+            messages = Mailtrap::SandboxMessagesAPI.new(YOUR_ACCOUNT_ID, SANDBOX_ID, client)
 
             puts messages.text_body(MESSAGE_ID)
         - lang: csharp
@@ -4148,11 +4146,11 @@ paths:
             using Mailtrap;
             using var mailtrapFactory = new MailtrapClientFactory("YOUR_API_KEY");
             var client = mailtrapFactory.CreateClient();
-            var inboxId = 54321;
+            var sandboxId = 54321;
             var messageId = 67890;
             var textBody = await client
                 .Account(YOUR_ACCOUNT_ID)
-                .Inbox(inboxId)
+                .Sandbox(sandboxId)
                 .Message(messageId)
                 .GetTextBody();
             Console.WriteLine(textBody);
@@ -4165,10 +4163,10 @@ paths:
             var config = new MailtrapConfig.Builder().token("YOUR_API_KEY").build();
             var client = MailtrapClientFactory.createMailtrapClient(config);
             
-            long inboxId = 12345L;
+            long sandboxId = 12345L;
             long messageId = 67890L;
 
-            String textBody = client.testingApi().messages().getTextMessage(accountId, inboxId, messageId);
+            String textBody = client.sandboxApi().messages().getTextMessage(accountId, sandboxId, messageId);
             System.out.println(textBody);
         - lang: go
           label: Go
@@ -4303,7 +4301,7 @@ paths:
             const client = new MailtrapClient({ token: "YOUR_API_KEY", accountId: "YOUR_ACCOUNT_ID" });
 
             async function getRawMessage() {
-              const rawBody = await client.testing.messages.getRawMessage(12345, 67890);
+              const rawBody = await client.sandbox.messages.getRawMessage(12345, 67890);
 
               console.log(rawBody);
             }
@@ -4318,13 +4316,13 @@ paths:
             use Mailtrap\MailtrapSandboxClient;
 
             $config = new Config($_ENV['MAILTRAP_API_KEY']);
-            $accountId = $_ENV['MAILTRAP_ACCOUNT_ID'];
-            $inboxId = $_ENV['MAILTRAP_INBOX_ID'];
+            $accountId = (int) $_ENV['MAILTRAP_ACCOUNT_ID'];
+            $sandboxId = (int) $_ENV['MAILTRAP_SANDBOX_ID'];
 
             $sandboxMessages = (new MailtrapSandboxClient($config))
-                ->messages($accountId, $inboxId);
+                ->messages($accountId, $sandboxId);
 
-            $messageId = $_ENV['MAILTRAP_MESSAGE_ID'];
+            $messageId = (int) $_ENV['MAILTRAP_MESSAGE_ID'];
             $rawBody = ResponseHelper::toString(
                 $sandboxMessages->getRaw($messageId)
             );
@@ -4335,7 +4333,7 @@ paths:
           source: |
             import mailtrap as mt
             client = mt.MailtrapClient(token="YOUR_API_KEY", account_id="YOUR_ACCOUNT_ID")
-            raw_body = client.testing_api.messages.get_raw_message(inbox_id=12345, message_id=67890)
+            raw_body = client.sandbox_api.messages.get_raw_message(sandbox_id=12345, message_id=67890)
             print(raw_body)
         - lang: ruby
           label: Ruby
@@ -4343,7 +4341,7 @@ paths:
             require 'mailtrap'
 
             client = Mailtrap::Client.new(api_key: ENV['MAILTRAP_API_KEY'])
-            messages = Mailtrap::SandboxMessagesAPI.new(YOUR_ACCOUNT_ID, INBOX_ID, client)
+            messages = Mailtrap::SandboxMessagesAPI.new(YOUR_ACCOUNT_ID, SANDBOX_ID, client)
 
             puts messages.raw_body(MESSAGE_ID)
         - lang: csharp
@@ -4352,11 +4350,11 @@ paths:
             using Mailtrap;
             using var mailtrapFactory = new MailtrapClientFactory("YOUR_API_KEY");
             var client = mailtrapFactory.CreateClient();
-            var inboxId = 54321;
+            var sandboxId = 54321;
             var messageId = 67890;
             var rawBody = await client
                 .Account(YOUR_ACCOUNT_ID)
-                .Inbox(inboxId)
+                .Sandbox(sandboxId)
                 .Message(messageId)
                 .AsRaw();
             Console.WriteLine(rawBody);
@@ -4369,10 +4367,10 @@ paths:
             var config = new MailtrapConfig.Builder().token("YOUR_API_KEY").build();
             var client = MailtrapClientFactory.createMailtrapClient(config);
             
-            long inboxId = 12345L;
+            long sandboxId = 12345L;
             long messageId = 67890L;
 
-            String rawBody = client.testingApi().messages().getRawMessage(accountId, inboxId, messageId);
+            String rawBody = client.sandboxApi().messages().getRawMessage(accountId, sandboxId, messageId);
             System.out.println(rawBody);
         - lang: go
           label: Go
@@ -4490,7 +4488,7 @@ paths:
             const client = new MailtrapClient({ token: "YOUR_API_KEY", accountId: "YOUR_ACCOUNT_ID" });
 
             async function getHtmlSource() {
-              const htmlSource = await client.testing.messages.getMessageHtmlSource(12345, 67890);
+              const htmlSource = await client.sandbox.messages.getMessageHtmlSource(12345, 67890);
 
               console.log(htmlSource);
             }
@@ -4504,13 +4502,13 @@ paths:
             use Mailtrap\MailtrapSandboxClient;
             use Mailtrap\Helper\ResponseHelper;
             
-            $accountId = $_ENV['MAILTRAP_ACCOUNT_ID'];
-            $inboxId = $_ENV['MAILTRAP_INBOX_ID'];
+            $accountId = (int) $_ENV['MAILTRAP_ACCOUNT_ID'];
+            $sandboxId = (int) $_ENV['MAILTRAP_SANDBOX_ID'];
             $config = new Config($_ENV['MAILTRAP_API_KEY']);
             
-            $sandboxMessages = (new MailtrapSandboxClient($config))->messages($accountId, $inboxId);
+            $sandboxMessages = (new MailtrapSandboxClient($config))->messages($accountId, $sandboxId);
             
-            $messageId = $_ENV['MAILTRAP_MESSAGE_ID'];
+            $messageId = (int) $_ENV['MAILTRAP_MESSAGE_ID'];
             $response = $sandboxMessages->getSource($messageId);
             var_dump(ResponseHelper::toString($response));
         - lang: python
@@ -4518,7 +4516,7 @@ paths:
           source: |
             import mailtrap as mt
             client = mt.MailtrapClient(token="YOUR_API_KEY", account_id="YOUR_ACCOUNT_ID")
-            html_source = client.testing_api.messages.get_html_source(inbox_id=12345, message_id=67890)
+            html_source = client.sandbox_api.messages.get_html_source(sandbox_id=12345, message_id=67890)
             print(html_source)
         - lang: ruby
           label: Ruby
@@ -4526,7 +4524,7 @@ paths:
             require 'mailtrap'
 
             client = Mailtrap::Client.new(api_key: ENV['MAILTRAP_API_KEY'])
-            messages = Mailtrap::SandboxMessagesAPI.new(YOUR_ACCOUNT_ID, INBOX_ID, client)
+            messages = Mailtrap::SandboxMessagesAPI.new(YOUR_ACCOUNT_ID, SANDBOX_ID, client)
 
             puts messages.html_source(MESSAGE_ID)
         - lang: csharp
@@ -4535,11 +4533,11 @@ paths:
             using Mailtrap;
             using var mailtrapFactory = new MailtrapClientFactory("YOUR_API_KEY");
             var client = mailtrapFactory.CreateClient();
-            var inboxId = 54321;
+            var sandboxId = 54321;
             var messageId = 67890;
             var htmlSource = await client
                 .Account(YOUR_ACCOUNT_ID)
-                .Inbox(inboxId)
+                .Sandbox(sandboxId)
                 .Message(messageId)
                 .GetHtmlSource();
             Console.WriteLine(htmlSource);
@@ -4552,10 +4550,10 @@ paths:
             var config = new MailtrapConfig.Builder().token("YOUR_API_KEY").build();
             var client = MailtrapClientFactory.createMailtrapClient(config);
             
-            long inboxId = 12345L;
+            long sandboxId = 12345L;
             long messageId = 67890L;
 
-            String htmlSource = client.testingApi().messages().getMessageSource(accountId, inboxId, messageId);
+            String htmlSource = client.sandboxApi().messages().getMessageSource(accountId, sandboxId, messageId);
             System.out.println(htmlSource);
         - lang: go
           label: Go
@@ -4709,10 +4707,8 @@ paths:
             const { MailtrapClient } = require("mailtrap");
             const client = new MailtrapClient({ token: "YOUR_API_KEY", accountId: "YOUR_ACCOUNT_ID" });
 
-            const ACCOUNT_ID = "YOUR_ACCOUNT_ID";
-
             async function getHtmlMessage() {
-              const htmlBody = await client.testing.messages.getHtmlMessage(ACCOUNT_ID, 12345, 67890);
+              const htmlBody = await client.sandbox.messages.getHtmlMessage(12345, 67890);
 
               console.log(htmlBody);
             }
@@ -4727,13 +4723,13 @@ paths:
             use Mailtrap\MailtrapSandboxClient;
 
             $config = new Config($_ENV['MAILTRAP_API_KEY']);
-            $accountId = $_ENV['MAILTRAP_ACCOUNT_ID'];
-            $inboxId = $_ENV['MAILTRAP_INBOX_ID'];
+            $accountId = (int) $_ENV['MAILTRAP_ACCOUNT_ID'];
+            $sandboxId = (int) $_ENV['MAILTRAP_SANDBOX_ID'];
 
             $sandboxMessages = (new MailtrapSandboxClient($config))
-                ->messages($accountId, $inboxId);
+                ->messages($accountId, $sandboxId);
 
-            $messageId = $_ENV['MAILTRAP_MESSAGE_ID'];
+            $messageId = (int) $_ENV['MAILTRAP_MESSAGE_ID'];
             $htmlBody = ResponseHelper::toString(
                 $sandboxMessages->getHtml($messageId)
             );
@@ -4744,7 +4740,7 @@ paths:
           source: |
             import mailtrap as mt
             client = mt.MailtrapClient(token="YOUR_API_KEY", account_id="YOUR_ACCOUNT_ID")
-            html_body = client.testing_api.messages.get_html_message(inbox_id=12345, message_id=67890)
+            html_body = client.sandbox_api.messages.get_html_message(sandbox_id=12345, message_id=67890)
             print(html_body)
         - lang: ruby
           label: Ruby
@@ -4752,7 +4748,7 @@ paths:
             require 'mailtrap'
 
             client = Mailtrap::Client.new(api_key: ENV['MAILTRAP_API_KEY'])
-            messages = Mailtrap::SandboxMessagesAPI.new(YOUR_ACCOUNT_ID, INBOX_ID, client)
+            messages = Mailtrap::SandboxMessagesAPI.new(YOUR_ACCOUNT_ID, SANDBOX_ID, client)
 
             puts messages.html_body(MESSAGE_ID)
         - lang: csharp
@@ -4761,11 +4757,11 @@ paths:
             using Mailtrap;
             using var mailtrapFactory = new MailtrapClientFactory("YOUR_API_KEY");
             var client = mailtrapFactory.CreateClient();
-            var inboxId = 54321;
+            var sandboxId = 54321;
             var messageId = 67890;
             var htmlBody = await client
                 .Account(YOUR_ACCOUNT_ID)
-                .Inbox(inboxId)
+                .Sandbox(sandboxId)
                 .Message(messageId)
                 .GetHtmlBody();
             Console.WriteLine(htmlBody);
@@ -4778,9 +4774,10 @@ paths:
             var config = new MailtrapConfig.Builder().token("YOUR_API_KEY").build();
             var client = MailtrapClientFactory.createMailtrapClient(config);
             
-            long inboxId = 12345L;
-            long messageId = 12345L;
-            String htmlBody = client.testingApi().messages().getHtmlMessage(accountId, inboxId, messageId);
+            long sandboxId = 12345L;
+            long messageId = 67890L;
+
+            String htmlBody = client.sandboxApi().messages().getHtmlMessage(accountId, sandboxId, messageId);
             System.out.println(htmlBody);
         - lang: go
           label: Go
@@ -4916,7 +4913,7 @@ paths:
             const client = new MailtrapClient({ token: "YOUR_API_KEY", accountId: "YOUR_ACCOUNT_ID" });
 
             async function getMessageAsEml() {
-              const emlContent = await client.testing.messages.getMessageAsEml(12345, 67890);
+              const emlContent = await client.sandbox.messages.getMessageAsEml(12345, 67890);
 
               console.log(emlContent);
             }
@@ -4931,13 +4928,13 @@ paths:
             use Mailtrap\MailtrapSandboxClient;
 
             $config = new Config($_ENV['MAILTRAP_API_KEY']);
-            $accountId = $_ENV['MAILTRAP_ACCOUNT_ID'];
-            $inboxId = $_ENV['MAILTRAP_INBOX_ID'];
+            $accountId = (int) $_ENV['MAILTRAP_ACCOUNT_ID'];
+            $sandboxId = (int) $_ENV['MAILTRAP_SANDBOX_ID'];
 
             $sandboxMessages = (new MailtrapSandboxClient($config))
-                ->messages($accountId, $inboxId);
+                ->messages($accountId, $sandboxId);
 
-            $messageId = $_ENV['MAILTRAP_MESSAGE_ID'];
+            $messageId = (int) $_ENV['MAILTRAP_MESSAGE_ID'];
             $emlContent = ResponseHelper::toString(
                 $sandboxMessages->getEml($messageId)
             );
@@ -4948,7 +4945,7 @@ paths:
           source: |
             import mailtrap as mt
             client = mt.MailtrapClient(token="YOUR_API_KEY", account_id="YOUR_ACCOUNT_ID")
-            eml_content = client.testing_api.messages.get_message_as_eml(inbox_id=12345, message_id=67890)
+            eml_content = client.sandbox_api.messages.get_message_as_eml(sandbox_id=12345, message_id=67890)
             print(eml_content)
         - lang: ruby
           label: Ruby
@@ -4956,7 +4953,7 @@ paths:
             require 'mailtrap'
 
             client = Mailtrap::Client.new(api_key: ENV['MAILTRAP_API_KEY'])
-            messages = Mailtrap::SandboxMessagesAPI.new(YOUR_ACCOUNT_ID, INBOX_ID, client)
+            messages = Mailtrap::SandboxMessagesAPI.new(YOUR_ACCOUNT_ID, SANDBOX_ID, client)
 
             puts messages.eml_body(MESSAGE_ID)
         - lang: csharp
@@ -4965,11 +4962,11 @@ paths:
             using Mailtrap;
             using var mailtrapFactory = new MailtrapClientFactory("YOUR_API_KEY");
             var client = mailtrapFactory.CreateClient();
-            var inboxId = 54321;
+            var sandboxId = 54321;
             var messageId = 67890;
             var emlContent = await client
                 .Account(YOUR_ACCOUNT_ID)
-                .Inbox(inboxId)
+                .Sandbox(sandboxId)
                 .Message(messageId)
                 .AsEml();
             Console.WriteLine(emlContent);
@@ -4982,10 +4979,10 @@ paths:
             var config = new MailtrapConfig.Builder().token("YOUR_API_KEY").build();
             var client = MailtrapClientFactory.createMailtrapClient(config);
             
-            long inboxId = 12345L;
+            long sandboxId = 12345L;
             long messageId = 67890L;
 
-            String emlContent = client.testingApi().messages().getMessageAsEml(accountId, inboxId, messageId);
+            String emlContent = client.sandboxApi().messages().getMessageAsEml(accountId, sandboxId, messageId);
             System.out.println(emlContent);
         - lang: go
           label: Go
@@ -5073,7 +5070,7 @@ paths:
             const client = new MailtrapClient({ token: "YOUR_API_KEY", accountId: "YOUR_ACCOUNT_ID" });
 
             async function getMailHeaders() {
-              const mailHeaders = await client.testing.messages.getMailHeaders(12345, 67890);
+              const mailHeaders = await client.sandbox.messages.getMailHeaders(12345, 67890);
 
               console.log(mailHeaders);
             }
@@ -5088,13 +5085,13 @@ paths:
             use Mailtrap\MailtrapSandboxClient;
 
             $config = new Config($_ENV['MAILTRAP_API_KEY']);
-            $accountId = $_ENV['MAILTRAP_ACCOUNT_ID'];
-            $inboxId = $_ENV['MAILTRAP_INBOX_ID'];
+            $accountId = (int) $_ENV['MAILTRAP_ACCOUNT_ID'];
+            $sandboxId = (int) $_ENV['MAILTRAP_SANDBOX_ID'];
 
             $sandboxMessages = (new MailtrapSandboxClient($config))
-                ->messages($accountId, $inboxId);
+                ->messages($accountId, $sandboxId);
 
-            $messageId = $_ENV['MAILTRAP_MESSAGE_ID'];
+            $messageId = (int) $_ENV['MAILTRAP_MESSAGE_ID'];
             $mailHeaders = $sandboxMessages->getMailHeaders($messageId);
 
             var_dump(ResponseHelper::toArray($mailHeaders));
@@ -5103,7 +5100,7 @@ paths:
           source: |
             import mailtrap as mt
             client = mt.MailtrapClient(token="YOUR_API_KEY", account_id="YOUR_ACCOUNT_ID")
-            mail_headers = client.testing_api.messages.get_mail_headers(inbox_id=12345, message_id=67890)
+            mail_headers = client.sandbox_api.messages.get_mail_headers(sandbox_id=12345, message_id=67890)
             print(mail_headers)
         - lang: ruby
           label: Ruby
@@ -5111,7 +5108,7 @@ paths:
             require 'mailtrap'
 
             client = Mailtrap::Client.new(api_key: ENV['MAILTRAP_API_KEY'])
-            messages = Mailtrap::SandboxMessagesAPI.new(YOUR_ACCOUNT_ID, INBOX_ID, client)
+            messages = Mailtrap::SandboxMessagesAPI.new(YOUR_ACCOUNT_ID, SANDBOX_ID, client)
 
             puts messages.mail_headers(MESSAGE_ID)
         - lang: csharp
@@ -5120,11 +5117,11 @@ paths:
             using Mailtrap;
             using var mailtrapFactory = new MailtrapClientFactory("YOUR_API_KEY");
             var client = mailtrapFactory.CreateClient();
-            var inboxId = 54321;
+            var sandboxId = 54321;
             var messageId = 67890;
             var mailHeaders = await client
                 .Account(YOUR_ACCOUNT_ID)
-                .Inbox(inboxId)
+                .Sandbox(sandboxId)
                 .Message(messageId)
                 .GetHeaders();
             Console.WriteLine(mailHeaders.Headers);
@@ -5137,10 +5134,10 @@ paths:
             var config = new MailtrapConfig.Builder().token("YOUR_API_KEY").build();
             var client = MailtrapClientFactory.createMailtrapClient(config);
             
-            long inboxId = 12345L;
+            long sandboxId = 12345L;
             long messageId = 67890L;
 
-            var mailHeaders = client.testingApi().messages().getMailHeaders(accountId, inboxId, messageId);
+            var mailHeaders = client.sandboxApi().messages().getMailHeaders(accountId, sandboxId, messageId);
             System.out.println(mailHeaders);
         - lang: go
           label: Go
@@ -5265,7 +5262,7 @@ paths:
             const client = new MailtrapClient({ token: "YOUR_API_KEY", accountId: "YOUR_ACCOUNT_ID" });
             
             async function getAttachments() {
-              const attachments = await client.testing.attachments.getList(67890, 12345);
+              const attachments = await client.sandbox.attachments.getList(12345, 67890);
 
               console.log(attachments);
             }
@@ -5280,13 +5277,13 @@ paths:
             use Mailtrap\MailtrapSandboxClient;
 
             $config = new Config($_ENV['MAILTRAP_API_KEY']);
-            $accountId = $_ENV['MAILTRAP_ACCOUNT_ID'];
-            $inboxId = $_ENV['MAILTRAP_INBOX_ID'];
+            $accountId = (int) $_ENV['MAILTRAP_ACCOUNT_ID'];
+            $sandboxId = (int) $_ENV['MAILTRAP_SANDBOX_ID'];
 
             $sandboxAttachments = (new MailtrapSandboxClient($config))
-                ->attachments($accountId, $inboxId);
+                ->attachments($accountId, $sandboxId);
 
-            $messageId = $_ENV['MAILTRAP_MESSAGE_ID'];
+            $messageId = (int) $_ENV['MAILTRAP_MESSAGE_ID'];
             $response = $sandboxAttachments->getMessageAttachments($messageId);
 
             var_dump(ResponseHelper::toArray($response));
@@ -5295,7 +5292,7 @@ paths:
           source: |
             import mailtrap as mt
             client = mt.MailtrapClient(token="YOUR_API_KEY", account_id="YOUR_ACCOUNT_ID")
-            attachments = client.testing_api.attachments.get_list(inbox_id=12345, message_id=67890)
+            attachments = client.sandbox_api.attachments.get_list(sandbox_id=12345, message_id=67890)
         - lang: ruby
           label: Ruby
           source: |
@@ -5303,7 +5300,7 @@ paths:
 
             client = Mailtrap::Client.new(api_key: ENV['MAILTRAP_API_KEY'])
             attachments = Mailtrap::SandboxAttachmentsAPI.new(
-              YOUR_ACCOUNT_ID, INBOX_ID, MESSAGE_ID, client
+              YOUR_ACCOUNT_ID, SANDBOX_ID, MESSAGE_ID, client
             )
 
             puts attachments.list
@@ -5314,11 +5311,11 @@ paths:
             using Mailtrap.Attachments;
             using var mailtrapFactory = new MailtrapClientFactory("YOUR_API_KEY");
             var client = mailtrapFactory.CreateClient();
-            var inboxId = 54321;
+            var sandboxId = 54321;
             var messageId = 67890;
             var attachments = await client
                 .Account(YOUR_ACCOUNT_ID)
-                .Inbox(inboxId)
+                .Sandbox(sandboxId)
                 .Message(messageId)
                 .Attachments()
                 .Fetch();
@@ -5332,10 +5329,10 @@ paths:
             
             var client = MailtrapClientFactory.createMailtrapClient(config);
             
-            long inboxId = 12345L;
+            long sandboxId = 12345L;
             long messageId = 67890L;
             
-            var attachments = client.testingApi().attachments().getAttachments(accountId, inboxId, messageId, null);
+            var attachments = client.sandboxApi().attachments().getAttachments(accountId, sandboxId, messageId, null);
         - lang: go
           label: Go
           source: |
@@ -5451,7 +5448,7 @@ paths:
             const client = new MailtrapClient({ token: "YOUR_API_KEY", accountId: "YOUR_ACCOUNT_ID" });
 
             async function getAttachment() {
-              const attachment = await client.testing.attachments.get(12345, 67890, 222222);
+              const attachment = await client.sandbox.attachments.get(12345, 67890, 222222);
 
               console.log(attachment);
             }
@@ -5466,14 +5463,14 @@ paths:
             use Mailtrap\MailtrapSandboxClient;
 
             $config = new Config($_ENV['MAILTRAP_API_KEY']);
-            $accountId = $_ENV['MAILTRAP_ACCOUNT_ID'];
-            $inboxId = $_ENV['MAILTRAP_INBOX_ID'];
+            $accountId = (int) $_ENV['MAILTRAP_ACCOUNT_ID'];
+            $sandboxId = (int) $_ENV['MAILTRAP_SANDBOX_ID'];
 
             $sandboxAttachments = (new MailtrapSandboxClient($config))
-                ->attachments($accountId, $inboxId);
+                ->attachments($accountId, $sandboxId);
 
-            $messageId = $_ENV['MAILTRAP_MESSAGE_ID'];
-            $attachmentId = $_ENV['MAILTRAP_MESSAGE_ATTACHMENT_ID'];
+            $messageId = (int) $_ENV['MAILTRAP_MESSAGE_ID'];
+            $attachmentId = (int) $_ENV['MAILTRAP_MESSAGE_ATTACHMENT_ID'];
 
             $response = $sandboxAttachments->getMessageAttachment($messageId, $attachmentId);
 
@@ -5483,7 +5480,7 @@ paths:
           source: |
             import mailtrap as mt
             client = mt.MailtrapClient(token="YOUR_API_KEY", account_id="YOUR_ACCOUNT_ID")
-            attachment = client.testing_api.attachments.get(inbox_id=12345, message_id=67890, attachment_id=222222)
+            attachment = client.sandbox_api.attachments.get(sandbox_id=12345, message_id=67890, attachment_id=222222)
         - lang: ruby
           label: Ruby
           source: |
@@ -5491,7 +5488,7 @@ paths:
 
             client = Mailtrap::Client.new(api_key: ENV['MAILTRAP_API_KEY'])
             attachments = Mailtrap::SandboxAttachmentsAPI.new(
-              YOUR_ACCOUNT_ID, INBOX_ID, MESSAGE_ID, client
+              YOUR_ACCOUNT_ID, SANDBOX_ID, MESSAGE_ID, client
             )
 
             puts "Attachment: #{attachments.get(ATTACHMENT_ID)}"
@@ -5502,12 +5499,12 @@ paths:
             using Mailtrap.Attachments;
             using var mailtrapFactory = new MailtrapClientFactory("YOUR_API_KEY");
             var client = mailtrapFactory.CreateClient();
-            var inboxId = 54321;
+            var sandboxId = 54321;
             var messageId = 67890;
             var attachmentId = 222222;
             var attachment = await client
                 .Account(YOUR_ACCOUNT_ID)
-                .Inbox(inboxId)
+                .Sandbox(sandboxId)
                 .Message(messageId)
                 .Attachment(attachmentId)
                 .GetDetails();
@@ -5518,12 +5515,12 @@ paths:
             import io.mailtrap.factory.MailtrapClientFactory;
             MailtrapConfig config = new MailtrapConfig.Builder().token("YOUR_API_KEY").build();
             
-            long inboxId = 12345L;
+            long sandboxId = 12345L;
             long messageId = 67890L;
             long attachmentId = 222222L;
             
             var client = MailtrapClientFactory.createMailtrapClient(config);
-            var attachment = client.testingApi().attachments().getSingleAttachment(accountId, inboxId, messageId, attachmentId);
+            var attachment = client.sandboxApi().attachments().getSingleAttachment(accountId, sandboxId, messageId, attachmentId);
         - lang: go
           label: Go
           source: |
