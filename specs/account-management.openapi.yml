@@ -1632,9 +1632,8 @@ paths:
               type: object
               properties:
                 expires_at:
-                  type: string
+                  type: [string, 'null']
                   format: date-time
-                  nullable: true
                   description: |-
                     When the new token expires (ISO 8601 date-time, must be in the future).
                     Must be no more than 5 years in the future.
@@ -2402,9 +2401,9 @@ components:
                   type: string
                   description: The token value with all but the last characters masked
                 expires_at:
-                  type: string
+                  type: [string, 'null']
                   format: date-time
-                  description: Api token expiration time
+                  description: Api token expiration time; null if the token does not expire
           description: Entity that has permissions to the resources
           type: object
         resources:
@@ -2533,9 +2532,8 @@ components:
           type: string
           description: Name of the user or token that created this token
         expires_at:
-          type: string
+          type: [string, 'null']
           format: date-time
-          nullable: true
           description: When the token expires (ISO 8601); null if the token does not expire
         resources:
           type: array
@@ -2569,9 +2567,8 @@ components:
           type: string
           description: Name of the user or token that created this token
         expires_at:
-          type: string
+          type: [string, 'null']
           format: date-time
-          nullable: true
           description: When the token expires (ISO 8601); null if the token does not expire
         resources:
           type: array
@@ -2626,9 +2623,8 @@ components:
           maxLength: 100
           description: Display name for the token
         expires_at:
-          type: string
+          type: [string, 'null']
           format: date-time
-          nullable: true
           description: |-
             When the token expires (ISO 8601 date-time, must be in the future).
             Must be no more than 5 years in the future.
