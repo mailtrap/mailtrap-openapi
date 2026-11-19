@@ -2227,6 +2227,8 @@ paths:
             application/json:
               schema:
                 type: object
+                required:
+                  - errors
                 properties:
                   errors:
                     type: array

@@ -1022,6 +1022,8 @@ paths:
             application/json:
               schema:
                 type: object
+                required:
+                  - errors
                 properties:
                   errors:
                     type: object
@@ -4641,6 +4643,8 @@ components:
       description: |-
         Validation errors per field. Keys are attribute names; values are arrays of human-readable messages.
         Some endpoints may also return a `base` key with general validation errors.
+      required:
+        - errors
       properties:
         errors:
           type: object
