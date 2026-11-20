@@ -2,13 +2,13 @@ name: Lint OpenAPI Specs
 
 on:
   push:
-    branches: [ main, master ]
+    branches: [ dev, main, master ]
     paths:
       - 'specs/**'
       - '.github/workflows/openapi-lint.yml'
       - '.spectral.yaml'
   pull_request:
-    branches: [ main, master ]
+    branches: [ dev, main, master ]
     paths:
       - 'specs/**'
       - '.github/workflows/openapi-lint.yml'
