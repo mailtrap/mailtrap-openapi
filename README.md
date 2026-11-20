@@ -21,6 +21,16 @@ The specifications are located in the `specs/` directory:
 | Templates                    | `specs/templates.openapi.yml`                   | `https://mailtrap.io`             |
 | Inbound                      | `specs/inbound.openapi.yml`                     | `https://mailtrap.io`             |
 
+## Versions
+
+[docs.mailtrap.io](https://docs.mailtrap.io/developers) renders the `main` branch. Each published state of the specs
+is a [release](https://github.com/mailtrap/mailtrap-openapi/releases) tagged `vX.Y.Z`. The release marked Latest is the
+newest published one, and a release marked Pre-release documents API changes that are not live yet. `dev` collects
+reviewed changes for the next release, and pull requests target it.
+
+Tags never move, so pin one for reproducible client generation. The tag versions the specs; `info.version` inside
+them versions the API.
+
 ## Usage
 
 You can import these files into tools like Postman, Swagger UI, or use them with OpenAPI generators to build SDKs for your preferred language.

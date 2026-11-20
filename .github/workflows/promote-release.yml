@@ -1,0 +1,73 @@
+# Promotes a release once its docs are public. When a release-vX.Y.Z PR merges into main (GitBook
+# renders main), it clears the release's Pre-release label and marks it Latest, unless a newer release
+# already is. Run it by hand with a tag to promote a release whose own PR was closed because a later
+# release PR published its changes.
+name: Promote release
+on:
+  pull_request:
+    types: [closed]
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Release to promote (vX.Y.Z); its tag must be on main"
+        required: true
+        type: string
+
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: false
+
+permissions: {}
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  promote:
+    name: Promote release
+    if: github.event_name == 'workflow_dispatch' || (github.event.pull_request.merged && startsWith(github.event.pull_request.head.ref, 'release-v'))
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # edit the release
+    env:
+      GH_TOKEN: ${{ github.token }}
+      GH_REPO: ${{ github.repository }}
+    steps:
+      - name: Check that the release is on main
+        id: release
+        env:
+          HEAD_REF: ${{ github.event.pull_request.head.ref }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          INPUT_TAG: ${{ inputs.tag }}
+        run: |
+          tag=${HEAD_REF#release-}
+          tag=${tag:-$INPUT_TAG}
+          if ! [[ "$tag" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "::error::$tag is not a vX.Y.Z release tag"
+            exit 1
+          fi
+          tagged=$(gh api "repos/$GH_REPO/commits/$tag" --jq .sha)
+          # The merged branch must be exactly the tagged commit, or main got changes the release lacks
+          if [ -n "$HEAD_SHA" ] && [ "$HEAD_SHA" != "$tagged" ]; then
+            echo "::error::release-$tag was at $HEAD_SHA, but $tag tags $tagged: main got changes outside $tag"
+            exit 1
+          fi
+          main=$(gh api "repos/$GH_REPO/compare/$tagged...main" --jq .status)
+          if [ "$main" != ahead ] && [ "$main" != identical ]; then
+            echo "::error::$tag ($tagged) is not on main ($main): release PRs merge with a merge commit"
+            exit 1
+          fi
+          echo "tag=$tag" >> "$GITHUB_OUTPUT"
+
+      - name: Clear the Pre-release label and mark Latest
+        env:
+          TAG: ${{ steps.release.outputs.tag }}
+        run: |
+          # Latest is the highest published version: promoting an older release must not take it back
+          published=$(gh release list --exclude-drafts --exclude-pre-releases --limit 1000 --json tagName --jq '.[].tagName')
+          newest=$(printf '%s\n%s\n' "$published" "$TAG" | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' | sort -V | tail -n 1)
+          if [ "$newest" = "$TAG" ]; then latest=true; else latest=false; fi
+          gh release edit "$TAG" --prerelease=false --latest="$latest"
+          echo "Promoted $TAG, Latest: $latest"
