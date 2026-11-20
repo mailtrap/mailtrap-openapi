@@ -69,5 +69,8 @@ jobs:
           published=$(gh release list --exclude-drafts --exclude-pre-releases --limit 1000 --json tagName --jq '.[].tagName')
           newest=$(printf '%s\n%s\n' "$published" "$TAG" | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' | sort -V | tail -n 1)
           if [ "$newest" = "$TAG" ]; then latest=true; else latest=false; fi
-          gh release edit "$TAG" --prerelease=false --latest="$latest"
+          if ! gh release edit "$TAG" --prerelease=false --latest="$latest"; then
+            echo "::error::github.token cannot edit a release whose tagged commit has workflow files that differ from the default branch. If that is why, edit $TAG on the Releases page: clear Set as a pre-release, and set Set as the latest release to $latest"
+            exit 1
+          fi
           echo "Promoted $TAG, Latest: $latest"

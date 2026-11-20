@@ -131,4 +131,8 @@ jobs:
       - name: Create the pre-release
         env:
           TAG: ${{ steps.version.outputs.tag }}
-        run: gh release create "$TAG" --target "$GITHUB_SHA" --prerelease --title "$TAG" --notes-file "$RUNNER_TEMP/notes.md"
+        run: |
+          if ! gh release create "$TAG" --target "$GITHUB_SHA" --prerelease --title "$TAG" --notes-file "$RUNNER_TEMP/notes.md"; then
+            echo "::error::github.token cannot create a release on a commit whose workflow files differ from the default branch. If that is why, create $TAG on the Releases page: new tag $TAG on release-$TAG, Set as a pre-release"
+            exit 1
+          fi
