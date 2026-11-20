@@ -26,9 +26,7 @@ jobs:
     if: github.event_name == 'workflow_dispatch' || (github.event.pull_request.merged && startsWith(github.event.pull_request.head.ref, 'release-v'))
     # On the job, not the workflow: GitHub keeps one pending run per group and cancels the older one, so
     # the runs of every other PR closed into main must not join it
-    concurrency:
-      group: ${{ github.workflow }}
-      cancel-in-progress: false
+    concurrency: ${{ github.workflow }}
     runs-on: ubuntu-latest
     permissions:
       contents: write # edit the release
@@ -43,8 +41,7 @@ jobs:
           HEAD_SHA: ${{ github.event.pull_request.head.sha }}
           INPUT_TAG: ${{ inputs.tag }}
         run: |
-          tag=${HEAD_REF#release-}
-          tag=${tag:-$INPUT_TAG}
+          tag=${INPUT_TAG:-${HEAD_REF#release-}}
           if ! [[ "$tag" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
             echo "::error::$tag is not a vX.Y.Z release tag"
             exit 1

@@ -18,9 +18,7 @@ on:
         options: [patch, minor, major]
         default: patch
 
-concurrency:
-  group: ${{ github.workflow }}
-  cancel-in-progress: false
+concurrency: ${{ github.workflow }}
 
 permissions: {}
 
@@ -38,14 +36,11 @@ jobs:
     env:
       GH_TOKEN: ${{ github.token }}
       GH_REPO: ${{ github.repository }}
-      SHA: ${{ github.sha }}
     steps:
       - name: Refuse to release from a branch other than dev
-        env:
-          REF: ${{ github.ref }}
         run: |
-          if [ "$REF" != refs/heads/dev ]; then
-            echo "::error::Releases are drafted from dev, got $REF"
+          if [ "$GITHUB_REF" != refs/heads/dev ]; then
+            echo "::error::Releases are drafted from dev, got $GITHUB_REF"
             exit 1
           fi
 
@@ -78,15 +73,15 @@ jobs:
         env:
           PREVIOUS: ${{ steps.version.outputs.previous }}
         run: |
-          main=$(gh api "repos/$GH_REPO/compare/main...$SHA" --jq .status)
+          main=$(gh api "repos/$GH_REPO/compare/main...$GITHUB_SHA" --jq .status)
           if [ "$main" = identical ] || [ "$main" = behind ]; then
-            echo "::error::dev $SHA is already on main: nothing to release"
+            echo "::error::dev $GITHUB_SHA is already on main: nothing to release"
             exit 1
           fi
           if [ -n "$PREVIOUS" ]; then
-            since=$(gh api "repos/$GH_REPO/compare/$PREVIOUS...$SHA" --jq .status)
+            since=$(gh api "repos/$GH_REPO/compare/$PREVIOUS...$GITHUB_SHA" --jq .status)
             if [ "$since" != ahead ]; then
-              echo "::error::dev $SHA is $since of $PREVIOUS: a release needs new commits on top of the previous one"
+              echo "::error::dev $GITHUB_SHA is $since of $PREVIOUS: a release needs new commits on top of the previous one"
               exit 1
             fi
           fi
@@ -98,7 +93,7 @@ jobs:
         run: |
           since=()
           if [ -n "$PREVIOUS" ]; then since=(-f previous_tag_name="$PREVIOUS"); fi
-          gh api "repos/$GH_REPO/releases/generate-notes" -f tag_name="$TAG" -f target_commitish="$SHA" "${since[@]}" \
+          gh api "repos/$GH_REPO/releases/generate-notes" -f tag_name="$TAG" -f target_commitish="$GITHUB_SHA" "${since[@]}" \
             --jq .body > "$RUNNER_TEMP/notes.md"
 
       - name: Create the release branch at the dev commit
@@ -106,12 +101,12 @@ jobs:
           BRANCH: release-${{ steps.version.outputs.tag }}
         run: |
           if existing=$(gh api "repos/$GH_REPO/git/ref/heads/$BRANCH" --jq .object.sha 2>/dev/null); then
-            if [ "$existing" != "$SHA" ]; then
-              echo "::error::$BRANCH exists at $existing, not at $SHA"
+            if [ "$existing" != "$GITHUB_SHA" ]; then
+              echo "::error::$BRANCH exists at $existing, not at $GITHUB_SHA"
               exit 1
             fi
           else
-            gh api "repos/$GH_REPO/git/refs" -f ref="refs/heads/$BRANCH" -f sha="$SHA" --silent
+            gh api "repos/$GH_REPO/git/refs" -f ref="refs/heads/$BRANCH" -f sha="$GITHUB_SHA" --silent
           fi
 
       - name: Open the release PR
@@ -136,4 +131,4 @@ jobs:
       - name: Create the pre-release
         env:
           TAG: ${{ steps.version.outputs.tag }}
-        run: gh release create "$TAG" --target "$SHA" --prerelease --title "$TAG" --notes-file "$RUNNER_TEMP/notes.md"
+        run: gh release create "$TAG" --target "$GITHUB_SHA" --prerelease --title "$TAG" --notes-file "$RUNNER_TEMP/notes.md"
