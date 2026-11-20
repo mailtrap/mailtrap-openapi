@@ -12,7 +12,7 @@ on:
   workflow_dispatch:
     inputs:
       bump_type:
-        description: "minor: new operations or fields; patch: fixes and wording; major: a breaking reshuffle of the documents"
+        description: "minor: new operations or fields; patch: fixes and wording; major: a new API version (the major of info.version)"
         required: true
         type: choice
         options: [patch, minor, major]
@@ -50,7 +50,8 @@ jobs:
           fi
 
       # From the newest tag, pre-releases included: a release drafted while another waits for
-      # production follows it
+      # production follows it. A release's major version is the API's: the first one is v2.0.0,
+      # since the specs document API v2 (info.version 2.0.0).
       - name: Compute the next version
         id: version
         env:
@@ -58,14 +59,17 @@ jobs:
         run: |
           refs=$(gh api "repos/$GH_REPO/git/matching-refs/tags/v" --paginate --jq '.[].ref | ltrimstr("refs/tags/")')
           previous=$({ grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' <<< "$refs" || true; } | sort -V | tail -n 1)
-          IFS=. read -r major minor patch <<< "${previous#v}"
-          major=${major:-0} minor=${minor:-0} patch=${patch:-0}
-          case "$BUMP_TYPE" in
-            major) tag="v$((major + 1)).0.0" ;;
-            minor) tag="v$major.$((minor + 1)).0" ;;
-            patch) tag="v$major.$minor.$((patch + 1))" ;;
-            *) echo "::error::Unknown bump type $BUMP_TYPE"; exit 1 ;;
-          esac
+          if [ -z "$previous" ]; then
+            tag=v2.0.0
+          else
+            IFS=. read -r major minor patch <<< "${previous#v}"
+            case "$BUMP_TYPE" in
+              major) tag="v$((major + 1)).0.0" ;;
+              minor) tag="v$major.$((minor + 1)).0" ;;
+              patch) tag="v$major.$minor.$((patch + 1))" ;;
+              *) echo "::error::Unknown bump type $BUMP_TYPE"; exit 1 ;;
+            esac
+          fi
           echo "${previous:-No release yet} -> $tag"
           echo "previous=$previous" >> "$GITHUB_OUTPUT"
           echo "tag=$tag" >> "$GITHUB_OUTPUT"

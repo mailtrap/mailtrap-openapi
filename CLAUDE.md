@@ -300,17 +300,18 @@ When creating or editing OpenAPI specs:
 - Open pull requests against `dev`. Merge a spec for a new endpoint only when the API change ships right after: a
   release takes everything on `dev`, so an operation documented before it exists blocks everyone's next release.
 - Draft a release with Actions → Draft release, run from `dev`. Pick the bump: minor for new operations or fields,
-  patch for fixes and wording, major only for a breaking reshuffle of the documents. The workflow creates the `vX.Y.Z`
+  patch for fixes and wording, major only for a new API version. The workflow creates the `vX.Y.Z`
   pre-release with its tag on the `dev` commit and opens `release-vX.Y.Z` → `main`.
 - Merge the release PR with a merge commit once every endpoint it documents is live in production. GitBook picks up
   `main`, and the Promote release workflow clears the Pre-release label and marks the release Latest.
-- Tags never move: a mistake in `v1.4.0` is fixed by `v1.4.1`. To drop a release before it is public, close its
+- Tags never move: a mistake in `v2.4.0` is fixed by `v2.4.1`. To drop a release before it is public, close its
   release PR, fix on `dev` and draft the next patch. The dropped pre-release and its tag stay.
 - If a later release PR published an earlier release's changes, close the earlier PR and run Promote release with its
   tag.
 - For an urgent fix to the public docs while `dev` holds unreleased work, branch from `main` and open a PR into
   `main`. Then open a PR from `main` back into `dev`; the next release includes the fix.
-- `info.version` in the specs is the API version, not the release version: leave it as is.
+- `info.version` in the specs is the API version: leave it as is. A release's major version matches its major (the first
+  release is `v2.0.0`); minor and patch count spec changes, so they differ from it.
 
 ## Working with This Repository
 
