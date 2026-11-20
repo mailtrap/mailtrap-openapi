@@ -1,0 +1,27 @@
+CLAUDE.md
+  s_3194d5e44c5105::t_9db444ec5e1b53 313-314
+  s_3194d5e44c5105::t_cd0ef5b4f56704 303
+  s_3194d5e44c5105::t_ff5dea0a720280 307
+.github/workflows/promote-release.yml
+  s_3194d5e44c5105::t_1a22d8d79051f1 27-31
+README.md
+  s_3194d5e44c5105::t_ebbad7583d90ee 31-32
+.github/workflows/draft-release.yml
+  s_3194d5e44c5105::t_3e7660db9bea5d 15,53-54,62-72
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "47ac077d2412f125c8e9e071fd286688e06ca079",
+  "prompts": {},
+  "sessions": {
+    "s_3194d5e44c5105": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "a29bdfa4-3dd7-4621-9b9f-55895df4d73e",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Maciej Walusiak <maciej.walusiak@railsware.com>"
+    }
+  }
+}
