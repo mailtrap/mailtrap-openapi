@@ -308,8 +308,8 @@ When creating or editing OpenAPI specs:
   release PR, fix on `dev` and draft the next patch. The dropped pre-release and its tag stay.
 - If a later release PR published an earlier release's changes, close the earlier PR and run Promote release with its
   tag.
-- Both workflows use `github.token`, which GitHub does not let create or edit a release whose commit has workflow files
-  that differ from `dev`'s. When a run fails on that, finish the release on the Releases page as its error says.
+- `github.token` cannot create or edit a release whose commit's workflow files differ from `dev`'s. If a release workflow
+  fails on that, finish the release on the Releases page as its error says.
 - For an urgent fix to the public docs while `dev` holds unreleased work, branch from `main` and open a PR into
   `main`. Then open a PR from `main` back into `dev`; the next release includes the fix.
 - `info.version` in the specs is the API version: leave it as is. A release's major version matches its major (the first
