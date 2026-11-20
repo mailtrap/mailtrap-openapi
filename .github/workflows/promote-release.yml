@@ -24,9 +24,11 @@ jobs:
   promote:
     name: Promote release
     if: github.event_name == 'workflow_dispatch' || (github.event.pull_request.merged && startsWith(github.event.pull_request.head.ref, 'release-v'))
-    # On the job, not the workflow: GitHub keeps one pending run per group and cancels the older one, so
-    # the runs of every other PR closed into main must not join it
-    concurrency: ${{ github.workflow }}
+    # On the job, not the workflow, so the runs of every other PR closed into main don't queue in the group.
+    # queue: max keeps every pending promotion: by default a new one cancels the one already waiting
+    concurrency:
+      group: ${{ github.workflow }}
+      queue: max
     runs-on: ubuntu-latest
     permissions:
       contents: write # edit the release
