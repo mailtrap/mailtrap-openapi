@@ -1,7 +1,8 @@
 # Promotes a release once its docs are public. When a release-vX.Y.Z PR merges into main (GitBook
 # renders main), it clears the release's Pre-release label and marks it Latest, unless a newer release
 # already is. Run it by hand with a tag to promote a release whose own PR was closed because a later
-# release PR published its changes.
+# release PR published its changes. The merged release branch must have the tagged commit's files and
+# the tag must reach main, so updating a release PR's branch with a merge is safe and with a rebase is not.
 name: Promote release
 on:
   pull_request:
@@ -49,14 +50,21 @@ jobs:
             exit 1
           fi
           tagged=$(gh api "repos/$GH_REPO/commits/$tag" --jq .sha)
-          # The merged branch must be exactly the tagged commit, or main got changes the release lacks
+          # Update branch merges main into the release branch: a new head commit with the tag's files. Only
+          # a head whose files differ from the tagged commit's put changes on main that the release lacks
           if [ -n "$HEAD_SHA" ] && [ "$HEAD_SHA" != "$tagged" ]; then
-            echo "::error::release-$tag was at $HEAD_SHA, but $tag tags $tagged: main got changes outside $tag"
-            exit 1
+            tagged_tree=$(gh api "repos/$GH_REPO/commits/$tagged" --jq .commit.tree.sha)
+            head_tree=$(gh api "repos/$GH_REPO/commits/$HEAD_SHA" --jq .commit.tree.sha)
+            if [ "$head_tree" != "$tagged_tree" ]; then
+              changed=$(gh api "repos/$GH_REPO/compare/$tagged...$HEAD_SHA" --jq '[.files[].filename] | join(", ")')
+              echo "::error::release-$tag merged at $HEAD_SHA, but $tag tags $tagged and their files differ ($changed): main got changes outside $tag"
+              exit 1
+            fi
           fi
+          # A rebase (squash or rebase merge, or Update with rebase) leaves the tagged commit off main
           main=$(gh api "repos/$GH_REPO/compare/$tagged...main" --jq .status)
           if [ "$main" != ahead ] && [ "$main" != identical ]; then
-            echo "::error::$tag ($tagged) is not on main ($main): release PRs merge with a merge commit"
+            echo "::error::$tag ($tagged) is not on main ($main). If its release PR merged without a merge commit or its branch was updated with a rebase, open a PR into main from a new branch at $tagged, merge it with a merge commit, then run Promote release by hand with $tag"
             exit 1
           fi
           echo "tag=$tag" >> "$GITHUB_OUTPUT"

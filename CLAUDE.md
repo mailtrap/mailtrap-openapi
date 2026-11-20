@@ -304,6 +304,10 @@ When creating or editing OpenAPI specs:
   pre-release with its tag on the `dev` commit and opens `release-vX.Y.Z` → `main`.
 - Merge the release PR with a merge commit once every endpoint it documents is live in production. GitBook picks up
   `main`, and the Promote release workflow clears the Pre-release label and marks the release Latest.
+- Updating a release PR's branch with a merge ("Update branch") is safe: Promote release checks that the merged branch
+  has the tagged commit's files, not that it is that commit. Don't update it with a rebase or push changes to it: a
+  rebase leaves the tag off `main`, so promotion fails until a PR from a branch at the tagged commit merges into `main`
+  with a merge commit and Promote release runs by hand with the tag.
 - Tags never move: a mistake in `v2.4.0` is fixed by `v2.4.1`. To drop a release before it is public, close its
   release PR, fix on `dev` and draft the next patch. The dropped pre-release and its tag stay.
 - If a later release PR published an earlier release's changes, close the earlier PR and run Promote release with its
