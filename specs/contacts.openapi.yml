@@ -40,8 +40,9 @@ tags:
     description: |-
       Manage contact segments. A segment stores conditions on contact fields, lists and campaign
       activity, not a list of contacts. The contacts that match are found each time the segment is
-      used, so they change as your contacts change. Use a segment as an email campaign audience.
-      Learn more about [Segments](https://docs.mailtrap.io/email-marketing/contacts/segments).
+      used, so they change as your contacts change. Use a segment as an email campaign audience,
+      or list its contacts with `GET /api/contacts?segment_id=`. Learn more about
+      [Segments](https://docs.mailtrap.io/email-marketing/contacts/segments).
 
       ### Conditions
 
@@ -272,8 +273,8 @@ paths:
 
         {% hint style="info" %}
         Filter values are validated rather than ignored. An unknown `status`, a non-integer
-        `list_id`, a repeated filter parameter, or a malformed `token` is rejected with `422`,
-        so a mistyped filter can never widen the result set.
+        `list_id` or `segment_id`, an unknown `segment_id`, a repeated filter parameter, or a
+        malformed `token` is rejected with `422`, so a mistyped filter can never widen the result set.
         {% endhint %}
       tags:
         - Contacts
@@ -287,6 +288,18 @@ paths:
             format: int64
             minimum: 1
             example: 3229
+        - name: segment_id
+          in: query
+          required: false
+          description: |-
+            Return only contacts that match this contact segment, unsubscribed ones included (see
+            each contact's `status`). Combines with `list_id`, `status` and `email`: a contact must
+            match all of them. A segment without conditions gives an empty page.
+          schema:
+            type: integer
+            format: int64
+            minimum: 1
+            example: 12
         - name: status
           in: query
           required: false
@@ -338,6 +351,10 @@ paths:
 
             # Filter by list, status and email substring
             curl -X GET 'https://mailtrap.io/api/contacts?list_id=3229&status=subscribed&email=john%40' \
+              -H 'Authorization: Bearer YOUR_API_KEY'
+
+            # The subscribed contacts of a segment
+            curl -X GET 'https://mailtrap.io/api/contacts?segment_id=12&status=subscribed' \
               -H 'Authorization: Bearer YOUR_API_KEY'
 
             # Fetch the next page using the cursor from the previous response
@@ -404,6 +421,18 @@ paths:
                     errors:
                       status:
                         - 'must be one of: subscribed, unsubscribed'
+                invalid_segment_id:
+                  summary: segment_id is not an integer
+                  value:
+                    errors:
+                      segment_id:
+                        - must be an integer
+                unknown_segment_id:
+                  summary: No segment with this segment_id exists in the account
+                  value:
+                    errors:
+                      segment_id:
+                        - not found
                 repeated_parameter:
                   summary: A filter was supplied more than once or as an array
                   value:
