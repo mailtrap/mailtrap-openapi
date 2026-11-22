@@ -199,10 +199,40 @@ tags:
       | Campaign soft bounced | `nested_contain` | `soft_bounce` |
       | Campaign not soft bounced | `nested_not_contain` | `soft_bounce` |
 
+      #### Validation errors
+
+      Create and update refuse invalid conditions with `422` and save nothing. Each message under
+      `errors.conditions` starts with where the problem is:
+
+      - No prefix, for the whole value: `must be a list of groups`, `must have at most 100 conditions in total`.
+      - `group N: ` for a group: `must be a list of conditions`, `must have at least one condition`.
+      - `group N, condition M: ` for a condition: `must be an object with name, operator and value`,
+        `name must be a non-empty string`, `operator must be a non-empty string`,
+        `must have no keys other than name, operator and value`, `unknown field`,
+        `operator is not allowed for this field`, `value must be empty for this operator`,
+        `value is required`, `value must be a string`,
+        `value must be a number from -9.223372e+18 to 9.223372e+18`, `value must be a number`,
+        `value must be a date in the format YYYY-MM-DD`,
+        `value must be a list of two dates in the format YYYY-MM-DD`,
+        `value must have the first date on or before the second`,
+        `value must be a whole number of days from 1 to 2147483647`,
+        `value must be a list of contact list ids`.
+      - For a campaign event, after `group N, condition M: `:
+        `value must be the conditions event_type, campaign_id, created_at, in this order`, or a
+        message about one inner condition: `event_type: operator must be equal`,
+        `event_type: value must be one of delivery, open, click, soft_bounce`,
+        `campaign_id: operator must be optional_equal`,
+        `campaign_id: value must be empty or a campaign id`, or `created_at: ` followed by
+        `operator is not allowed for this field` or one of the date messages above.
+
+      Groups and conditions are numbered from 1. `unknown field` also covers a custom field named
+      any other way than `fields.<merge_tag>`, and a field that is being deleted.
+
       #### Segments saved earlier
 
       A segment saved in the web app before these rules existed may hold a condition outside them,
-      for example the operator `contain`. It is returned as saved.
+      for example the operator `contain`. It is returned as saved. An update without `conditions`
+      keeps it; an update that sends it back gets `422`.
 
   - name: Contact Fields
     x-parent: contacts
@@ -2590,6 +2620,114 @@ paths:
                 errors: token is out of range
         '429':
           $ref: '#/components/responses/RATE_LIMITED'
+    post:
+      operationId: createContactSegment
+      summary: Create a contact segment
+      description: |-
+        Creates a contact segment from a name and, optionally, its conditions. A segment created
+        without `conditions` has none until an update adds them. Invalid conditions are refused
+        with `422` and nothing is saved; the Contact Segments section lists the rules and messages.
+
+        The example needs a custom text field with the merge tag `company`.
+      tags:
+        - Contact Segments
+      x-codeSamples:
+        - lang: shell
+          label: 'cURL'
+          source: |
+            curl -X POST https://mailtrap.io/api/contacts/segments \
+              -H 'Authorization: Bearer YOUR_API_KEY' \
+              -H 'Content-Type: application/json' \
+              -d '{
+                "name": "Engaged Acme customers",
+                "conditions": [
+                  [
+                    {"name": "fields.company", "operator": "ci_contain", "value": "acme"},
+                    {"name": "email", "operator": "ends_with", "value": "@acme.com"}
+                  ],
+                  [
+                    {
+                      "name": "contact_events",
+                      "operator": "nested_contain",
+                      "value": [
+                        {"name": "event_type", "operator": "equal", "value": "open"},
+                        {"name": "campaign_id", "operator": "optional_equal", "value": null},
+                        {"name": "created_at", "operator": "within_last_day", "value": 30}
+                      ]
+                    }
+                  ]
+                ]
+              }'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ContactSegmentCreateRequest'
+            example:
+              name: Engaged Acme customers
+              conditions:
+                - - name: fields.company
+                    operator: ci_contain
+                    value: acme
+                  - name: email
+                    operator: ends_with
+                    value: '@acme.com'
+                - - name: contact_events
+                    operator: nested_contain
+                    value:
+                      - name: event_type
+                        operator: equal
+                        value: open
+                      - name: campaign_id
+                        operator: optional_equal
+                        value: null
+                      - name: created_at
+                        operator: within_last_day
+                        value: 30
+      responses:
+        '201':
+          description: The contact segment was created.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/ContactSegment'
+              example:
+                data:
+                  id: 12
+                  name: Engaged Acme customers
+                  conditions:
+                    - - name: fields.company
+                        operator: ci_contain
+                        value: acme
+                      - name: email
+                        operator: ends_with
+                        value: '@acme.com'
+                    - - name: contact_events
+                        operator: nested_contain
+                        value:
+                          - name: event_type
+                            operator: equal
+                            value: open
+                          - name: campaign_id
+                            operator: optional_equal
+                            value: null
+                          - name: created_at
+                            operator: within_last_day
+                            value: 30
+                  created_at: '2026-11-20T10:15:30.123Z'
+                  updated_at: '2026-11-20T10:15:30.123Z'
+        '401':
+          $ref: '#/components/responses/UNAUTHENTICATED'
+        '403':
+          $ref: '#/components/responses/WRITE_PERMISSION_DENIED'
+        '422':
+          $ref: '#/components/responses/CONTACT_SEGMENT_INVALID'
+        '429':
+          $ref: '#/components/responses/RATE_LIMITED'
   '/api/contacts/segments/{segment_id}':
     get:
       operationId: getContactSegment
@@ -2651,6 +2789,105 @@ paths:
           $ref: '#/components/responses/PERMISSION_DENIED'
         '404':
           $ref: '#/components/responses/NOT_FOUND'
+        '429':
+          $ref: '#/components/responses/RATE_LIMITED'
+    patch:
+      operationId: updateContactSegment
+      summary: Update a contact segment
+      description: |-
+        Updates a contact segment's name, its conditions, or both. A key left out stays as it is.
+        `conditions` replaces all conditions at once, and `"conditions": []` removes them. Invalid
+        conditions are refused with `422` and nothing is saved; the Contact Segments section lists
+        the rules and messages.
+      tags:
+        - Contact Segments
+      x-codeSamples:
+        - lang: shell
+          label: 'cURL'
+          source: |
+            # Rename the segment and keep its conditions
+            curl -X PATCH https://mailtrap.io/api/contacts/segments/{segment_id} \
+              -H 'Authorization: Bearer YOUR_API_KEY' \
+              -H 'Content-Type: application/json' \
+              -d '{"name": "Acme customers"}'
+
+            # Replace the conditions
+            curl -X PATCH https://mailtrap.io/api/contacts/segments/{segment_id} \
+              -H 'Authorization: Bearer YOUR_API_KEY' \
+              -H 'Content-Type: application/json' \
+              -d '{"conditions": [[{"name": "list_ids", "operator": "equal", "value": [3229]}]]}'
+
+            # Remove all conditions
+            curl -X PATCH https://mailtrap.io/api/contacts/segments/{segment_id} \
+              -H 'Authorization: Bearer YOUR_API_KEY' \
+              -H 'Content-Type: application/json' \
+              -d '{"conditions": []}'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ContactSegmentUpdateRequest'
+            examples:
+              rename:
+                summary: Rename the segment and keep its conditions
+                value:
+                  name: Acme customers
+              replace_conditions:
+                summary: Replace the conditions
+                value:
+                  conditions:
+                    - - name: list_ids
+                        operator: equal
+                        value:
+                          - 3229
+              remove_conditions:
+                summary: Remove all conditions
+                value:
+                  conditions: []
+      responses:
+        '200':
+          description: The contact segment was updated.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/ContactSegment'
+              example:
+                data:
+                  id: 12
+                  name: Acme customers
+                  conditions:
+                    - - name: fields.company
+                        operator: ci_contain
+                        value: acme
+                      - name: email
+                        operator: ends_with
+                        value: '@acme.com'
+                    - - name: contact_events
+                        operator: nested_contain
+                        value:
+                          - name: event_type
+                            operator: equal
+                            value: open
+                          - name: campaign_id
+                            operator: optional_equal
+                            value: null
+                          - name: created_at
+                            operator: within_last_day
+                            value: 30
+                  created_at: '2026-11-20T10:15:30.123Z'
+                  updated_at: '2026-11-22T14:05:47.302Z'
+        '401':
+          $ref: '#/components/responses/UNAUTHENTICATED'
+        '403':
+          $ref: '#/components/responses/WRITE_PERMISSION_DENIED'
+        '404':
+          $ref: '#/components/responses/NOT_FOUND'
+        '422':
+          $ref: '#/components/responses/CONTACT_SEGMENT_INVALID'
         '429':
           $ref: '#/components/responses/RATE_LIMITED'
     delete:
@@ -3836,6 +4073,36 @@ components:
             Depends on the operator: a string, a number, a list of list IDs, a list of two dates,
             the three inner conditions of a campaign event, or `null` for operators that take none.
           example: acme
+    ContactSegmentCreateRequest:
+      title: ContactSegmentCreateRequest
+      type: object
+      required:
+        - name
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 255
+          description: Must be unique among the account's segments.
+          example: Engaged Acme customers
+        conditions:
+          $ref: '#/components/schemas/ContactSegmentConditions'
+          description: Optional. A segment created without conditions has none.
+    ContactSegmentUpdateRequest:
+      title: ContactSegmentUpdateRequest
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 255
+          description: Must be unique among the account's segments. Left out, the name stays as it is.
+          example: Acme customers
+        conditions:
+          $ref: '#/components/schemas/ContactSegmentConditions'
+          description: |-
+            Replaces all conditions. Left out, the conditions stay as they are; `[]` removes them;
+            `null` gets `422`.
     ContactSegmentsPagination:
       title: ContactSegmentsPagination
       type: object
@@ -4157,6 +4424,41 @@ components:
               summary: The token has no access to the account
               value:
                 errors: Account access forbidden
+    CONTACT_SEGMENT_INVALID:
+      description: |-
+        The name or the conditions are invalid, and nothing was saved. Both keys can come in one
+        response. The Contact Segments section lists the condition messages.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/UnprocessableEntity'
+          examples:
+            name_taken:
+              summary: Another segment has this name
+              value:
+                errors:
+                  name:
+                    - has already been taken
+            name_blank:
+              summary: The name is missing or empty
+              value:
+                errors:
+                  name:
+                    - can't be blank
+            invalid_condition:
+              summary: A condition uses an operator its field doesn't allow
+              value:
+                errors:
+                  conditions:
+                    - 'group 1, condition 2: operator is not allowed for this field'
+            name_and_conditions:
+              summary: Both the name and a condition are invalid
+              value:
+                errors:
+                  name:
+                    - can't be blank
+                  conditions:
+                    - 'group 1, condition 1: unknown field'
     NOT_FOUND:
       description: Resource not found
       content:
