@@ -33,6 +33,177 @@ tags:
     x-page-description: Organize contacts into lists
     description: Manage contact lists
 
+  - name: Contact Segments
+    x-parent: contacts
+    x-page-title: Contact Segments
+    x-page-description: Group contacts by their fields, lists and campaign activity
+    description: |-
+      Manage contact segments. A segment stores conditions on contact fields, lists and campaign
+      activity, not a list of contacts. The contacts that match are found each time the segment is
+      used, so they change as your contacts change. Use a segment as an email campaign audience.
+      Learn more about [Segments](https://docs.mailtrap.io/email-marketing/contacts/segments).
+
+      ### Conditions
+
+      `conditions` is a list of groups, and each group is a list of conditions. A contact is in the
+      segment when it matches every condition of at least one group: conditions in a group are
+      joined with AND, groups with OR. A segment holds at most 100 conditions in total, and a
+      campaign event condition counts as one.
+
+      Each condition is an object with `name`, `operator` and `value`. This segment holds the
+      contacts whose company contains "acme" and who were added in the last 30 days, plus every
+      contact in list 3229:
+
+      ```json
+      [
+        [
+          {"name": "fields.company", "operator": "ci_contain", "value": "acme"},
+          {"name": "created_at", "operator": "within_last_day", "value": 30}
+        ],
+        [
+          {"name": "list_ids", "operator": "equal", "value": [3229]}
+        ]
+      ]
+      ```
+
+      #### Fields
+
+      | `name` | Field | Type |
+      | --- | --- | --- |
+      | `email` | The contact's email | Text |
+      | `created_at` | When the contact was added | Date, always set |
+      | `list_ids` | The contact lists the contact is in | Lists |
+      | `contact_events` | The contact's campaign events | See Campaign events below |
+      | `fields.<merge_tag>` | A custom contact field, named by its merge tag, for example `fields.company` | The field's `data_type` |
+
+      #### Operators
+
+      `ci_*` = case-insensitive. Each table lists the operators a type allows, with the label the
+      web app shows for them.
+
+      **Text**
+
+      | `operator` | Label | Matches when the value |
+      | --- | --- | --- |
+      | `equal` | Is | is `value` |
+      | `not_equal` | Is Not | isn't `value`, or is missing |
+      | `ci_contain` | Contains | contains `value` |
+      | `ci_not_contain` | Does Not Contain | doesn't contain `value`, or is missing |
+      | `starts_with` | Starts With | starts with `value` |
+      | `ends_with` | Ends With | ends with `value` |
+      | `empty` | Is Empty | is missing or `""` |
+      | `not_empty` | Is Not Empty | is set and not `""` |
+
+      On custom text fields, `equal`, `not_equal`, `starts_with` and `ends_with` match letter case.
+      On `email`, `starts_with` and `ends_with` ignore it, and `equal` and `not_equal` compare the
+      whole address as saved. Contact emails are saved in lowercase, so give those two a lowercase
+      `value`.
+
+      **Integer and float**
+
+      | `operator` | Label | Matches when the value |
+      | --- | --- | --- |
+      | `equal` | Is | equals `value` |
+      | `not_equal` | Is Not | doesn't equal `value`, or is missing |
+      | `greater_than` | Greater Than | is greater than `value` |
+      | `greater_than_equal` | Greater Than Or Equal | is greater than or equal to `value` |
+      | `less_than` | Less Than | is less than `value` |
+      | `less_than_equal` | Less Than Or Equal | is less than or equal to `value` |
+      | `empty` | Is Empty | is missing |
+      | `not_empty` | Is Not Empty | is set |
+
+      **Boolean**
+
+      | `operator` | Label | Matches when the value |
+      | --- | --- | --- |
+      | `is_true` | Is True | is `true` |
+      | `is_false` | Is False | is `false` (a missing value doesn't match) |
+      | `empty` | Is Empty | is missing |
+      | `not_empty` | Is Not Empty | is set |
+
+      **Date**
+
+      Dates are calendar days in UTC, written `YYYY-MM-DD`. `created_at` is always set, so it
+      doesn't take `empty` or `not_empty`.
+
+      | `operator` | Label | Matches when the value |
+      | --- | --- | --- |
+      | `equal` | Is | falls on that day |
+      | `not_equal` | Is Not | doesn't fall on that day, or is missing |
+      | `greater_than` | Is After | is after that day |
+      | `less_than` | Is Before | is before that day |
+      | `between` | Between | falls on either day or between them |
+      | `within_last_day` | Is Within the last N days | falls on today or on one of the `value` days before it |
+      | `not_within_last_day` | Is Not Within the last N days | doesn't fall on today or on one of the `value` days before it (a missing value doesn't match) |
+      | `empty` | Is Empty | is missing |
+      | `not_empty` | Is Not Empty | is set |
+
+      **Lists**
+
+      | `operator` | Label | Matches when the contact is in |
+      | --- | --- | --- |
+      | `equal` | Is | at least one of the lists in `value` |
+      | `not_equal` | Is Not | none of the lists in `value` (contacts in no list match too) |
+
+      #### Values
+
+      | `operator` or type | `value` |
+      | --- | --- |
+      | `empty`, `not_empty`, `is_true`, `is_false` | Left out, `null` or `""` |
+      | Text | A non-empty string |
+      | Integer | A number from -9.223372e18 to 9.223372e18 |
+      | Float | A number |
+      | Date | A `YYYY-MM-DD` string |
+      | `between` | A list of two `YYYY-MM-DD` strings, the first on or before the second |
+      | `within_last_day`, `not_within_last_day` | A whole number of days, from 1 to 2147483647 |
+      | Lists | A list of contact list IDs. The lists are not looked up |
+
+      #### Campaign events
+
+      A `contact_events` condition matches contacts by their campaign deliveries, opens, clicks and
+      soft bounces. Its `operator` is `nested_contain` (the contact has at least one such event) or
+      `nested_not_contain` (the contact has none, contacts without any events included). Its `value`
+      holds exactly three conditions, in this order:
+
+      - `event_type` with `equal`: `delivery`, `open`, `click` or `soft_bounce`.
+      - `campaign_id` with `optional_equal`: a campaign ID, or `null` or `""` for any campaign. The
+        campaign is not looked up.
+      - `created_at` with a date operator: `within_last_day` (Is Within), `equal` (At Specific Date),
+        `less_than` (Before Specific Date), `greater_than` (After Specific Date), `between`
+        (Between Dates), or `exist` (Any Date, no `value`).
+
+      Contacts who opened any campaign in the last 30 days:
+
+      ```json
+      {
+        "name": "contact_events",
+        "operator": "nested_contain",
+        "value": [
+          {"name": "event_type", "operator": "equal", "value": "open"},
+          {"name": "campaign_id", "operator": "optional_equal", "value": null},
+          {"name": "created_at", "operator": "within_last_day", "value": 30}
+        ]
+      }
+      ```
+
+      The campaign event options of the web app:
+
+      | Option | `operator` | `event_type` |
+      | --- | --- | --- |
+      | Campaign delivered | `nested_contain` | `delivery` |
+      | Campaign not delivered | `nested_not_contain` | `delivery` |
+      | Campaign opened | `nested_contain` | `open` |
+      | Campaign not opened | `nested_not_contain` | `open` |
+      | Campaign clicked | `nested_contain` | `click` |
+      | Campaign not clicked | `nested_not_contain` | `click` |
+      | Campaign soft bounced | `nested_contain` | `soft_bounce` |
+      | Campaign not soft bounced | `nested_not_contain` | `soft_bounce` |
+
+      #### Segments saved earlier
+
+      A segment saved in the web app before these rules existed may hold a condition outside them,
+      for example the operator `contain`. It is returned as saved.
+
   - name: Contact Fields
     x-parent: contacts
     x-page-title: Contact Fields
@@ -2307,6 +2478,219 @@ paths:
           $ref: '#/components/responses/LIMIT_EXCEEDED'
     parameters:
       - $ref: '#/components/parameters/list_id'
+  '/api/contacts/segments':
+    get:
+      operationId: getContactSegments
+      summary: Get a list of contact segments
+      description: |-
+        Returns a page of the account's contact segments, oldest first. Each segment comes with its
+        conditions but without contact counts; get a single segment for those.
+
+        Pagination is page-token based: `token` is a page number. Pass the `next_token` from the
+        `pagination` object as `token` to fetch the next page, and stop when it is `null`. A `token`
+        past the last page returns an empty `data`, with `prev_token` pointing at the last page.
+      tags:
+        - Contact Segments
+      parameters:
+        - name: per_page
+          in: query
+          required: false
+          description: |-
+            Number of segments per page. Defaults to `50`, maximum `100`. Larger values are clamped
+            to the maximum.
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 50
+            example: 50
+        - name: token
+          in: query
+          required: false
+          description: Page number to fetch. Defaults to `1`.
+          schema:
+            type: integer
+            format: int64
+            minimum: 1
+            default: 1
+            example: 1
+      x-codeSamples:
+        - lang: shell
+          label: 'cURL'
+          source: |
+            curl -X GET https://mailtrap.io/api/contacts/segments \
+              -H 'Authorization: Bearer YOUR_API_KEY'
+
+            # Fetch the second page of 20 segments
+            curl -X GET 'https://mailtrap.io/api/contacts/segments?per_page=20&token=2' \
+              -H 'Authorization: Bearer YOUR_API_KEY'
+      responses:
+        '200':
+          description: A page of contact segments.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ContactSegment'
+                  pagination:
+                    $ref: '#/components/schemas/ContactSegmentsPagination'
+              example:
+                data:
+                  - id: 12
+                    name: Engaged Acme customers
+                    conditions:
+                      - - name: fields.company
+                          operator: ci_contain
+                          value: acme
+                        - name: email
+                          operator: ends_with
+                          value: '@acme.com'
+                      - - name: contact_events
+                          operator: nested_contain
+                          value:
+                            - name: event_type
+                              operator: equal
+                              value: open
+                            - name: campaign_id
+                              operator: optional_equal
+                              value: null
+                            - name: created_at
+                              operator: within_last_day
+                              value: 30
+                    created_at: '2026-11-20T10:15:30.123Z'
+                    updated_at: '2026-11-21T08:02:11.456Z'
+                  - id: 13
+                    name: Spring sale audience
+                    conditions: []
+                    created_at: '2026-11-21T09:40:05.789Z'
+                    updated_at: '2026-11-21T09:40:05.789Z'
+                pagination:
+                  token: 1
+                  prev_token: null
+                  next_token: null
+                  first_url: 'https://mailtrap.io/api/contacts/segments?token=1'
+                  prev_url: null
+                  current_url: 'https://mailtrap.io/api/contacts/segments?token=1'
+                  next_url: null
+        '401':
+          $ref: '#/components/responses/UNAUTHENTICATED'
+        '403':
+          $ref: '#/components/responses/PERMISSION_DENIED'
+        '422':
+          description: The `token` is too large to paginate with, because its offset overflows a 64-bit integer.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                errors: token is out of range
+        '429':
+          $ref: '#/components/responses/RATE_LIMITED'
+  '/api/contacts/segments/{segment_id}':
+    get:
+      operationId: getContactSegment
+      summary: Get a contact segment
+      description: |-
+        Returns a contact segment with its contact counts. The counts are worked out when you ask:
+        `stats.contacts_count` is every contact that matches the conditions, unsubscribed ones
+        included, and `stats.subscribed_contacts_count` the subscribed ones among them. A segment
+        without conditions has both counts `0`.
+      tags:
+        - Contact Segments
+      x-codeSamples:
+        - lang: shell
+          label: 'cURL'
+          source: |
+            curl -X GET https://mailtrap.io/api/contacts/segments/{segment_id} \
+              -H 'Authorization: Bearer YOUR_API_KEY'
+      responses:
+        '200':
+          description: The contact segment with its contact counts.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/ContactSegmentWithStats'
+              example:
+                data:
+                  id: 12
+                  name: Engaged Acme customers
+                  conditions:
+                    - - name: fields.company
+                        operator: ci_contain
+                        value: acme
+                      - name: email
+                        operator: ends_with
+                        value: '@acme.com'
+                    - - name: contact_events
+                        operator: nested_contain
+                        value:
+                          - name: event_type
+                            operator: equal
+                            value: open
+                          - name: campaign_id
+                            operator: optional_equal
+                            value: null
+                          - name: created_at
+                            operator: within_last_day
+                            value: 30
+                  created_at: '2026-11-20T10:15:30.123Z'
+                  updated_at: '2026-11-21T08:02:11.456Z'
+                  stats:
+                    contacts_count: 340
+                    subscribed_contacts_count: 310
+        '401':
+          $ref: '#/components/responses/UNAUTHENTICATED'
+        '403':
+          $ref: '#/components/responses/PERMISSION_DENIED'
+        '404':
+          $ref: '#/components/responses/NOT_FOUND'
+        '429':
+          $ref: '#/components/responses/RATE_LIMITED'
+    delete:
+      operationId: deleteContactSegment
+      summary: Delete a contact segment
+      description: |-
+        Deletes a contact segment and removes it from the audience of draft email campaigns. A
+        segment can't be deleted while a campaign that uses it is scheduled, under review, queued
+        or sending.
+      tags:
+        - Contact Segments
+      x-codeSamples:
+        - lang: shell
+          label: 'cURL'
+          source: |
+            curl -X DELETE https://mailtrap.io/api/contacts/segments/{segment_id} \
+              -H 'Authorization: Bearer YOUR_API_KEY'
+      responses:
+        '204':
+          description: The contact segment was deleted.
+        '401':
+          $ref: '#/components/responses/UNAUTHENTICATED'
+        '403':
+          $ref: '#/components/responses/WRITE_PERMISSION_DENIED'
+        '404':
+          $ref: '#/components/responses/NOT_FOUND'
+        '422':
+          description: A campaign that uses the segment is scheduled, under review, queued or sending.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnprocessableEntity'
+              example:
+                errors:
+                  base:
+                    - There must be no ongoing email campaigns using this contact segment.
+        '429':
+          $ref: '#/components/responses/RATE_LIMITED'
+    parameters:
+      - $ref: '#/components/parameters/segment_id'
   '/api/contacts/fields':
     get:
       description: Get all Contact Fields existing in your account
@@ -3383,6 +3767,108 @@ components:
           type: integer
           format: timestampMillis
           description: Last update time as a Unix timestamp in milliseconds.
+    ContactSegment:
+      title: ContactSegment
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 12
+        name:
+          type: string
+          maxLength: 255
+          example: Engaged Acme customers
+        conditions:
+          $ref: '#/components/schemas/ContactSegmentConditions'
+        created_at:
+          type: string
+          format: date-time
+          description: Creation time in ISO 8601 format.
+          example: '2026-11-20T10:15:30.123Z'
+        updated_at:
+          type: string
+          format: date-time
+          description: Last update time in ISO 8601 format.
+          example: '2026-11-21T08:02:11.456Z'
+    ContactSegmentWithStats:
+      title: ContactSegmentWithStats
+      allOf:
+        - $ref: '#/components/schemas/ContactSegment'
+        - type: object
+          properties:
+            stats:
+              type: object
+              properties:
+                contacts_count:
+                  type: integer
+                  description: Contacts that match the conditions, unsubscribed ones included.
+                  example: 340
+                subscribed_contacts_count:
+                  type: integer
+                  description: Subscribed contacts that match the conditions.
+                  example: 310
+    ContactSegmentConditions:
+      title: ContactSegmentConditions
+      type: array
+      description: |-
+        Groups of conditions. A contact matches when it matches every condition of at least one
+        group. See the Contact Segments section for the fields, operators and values.
+      items:
+        type: array
+        items:
+          $ref: '#/components/schemas/ContactSegmentCondition'
+    ContactSegmentCondition:
+      title: ContactSegmentCondition
+      type: object
+      properties:
+        name:
+          type: string
+          description: |-
+            `email`, `created_at`, `list_ids`, `contact_events`, or `fields.` followed by the merge
+            tag of a custom contact field.
+          example: fields.company
+        operator:
+          type: string
+          description: One of the operators the field's type allows.
+          example: ci_contain
+        value:
+          description: |-
+            Depends on the operator: a string, a number, a list of list IDs, a list of two dates,
+            the three inner conditions of a campaign event, or `null` for operators that take none.
+          example: acme
+    ContactSegmentsPagination:
+      title: ContactSegmentsPagination
+      type: object
+      description: Page-token pagination metadata.
+      properties:
+        token:
+          type: integer
+          description: Current page number.
+          example: 1
+        prev_token:
+          type: [integer, 'null']
+          description: Previous page number, or `null` on the first page.
+          example: null
+        next_token:
+          type: [integer, 'null']
+          description: Next page number, or `null` on the last page.
+          example: 2
+        first_url:
+          type: string
+          format: uri
+          example: 'https://mailtrap.io/api/contacts/segments?per_page=50&token=1'
+        prev_url:
+          type: [string, 'null']
+          format: uri
+          example: null
+        current_url:
+          type: string
+          format: uri
+          example: 'https://mailtrap.io/api/contacts/segments?per_page=50&token=1'
+        next_url:
+          type: [string, 'null']
+          format: uri
+          example: 'https://mailtrap.io/api/contacts/segments?per_page=50&token=2'
     ContactsCollection:
       title: ContactsCollection
       type: object
@@ -3565,6 +4051,17 @@ components:
           example: Rate limit exceeded
       example:
         errors: Rate limit exceeded
+    RateLimitedResponse:
+      title: RateLimitedResponse
+      type: object
+      required:
+        - error
+      properties:
+        error:
+          type: string
+          example: Throttled
+      example:
+        error: Throttled
     UnauthenticatedResponse:
       title: UnauthenticatedResponse
       type: object
@@ -3608,6 +4105,33 @@ components:
             $ref: '#/components/schemas/RateLimitExceededResponse'
           example:
             errors: Rate limit exceeded
+    RATE_LIMITED:
+      description: |-
+        Too many requests. The public API is rate limited to 150 requests per 10 seconds per
+        API token. Retry after the window resets (see the `x-ratelimit-reset` header).
+      headers:
+        x-ratelimit-limit:
+          description: Maximum number of requests allowed within the window.
+          schema:
+            type: integer
+            example: 150
+        x-ratelimit-remaining:
+          description: Requests remaining in the current window.
+          schema:
+            type: integer
+            example: 0
+        x-ratelimit-reset:
+          description: ISO 8601 timestamp when the current rate-limit window resets.
+          schema:
+            type: string
+            format: date-time
+            example: '2026-06-15T10:00:10.000000Z'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/RateLimitedResponse'
+          example:
+            error: Throttled
     PERMISSION_DENIED:
       description: Returns forbidden error message. Check your permissions.
       content:
@@ -3616,6 +4140,23 @@ components:
             $ref: '#/components/schemas/PermissionsDeniedResponse'
           example:
             errors: Account access forbidden
+    WRITE_PERMISSION_DENIED:
+      description: |-
+        The token can't change this account's data: a token with read-only access gets
+        `Access forbidden`, a token without access to the account `Account access forbidden`.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/PermissionsDeniedResponse'
+          examples:
+            read_only_token:
+              summary: The token has read-only access
+              value:
+                errors: Access forbidden
+            no_account_access:
+              summary: The token has no access to the account
+              value:
+                errors: Account access forbidden
     NOT_FOUND:
       description: Resource not found
       content:
@@ -3644,6 +4185,16 @@ components:
         format: int64
         minimum: 1
         example: 3229
+    segment_id:
+      description: Unique contact segment ID
+      name: segment_id
+      in: path
+      required: true
+      schema:
+        type: integer
+        format: int64
+        minimum: 1
+        example: 12
     field_id:
       description: Unique Contact Field ID
       name: field_id
