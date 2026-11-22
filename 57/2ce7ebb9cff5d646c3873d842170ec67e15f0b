@@ -1,0 +1,19 @@
+specs/contacts.openapi.yml
+  s_a09816e0306bac::t_8d87dd7862ed74 137
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "572ce7ebb9cff5d646c3873d842170ec67e15f0b",
+  "prompts": {},
+  "sessions": {
+    "s_a09816e0306bac": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "c65487a5-224e-42e7-884d-8b7dc2836893",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Alex Shchyhol <oleksandr.shchyhol@railsware.com>"
+    }
+  }
+}
