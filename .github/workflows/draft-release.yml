@@ -73,9 +73,10 @@ jobs:
         env:
           PREVIOUS: ${{ steps.version.outputs.previous }}
         run: |
-          main=$(gh api "repos/$GH_REPO/compare/main...$GITHUB_SHA" --jq .status)
-          if [ "$main" = identical ] || [ "$main" = behind ]; then
-            echo "::error::dev $GITHUB_SHA is already on main: nothing to release"
+          # Files, not commits: after a PR from main back into dev, dev is ahead of main with main's files
+          changed=$(gh api "repos/$GH_REPO/compare/main...$GITHUB_SHA" --jq '.files | length')
+          if [ "$changed" = 0 ]; then
+            echo "::error::dev $GITHUB_SHA has no changes that main lacks: nothing to release"
             exit 1
           fi
           if [ -n "$PREVIOUS" ]; then
