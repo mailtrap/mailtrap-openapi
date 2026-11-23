@@ -157,7 +157,7 @@ tags:
       | Date | A `YYYY-MM-DD` string |
       | `between` | A list of two `YYYY-MM-DD` strings, the first on or before the second |
       | `within_last_day`, `not_within_last_day` | A whole number of days, from 1 to 2147483647 |
-      | Lists | A list of contact list IDs. The lists are not looked up |
+      | Lists | A list of at most 100 contact list IDs. The lists are not looked up |
 
       #### Campaign events
 
@@ -217,7 +217,8 @@ tags:
         `value must be a list of two dates in the format YYYY-MM-DD`,
         `value must have the first date on or before the second`,
         `value must be a whole number of days from 1 to 2147483647`,
-        `value must be a list of contact list ids`.
+        `value must be a list of contact list ids`,
+        `value must have at most 100 contact list ids`.
       - For a campaign event, after `group N, condition M: `:
         `value must be the conditions event_type, campaign_id, created_at, in this order`, or a
         message about one inner condition: `event_type: operator must be equal`,
