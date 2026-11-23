@@ -1,7 +1,8 @@
 # Promotes a release once its docs are public. When a release-vX.Y.Z PR merges into main (GitBook
 # renders main), it clears the release's Pre-release label and marks it Latest, unless a newer release
 # already is. Run it by hand with a tag to promote a release whose own PR was closed because a later
-# release PR published its changes. Updating a release PR's branch with a merge is safe, with a rebase not.
+# release PR published its changes, or whose branch update brought in a fix from main. Update a release
+# PR's branch only with a merge, not a rebase.
 name: Promote release
 on:
   pull_request:
@@ -54,7 +55,7 @@ jobs:
             tagged_tree=$(gh api "repos/$GH_REPO/commits/$tagged" --jq .commit.tree.sha)
             head_tree=$(gh api "repos/$GH_REPO/commits/$HEAD_SHA" --jq .commit.tree.sha)
             if [ "$head_tree" != "$tagged_tree" ]; then
-              echo "::error::release-$tag merged at $HEAD_SHA, but $tag tags $tagged and their files differ ($(gh api "repos/$GH_REPO/compare/$tagged...$HEAD_SHA" --jq '[.files[].filename] | join(", ")')): main got changes outside $tag"
+              echo "::error::release-$tag merged at $HEAD_SHA, but its files differ from $tag ($tagged): $(gh api "repos/$GH_REPO/compare/$tagged...$HEAD_SHA" --jq '[.files[].filename] | join(", ")'). If those files came from main (a fix merged into main while the release PR was open), $tag is published: run Promote release by hand with $tag. Otherwise main got changes outside $tag"
               exit 1
             fi
           fi

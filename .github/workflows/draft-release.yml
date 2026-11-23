@@ -120,7 +120,7 @@ jobs:
             exit 0
           fi
           {
-            echo "Publishes $TAG on docs.mailtrap.io. Merge it with a merge commit once every endpoint it documents is live. Updating the branch with a merge is safe; don't rebase it or push changes to it."
+            echo "Publishes $TAG on docs.mailtrap.io. Merge it with a merge commit once every endpoint it documents is live. Update the branch only with a merge; don't rebase it or push changes to it. If Promote release then fails, its error says how to recover."
             echo
             cat "$RUNNER_TEMP/notes.md"
           } > "$RUNNER_TEMP/body.md"
