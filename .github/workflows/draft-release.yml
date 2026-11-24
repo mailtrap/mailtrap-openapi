@@ -1,0 +1,139 @@
+# Drafts a release of the specs from dev. It creates the vX.Y.Z GitHub release as a pre-release, with
+# its tag on the dev commit, and opens release-vX.Y.Z -> main. The tag exists from then on, so API
+# consumers can pin it before the docs are public. Merging the release PR publishes the docs (GitBook
+# renders main), and promote-release.yml then marks the release Latest. Tags never move: a mistake in
+# vX.Y.Z is fixed by the next version.
+#
+# The SDKs' shared release actions tag main and create a draft, which has no tag until it is published,
+# so this workflow does not use them. Every step calls the API with gh: no checkout, and no third-party
+# action in a job that can write to the repository.
+name: Draft release
+on:
+  workflow_dispatch:
+    inputs:
+      bump_type:
+        description: "minor: new operations or fields; patch: fixes and wording; major: a new API version (the major of info.version)"
+        required: true
+        type: choice
+        options: [patch, minor, major]
+        default: patch
+
+concurrency: ${{ github.workflow }}
+
+permissions: {}
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  draft:
+    name: Draft release
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # the release branch, the tag and the pre-release
+      pull-requests: write # the release PR
+    env:
+      GH_TOKEN: ${{ github.token }}
+      GH_REPO: ${{ github.repository }}
+    steps:
+      - name: Refuse to release from a branch other than dev
+        run: |
+          if [ "$GITHUB_REF" != refs/heads/dev ]; then
+            echo "::error::Releases are drafted from dev, got $GITHUB_REF"
+            exit 1
+          fi
+
+      # From the newest tag, pre-releases included: a release drafted while another waits for
+      # production follows it. A release's major version is the API's: the first one is v2.0.0,
+      # since the specs document API v2 (info.version 2.0.0).
+      - name: Compute the next version
+        id: version
+        env:
+          BUMP_TYPE: ${{ inputs.bump_type }}
+        run: |
+          previous=$(gh api "repos/$GH_REPO/git/matching-refs/tags/v" --paginate \
+            --jq '.[].ref | ltrimstr("refs/tags/") | select(test("^v[0-9]+\\.[0-9]+\\.[0-9]+$"))' | sort -V | tail -n 1)
+          if [ -z "$previous" ]; then
+            tag=v2.0.0
+          else
+            IFS=. read -r major minor patch <<< "${previous#v}"
+            case "$BUMP_TYPE" in
+              major) tag="v$((major + 1)).0.0" ;;
+              minor) tag="v$major.$((minor + 1)).0" ;;
+              patch) tag="v$major.$minor.$((patch + 1))" ;;
+              *) echo "::error::Unknown bump type $BUMP_TYPE"; exit 1 ;;
+            esac
+          fi
+          echo "${previous:-No release yet} -> $tag"
+          echo "previous=$previous" >> "$GITHUB_OUTPUT"
+          echo "tag=$tag" >> "$GITHUB_OUTPUT"
+
+      - name: Check that dev has something to release
+        env:
+          PREVIOUS: ${{ steps.version.outputs.previous }}
+        run: |
+          # Files, not commits: after a PR from main back into dev, dev is ahead of main with main's files
+          changed=$(gh api "repos/$GH_REPO/compare/main...$GITHUB_SHA" --jq '.files | length')
+          if [ "$changed" = 0 ]; then
+            echo "::error::dev $GITHUB_SHA has no changes that main lacks: nothing to release"
+            exit 1
+          fi
+          if [ -n "$PREVIOUS" ]; then
+            since=$(gh api "repos/$GH_REPO/compare/$PREVIOUS...$GITHUB_SHA" --jq .status)
+            if [ "$since" != ahead ]; then
+              echo "::error::dev $GITHUB_SHA is $since of $PREVIOUS: a release needs new commits on top of the previous one"
+              exit 1
+            fi
+          fi
+
+      - name: Generate the release notes
+        env:
+          TAG: ${{ steps.version.outputs.tag }}
+          PREVIOUS: ${{ steps.version.outputs.previous }}
+        run: |
+          since=()
+          if [ -n "$PREVIOUS" ]; then since=(-f previous_tag_name="$PREVIOUS"); fi
+          gh api "repos/$GH_REPO/releases/generate-notes" -f tag_name="$TAG" -f target_commitish="$GITHUB_SHA" "${since[@]}" \
+            --jq .body > "$RUNNER_TEMP/notes.md"
+
+      - name: Create the release branch at the dev commit
+        env:
+          BRANCH: release-${{ steps.version.outputs.tag }}
+        run: |
+          if existing=$(gh api "repos/$GH_REPO/git/ref/heads/$BRANCH" --jq .object.sha 2>/dev/null); then
+            if [ "$existing" != "$GITHUB_SHA" ]; then
+              echo "::error::$BRANCH exists at $existing, not at $GITHUB_SHA"
+              exit 1
+            fi
+          else
+            gh api "repos/$GH_REPO/git/refs" -f ref="refs/heads/$BRANCH" -f sha="$GITHUB_SHA" --silent
+          fi
+
+      - name: Open the release PR
+        env:
+          TAG: ${{ steps.version.outputs.tag }}
+          BRANCH: release-${{ steps.version.outputs.tag }}
+        run: |
+          open=$(gh api "repos/$GH_REPO/pulls?state=open&base=main&head=${GH_REPO%%/*}:$BRANCH" --jq length)
+          if [ "$open" != 0 ]; then
+            echo "$BRANCH already has an open release PR"
+            exit 0
+          fi
+          {
+            echo "Publishes $TAG on docs.mailtrap.io. Merge it with a merge commit once every endpoint it documents is live. Update the branch only with a merge; don't rebase it or push changes to it. If Promote release then fails, its error says how to recover."
+            echo
+            cat "$RUNNER_TEMP/notes.md"
+          } > "$RUNNER_TEMP/body.md"
+          gh api "repos/$GH_REPO/pulls" -f title="Release $TAG" -f head="$BRANCH" -f base=main \
+            -F body=@"$RUNNER_TEMP/body.md" --jq .html_url
+
+      # Last, so a failed run leaves no tag behind and a rerun drafts the same version
+      - name: Create the pre-release
+        env:
+          TAG: ${{ steps.version.outputs.tag }}
+        run: |
+          if ! gh release create "$TAG" --target "$GITHUB_SHA" --prerelease --title "$TAG" --notes-file "$RUNNER_TEMP/notes.md"; then
+            echo "::error::github.token cannot create a release on a commit whose workflow files differ from the default branch. If that is why, create $TAG on the Releases page: new tag $TAG on release-$TAG, Set as a pre-release"
+            exit 1
+          fi
