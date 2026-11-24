@@ -2649,7 +2649,7 @@ paths:
               example:
                 errors: token is out of range
         '429':
-          $ref: '#/components/responses/RATE_LIMITED'
+          $ref: '#/components/responses/LIMIT_EXCEEDED'
     post:
       operationId: createContactSegment
       summary: Create a contact segment
@@ -2757,7 +2757,7 @@ paths:
         '422':
           $ref: '#/components/responses/CONTACT_SEGMENT_INVALID'
         '429':
-          $ref: '#/components/responses/RATE_LIMITED'
+          $ref: '#/components/responses/LIMIT_EXCEEDED'
   '/api/contacts/segments/{segment_id}':
     get:
       operationId: getContactSegment
@@ -2820,7 +2820,7 @@ paths:
         '404':
           $ref: '#/components/responses/NOT_FOUND'
         '429':
-          $ref: '#/components/responses/RATE_LIMITED'
+          $ref: '#/components/responses/LIMIT_EXCEEDED'
     patch:
       operationId: updateContactSegment
       summary: Update a contact segment
@@ -2919,7 +2919,7 @@ paths:
         '422':
           $ref: '#/components/responses/CONTACT_SEGMENT_INVALID'
         '429':
-          $ref: '#/components/responses/RATE_LIMITED'
+          $ref: '#/components/responses/LIMIT_EXCEEDED'
     delete:
       operationId: deleteContactSegment
       summary: Delete a contact segment
@@ -2955,7 +2955,7 @@ paths:
                   base:
                     - There must be no ongoing email campaigns using this contact segment.
         '429':
-          $ref: '#/components/responses/RATE_LIMITED'
+          $ref: '#/components/responses/LIMIT_EXCEEDED'
     parameters:
       - $ref: '#/components/parameters/segment_id'
   '/api/contacts/fields':
@@ -4348,17 +4348,6 @@ components:
           example: Rate limit exceeded
       example:
         errors: Rate limit exceeded
-    RateLimitedResponse:
-      title: RateLimitedResponse
-      type: object
-      required:
-        - error
-      properties:
-        error:
-          type: string
-          example: Throttled
-      example:
-        error: Throttled
     UnauthenticatedResponse:
       title: UnauthenticatedResponse
       type: object
@@ -4402,33 +4391,6 @@ components:
             $ref: '#/components/schemas/RateLimitExceededResponse'
           example:
             errors: Rate limit exceeded
-    RATE_LIMITED:
-      description: |-
-        Too many requests. The public API is rate limited to 150 requests per 10 seconds per
-        API token. Retry after the window resets (see the `x-ratelimit-reset` header).
-      headers:
-        x-ratelimit-limit:
-          description: Maximum number of requests allowed within the window.
-          schema:
-            type: integer
-            example: 150
-        x-ratelimit-remaining:
-          description: Requests remaining in the current window.
-          schema:
-            type: integer
-            example: 0
-        x-ratelimit-reset:
-          description: ISO 8601 timestamp when the current rate-limit window resets.
-          schema:
-            type: string
-            format: date-time
-            example: '2026-06-15T10:00:10.000000Z'
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/RateLimitedResponse'
-          example:
-            error: Throttled
     PERMISSION_DENIED:
       description: Returns forbidden error message. Check your permissions.
       content:
