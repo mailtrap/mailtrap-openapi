@@ -287,6 +287,36 @@ When creating or editing OpenAPI specs:
 6. **Verify code samples** - SDK examples match current SDK versions
 7. **Test with OpenAPI validator** - Ensure spec is valid OpenAPI 3.1
 
+## Branches and Releases
+
+| Ref | What it holds | Who moves it |
+|-----|---------------|--------------|
+| `dev` (default branch) | Reviewed spec changes, not public yet | Pull requests |
+| `vX.Y.Z` pre-release | A GitHub release marked Pre-release, plus its tag: an immutable snapshot of `dev` | The Draft release workflow |
+| `release-vX.Y.Z` | The tagged commit, opened as a PR into `main` | The Draft release workflow |
+| `vX.Y.Z` release (Latest) | The same tag, once its docs are public | The Promote release workflow |
+| `main` | What GitBook renders at docs.mailtrap.io | Release PRs only |
+
+- Open pull requests against `dev`. Merge a spec for a new endpoint only when the API change ships right after: a
+  release takes everything on `dev`, so an operation documented before it exists blocks everyone's next release.
+- Draft a release with Actions → Draft release, run from `dev`. Pick the bump: minor for new operations or fields,
+  patch for fixes and wording, major only for a new API version. The workflow creates the `vX.Y.Z`
+  pre-release with its tag on the `dev` commit and opens `release-vX.Y.Z` → `main`.
+- Merge the release PR with a merge commit once every endpoint it documents is live in production. GitBook picks up
+  `main`, and the Promote release workflow clears the Pre-release label and marks the release Latest.
+- Update a release PR's branch only with a merge ("Update branch"); don't push changes to it or rebase it. After a
+  rebase, or an update that brought in a fix from `main`, Promote release fails and its error says how to recover.
+- Tags never move: a mistake in `v2.4.0` is fixed by `v2.4.1`. To drop a release before it is public, close its
+  release PR, fix on `dev` and draft the next patch. The dropped pre-release and its tag stay.
+- If a later release PR published an earlier release's changes, close the earlier PR and run Promote release with its
+  tag.
+- `github.token` cannot create or edit a release whose commit's workflow files differ from `dev`'s. If a release workflow
+  fails on that, finish the release on the Releases page as its error says.
+- For an urgent fix to the public docs while `dev` holds unreleased work, branch from `main` and open a PR into
+  `main`. Then open a PR from `main` back into `dev`; the next release includes the fix.
+- `info.version` in the specs is the API version: leave it as is. A release's major version matches its major (the first
+  release is `v2.0.0`); minor and patch count spec changes, so they differ from it.
+
 ## Working with This Repository
 
 ### No Build System
@@ -304,10 +334,11 @@ This is a specification-only repository:
 3. Update documentation links to use docs.mailtrap.io
 4. Add/update code samples as needed
 5. Commit with descriptive message
+6. Open the pull request against `dev` (see Branches and Releases)
 
 ### GitBook Integration
 
-Once changes are pushed to main:
+Once a release PR merges into main:
 - GitBook automatically fetches updated specs
 - API documentation at https://docs.mailtrap.io/developers updates
 - Interactive API explorer reflects changes
