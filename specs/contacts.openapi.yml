@@ -3063,8 +3063,7 @@ components:
             maxLength: 255
           additionalProperties:
             oneOf:
-              - type: string
-                nullable: true
+              - type: [string, 'null']
               - type: number
               - type: boolean
       example:
@@ -3092,8 +3091,7 @@ components:
             maxLength: 255
           additionalProperties:
             oneOf:
-              - type: string
-                nullable: true
+              - type: [string, 'null']
               - type: number
               - type: boolean
       example:
@@ -3123,8 +3121,7 @@ components:
           type: string
           format: date-time
         url:
-          type: string
-          nullable: true
+          type: [string, 'null']
           format: uri
           description: The URL of the exported contacts file. Only available when the export is finished.
     ContactExportRequest:
