@@ -1,0 +1,14 @@
+specs/contacts.openapi.yml
+  h_68ae9308e52348 43-45,276-277,291-302,356-359,424-435
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "feb91e17a51729454613c56e70625ed570ad4319",
+  "prompts": {},
+  "humans": {
+    "h_68ae9308e52348": {
+      "author": "Alex Shchyhol <oleksandr.shchyhol@railsware.com>"
+    }
+  }
+}
