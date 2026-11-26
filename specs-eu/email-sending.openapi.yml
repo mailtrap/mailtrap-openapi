@@ -1,0 +1,5661 @@
+openapi: 3.1.0
+info:
+  title: Email Live Sending
+  version: 2.0.0
+  description: |
+    Manage domains, suppressions, tracking opt-outs, and email sending logs for your Mailtrap account.
+  contact:
+    name: Mailtrap Support
+    url: 'https://docs.mailtrap.io'
+    email: support@mailtrap.io
+  license:
+    name: Creative Commons Attribution-ShareAlike 4.0 International (CC BY-SA 4.0)
+    url: 'https://creativecommons.org/licenses/by-sa/4.0/'
+  x-logo:
+    url: 'https://mailtrap.io/wp-content/uploads/2021/04/mailtrap-logo.svg'
+
+servers:
+  - description: |
+      Mailtrap account API (`eu.mailtrap.io`) for domains, suppressions, tracking opt-outs, stats, and email logs.
+      Error JSON matches other account endpoints (`error` or string `errors`), not the `send.api` / `bulk.api` sending shape (`success` + `errors` array).
+    url: 'https://eu.mailtrap.io'
+
+security:
+  - HeaderAuth: []
+  - BearerAuth: []
+
+tags:
+  - name: domains
+    x-page-title: Domains
+    x-page-description: Manage verified domains
+    description: |
+      Configure and verify domains for email sending to ensure deliverability.
+
+  - name: suppressions
+    x-page-title: Suppressions
+    x-page-description: Manage suppressed email addresses
+    description: |
+      Control which email addresses should not receive emails from your account.
+
+  - name: tracking-opt-outs
+    x-page-title: Tracking Opt-Outs
+    x-page-description: Manage tracking opt-outs
+    description: |
+      Manage email addresses that have opted out of open and click tracking.
+      Tracking opt-outs are always scoped to a sending domain.
+
+  - name: stats
+    x-page-title: Stats
+    x-page-description: Email Live Sending stats
+    description: |-
+      Email Live Sending aggregated stats, the same you see in your Stats dashboard. Campaign and
+      automation traffic is not included; it is reported by `GET /api/marketing/stats`.
+
+  - name: email-logs
+    x-page-title: Email Logs
+    x-page-description: Email logs
+    description: List and retrieve email sending logs for the account.
+
+  - name: webhooks
+    x-page-title: Webhooks
+    x-page-description: Manage webhook endpoints
+    description: |
+      Configure webhooks to receive real-time notifications about events in
+      your Mailtrap account. For a complete guide, see
+      [Webhooks](https://docs.mailtrap.io/email-api-smtp/advanced/webhooks).
+paths:
+  /api/domains:
+    post:
+      summary: Create domain
+      description: |
+        Create a domain for email authentication. After creation, verify the domain by adding DNS records.
+
+        **Process:**
+        1. Create the domain
+        2. Add DNS records (SPF, DKIM, DMARC)
+        3. Verify the records
+        4. Start sending emails
+      operationId: createDomain
+      tags:
+        - domains
+      x-codeSamples:
+        - lang: shell
+          label: 'cURL'
+          source: |
+            curl -X POST https://eu.mailtrap.io/api/domains \
+              -H 'Authorization: Bearer YOUR_API_KEY' \
+              -H 'Content-Type: application/json' \
+              -d '{
+                "domain": {
+                  "domain_name": "example.com"
+                }
+              }'
+        - lang: javascript
+          label: Node.js
+          source: |
+            import { MailtrapClient } from "mailtrap";
+
+            const client = new MailtrapClient({
+              token: process.env.MAILTRAP_API_KEY,
+              accountId: YOUR_ACCOUNT_ID
+            });
+
+            async function createDomain() {
+              const domain = await client.domains.create({
+                domain_name: "example.com"
+              });
+
+              console.log("Created domain:", domain);
+            }
+
+            createDomain();
+        - lang: php
+          label: PHP
+          source: |
+            <?php
+            use Mailtrap\Config;
+            use Mailtrap\Helper\ResponseHelper;
+            use Mailtrap\MailtrapSendingClient;
+
+            $config = new Config($_ENV['MAILTRAP_API_KEY']);
+            $accountId = (int) $_ENV['MAILTRAP_ACCOUNT_ID'];
+
+            $domains = (new MailtrapSendingClient($config))
+                ->domains($accountId);
+
+            $response = $domains->createDomain('example.com');
+            var_dump(ResponseHelper::toArray($response));
+        - lang: python
+          label: Python
+          source: |
+            import mailtrap as mt
+
+            client = mt.MailtrapClient(
+                token="YOUR_API_KEY",
+                account_id="YOUR_ACCOUNT_ID"
+            )
+
+            params = mt.CreateDomainParams(domain_name="example.com")
+            domain = client.domains_api.domains.create(params)
+
+            print(f"Created domain: {domain}")
+        - lang: ruby
+          label: Ruby
+          source: |
+            require 'mailtrap'
+
+            client = Mailtrap::Client.new(api_key: ENV['MAILTRAP_API_KEY'])
+            domains = Mailtrap::DomainsAPI.new(YOUR_ACCOUNT_ID, client)
+
+            domain = domains.create(domain_name: 'example.com')
+
+            puts "Created domain: #{domain.domain_name}"
+        - lang: csharp
+          label: .NET
+          source: |
+            using Mailtrap;
+            using Mailtrap.SendingDomains;
+            using Mailtrap.SendingDomains.Requests;
+
+            using var mailtrapFactory = new MailtrapClientFactory("YOUR_API_KEY");
+            var client = mailtrapFactory.CreateClient();
+
+            var domainsResource = client.Account(YOUR_ACCOUNT_ID).Domains();
+
+            var createDomainRequest = new CreateSendingDomainRequest("example.com");
+            var domain = await domainsResource.Create(createDomainRequest);
+            Console.WriteLine($"Created domain: {domain?.DomainName}");
+        - lang: java
+          label: Java
+          source: |
+            import io.mailtrap.config.MailtrapConfig;
+            import io.mailtrap.factory.MailtrapClientFactory;
+            import io.mailtrap.model.request.sendingdomains.CreateSendingDomainRequest;
+            import static io.mailtrap.model.request.sendingdomains.CreateSendingDomainRequest.SendingDomainData;
+
+            var config = new MailtrapConfig.Builder()
+                .token("YOUR_API_KEY")
+                .build();
+
+            var client = MailtrapClientFactory
+                .createMailtrapClient(config);
+
+            var request = new CreateSendingDomainRequest(
+                new SendingDomainData("example.com")
+            );
+
+            var domain = client.sendingApi().domains()
+                .create(YOUR_ACCOUNT_ID, request);
+
+            System.out.println(domain);
+        - lang: go
+          label: Go
+          source: |
+            package main
+
+            import (
+            	"context"
+            	"fmt"
+            	"log"
+            	"os"
+
+            	"github.com/mailtrap/mailtrap-go"
+            )
+
+            func main() {
+            	client, err := mailtrap.NewClient(os.Getenv("MAILTRAP_API_TOKEN"))
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	domain, _, err := client.Domains.Create(context.Background(), "mail.example.com")
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	fmt.Printf("created domain %d (%s)\n", domain.ID, domain.DomainName)
+            	for _, record := range domain.DNSRecords {
+            		fmt.Printf("  %s %s %q -> %q\n", record.Key, record.Type, record.Name, record.Value)
+            	}
+            }
+        - lang: hcl
+          label: Terraform
+          source: |
+            # terraform apply creates the domain: POST /api/domains
+            # Provider docs: https://registry.terraform.io/providers/mailtrap/mailtrap/latest/docs
+            terraform {
+              required_providers {
+                mailtrap = {
+                  source = "mailtrap/mailtrap"
+                }
+              }
+            }
+
+            # The token is read from the MAILTRAP_API_TOKEN environment variable.
+            provider "mailtrap" {}
+
+            # Create only accepts domain_name. The tracking flags below make the same apply
+            # follow up with a PATCH.
+            resource "mailtrap_domain" "example" {
+              domain_name            = "mail.example.com"
+              open_tracking_enabled  = true
+              click_tracking_enabled = true
+            }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - domain
+              properties:
+                domain:
+                  type: object
+                  required:
+                    - domain_name
+                  properties:
+                    domain_name:
+                      type: string
+                      format: hostname
+                      description: Your domain name
+                      example: example.com
+            example:
+              domain:
+                domain_name: example.com
+      responses:
+        '200':
+          $ref: '#/components/responses/DomainResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+
+    get:
+      summary: List domains
+      description: Get all domains and their verification status
+      operationId: getDomains
+      tags:
+        - domains
+      x-codeSamples:
+        - lang: shell
+          label: 'cURL'
+          source: |
+            curl -X GET https://eu.mailtrap.io/api/domains \
+              -H 'Authorization: Bearer YOUR_API_KEY'
+        - lang: javascript
+          label: Node.js
+          source: |
+            import { MailtrapClient } from "mailtrap";
+
+            const client = new MailtrapClient({
+              token: process.env.MAILTRAP_API_KEY,
+              accountId: YOUR_ACCOUNT_ID
+            });
+
+            async function getDomains() {
+              const response = await client.domains.getList();
+              const domains = response.data;
+
+              console.log("Domains:", domains);
+            }
+
+            getDomains();
+        - lang: php
+          label: PHP
+          source: |
+            <?php
+            use Mailtrap\Config;
+            use Mailtrap\Helper\ResponseHelper;
+            use Mailtrap\MailtrapSendingClient;
+
+            $config = new Config($_ENV['MAILTRAP_API_KEY']);
+            $accountId = (int) $_ENV['MAILTRAP_ACCOUNT_ID'];
+
+            $domains = (new MailtrapSendingClient($config))
+                ->domains($accountId);
+
+            $response = $domains->getDomains();
+            var_dump(ResponseHelper::toArray($response));
+        - lang: python
+          label: Python
+          source: |
+            import mailtrap as mt
+
+            client = mt.MailtrapClient(
+                token="YOUR_API_KEY",
+                account_id="YOUR_ACCOUNT_ID"
+            )
+
+            domains = client.domains_api.domains.get_list()
+
+            for domain in domains:
+                print(f"Domain: {domain.domain_name}, Verified: {domain.dns_verified}")
+        - lang: ruby
+          label: Ruby
+          source: |
+            require 'mailtrap'
+
+            client = Mailtrap::Client.new(api_key: ENV['MAILTRAP_API_KEY'])
+            domains = Mailtrap::DomainsAPI.new(YOUR_ACCOUNT_ID, client)
+
+            domains.list.each do |domain|
+              puts "Domain: #{domain.domain_name}"
+            end
+        - lang: csharp
+          label: .NET
+          source: |
+            using Mailtrap;
+
+            using var mailtrapFactory = new MailtrapClientFactory("YOUR_API_KEY");
+            var client = mailtrapFactory.CreateClient();
+
+            var domainsResource = client.Account(YOUR_ACCOUNT_ID).Domains();
+
+            var domains = await domainsResource.GetAll();
+
+            foreach (var domain in domains)
+            {
+                Console.WriteLine($"Domain: {domain.DomainName}, Verified: {domain.DnsVerified}");
+            }
+        - lang: java
+          label: Java
+          source: |
+            import io.mailtrap.config.MailtrapConfig;
+            import io.mailtrap.factory.MailtrapClientFactory;
+
+            var config = new MailtrapConfig.Builder()
+                .token("YOUR_API_KEY")
+                .build();
+
+            var client = MailtrapClientFactory
+                .createMailtrapClient(config);
+
+            var domains = client.sendingApi().domains()
+                .getDomains(YOUR_ACCOUNT_ID);
+
+            domains.forEach(domain ->
+                System.out.println("Domain: " + domain.getDomainName())
+            );
+        - lang: go
+          label: Go
+          source: |
+            package main
+
+            import (
+            	"context"
+            	"fmt"
+            	"log"
+            	"os"
+
+            	"github.com/mailtrap/mailtrap-go"
+            )
+
+            func main() {
+            	client, err := mailtrap.NewClient(os.Getenv("MAILTRAP_API_TOKEN"))
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	domains, _, err := client.Domains.List(context.Background())
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	for _, domain := range domains {
+            		fmt.Printf("%d %s (DNS verified: %t, compliance: %s)\n", domain.ID, domain.DomainName, domain.DNSVerified, domain.ComplianceStatus)
+            	}
+            }
+      responses:
+        '200':
+          $ref: '#/components/responses/DomainsResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+  /api/domains/{domain_id}:
+    get:
+      summary: Get domain
+      description: Get details and verification status of a specific domain
+      operationId: getDomain
+      tags:
+        - domains
+      x-codeSamples:
+        - lang: shell
+          label: 'cURL'
+          source: |
+            curl -X GET https://eu.mailtrap.io/api/domains/{domain_id} \
+              -H 'Authorization: Bearer YOUR_API_KEY'
+        - lang: javascript
+          label: Node.js
+          source: |
+            import { MailtrapClient } from "mailtrap";
+
+            const client = new MailtrapClient({
+              token: process.env.MAILTRAP_API_KEY,
+              accountId: YOUR_ACCOUNT_ID
+            });
+
+            async function getDomain() {
+              const domainId = 12345;
+              const domain = await client.domains.get(domainId);
+
+              console.log("Domain details:", domain);
+            }
+
+            getDomain();
+        - lang: php
+          label: PHP
+          source: |
+            <?php
+            use Mailtrap\Config;
+            use Mailtrap\Helper\ResponseHelper;
+            use Mailtrap\MailtrapSendingClient;
+
+            $config = new Config($_ENV['MAILTRAP_API_KEY']);
+            $accountId = (int) $_ENV['MAILTRAP_ACCOUNT_ID'];
+
+            $domains = (new MailtrapSendingClient($config))
+                ->domains($accountId);
+
+            $domainId = (int) $_ENV['MAILTRAP_DOMAIN_ID'];
+            $response = $domains->getDomainById($domainId);
+            var_dump(ResponseHelper::toArray($response));
+        - lang: python
+          label: Python
+          source: |
+            import mailtrap as mt
+
+            client = mt.MailtrapClient(
+                token="YOUR_API_KEY",
+                account_id="YOUR_ACCOUNT_ID"
+            )
+
+            domain_id = 12345
+            domain = client.domains_api.domains.get_by_id(domain_id)
+
+            print(f"Domain: {domain.domain_name}")
+            print(f"DNS Verified: {domain.dns_verified}")
+        - lang: ruby
+          label: Ruby
+          source: |
+            require 'mailtrap'
+
+            client = Mailtrap::Client.new(api_key: ENV['MAILTRAP_API_KEY'])
+            domains = Mailtrap::DomainsAPI.new(YOUR_ACCOUNT_ID, client)
+
+            domain = domains.get(DOMAIN_ID)
+
+            puts "Domain: #{domain.domain_name}"
+        - lang: csharp
+          label: .NET
+          source: |
+            using Mailtrap;
+
+            using var mailtrapFactory = new MailtrapClientFactory("YOUR_API_KEY");
+            var client = mailtrapFactory.CreateClient();
+
+            var domainId = 12345;
+            var domainResource = client.Account(YOUR_ACCOUNT_ID).Domain(domainId);
+            var domain = await domainResource.GetDetails();
+
+            Console.WriteLine($"Domain: {domain.DomainName}");
+        - lang: java
+          label: Java
+          source: |
+            import io.mailtrap.config.MailtrapConfig;
+            import io.mailtrap.factory.MailtrapClientFactory;
+
+            var config = new MailtrapConfig.Builder()
+                .token("YOUR_API_KEY")
+                .build();
+
+            var client = MailtrapClientFactory
+                .createMailtrapClient(config);
+
+            long domainId = 12345L;
+            var domain = client.sendingApi().domains()
+                .getDomain(YOUR_ACCOUNT_ID, domainId);
+
+            System.out.println("Domain: " + domain.getDomainName());
+        - lang: go
+          label: Go
+          source: |
+            package main
+
+            import (
+            	"context"
+            	"fmt"
+            	"log"
+            	"os"
+
+            	"github.com/mailtrap/mailtrap-go"
+            )
+
+            func main() {
+            	client, err := mailtrap.NewClient(os.Getenv("MAILTRAP_API_TOKEN"))
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	domain, _, err := client.Domains.Get(context.Background(), 1000001)
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	fmt.Printf("%s: DNS verified %t, open tracking %t\n", domain.DomainName, domain.DNSVerified, domain.OpenTrackingEnabled)
+            }
+        - lang: hcl
+          label: Terraform
+          source: |
+            # terraform apply reads the domain: GET /api/domains/{domain_id}
+            terraform {
+              required_providers {
+                mailtrap = {
+                  source = "mailtrap/mailtrap"
+                }
+              }
+            }
+
+            # The token is read from the MAILTRAP_API_TOKEN environment variable.
+            provider "mailtrap" {}
+
+            # The domain data source can only be looked up by id: there is no name lookup.
+            data "mailtrap_domain" "example" {
+              id = 1000001
+            }
+
+            output "dns_verified" {
+              value = data.mailtrap_domain.example.dns_verified
+            }
+      parameters:
+        - $ref: '#/components/parameters/domain_id'
+      responses:
+        '200':
+          $ref: '#/components/responses/DomainResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    delete:
+      summary: Delete domain
+      description: Remove a domain from your account
+      operationId: deleteDomain
+      tags:
+        - domains
+      x-codeSamples:
+        - lang: shell
+          label: 'cURL'
+          source: |
+            curl -X DELETE https://eu.mailtrap.io/api/domains/{domain_id} \
+              -H 'Authorization: Bearer YOUR_API_KEY'
+        - lang: javascript
+          label: Node.js
+          source: |
+            import { MailtrapClient } from "mailtrap";
+
+            const client = new MailtrapClient({
+              token: process.env.MAILTRAP_API_KEY,
+              accountId: YOUR_ACCOUNT_ID
+            });
+
+            async function deleteDomain() {
+              const domainId = 12345;
+              await client.domains.delete(domainId);
+
+              console.log("Domain deleted successfully");
+            }
+
+            deleteDomain();
+        - lang: php
+          label: PHP
+          source: |
+            <?php
+            use Mailtrap\Config;
+            use Mailtrap\MailtrapSendingClient;
+
+            $config = new Config($_ENV['MAILTRAP_API_KEY']);
+            $accountId = (int) $_ENV['MAILTRAP_ACCOUNT_ID'];
+
+            $domains = (new MailtrapSendingClient($config))
+                ->domains($accountId);
+
+            $domainId = (int) $_ENV['MAILTRAP_DOMAIN_ID'];
+            $response = $domains->deleteDomain($domainId);
+            var_dump($response->getStatusCode());
+        - lang: python
+          label: Python
+          source: |
+            import mailtrap as mt
+
+            client = mt.MailtrapClient(
+                token="YOUR_API_KEY",
+                account_id="YOUR_ACCOUNT_ID"
+            )
+
+            domain_id = 12345
+            client.domains_api.domains.delete(domain_id)
+
+            print("Domain deleted successfully")
+        - lang: ruby
+          label: Ruby
+          source: |
+            require 'mailtrap'
+
+            client = Mailtrap::Client.new(api_key: ENV['MAILTRAP_API_KEY'])
+            domains = Mailtrap::DomainsAPI.new(YOUR_ACCOUNT_ID, client)
+
+            domains.delete(DOMAIN_ID)
+        - lang: csharp
+          label: .NET
+          source: |
+            using Mailtrap;
+
+            using var mailtrapFactory = new MailtrapClientFactory("YOUR_API_KEY");
+            var client = mailtrapFactory.CreateClient();
+
+            var domainId = 12345;
+            var domainResource = client.Account(YOUR_ACCOUNT_ID).Domain(domainId);
+            await domainResource.Delete();
+
+            Console.WriteLine("Domain deleted successfully");
+        - lang: java
+          label: Java
+          source: |
+            import io.mailtrap.config.MailtrapConfig;
+            import io.mailtrap.factory.MailtrapClientFactory;
+
+            var config = new MailtrapConfig.Builder()
+                .token("YOUR_API_KEY")
+                .build();
+
+            var client = MailtrapClientFactory
+                .createMailtrapClient(config);
+
+            long domainId = 12345L;
+            client.sendingApi().domains()
+                .deleteDomain(YOUR_ACCOUNT_ID, domainId);
+
+            System.out.println("Domain deleted successfully");
+        - lang: go
+          label: Go
+          source: |
+            package main
+
+            import (
+            	"context"
+            	"fmt"
+            	"log"
+            	"os"
+
+            	"github.com/mailtrap/mailtrap-go"
+            )
+
+            func main() {
+            	client, err := mailtrap.NewClient(os.Getenv("MAILTRAP_API_TOKEN"))
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	if _, err := client.Domains.Delete(context.Background(), 1000001); err != nil {
+            		log.Fatal(err)
+            	}
+
+            	fmt.Println("domain deleted")
+            }
+      parameters:
+        - $ref: '#/components/parameters/domain_id'
+      responses:
+        '204':
+          description: Domain successfully deleted
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    patch:
+      summary: Update domain
+      description: |
+        Update configuration settings for a domain.
+      operationId: updateDomain
+      tags:
+        - domains
+      x-codeSamples:
+        - lang: shell
+          label: 'cURL'
+          source: |
+            curl -X PATCH https://eu.mailtrap.io/api/domains/{domain_id} \
+              -H 'Authorization: Bearer YOUR_API_KEY' \
+              -H 'Content-Type: application/json' \
+              -d '{
+                "domain": {
+                  "open_tracking_enabled": true,
+                  "click_tracking_enabled": true,
+                  "tracking_opt_out_enabled": true,
+                  "auto_unsubscribe_link_enabled": false,
+                  "inbound_enabled": true
+                }
+              }'
+        - lang: ruby
+          label: Ruby
+          source: |
+            require 'mailtrap'
+
+            client = Mailtrap::Client.new(api_key: 'YOUR_API_KEY')
+            account_id = 1000001
+            domains = Mailtrap::DomainsAPI.new(account_id, client)
+
+            domain_id = 12345
+            puts domains.update(
+              domain_id,
+              open_tracking_enabled: true,
+              click_tracking_enabled: true,
+              auto_unsubscribe_link_enabled: false
+            )
+        - lang: go
+          label: Go
+          source: |
+            package main
+
+            import (
+            	"context"
+            	"fmt"
+            	"log"
+            	"os"
+
+            	"github.com/mailtrap/mailtrap-go"
+            )
+
+            func main() {
+            	client, err := mailtrap.NewClient(os.Getenv("MAILTRAP_API_TOKEN"))
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	// The tracking flags are pointers: a nil field keeps its current value, so use
+            	// mailtrap.Ptr to send an explicit true or false.
+            	domain, _, err := client.Domains.Update(context.Background(), 1000001, &mailtrap.UpdateDomainRequest{
+            		OpenTrackingEnabled:        mailtrap.Ptr(true),
+            		ClickTrackingEnabled:       mailtrap.Ptr(true),
+            		AutoUnsubscribeLinkEnabled: mailtrap.Ptr(false),
+            	})
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	fmt.Printf("%s: open tracking %t, click tracking %t\n", domain.DomainName, domain.OpenTrackingEnabled, domain.ClickTrackingEnabled)
+            }
+      parameters:
+        - $ref: '#/components/parameters/domain_id'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - domain
+              properties:
+                domain:
+                  $ref: '#/components/schemas/UpdateDomainRequest'
+            example:
+              domain:
+                open_tracking_enabled: true
+                click_tracking_enabled: true
+                tracking_opt_out_enabled: true
+                auto_unsubscribe_link_enabled: false
+                inbound_enabled: true
+      responses:
+        '200':
+          $ref: '#/components/responses/DomainResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+
+  /api/domains/{domain_id}/send_setup_instructions:
+    post:
+      summary: Send setup instructions
+      description: Email DNS configuration instructions for the domain
+      operationId: sendDomainSetupInstructions
+      tags:
+        - domains
+      x-codeSamples:
+        - lang: shell
+          label: 'cURL'
+          source: |
+            curl -X POST https://eu.mailtrap.io/api/domains/{domain_id}/send_setup_instructions \
+              -H 'Authorization: Bearer YOUR_API_KEY' \
+              -H 'Content-Type: application/json' \
+              -d '{
+                "email": "devops@example.com"
+              }'
+        - lang: javascript
+          label: Node.js
+          source: |
+            import { MailtrapClient } from "mailtrap";
+
+            const client = new MailtrapClient({
+              token: process.env.MAILTRAP_API_KEY,
+              accountId: YOUR_ACCOUNT_ID
+            });
+
+            async function sendInstructions() {
+              const domainId = 12345;
+              await client.domains.sendSetupInstructions(
+                domainId,
+                "devops@example.com"
+              );
+
+              console.log("Setup instructions sent");
+            }
+
+            sendInstructions();
+        - lang: php
+          label: PHP
+          source: |
+            <?php
+            use Mailtrap\Config;
+            use Mailtrap\MailtrapSendingClient;
+
+            $config = new Config($_ENV['MAILTRAP_API_KEY']);
+            $accountId = (int) $_ENV['MAILTRAP_ACCOUNT_ID'];
+
+            $domains = (new MailtrapSendingClient($config))
+                ->domains($accountId);
+
+            $domainId = (int) $_ENV['MAILTRAP_DOMAIN_ID'];
+            $email = 'devops@example.com';
+
+            $response = $domains->sendDomainSetupInstructions(
+                $domainId,
+                $email
+            );
+            var_dump($response->getStatusCode());
+        - lang: python
+          label: Python
+          source: |
+            import mailtrap as mt
+
+            client = mt.MailtrapClient(
+                token="YOUR_API_KEY",
+                account_id="YOUR_ACCOUNT_ID"
+            )
+
+            domain_id = 12345
+            params = mt.SendSetupInstructionsParams(email="devops@example.com")
+            client.domains_api.domains.send_setup_instructions(
+                domain_id, params
+            )
+
+            print("Setup instructions sent")
+        - lang: ruby
+          label: Ruby
+          source: |
+            require 'mailtrap'
+
+            client = Mailtrap::Client.new(api_key: ENV['MAILTRAP_API_KEY'])
+            domains = Mailtrap::DomainsAPI.new(YOUR_ACCOUNT_ID, client)
+
+            domains.send_setup_instructions(DOMAIN_ID, email: 'devops@example.com')
+        - lang: csharp
+          label: .NET
+          source: |
+            using Mailtrap;
+            using Mailtrap.SendingDomains.Requests;
+
+            using var mailtrapFactory = new MailtrapClientFactory("YOUR_API_KEY");
+            var client = mailtrapFactory.CreateClient();
+
+            var domainId = 12345;
+            var domainResource = client.Account(YOUR_ACCOUNT_ID).Domain(domainId);
+
+            var request = new SendingDomainInstructionsRequest("devops@example.com");
+            await domainResource.SendInstructions(request);
+
+            Console.WriteLine("Setup instructions sent");
+        - lang: java
+          label: Java
+          source: |
+            import io.mailtrap.config.MailtrapConfig;
+            import io.mailtrap.factory.MailtrapClientFactory;
+            import io.mailtrap.model.request.sendingdomains.SendingDomainsSetupInstructionsRequest;
+
+            var config = new MailtrapConfig.Builder()
+                .token("YOUR_API_KEY")
+                .build();
+
+            var client = MailtrapClientFactory
+                .createMailtrapClient(config);
+
+            long domainId = 12345L;
+            var request = new SendingDomainsSetupInstructionsRequest(
+                "devops@example.com"
+            );
+
+            client.sendingApi().domains()
+                .sendDomainSetupInstructions(
+                    YOUR_ACCOUNT_ID,
+                    domainId,
+                    request
+                );
+
+            System.out.println("Setup instructions sent");
+        - lang: go
+          label: Go
+          source: |
+            package main
+
+            import (
+            	"context"
+            	"fmt"
+            	"log"
+            	"os"
+
+            	"github.com/mailtrap/mailtrap-go"
+            )
+
+            func main() {
+            	client, err := mailtrap.NewClient(os.Getenv("MAILTRAP_API_TOKEN"))
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	if _, err := client.Domains.SendSetupInstructions(context.Background(), 1000001, "devops@example.com"); err != nil {
+            		log.Fatal(err)
+            	}
+
+            	fmt.Println("setup instructions sent")
+            }
+      parameters:
+        - $ref: '#/components/parameters/domain_id'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+              properties:
+                email:
+                  type: string
+                  format: email
+                  description: Email address to receive setup instructions
+            example:
+              email: devops@example.com
+      responses:
+        '204':
+          description: Instructions sent successfully
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+
+  /api/domains/{domain_id}/company_info:
+    get:
+      summary: Get company info
+      description: |
+        Get company information associated with a domain / account.
+      operationId: getDomainCompanyInfo
+      tags:
+        - domains
+      x-codeSamples:
+        - lang: shell
+          label: 'cURL'
+          source: |
+            curl -X GET https://eu.mailtrap.io/api/domains/{domain_id}/company_info \
+              -H 'Authorization: Bearer YOUR_API_KEY'
+        - lang: ruby
+          label: Ruby
+          source: |
+            require 'mailtrap'
+
+            client = Mailtrap::Client.new(api_key: 'YOUR_API_KEY')
+            account_id = 1000001
+            company_info = Mailtrap::CompanyInfoAPI.new(account_id, client)
+
+            domain_id = 12345
+            puts company_info.get(domain_id)
+        - lang: go
+          label: Go
+          source: |
+            package main
+
+            import (
+            	"context"
+            	"fmt"
+            	"log"
+            	"os"
+
+            	"github.com/mailtrap/mailtrap-go"
+            )
+
+            func main() {
+            	client, err := mailtrap.NewClient(os.Getenv("MAILTRAP_API_TOKEN"))
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	info, _, err := client.Domains.CompanyInfo(context.Background(), 1000001)
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	fmt.Printf("%s (%s), %s %s, %s\n", info.Name, info.InfoLevel, info.ZipCode, info.City, info.Country)
+            }
+      parameters:
+        - $ref: '#/components/parameters/domain_id'
+      responses:
+        '200':
+          $ref: '#/components/responses/CompanyInfoResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    post:
+      summary: Create company info
+      description: |
+        Create company information for a domain / account.
+        Company info is required for domain compliance verification.
+      operationId: createDomainCompanyInfo
+      tags:
+        - domains
+      x-codeSamples:
+        - lang: shell
+          label: 'cURL'
+          source: |
+            curl -X POST https://eu.mailtrap.io/api/domains/{domain_id}/company_info \
+              -H 'Authorization: Bearer YOUR_API_KEY' \
+              -H 'Content-Type: application/json' \
+              -d '{
+                "company_info": {
+                  "name": "Mailtrap",
+                  "address": "123 Main St",
+                  "city": "San Francisco",
+                  "country": "US",
+                  "zip_code": "94105",
+                  "phone": "+1-555-0100",
+                  "website_url": "https://eu.mailtrap.io",
+                  "privacy_policy_url": "https://mailtrap.io/privacy",
+                  "terms_of_service_url": "https://mailtrap.io/terms",
+                  "info_level": "business"
+                }
+              }'
+        - lang: ruby
+          label: Ruby
+          source: |
+            require 'mailtrap'
+
+            client = Mailtrap::Client.new(api_key: 'YOUR_API_KEY')
+            account_id = 1000001
+            company_info = Mailtrap::CompanyInfoAPI.new(account_id, client)
+
+            domain_id = 12345
+            puts company_info.create(
+              domain_id,
+              name: 'Mailtrap',
+              address: '123 Main St',
+              city: 'San Francisco',
+              country: 'US',
+              zip_code: '94105',
+              website_url: 'https://eu.mailtrap.io',
+              info_level: 'business'
+            )
+        - lang: go
+          label: Go
+          source: |
+            package main
+
+            import (
+            	"context"
+            	"fmt"
+            	"log"
+            	"os"
+
+            	"github.com/mailtrap/mailtrap-go"
+            )
+
+            func main() {
+            	client, err := mailtrap.NewClient(os.Getenv("MAILTRAP_API_TOKEN"))
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	info, _, err := client.Domains.CreateCompanyInfo(context.Background(), 1000001, &mailtrap.CompanyInfoRequest{
+            		Name:       "Example Inc.",
+            		Address:    "1 Example Street",
+            		City:       "Dublin",
+            		Country:    "Ireland",
+            		ZipCode:    "D01 F5P2",
+            		WebsiteURL: "https://example.com",
+            		InfoLevel:  mailtrap.InfoLevelBusiness,
+            	})
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	fmt.Printf("company info set for %s\n", info.Name)
+            }
+      parameters:
+        - $ref: '#/components/parameters/domain_id'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - company_info
+              properties:
+                company_info:
+                  $ref: '#/components/schemas/CompanyInfoRequest'
+            example:
+              company_info:
+                name: Mailtrap
+                address: 123 Main St
+                city: San Francisco
+                country: US
+                zip_code: '94105'
+                phone: '+1-555-0100'
+                website_url: 'https://eu.mailtrap.io'
+                privacy_policy_url: 'https://mailtrap.io/privacy'
+                terms_of_service_url: 'https://mailtrap.io/terms'
+                info_level: business
+      responses:
+        '200':
+          $ref: '#/components/responses/CompanyInfoResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+
+    patch:
+      summary: Update company info
+      description: |
+        Update company information for a domain / account. All fields are optional;
+        only the fields provided in the request will be updated.
+      operationId: updateDomainCompanyInfo
+      tags:
+        - domains
+      x-codeSamples:
+        - lang: shell
+          label: 'cURL'
+          source: |
+            curl -X PATCH https://eu.mailtrap.io/api/domains/{domain_id}/company_info \
+              -H 'Authorization: Bearer YOUR_API_KEY' \
+              -H 'Content-Type: application/json' \
+              -d '{
+                "company_info": {
+                  "city": "New York",
+                  "zip_code": "10001"
+                }
+              }'
+        - lang: ruby
+          label: Ruby
+          source: |
+            require 'mailtrap'
+
+            client = Mailtrap::Client.new(api_key: 'YOUR_API_KEY')
+            account_id = 1000001
+            company_info = Mailtrap::CompanyInfoAPI.new(account_id, client)
+
+            domain_id = 12345
+            puts company_info.update(domain_id, city: 'New York', zip_code: '10001')
+        - lang: go
+          label: Go
+          source: |
+            package main
+
+            import (
+            	"context"
+            	"fmt"
+            	"log"
+            	"os"
+
+            	"github.com/mailtrap/mailtrap-go"
+            )
+
+            func main() {
+            	client, err := mailtrap.NewClient(os.Getenv("MAILTRAP_API_TOKEN"))
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	// Only the fields you set are changed.
+            	info, _, err := client.Domains.UpdateCompanyInfo(context.Background(), 1000001, &mailtrap.CompanyInfoRequest{
+            		Phone:            "+353 1 234 5678",
+            		PrivacyPolicyURL: "https://example.com/privacy",
+            	})
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	fmt.Printf("company info updated for %s\n", info.Name)
+            }
+      parameters:
+        - $ref: '#/components/parameters/domain_id'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - company_info
+              properties:
+                company_info:
+                  $ref: '#/components/schemas/CompanyInfoUpdateRequest'
+            example:
+              company_info:
+                city: New York
+                zip_code: '10001'
+      responses:
+        '200':
+          $ref: '#/components/responses/CompanyInfoResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+
+  /api/suppressions:
+    get:
+      summary: List suppressions
+      description: |
+        List and search suppressed email addresses. Returns up to 1000 suppressions per request. Use `last_id` for cursor-based pagination through large lists.
+
+        Suppressed addresses will not receive any emails from your account.
+
+        Rate limit: 10 requests per minute per account.
+      operationId: getSuppressions
+      tags:
+        - suppressions
+      x-codeSamples:
+        - lang: shell
+          label: 'cURL'
+          source: |
+            # Get all suppressions
+            curl -X GET https://eu.mailtrap.io/api/suppressions \
+              -H 'Authorization: Bearer YOUR_API_KEY'
+
+            # Search for specific email
+            curl -X GET 'https://eu.mailtrap.io/api/suppressions?email=suppressed@example.com' \
+              -H 'Authorization: Bearer YOUR_API_KEY'
+        - lang: javascript
+          label: Node.js
+          source: |
+            import { MailtrapClient } from "mailtrap";
+
+            const client = new MailtrapClient({
+              token: process.env.MAILTRAP_API_KEY,
+              accountId: YOUR_ACCOUNT_ID
+            });
+
+            async function getSuppressions() {
+              // Get all suppressions
+              const suppressions = await client.suppressions.getList();
+
+              // Or search for specific email
+              const filtered = await client.suppressions.getList({
+                email: "suppressed@example.com"
+              });
+
+              console.log("Suppressions:", suppressions);
+            }
+
+            getSuppressions();
+        - lang: php
+          label: PHP
+          source: |
+            <?php
+
+            use Mailtrap\Config;
+            use Mailtrap\Helper\ResponseHelper;
+            use Mailtrap\MailtrapSendingClient;
+
+            $config = new Config($_ENV['MAILTRAP_API_KEY']);
+            $accountId = $_ENV['MAILTRAP_ACCOUNT_ID'];
+
+            $suppressions = (new MailtrapSendingClient($config))
+                ->suppressions($accountId);
+
+            // Get all suppressions
+            $response = $suppressions->getSuppressions();
+
+            // Or search for specific email
+            $response = $suppressions->getSuppressions('suppressed@example.com');
+
+            var_dump(ResponseHelper::toArray($response));
+        - lang: python
+          label: Python
+          source: |
+            import mailtrap as mt
+
+            client = mt.MailtrapClient(
+                token="YOUR_API_KEY",
+                account_id="YOUR_ACCOUNT_ID"
+            )
+
+            # Get all suppressions
+            suppressions = client.suppressions_api.suppressions.get_list()
+
+            # Or search for specific email
+            filtered = client.suppressions_api.suppressions.get_list("suppressed@example.com")
+
+            for suppression in suppressions:
+                print(f"Email: {suppression.email}, Type: {suppression.type}")
+        - lang: ruby
+          label: Ruby
+          source: |
+            require 'mailtrap'
+
+            client = Mailtrap::Client.new(api_key: 'YOUR_API_KEY')
+            suppressions = Mailtrap::SuppressionsAPI.new(
+              YOUR_ACCOUNT_ID,
+              client
+            )
+
+            # Get all suppressions
+            all_suppressions = suppressions.list
+
+            # Or search for specific email
+            filtered = suppressions.list(email: 'suppressed@example.com')
+
+            all_suppressions.each do |suppression|
+              puts "Email: #{suppression.email}"
+            end
+        - lang: csharp
+          label: .NET
+          source: |
+            using Mailtrap;
+            using Mailtrap.Suppressions.Models;
+
+            using var mailtrapFactory = new MailtrapClientFactory("YOUR_API_KEY");
+            var client = mailtrapFactory.CreateClient();
+
+            var suppressionsResource = client.Account(YOUR_ACCOUNT_ID).Suppressions();
+
+            // Get all suppressions
+            var suppressions = await suppressionsResource.Fetch();
+
+            // Or search for specific email
+            var filter = new SuppressionFilter
+            {
+                Email = "suppressed@example.com"
+            };
+            var filtered = await suppressionsResource.Fetch(filter);
+
+            foreach (var suppression in suppressions)
+            {
+                Console.WriteLine($"Email: {suppression.Email}");
+            }
+        - lang: java
+          label: Java
+          source: |
+            import io.mailtrap.config.MailtrapConfig;
+            import io.mailtrap.factory.MailtrapClientFactory;
+
+            var config = new MailtrapConfig.Builder()
+                .token("YOUR_API_KEY")
+                .build();
+
+            var client = MailtrapClientFactory
+                .createMailtrapClient(config);
+
+            // Get all suppressions
+            var suppressions = client.sendingApi().suppressions()
+                .search(YOUR_ACCOUNT_ID, null);
+
+            // Or search for specific email
+            var filtered = client.sendingApi().suppressions()
+                .search(YOUR_ACCOUNT_ID, "suppressed@example.com");
+
+            suppressions.forEach(suppression ->
+                System.out.println("Email: " + suppression.getEmail())
+            );
+            filtered.forEach(filteredSuppression ->
+                System.out.println("Email: " + filteredSuppression.getEmail())
+            );
+        - lang: go
+          label: Go
+          source: |
+            package main
+
+            import (
+            	"context"
+            	"fmt"
+            	"log"
+            	"os"
+
+            	"github.com/mailtrap/mailtrap-go"
+            )
+
+            func main() {
+            	client, err := mailtrap.NewClient(os.Getenv("MAILTRAP_API_TOKEN"))
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	suppressions, _, err := client.Suppressions.List(context.Background(), &mailtrap.SuppressionListOptions{
+            		StartTime: "2026-01-01T00:00:00Z",
+            		EndTime:   "2026-02-01T00:00:00Z",
+            	})
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	for _, suppression := range suppressions {
+            		fmt.Printf("%s %s (%s, %s)\n", suppression.ID, suppression.Email, suppression.Type, suppression.SendingStream)
+            	}
+            }
+      parameters:
+        - name: email
+          in: query
+          description: Filter suppressions by exact email address (case-insensitive).
+          schema:
+            type: string
+            format: email
+            example: suppressed@example.com
+        - name: start_time
+          in: query
+          description: Filter suppressions created at or after this timestamp (ISO 8601 format).
+          schema:
+            type: string
+            format: date-time
+            example: '2025-01-01T00:00:00Z'
+        - name: end_time
+          in: query
+          description: Filter suppressions created at or before this timestamp (ISO 8601 format).
+          schema:
+            type: string
+            format: date-time
+            example: '2025-12-31T23:59:59Z'
+        - name: last_id
+          in: query
+          description: The suppression UUID from the last record of the previous response. Returns records after this suppression, enabling cursor-based pagination through large lists.
+          schema:
+            type: string
+            format: uuid
+            example: 64d71bf3-1276-417b-86e1-8e66f138acfe
+      responses:
+        '200':
+          $ref: '#/components/responses/GetSuppressionsResponse'
+        '400':
+          $ref: '#/components/responses/BAD_REQUEST'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '429':
+          $ref: '#/components/responses/LIMIT_EXCEEDED'
+    post:
+      summary: Create suppression
+      description: |
+        Add an email address to the suppression list. Suppressed addresses will not receive any emails from your account.
+
+        {% hint style="warning" %}
+        This endpoint requires admin-level access.
+        {% endhint %}
+
+        Rate limit: 10 requests per minute per account.
+      operationId: createSuppression
+      tags:
+        - suppressions
+      x-codeSamples:
+        - lang: shell
+          label: 'cURL'
+          source: |
+            curl -X POST https://eu.mailtrap.io/api/suppressions \
+              -H 'Authorization: Bearer YOUR_API_KEY' \
+              -H 'Content-Type: application/json' \
+              -d '{
+                "email": "user@example.com",
+                "domain_id": 12345,
+                "sending_stream": "transactional",
+                "type": "manual import"
+              }'
+        - lang: go
+          label: Go
+          source: |
+            package main
+
+            import (
+            	"context"
+            	"fmt"
+            	"log"
+            	"os"
+
+            	"github.com/mailtrap/mailtrap-go"
+            )
+
+            func main() {
+            	client, err := mailtrap.NewClient(os.Getenv("MAILTRAP_API_TOKEN"))
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	suppression, _, err := client.Suppressions.Create(context.Background(), &mailtrap.CreateSuppressionRequest{
+            		Email:         "bounced@example.com",
+            		DomainID:      1000001,
+            		SendingStream: mailtrap.SendingStreamTransactional,
+            		Type:          mailtrap.SuppressionTypeHardBounce,
+            	})
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	fmt.Printf("suppressed %s (%s)\n", suppression.Email, suppression.Type)
+            }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, domain_id, sending_stream]
+              properties:
+                email:
+                  type: string
+                  format: email
+                  description: Email address to suppress
+                  example: user@example.com
+                domain_id:
+                  type: integer
+                  description: ID of the domain to suppress this email for
+                  example: 12345
+                sending_stream:
+                  type: string
+                  enum: [transactional, bulk]
+                  description: The sending stream to suppress this email for
+                  example: transactional
+                type:
+                  type: string
+                  enum: [hard bounce, unsubscription, spam complaint, manual import]
+                  default: manual import
+                  description: Reason for the suppression. Defaults to "manual import" if omitted.
+                  example: manual import
+      responses:
+        '201':
+          $ref: '#/components/responses/CreateSuppressionResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+        '429':
+          $ref: '#/components/responses/LIMIT_EXCEEDED'
+  /api/suppressions/{suppression_id}:
+    delete:
+      summary: Delete suppression
+      description: |
+        Remove an email from the suppression list to allow sending again.
+
+        {% hint style="warning" %}
+        This endpoint requires admin-level access.
+        {% endhint %}
+      operationId: deleteSuppression
+      tags:
+        - suppressions
+      x-codeSamples:
+        - lang: shell
+          label: 'cURL'
+          source: |
+            curl -X DELETE https://eu.mailtrap.io/api/suppressions/{suppression_id} \
+              -H 'Authorization: Bearer YOUR_API_KEY'
+        - lang: javascript
+          label: Node.js
+          source: |
+            import { MailtrapClient } from "mailtrap";
+
+            const client = new MailtrapClient({
+              token: process.env.MAILTRAP_API_KEY,
+              accountId: YOUR_ACCOUNT_ID
+            });
+
+            async function deleteSuppression() {
+              const suppressionId = "abc123-def456";
+              const result = await client.suppressions.delete(suppressionId);
+
+              console.log("Suppression removed:", result);
+            }
+
+            deleteSuppression();
+        - lang: php
+          label: PHP
+          source: |
+            <?php
+            use Mailtrap\Config;
+            use Mailtrap\MailtrapSendingClient;
+
+            $config = new Config($_ENV['MAILTRAP_API_KEY']);
+            $accountId = $_ENV['MAILTRAP_ACCOUNT_ID'];
+
+            $suppressions = (new MailtrapSendingClient($config))
+                ->suppressions($accountId);
+
+            $suppressionId = 'abc123-def456';
+            $response = $suppressions->deleteSuppression($suppressionId);
+            var_dump($response->getStatusCode());
+        - lang: python
+          label: Python
+          source: |
+            import mailtrap as mt
+
+            client = mt.MailtrapClient(
+                token="YOUR_API_KEY",
+                account_id="YOUR_ACCOUNT_ID"
+            )
+
+            suppression_id = "abc123-def456"
+            deleted = client.suppressions_api.suppressions.delete(suppression_id)
+
+            print(f"Suppression removed: {deleted.email}")
+        - lang: ruby
+          label: Ruby
+          source: |
+            require 'mailtrap'
+
+            client = Mailtrap::Client.new(api_key: 'YOUR_API_KEY')
+            suppressions = Mailtrap::SuppressionsAPI.new(
+              YOUR_ACCOUNT_ID,
+              client
+            )
+
+            suppression_id = 'abc123-def456'
+            result = suppressions.delete(suppression_id)
+
+            puts "Suppression removed: #{result.email}"
+        - lang: csharp
+          label: .NET
+          source: |
+            using Mailtrap;
+
+            using var mailtrapFactory = new MailtrapClientFactory("YOUR_API_KEY");
+            var client = mailtrapFactory.CreateClient();
+
+            var suppressionId = "abc123-def456";
+            var suppressionResource = client.Account(YOUR_ACCOUNT_ID).Suppression(suppressionId);
+
+            var result = await suppressionResource.Delete();
+
+            Console.WriteLine($"Suppression removed: {result.Email}");
+        - lang: java
+          label: Java
+          source: |
+            import io.mailtrap.config.MailtrapConfig;
+            import io.mailtrap.factory.MailtrapClientFactory;
+
+            var config = new MailtrapConfig.Builder()
+                .token("YOUR_API_KEY")
+                .build();
+
+            var client = MailtrapClientFactory
+                .createMailtrapClient(config);
+
+            String suppressionId = "abc123-def456";
+            var result = client.sendingApi().suppressions()
+                .deleteSuppression(YOUR_ACCOUNT_ID, suppressionId);
+
+            System.out.println("Suppression removed: " + result.getEmail());
+        - lang: go
+          label: Go
+          source: |
+            package main
+
+            import (
+            	"context"
+            	"fmt"
+            	"log"
+            	"os"
+
+            	"github.com/mailtrap/mailtrap-go"
+            )
+
+            func main() {
+            	client, err := mailtrap.NewClient(os.Getenv("MAILTRAP_API_TOKEN"))
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	// Delete returns the suppression it removed.
+            	suppression, _, err := client.Suppressions.Delete(context.Background(), "018dd3e0-1d2f-7a4b-9c8e-3f5a6b7c8d9e")
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	fmt.Printf("unsuppressed %s\n", suppression.Email)
+            }
+      parameters:
+        - $ref: '#/components/parameters/suppression_id'
+      responses:
+        '200':
+          $ref: '#/components/responses/DeleteSuppressionResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /api/tracking_opt_outs:
+    get:
+      summary: List tracking opt-outs
+      description: |
+        List email addresses that have opted out of open and click tracking for your sending domains.
+        Each record includes the domain it applies to.
+
+        Returns up to 1000 records per request. When the response includes a non-null `last_id`, pass it as the `last_id` query parameter to fetch the next page.
+
+        Rate limit: 10 requests per minute per account.
+      operationId: getTrackingOptOuts
+      tags:
+        - tracking-opt-outs
+      x-codeSamples:
+        - lang: shell
+          label: 'cURL'
+          source: |
+            # Get all tracking opt-outs
+            curl -X GET https://eu.mailtrap.io/api/tracking_opt_outs \
+              -H 'Authorization: Bearer YOUR_API_KEY'
+
+            # Search for specific email
+            curl -X GET 'https://eu.mailtrap.io/api/tracking_opt_outs?email=tracked@example.com' \
+              -H 'Authorization: Bearer YOUR_API_KEY'
+      parameters:
+        - name: email
+          in: query
+          description: Filter tracking opt-outs by exact email address (case-insensitive).
+          schema:
+            type: string
+            format: email
+            example: tracked@example.com
+        - name: start_time
+          in: query
+          description: Filter tracking opt-outs created at or after this timestamp (ISO 8601 format).
+          schema:
+            type: string
+            format: date-time
+            example: '2025-01-01T00:00:00Z'
+        - name: end_time
+          in: query
+          description: Filter tracking opt-outs created at or before this timestamp (ISO 8601 format).
+          schema:
+            type: string
+            format: date-time
+            example: '2025-12-31T23:59:59Z'
+        - name: last_id
+          in: query
+          description: The tracking opt-out UUID from the last record of the previous response. Returns records after this opt-out, enabling cursor-based pagination through large lists.
+          schema:
+            type: string
+            format: uuid
+            example: 64d71bf3-1276-417b-86e1-8e66f138acfe
+      responses:
+        '200':
+          $ref: '#/components/responses/GetTrackingOptOutsResponse'
+        '400':
+          $ref: '#/components/responses/BAD_REQUEST'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '429':
+          $ref: '#/components/responses/LIMIT_EXCEEDED'
+    post:
+      summary: Create tracking opt-out
+      description: |
+        Add an email address to the tracking opt-out list for a sending domain.
+        Opted-out addresses are excluded from open and click tracking on that domain.
+
+        {% hint style="warning" %}
+        This endpoint requires admin-level access.
+        {% endhint %}
+
+        Rate limit: 10 requests per minute per account.
+      operationId: createTrackingOptOut
+      tags:
+        - tracking-opt-outs
+      x-codeSamples:
+        - lang: shell
+          label: 'cURL'
+          source: |
+            curl -X POST https://eu.mailtrap.io/api/tracking_opt_outs \
+              -H 'Authorization: Bearer YOUR_API_KEY' \
+              -H 'Content-Type: application/json' \
+              -d '{
+                "email": "tracked@example.com",
+                "domain_id": 12345
+              }'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, domain_id]
+              properties:
+                email:
+                  type: string
+                  format: email
+                  description: Email address to opt out of tracking
+                  example: tracked@example.com
+                domain_id:
+                  type: integer
+                  description: ID of the sending domain this tracking opt-out applies to
+                  example: 12345
+      responses:
+        '201':
+          $ref: '#/components/responses/CreateTrackingOptOutResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+        '429':
+          $ref: '#/components/responses/LIMIT_EXCEEDED'
+
+  /api/tracking_opt_outs/{tracking_opt_out_id}:
+    delete:
+      summary: Delete tracking opt-out
+      description: |
+        Remove an email address from the tracking opt-out list so open and click tracking can apply again.
+
+        {% hint style="warning" %}
+        This endpoint requires admin-level access.
+        {% endhint %}
+      operationId: deleteTrackingOptOut
+      tags:
+        - tracking-opt-outs
+      x-codeSamples:
+        - lang: shell
+          label: 'cURL'
+          source: |
+            curl -X DELETE https://eu.mailtrap.io/api/tracking_opt_outs/{tracking_opt_out_id} \
+              -H 'Authorization: Bearer YOUR_API_KEY'
+      parameters:
+        - $ref: '#/components/parameters/tracking_opt_out_id'
+      responses:
+        '200':
+          $ref: '#/components/responses/DeleteTrackingOptOutResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  '/api/stats':
+    get:
+      operationId: getAccountSendingStats
+      summary: Get Sending Stats
+      description: Get account sending stats. Use filters to get specific stats.
+      tags:
+        - stats
+      x-codeSamples:
+        - lang: shell
+          label: 'cURL'
+          source: |
+            curl -X GET 'https://eu.mailtrap.io/api/stats?start_date=2025-01-01&end_date=2025-12-31' \
+              -H 'Authorization: Bearer YOUR_API_KEY'
+        - lang: javascript
+          label: Node.js
+          source: |
+            import { MailtrapClient } from "mailtrap";
+
+            const accountId = 1000001;
+            const client = new MailtrapClient({ token: "YOUR_API_KEY", accountId });
+
+            const stats = await client.stats.get({ start_date: "2026-01-01", end_date: "2026-01-31" });
+            console.log(stats);
+        - lang: php
+          label: PHP
+          source: |
+            <?php
+            use Mailtrap\Config;
+            use Mailtrap\Helper\ResponseHelper;
+            use Mailtrap\MailtrapSendingClient;
+
+            $config = new Config($_ENV['MAILTRAP_API_KEY']);
+            $accountId = (int) $_ENV['MAILTRAP_ACCOUNT_ID'];
+            $stats = (new MailtrapSendingClient($config))->stats($accountId);
+
+            $response = $stats->get('2026-01-01', '2026-01-31');
+            var_dump(ResponseHelper::toArray($response));
+        - lang: python
+          label: Python
+          source: |
+            import mailtrap as mt
+
+            client = mt.MailtrapClient(token="YOUR_API_KEY")
+
+            account_id = 1000001
+            params = mt.StatsFilterParams(start_date="2026-01-01", end_date="2026-01-31")
+            stats = client.stats_api.get(account_id=account_id, params=params)
+            print(stats)
+        - lang: ruby
+          label: Ruby
+          source: |
+            require 'mailtrap'
+
+            client = Mailtrap::Client.new(api_key: ENV['MAILTRAP_API_KEY'])
+            stats = Mailtrap::StatsAPI.new(YOUR_ACCOUNT_ID, client)
+
+            puts "Stats: #{stats.get(start_date: '2026-01-01', end_date: '2026-01-31')}"
+        - lang: csharp
+          label: .NET
+          source: |
+            using Mailtrap;
+            using Mailtrap.Stats.Models;
+
+            using var mailtrapFactory = new MailtrapClientFactory("YOUR_API_KEY");
+            var client = mailtrapFactory.CreateClient();
+
+            var accountId = 1000001;
+            var filter = new StatsFilter { StartDate = "2026-01-01", EndDate = "2026-01-31" };
+            var stats = await client.Account(accountId).Stats().GetStats(filter);
+            Console.WriteLine(stats);
+        - lang: java
+          label: Java
+          source: |
+            import io.mailtrap.api.stats.StatsFilter;
+            import io.mailtrap.config.MailtrapConfig;
+            import io.mailtrap.factory.MailtrapClientFactory;
+
+            var config = new MailtrapConfig.Builder().token("YOUR_API_KEY").build();
+            var client = MailtrapClientFactory.createMailtrapClient(config);
+
+            long accountId = 1000001L;
+            var filter = StatsFilter.builder().startDate("2026-01-01").endDate("2026-01-31").build();
+            var stats = client.sendingApi().stats().getStats(accountId, filter);
+            System.out.println(stats);
+        - lang: go
+          label: Go
+          source: |
+            package main
+
+            import (
+            	"context"
+            	"fmt"
+            	"log"
+            	"os"
+
+            	"github.com/mailtrap/mailtrap-go"
+            )
+
+            func main() {
+            	client, err := mailtrap.NewClient(os.Getenv("MAILTRAP_API_TOKEN"))
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	// StartDate and EndDate are required; the other fields narrow the query.
+            	stats, _, err := client.Stats.Get(context.Background(), &mailtrap.StatsOptions{
+            		StartDate: "2026-01-01",
+            		EndDate:   "2026-01-31",
+            	})
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	fmt.Printf("delivered %d (%.2f), opened %d (%.2f)\n", stats.DeliveryCount, stats.DeliveryRate, stats.OpenCount, stats.OpenRate)
+            }
+      parameters:
+        - $ref: '#/components/parameters/StartDateQueryFilter'
+        - $ref: '#/components/parameters/EndDateQueryFilter'
+        - $ref: '#/components/parameters/SendingDomainIDsQueryFilter'
+        - $ref: '#/components/parameters/SendingStreamsQueryFilter'
+        - $ref: '#/components/parameters/CategoriesQueryFilter'
+        - $ref: '#/components/parameters/ESPsQueryFilter'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SendingStats'
+        '400':
+          $ref: '#/components/responses/BAD_REQUEST'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '429':
+          $ref: '#/components/responses/LIMIT_EXCEEDED'
+  '/api/stats/domains':
+    get:
+      operationId: getAccountSendingStatsByDomains
+      summary: Get Sending Stats by Domains
+      description: Get account sending stats by domains. Use filters to get specific stats.
+      tags:
+        - stats
+      x-codeSamples:
+        - lang: shell
+          label: 'cURL'
+          source: |
+            curl -X GET 'https://eu.mailtrap.io/api/stats/domains?start_date=2025-01-01&end_date=2025-12-31' \
+              -H 'Authorization: Bearer YOUR_API_KEY'
+        - lang: javascript
+          label: Node.js
+          source: |
+            import { MailtrapClient } from "mailtrap";
+
+            const accountId = 1000001;
+            const client = new MailtrapClient({ token: "YOUR_API_KEY", accountId });
+
+            const stats = await client.stats.byDomain({ start_date: "2026-01-01", end_date: "2026-01-31" });
+            console.log(stats);
+        - lang: php
+          label: PHP
+          source: |
+            <?php
+            use Mailtrap\Config;
+            use Mailtrap\Helper\ResponseHelper;
+            use Mailtrap\MailtrapSendingClient;
+
+            $config = new Config($_ENV['MAILTRAP_API_KEY']);
+            $accountId = (int) $_ENV['MAILTRAP_ACCOUNT_ID'];
+            $stats = (new MailtrapSendingClient($config))->stats($accountId);
+
+            $response = $stats->byDomain('2026-01-01', '2026-01-31');
+            var_dump(ResponseHelper::toArray($response));
+        - lang: python
+          label: Python
+          source: |
+            import mailtrap as mt
+
+            client = mt.MailtrapClient(token="YOUR_API_KEY")
+
+            account_id = 1000001
+            params = mt.StatsFilterParams(start_date="2026-01-01", end_date="2026-01-31")
+            stats = client.stats_api.by_domain(account_id=account_id, params=params)
+            print(stats)
+        - lang: ruby
+          label: Ruby
+          source: |
+            require 'mailtrap'
+
+            client = Mailtrap::Client.new(api_key: ENV['MAILTRAP_API_KEY'])
+            stats = Mailtrap::StatsAPI.new(YOUR_ACCOUNT_ID, client)
+
+            puts "Stats: #{stats.by_domain(start_date: '2026-01-01', end_date: '2026-01-31')}"
+        - lang: csharp
+          label: .NET
+          source: |
+            using Mailtrap;
+            using Mailtrap.Stats.Models;
+
+            using var mailtrapFactory = new MailtrapClientFactory("YOUR_API_KEY");
+            var client = mailtrapFactory.CreateClient();
+
+            var accountId = 1000001;
+            var filter = new StatsFilter { StartDate = "2026-01-01", EndDate = "2026-01-31" };
+            var stats = await client.Account(accountId).Stats().ByDomain(filter);
+            Console.WriteLine(stats.Count);
+        - lang: java
+          label: Java
+          source: |
+            import io.mailtrap.api.stats.StatsFilter;
+            import io.mailtrap.config.MailtrapConfig;
+            import io.mailtrap.factory.MailtrapClientFactory;
+
+            var config = new MailtrapConfig.Builder().token("YOUR_API_KEY").build();
+            var client = MailtrapClientFactory.createMailtrapClient(config);
+
+            long accountId = 1000001L;
+            var filter = StatsFilter.builder().startDate("2026-01-01").endDate("2026-01-31").build();
+            var stats = client.sendingApi().stats().byDomain(accountId, filter);
+            System.out.println(stats);
+        - lang: go
+          label: Go
+          source: |
+            package main
+
+            import (
+            	"context"
+            	"fmt"
+            	"log"
+            	"os"
+
+            	"github.com/mailtrap/mailtrap-go"
+            )
+
+            func main() {
+            	client, err := mailtrap.NewClient(os.Getenv("MAILTRAP_API_TOKEN"))
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	stats, _, err := client.Stats.ByDomain(context.Background(), &mailtrap.StatsOptions{
+            		StartDate:      "2026-01-01",
+            		EndDate:        "2026-01-31",
+            		SendingStreams: []string{mailtrap.SendingStreamTransactional},
+            	})
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	for _, entry := range stats {
+            		fmt.Printf("domain %d: delivered %d, bounced %d\n", entry.DomainID, entry.Stats.DeliveryCount, entry.Stats.BounceCount)
+            	}
+            }
+      parameters:
+        - $ref: '#/components/parameters/StartDateQueryFilter'
+        - $ref: '#/components/parameters/EndDateQueryFilter'
+        - $ref: '#/components/parameters/SendingDomainIDsQueryFilter'
+        - $ref: '#/components/parameters/SendingStreamsQueryFilter'
+        - $ref: '#/components/parameters/CategoriesQueryFilter'
+        - $ref: '#/components/parameters/ESPsQueryFilter'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    sending_domain_id:
+                      type: integer
+                      format: int64
+                      example: 3938
+                    stats:
+                      $ref: '#/components/schemas/SendingStats'
+        '400':
+          description: Bad request - invalid parameters.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BadRequest'
+              example:
+                error: "Missing required parameter: start_date"
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '429':
+          $ref: '#/components/responses/LIMIT_EXCEEDED'
+  '/api/stats/categories':
+    get:
+      operationId: getAccountSendingStatsByCategories
+      summary: Get Sending Stats by Categories
+      description: Get account sending stats by categories. Use filters to get specific stats.
+      tags:
+        - stats
+      x-codeSamples:
+        - lang: shell
+          label: 'cURL'
+          source: |
+            curl -X GET 'https://eu.mailtrap.io/api/stats/categories?start_date=2025-01-01&end_date=2025-12-31' \
+              -H 'Authorization: Bearer YOUR_API_KEY'
+        - lang: javascript
+          label: Node.js
+          source: |
+            import { MailtrapClient } from "mailtrap";
+
+            const accountId = 1000001;
+            const client = new MailtrapClient({ token: "YOUR_API_KEY", accountId });
+
+            const stats = await client.stats.byCategory({ start_date: "2026-01-01", end_date: "2026-01-31" });
+            console.log(stats);
+        - lang: php
+          label: PHP
+          source: |
+            <?php
+            use Mailtrap\Config;
+            use Mailtrap\Helper\ResponseHelper;
+            use Mailtrap\MailtrapSendingClient;
+
+            $config = new Config($_ENV['MAILTRAP_API_KEY']);
+            $accountId = (int) $_ENV['MAILTRAP_ACCOUNT_ID'];
+            $stats = (new MailtrapSendingClient($config))->stats($accountId);
+
+            $response = $stats->byCategory('2026-01-01', '2026-01-31');
+            var_dump(ResponseHelper::toArray($response));
+        - lang: python
+          label: Python
+          source: |
+            import mailtrap as mt
+
+            client = mt.MailtrapClient(token="YOUR_API_KEY")
+
+            account_id = 1000001
+            params = mt.StatsFilterParams(start_date="2026-01-01", end_date="2026-01-31")
+            stats = client.stats_api.by_category(account_id=account_id, params=params)
+            print(stats)
+        - lang: ruby
+          label: Ruby
+          source: |
+            require 'mailtrap'
+
+            client = Mailtrap::Client.new(api_key: ENV['MAILTRAP_API_KEY'])
+            stats = Mailtrap::StatsAPI.new(YOUR_ACCOUNT_ID, client)
+
+            puts "Stats: #{stats.by_category(start_date: '2026-01-01', end_date: '2026-01-31')}"
+        - lang: csharp
+          label: .NET
+          source: |
+            using Mailtrap;
+            using Mailtrap.Stats.Models;
+
+            using var mailtrapFactory = new MailtrapClientFactory("YOUR_API_KEY");
+            var client = mailtrapFactory.CreateClient();
+
+            var accountId = 1000001;
+            var filter = new StatsFilter { StartDate = "2026-01-01", EndDate = "2026-01-31" };
+            var stats = await client.Account(accountId).Stats().ByCategory(filter);
+            Console.WriteLine(stats.Count);
+        - lang: java
+          label: Java
+          source: |
+            import io.mailtrap.api.stats.StatsFilter;
+            import io.mailtrap.config.MailtrapConfig;
+            import io.mailtrap.factory.MailtrapClientFactory;
+
+            var config = new MailtrapConfig.Builder().token("YOUR_API_KEY").build();
+            var client = MailtrapClientFactory.createMailtrapClient(config);
+
+            long accountId = 1000001L;
+            var filter = StatsFilter.builder().startDate("2026-01-01").endDate("2026-01-31").build();
+            var stats = client.sendingApi().stats().byCategory(accountId, filter);
+            System.out.println(stats);
+        - lang: go
+          label: Go
+          source: |
+            package main
+
+            import (
+            	"context"
+            	"fmt"
+            	"log"
+            	"os"
+
+            	"github.com/mailtrap/mailtrap-go"
+            )
+
+            func main() {
+            	client, err := mailtrap.NewClient(os.Getenv("MAILTRAP_API_TOKEN"))
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	stats, _, err := client.Stats.ByCategory(context.Background(), &mailtrap.StatsOptions{
+            		StartDate:  "2026-01-01",
+            		EndDate:    "2026-01-31",
+            		Categories: []string{"Password Reset"},
+            	})
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	for _, entry := range stats {
+            		fmt.Printf("%s: delivered %d, opened %d\n", entry.Category, entry.Stats.DeliveryCount, entry.Stats.OpenCount)
+            	}
+            }
+      parameters:
+        - $ref: '#/components/parameters/StartDateQueryFilter'
+        - $ref: '#/components/parameters/EndDateQueryFilter'
+        - $ref: '#/components/parameters/SendingDomainIDsQueryFilter'
+        - $ref: '#/components/parameters/SendingStreamsQueryFilter'
+        - $ref: '#/components/parameters/CategoriesQueryFilter'
+        - $ref: '#/components/parameters/ESPsQueryFilter'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    category:
+                      type: string
+                      example: Welcome Email
+                    stats:
+                      $ref: '#/components/schemas/SendingStats'
+        '400':
+          $ref: '#/components/responses/BAD_REQUEST'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '429':
+          $ref: '#/components/responses/LIMIT_EXCEEDED'
+  '/api/stats/email_service_providers':
+    get:
+      operationId: getAccountSendingStatsByEmailServiceProviders
+      summary: Get Sending Stats by Email Service Providers
+      description: Get account sending stats by email service providers. Use filters to get specific stats.
+      tags:
+        - stats
+      x-codeSamples:
+        - lang: shell
+          label: 'cURL'
+          source: |
+            curl -X GET 'https://eu.mailtrap.io/api/stats/email_service_providers?start_date=2025-01-01&end_date=2025-12-31' \
+              -H 'Authorization: Bearer YOUR_API_KEY'
+        - lang: javascript
+          label: Node.js
+          source: |
+            import { MailtrapClient } from "mailtrap";
+
+            const accountId = 1000001;
+            const client = new MailtrapClient({ token: "YOUR_API_KEY", accountId });
+
+            const stats = await client.stats.byEmailServiceProvider({ start_date: "2026-01-01", end_date: "2026-01-31" });
+            console.log(stats);
+        - lang: php
+          label: PHP
+          source: |
+            <?php
+            use Mailtrap\Config;
+            use Mailtrap\Helper\ResponseHelper;
+            use Mailtrap\MailtrapSendingClient;
+
+            $config = new Config($_ENV['MAILTRAP_API_KEY']);
+            $accountId = (int) $_ENV['MAILTRAP_ACCOUNT_ID'];
+            $stats = (new MailtrapSendingClient($config))->stats($accountId);
+
+            $response = $stats->byEmailServiceProvider('2026-01-01', '2026-01-31');
+            var_dump(ResponseHelper::toArray($response));
+        - lang: python
+          label: Python
+          source: |
+            import mailtrap as mt
+
+            client = mt.MailtrapClient(token="YOUR_API_KEY")
+
+            account_id = 1000001
+            params = mt.StatsFilterParams(start_date="2026-01-01", end_date="2026-01-31")
+            stats = client.stats_api.by_email_service_provider(account_id=account_id, params=params)
+            print(stats)
+        - lang: ruby
+          label: Ruby
+          source: |
+            require 'mailtrap'
+
+            client = Mailtrap::Client.new(api_key: ENV['MAILTRAP_API_KEY'])
+            stats = Mailtrap::StatsAPI.new(YOUR_ACCOUNT_ID, client)
+
+            puts "Stats: #{stats.by_email_service_provider(start_date: '2026-01-01', end_date: '2026-01-31')}"
+        - lang: csharp
+          label: .NET
+          source: |
+            using Mailtrap;
+            using Mailtrap.Stats.Models;
+
+            using var mailtrapFactory = new MailtrapClientFactory("YOUR_API_KEY");
+            var client = mailtrapFactory.CreateClient();
+
+            var accountId = 1000001;
+            var filter = new StatsFilter { StartDate = "2026-01-01", EndDate = "2026-01-31" };
+            var stats = await client.Account(accountId).Stats().ByEmailServiceProvider(filter);
+            Console.WriteLine(stats.Count);
+        - lang: java
+          label: Java
+          source: |
+            import io.mailtrap.api.stats.StatsFilter;
+            import io.mailtrap.config.MailtrapConfig;
+            import io.mailtrap.factory.MailtrapClientFactory;
+
+            var config = new MailtrapConfig.Builder().token("YOUR_API_KEY").build();
+            var client = MailtrapClientFactory.createMailtrapClient(config);
+
+            long accountId = 1000001L;
+            var filter = StatsFilter.builder().startDate("2026-01-01").endDate("2026-01-31").build();
+            var stats = client.sendingApi().stats().byEmailServiceProvider(accountId, filter);
+            System.out.println(stats);
+        - lang: go
+          label: Go
+          source: |
+            package main
+
+            import (
+            	"context"
+            	"fmt"
+            	"log"
+            	"os"
+
+            	"github.com/mailtrap/mailtrap-go"
+            )
+
+            func main() {
+            	client, err := mailtrap.NewClient(os.Getenv("MAILTRAP_API_TOKEN"))
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	stats, _, err := client.Stats.ByEmailServiceProvider(context.Background(), &mailtrap.StatsOptions{
+            		StartDate: "2026-01-01",
+            		EndDate:   "2026-01-31",
+            	})
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	for _, entry := range stats {
+            		fmt.Printf("%s: delivered %d (%.2f)\n", entry.EmailServiceProvider, entry.Stats.DeliveryCount, entry.Stats.DeliveryRate)
+            	}
+            }
+      parameters:
+        - $ref: '#/components/parameters/StartDateQueryFilter'
+        - $ref: '#/components/parameters/EndDateQueryFilter'
+        - $ref: '#/components/parameters/SendingDomainIDsQueryFilter'
+        - $ref: '#/components/parameters/SendingStreamsQueryFilter'
+        - $ref: '#/components/parameters/CategoriesQueryFilter'
+        - $ref: '#/components/parameters/ESPsQueryFilter'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    email_service_provider:
+                      type: string
+                      example: Google
+                    stats:
+                      $ref: '#/components/schemas/SendingStats'
+        '400':
+          $ref: '#/components/responses/BAD_REQUEST'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '429':
+          $ref: '#/components/responses/LIMIT_EXCEEDED'
+  '/api/stats/date':
+    get:
+      operationId: getAccountSendingStatsByDate
+      summary: Get Sending Stats by Date
+      description: Get account sending stats by date. Use filters to get specific stats.
+      tags:
+        - stats
+      x-codeSamples:
+        - lang: shell
+          label: 'cURL'
+          source: |
+            curl -X GET 'https://eu.mailtrap.io/api/stats/date?start_date=2025-01-01&end_date=2025-12-31' \
+              -H 'Authorization: Bearer YOUR_API_KEY'
+        - lang: javascript
+          label: Node.js
+          source: |
+            import { MailtrapClient } from "mailtrap";
+
+            const accountId = 1000001;
+            const client = new MailtrapClient({ token: "YOUR_API_KEY", accountId });
+
+            const stats = await client.stats.byDate({ start_date: "2026-01-01", end_date: "2026-01-31" });
+            console.log(stats);
+        - lang: php
+          label: PHP
+          source: |
+            <?php
+            use Mailtrap\Config;
+            use Mailtrap\Helper\ResponseHelper;
+            use Mailtrap\MailtrapSendingClient;
+
+            $config = new Config($_ENV['MAILTRAP_API_KEY']);
+            $accountId = (int) $_ENV['MAILTRAP_ACCOUNT_ID'];
+            $stats = (new MailtrapSendingClient($config))->stats($accountId);
+
+            $response = $stats->byDate('2026-01-01', '2026-01-31');
+            var_dump(ResponseHelper::toArray($response));
+        - lang: python
+          label: Python
+          source: |
+            import mailtrap as mt
+
+            client = mt.MailtrapClient(token="YOUR_API_KEY")
+
+            account_id = 1000001
+            params = mt.StatsFilterParams(start_date="2026-01-01", end_date="2026-01-31")
+            stats = client.stats_api.by_date(account_id=account_id, params=params)
+            print(stats)
+        - lang: ruby
+          label: Ruby
+          source: |
+            require 'mailtrap'
+
+            client = Mailtrap::Client.new(api_key: ENV['MAILTRAP_API_KEY'])
+            stats = Mailtrap::StatsAPI.new(YOUR_ACCOUNT_ID, client)
+
+            puts "Stats: #{stats.by_date(start_date: '2026-01-01', end_date: '2026-01-31')}"
+        - lang: csharp
+          label: .NET
+          source: |
+            using Mailtrap;
+            using Mailtrap.Stats.Models;
+
+            using var mailtrapFactory = new MailtrapClientFactory("YOUR_API_KEY");
+            var client = mailtrapFactory.CreateClient();
+
+            var accountId = 1000001;
+            var filter = new StatsFilter { StartDate = "2026-01-01", EndDate = "2026-01-31" };
+            var stats = await client.Account(accountId).Stats().ByDate(filter);
+            Console.WriteLine(stats.Count);
+        - lang: java
+          label: Java
+          source: |
+            import io.mailtrap.api.stats.StatsFilter;
+            import io.mailtrap.config.MailtrapConfig;
+            import io.mailtrap.factory.MailtrapClientFactory;
+
+            var config = new MailtrapConfig.Builder().token("YOUR_API_KEY").build();
+            var client = MailtrapClientFactory.createMailtrapClient(config);
+
+            long accountId = 1000001L;
+            var filter = StatsFilter.builder().startDate("2026-01-01").endDate("2026-01-31").build();
+            var stats = client.sendingApi().stats().byDate(accountId, filter);
+            System.out.println(stats);
+        - lang: go
+          label: Go
+          source: |
+            package main
+
+            import (
+            	"context"
+            	"fmt"
+            	"log"
+            	"os"
+
+            	"github.com/mailtrap/mailtrap-go"
+            )
+
+            func main() {
+            	client, err := mailtrap.NewClient(os.Getenv("MAILTRAP_API_TOKEN"))
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	stats, _, err := client.Stats.ByDate(context.Background(), &mailtrap.StatsOptions{
+            		StartDate:        "2026-01-01",
+            		EndDate:          "2026-01-31",
+            		SendingDomainIDs: []int64{1000001},
+            	})
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	for _, entry := range stats {
+            		fmt.Printf("%s: delivered %d, clicked %d\n", entry.Date, entry.Stats.DeliveryCount, entry.Stats.ClickCount)
+            	}
+            }
+      parameters:
+        - $ref: '#/components/parameters/StartDateQueryFilter'
+        - $ref: '#/components/parameters/EndDateQueryFilter'
+        - $ref: '#/components/parameters/SendingDomainIDsQueryFilter'
+        - $ref: '#/components/parameters/SendingStreamsQueryFilter'
+        - $ref: '#/components/parameters/CategoriesQueryFilter'
+        - $ref: '#/components/parameters/ESPsQueryFilter'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    date:
+                      type: string
+                      format: date
+                      example: '2025-01-01'
+                    stats:
+                      $ref: '#/components/schemas/SendingStats'
+        '400':
+          $ref: '#/components/responses/BAD_REQUEST'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '429':
+          $ref: '#/components/responses/LIMIT_EXCEEDED'
+
+  /api/email_logs:
+    get:
+      operationId: listEmailLogs
+      summary: List email logs
+      description: |
+        Returns a paginated list of email logs (messages) for the account.
+        Results are restricted to domains the authenticated token has access to.
+        Invalid or unknown filters are ignored. Results are ordered by sent_at descending.
+      tags:
+        - email-logs
+      x-codeSamples:
+        - lang: shell
+          label: 'cURL'
+          source: |
+            curl -X GET -g 'https://eu.mailtrap.io/api/email_logs?filters[sent_after]=2025-01-01T00:00:00Z&filters[sent_before]=2025-01-31T23:59:59Z&filters[to][operator]=ci_equal&filters[to][value]=recipient@example.com&filters[sending_domain_id][operator]=equal&filters[sending_domain_id][value][]=3938&filters[sending_domain_id][value][]=3939' \
+              -H 'Authorization: Bearer YOUR_API_KEY'
+        - lang: javascript
+          label: Node.js
+          source: |
+            import { MailtrapClient } from "mailtrap";
+
+            const accountId = 1000001;
+            const client = new MailtrapClient({ token: "YOUR_API_KEY", accountId });
+
+            const page = await client.emailLogs.getList();
+            console.log(page);
+        - lang: php
+          label: PHP
+          source: |
+            <?php
+            use Mailtrap\Config;
+            use Mailtrap\Helper\ResponseHelper;
+            use Mailtrap\MailtrapSendingClient;
+
+            $config = new Config($_ENV['MAILTRAP_API_KEY']);
+            $accountId = (int) $_ENV['MAILTRAP_ACCOUNT_ID'];
+            $emailLogs = (new MailtrapSendingClient($config))->emailLogs($accountId);
+
+            $response = $emailLogs->getList();
+            var_dump(ResponseHelper::toArray($response));
+        - lang: python
+          label: Python
+          source: |
+            import mailtrap as mt
+
+            client = mt.MailtrapClient(token="YOUR_API_KEY", account_id=1000001)
+
+            response = client.email_logs_api.email_logs.get_list()
+            print(response.total_count)
+        - lang: ruby
+          label: Ruby
+          source: |
+            require 'mailtrap'
+
+            client = Mailtrap::Client.new(api_key: 'YOUR_API_KEY')
+            account_id = 1000001
+            email_logs = Mailtrap::EmailLogsAPI.new(account_id, client)
+
+            response = email_logs.list
+            puts response.total_count
+        - lang: csharp
+          label: .NET
+          source: |
+            using Mailtrap;
+            using Mailtrap.EmailLogs.Models;
+
+            using var mailtrapFactory = new MailtrapClientFactory("YOUR_API_KEY");
+            var client = mailtrapFactory.CreateClient();
+
+            var accountId = 1000001;
+            var response = await client.Account(accountId).EmailLogs().List(new EmailLogsListFilter());
+            Console.WriteLine(response.TotalCount);
+        - lang: java
+          label: Java
+          source: |
+            import io.mailtrap.config.MailtrapConfig;
+            import io.mailtrap.factory.MailtrapClientFactory;
+
+            var config = new MailtrapConfig.Builder().token("YOUR_API_KEY").build();
+            var client = MailtrapClientFactory.createMailtrapClient(config);
+
+            long accountId = 1000001L;
+            var response = client.sendingApi().emailLogs().list(accountId, null, null);
+            System.out.println(response.getTotalCount());
+        - lang: go
+          label: Go
+          source: |
+            package main
+
+            import (
+            	"context"
+            	"fmt"
+            	"log"
+            	"os"
+
+            	"github.com/mailtrap/mailtrap-go"
+            )
+
+            func main() {
+            	client, err := mailtrap.NewClient(os.Getenv("MAILTRAP_API_TOKEN"))
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	logs, _, err := client.EmailLogs.List(context.Background(), &mailtrap.EmailLogsListOptions{
+            		SentAfter: "2026-01-01T00:00:00Z",
+            		Filters: map[string]mailtrap.LogFilter{
+            			"status": {Operator: "equal", Values: []string{mailtrap.EmailLogStatusDelivered}},
+            		},
+            	})
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	for _, message := range logs.Messages {
+            		fmt.Printf("%s %s -> %s (%s)\n", message.MessageID, message.From, message.To, message.Status)
+            	}
+
+            	// To walk every page instead of one, use the iterator, which follows
+            	// next_page_cursor for you:
+            	//
+            	//	for message, err := range client.EmailLogs.All(context.Background(), nil) {
+            	//		if err != nil {
+            	//			log.Fatal(err)
+            	//		}
+            	//		fmt.Println(message.MessageID)
+            	//	}
+            }
+      parameters:
+        - name: search_after
+          in: query
+          description: Cursor for the next page (message_id UUID from previous response next_page_cursor).
+          schema:
+            type: string
+            format: uuid
+        - name: filters
+          in: query
+          description: |
+            Filter criteria (deep object). Pass as `filters[field][operator]` and `filters[field][value]`.
+            When a filter accepts an array value, use bracket notation: `filters[field][value][]=item1&filters[field][value][]=item2`.
+            Date range: use `filters[sent_after]` and `filters[sent_before]` (ISO 8601 strings).
+            Unknown filters are ignored.
+          style: deepObject
+          explode: true
+          schema:
+            $ref: '#/components/schemas/EmailLogsListFilters'
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EmailLogsListResponse'
+        '400':
+          $ref: '#/components/responses/BAD_REQUEST'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '429':
+          $ref: '#/components/responses/LIMIT_EXCEEDED'
+  /api/email_logs/{sending_message_id}:
+    get:
+      operationId: getEmailLogMessage
+      summary: Get an email log message by ID
+      description: Returns a single message by message UUID. Message must belong to the account and a domain the token can access.
+      tags:
+        - email-logs
+      x-codeSamples:
+        - lang: shell
+          label: 'cURL'
+          source: |
+            curl -X GET 'https://eu.mailtrap.io/api/email_logs/{sending_message_id}' \
+              -H 'Authorization: Bearer YOUR_API_KEY'
+        - lang: javascript
+          label: Node.js
+          source: |
+            import { MailtrapClient } from "mailtrap";
+
+            const accountId = 1000001;
+            const client = new MailtrapClient({ token: "YOUR_API_KEY", accountId });
+
+            const messageId = "a1b2c3d4-5e6f-7a8b-9c0d-1e2f3a4b5c6d";
+            const message = await client.emailLogs.get(messageId);
+            console.log(message.subject);
+        - lang: php
+          label: PHP
+          source: |
+            <?php
+            use Mailtrap\Config;
+            use Mailtrap\Helper\ResponseHelper;
+            use Mailtrap\MailtrapSendingClient;
+
+            $config = new Config($_ENV['MAILTRAP_API_KEY']);
+            $accountId = (int) $_ENV['MAILTRAP_ACCOUNT_ID'];
+            $emailLogs = (new MailtrapSendingClient($config))->emailLogs($accountId);
+
+            $messageId = $_ENV['MAILTRAP_MESSAGE_ID'];
+            $response = $emailLogs->getMessage($messageId);
+            var_dump(ResponseHelper::toArray($response));
+        - lang: python
+          label: Python
+          source: |
+            import mailtrap as mt
+
+            client = mt.MailtrapClient(token="YOUR_API_KEY", account_id=1000001)
+
+            message_id = "a1b2c3d4-5e6f-7a8b-9c0d-1e2f3a4b5c6d"
+            message = client.email_logs_api.email_logs.get_by_id(message_id)
+            print(message.subject)
+        - lang: ruby
+          label: Ruby
+          source: |
+            require 'mailtrap'
+
+            client = Mailtrap::Client.new(api_key: 'YOUR_API_KEY')
+            account_id = 1000001
+            email_logs = Mailtrap::EmailLogsAPI.new(account_id, client)
+
+            message_id = 'a1b2c3d4-5e6f-7a8b-9c0d-1e2f3a4b5c6d'
+            puts email_logs.get(message_id)
+        - lang: csharp
+          label: .NET
+          source: |
+            using Mailtrap;
+
+            using var mailtrapFactory = new MailtrapClientFactory("YOUR_API_KEY");
+            var client = mailtrapFactory.CreateClient();
+
+            var accountId = 1000001;
+            var messageId = "a1b2c3d4-5e6f-7a8b-9c0d-1e2f3a4b5c6d";
+            var message = await client.Account(accountId).EmailLog(messageId).GetDetails();
+            Console.WriteLine(message.Subject);
+        - lang: java
+          label: Java
+          source: |
+            import io.mailtrap.config.MailtrapConfig;
+            import io.mailtrap.factory.MailtrapClientFactory;
+
+            var config = new MailtrapConfig.Builder().token("YOUR_API_KEY").build();
+            var client = MailtrapClientFactory.createMailtrapClient(config);
+
+            long accountId = 1000001L;
+            String messageId = "a1b2c3d4-5e6f-7a8b-9c0d-1e2f3a4b5c6d";
+            var message = client.sendingApi().emailLogs().get(accountId, messageId);
+            System.out.println(message.getSubject());
+        - lang: go
+          label: Go
+          source: |
+            package main
+
+            import (
+            	"context"
+            	"fmt"
+            	"log"
+            	"os"
+
+            	"github.com/mailtrap/mailtrap-go"
+            )
+
+            func main() {
+            	client, err := mailtrap.NewClient(os.Getenv("MAILTRAP_API_TOKEN"))
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	message, _, err := client.EmailLogs.Get(context.Background(), "018dd3e0-1d2f-7a4b-9c8e-3f5a6b7c8d9e")
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	fmt.Printf("%s (%s), %d open(s)\n", message.Subject, message.Status, message.OpensCount)
+            	for _, event := range message.Events {
+            		fmt.Printf("  %s at %s\n", event.EventType, event.CreatedAt)
+            	}
+            }
+      parameters:
+        - $ref: '#/components/parameters/sending_message_id'
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SendingMessage'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '429':
+          $ref: '#/components/responses/LIMIT_EXCEEDED'
+
+  /api/webhooks:
+    post:
+      operationId: createWebhook
+      summary: Create a webhook
+      description: |
+        Create a new webhook for the account. The response includes a
+        `signing_secret` that is used to [verify webhook signatures](https://docs.mailtrap.io/email-api-smtp/advanced/webhooks#webhook-signature-verification).
+      tags:
+        - webhooks
+      x-codeSamples:
+        - lang: shell
+          label: 'cURL'
+          source: |
+            curl -X POST https://eu.mailtrap.io/api/webhooks \
+              -H 'Authorization: Bearer YOUR_API_KEY' \
+              -H 'Content-Type: application/json' \
+              -d '{
+                "webhook": {
+                  "url": "https://example.com/mailtrap/webhooks",
+                  "webhook_type": "email_sending",
+                  "payload_format": "json",
+                  "sending_stream": "transactional",
+                  "event_types": ["delivery", "bounce"],
+                  "domain_id": 435
+                }
+              }'
+        - lang: javascript
+          label: Node.js
+          source: |
+            import { MailtrapClient } from "mailtrap";
+
+            const accountId = 1000001;
+            const client = new MailtrapClient({ token: "YOUR_API_KEY", accountId });
+
+            // The signing secret is returned only on creation — store it securely.
+            const webhook = await client.webhooks.create({
+              url: "https://example.com/mailtrap/webhooks",
+              webhook_type: "email_sending",
+              payload_format: "json",
+              sending_stream: "transactional",
+              event_types: ["delivery", "bounce"],
+            });
+            console.log(webhook);
+        - lang: php
+          label: PHP
+          source: |
+            <?php
+            use Mailtrap\Config;
+            use Mailtrap\DTO\Request\Webhook\CreateWebhook;
+            use Mailtrap\DTO\Request\Webhook\Webhook;
+            use Mailtrap\Helper\ResponseHelper;
+            use Mailtrap\MailtrapSendingClient;
+
+            $config = new Config($_ENV['MAILTRAP_API_KEY']);
+            $accountId = $_ENV['MAILTRAP_ACCOUNT_ID'];
+            $webhooks = (new MailtrapSendingClient($config))->webhooks($accountId);
+
+            $response = $webhooks->createWebhook(new CreateWebhook(
+                url: 'https://example.com/mailtrap/webhooks',
+                webhookType: Webhook::TYPE_EMAIL_SENDING,
+                eventTypes: [Webhook::EVENT_DELIVERY, Webhook::EVENT_BOUNCE],
+                payloadFormat: Webhook::PAYLOAD_FORMAT_JSON,
+                sendingStream: Webhook::SENDING_STREAM_TRANSACTIONAL,
+            ));
+            var_dump(ResponseHelper::toArray($response));
+        - lang: python
+          label: Python
+          source: |
+            import mailtrap as mt
+
+            client = mt.MailtrapClient(token="YOUR_API_KEY", account_id=1000001)
+
+            # The signing_secret is returned only on creation — store it securely.
+            webhook = client.webhooks_api.webhooks.create(
+                mt.CreateWebhookParams(
+                    url="https://example.com/mailtrap/webhooks",
+                    webhook_type="email_sending",
+                    sending_stream="transactional",
+                    event_types=["delivery", "bounce"],
+                )
+            )
+            print(webhook)
+        - lang: ruby
+          label: Ruby
+          source: |
+            require 'mailtrap'
+
+            client = Mailtrap::Client.new(api_key: 'YOUR_API_KEY')
+            account_id = 1000001
+            webhooks = Mailtrap::WebhooksAPI.new(account_id, client)
+
+            # The signing_secret is returned only on creation — store it securely.
+            webhook = webhooks.create(
+              url: 'https://example.com/mailtrap/webhooks',
+              webhook_type: 'email_sending',
+              payload_format: 'json',
+              sending_stream: 'transactional',
+              event_types: %w[delivery bounce]
+            )
+            puts webhook
+        - lang: csharp
+          label: .NET
+          source: |
+            using Mailtrap;
+            using Mailtrap.Core.Models;
+            using Mailtrap.Webhooks.Models;
+            using Mailtrap.Webhooks.Requests;
+
+            using var mailtrapFactory = new MailtrapClientFactory("YOUR_API_KEY");
+            var client = mailtrapFactory.CreateClient();
+
+            var accountId = 1000001;
+            var request = new CreateWebhookRequest
+            {
+                Url = new Uri("https://example.com/mailtrap/webhooks"),
+                WebhookType = WebhookType.EmailSending,
+                Active = true,
+                PayloadFormat = WebhookPayloadFormat.Json,
+                SendingStream = SendingStream.Transactional,
+            };
+            request.EventTypes.Add(WebhookEventType.Delivery);
+            request.EventTypes.Add(WebhookEventType.Bounce);
+
+            // The signing secret is returned only on creation — store it securely.
+            var webhook = await client.Account(accountId).Webhooks().Create(request);
+            Console.WriteLine(webhook.SigningSecret);
+        - lang: java
+          label: Java
+          source: |
+            import io.mailtrap.config.MailtrapConfig;
+            import io.mailtrap.factory.MailtrapClientFactory;
+            import io.mailtrap.model.SendingStream;
+            import io.mailtrap.model.WebhookEventType;
+            import io.mailtrap.model.WebhookPayloadFormat;
+            import io.mailtrap.model.WebhookType;
+            import io.mailtrap.model.request.webhooks.CreateWebhookRequest;
+            import io.mailtrap.model.request.webhooks.WebhookInput;
+            import java.util.List;
+
+            var config = new MailtrapConfig.Builder().token("YOUR_API_KEY").build();
+            var client = MailtrapClientFactory.createMailtrapClient(config);
+
+            long accountId = 1000001L;
+            var request = new CreateWebhookRequest(
+                WebhookInput.builder()
+                    .url("https://example.com/mailtrap/webhooks")
+                    .webhookType(WebhookType.EMAIL_SENDING)
+                    .payloadFormat(WebhookPayloadFormat.JSON)
+                    .sendingStream(SendingStream.TRANSACTIONAL)
+                    .eventTypes(List.of(WebhookEventType.DELIVERY, WebhookEventType.BOUNCE))
+                    .build());
+
+            // signing_secret is returned only on creation — store it securely.
+            var webhook = client.generalApi().webhooks().createWebhook(accountId, request);
+            System.out.println(webhook);
+        - lang: go
+          label: Go
+          source: |
+            package main
+
+            import (
+            	"context"
+            	"fmt"
+            	"log"
+            	"os"
+
+            	"github.com/mailtrap/mailtrap-go"
+            )
+
+            func main() {
+            	client, err := mailtrap.NewClient(os.Getenv("MAILTRAP_API_TOKEN"))
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	// The API requires sending_stream for email_sending webhooks.
+            	webhook, _, err := client.Webhooks.Create(context.Background(), &mailtrap.CreateWebhookRequest{
+            		URL:           "https://example.com/mailtrap/webhook",
+            		WebhookType:   mailtrap.WebhookTypeEmailSending,
+            		SendingStream: mailtrap.SendingStreamTransactional,
+            		PayloadFormat: mailtrap.PayloadFormatJSON,
+            		DomainID:      mailtrap.Ptr(int64(1000001)),
+            		EventTypes:    []string{mailtrap.WebhookEventDelivery, mailtrap.WebhookEventBounce, mailtrap.WebhookEventOpen},
+            		Active:        mailtrap.Ptr(true),
+            	})
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	// The signing secret is returned only here: store it to verify payloads.
+            	fmt.Printf("created webhook %d, signing secret %s\n", webhook.ID, webhook.SigningSecret)
+            }
+        - lang: hcl
+          label: Terraform
+          source: |
+            # terraform apply creates the webhook: POST /api/webhooks
+            # Provider docs: https://registry.terraform.io/providers/mailtrap/mailtrap/latest/docs
+            terraform {
+              required_providers {
+                mailtrap = {
+                  source = "mailtrap/mailtrap"
+                }
+              }
+            }
+
+            # The token is read from the MAILTRAP_API_TOKEN environment variable.
+            provider "mailtrap" {}
+
+            # The API requires sending_stream for email_sending webhooks.
+            resource "mailtrap_webhook" "delivery" {
+              url            = "https://example.com/mailtrap/webhook"
+              webhook_type   = "email_sending"
+              sending_stream = "transactional"
+              domain_id      = 1000001
+              payload_format = "json"
+              event_types    = ["delivery", "bounce", "open"]
+              active         = true
+            }
+
+            # signing_secret is returned only on create, and is unavailable after an import.
+            output "signing_secret" {
+              value     = mailtrap_webhook.delivery.signing_secret
+              sensitive = true
+            }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - webhook
+              properties:
+                webhook:
+                  type: object
+                  required:
+                    - url
+                    - webhook_type
+                  properties:
+                    url:
+                      type: string
+                      format: uri
+                      description: The URL that will receive webhook payloads.
+                      example: 'https://example.com/mailtrap/webhooks'
+                    webhook_type:
+                      type: string
+                      description: |
+                        The type of webhook. Determines which events the webhook can subscribe to.
+                      enum:
+                        - email_sending
+                        - campaigns
+                        - audit_log
+                        - inbound_receiving
+                      example: email_sending
+                    active:
+                      type: boolean
+                      description: Whether the webhook is active. Defaults to `true`.
+                      default: true
+                      example: true
+                    payload_format:
+                      type: string
+                      description: Format of the webhook payload.
+                      enum:
+                        - json
+                        - jsonlines
+                      default: json
+                      example: json
+                    sending_stream:
+                      type: string
+                      description: |
+                        Sending stream the webhook subscribes to. Required for `email_sending` webhook type.
+                      enum:
+                        - transactional
+                        - bulk
+                      example: transactional
+                    event_types:
+                      type: array
+                      description: |
+                        List of event types to subscribe to. Required for `email_sending` and `campaigns` webhook types.
+                      items:
+                        type: string
+                        enum:
+                          - delivery
+                          - soft_bounce
+                          - bounce
+                          - suspension
+                          - unsubscribe
+                          - open
+                          - spam_complaint
+                          - click
+                          - reject
+                      example:
+                        - delivery
+                        - bounce
+                    domain_id:
+                      type: integer
+                      description: |
+                        Scopes the webhook to a specific domain ID, or all
+                        domains if omitted. Applicable only for `email_sending`
+                        and `campaigns` webhooks.
+                      example: 435
+                    inbound_inbox_id:
+                      type: integer
+                      description: |
+                        ID of the inbound inbox the webhook is linked to.
+                        Optional for `inbound_receiving` webhooks — omit to
+                        apply the webhook to all inboxes in the account. Not
+                        applicable to any other webhook type.
+                      example: 1
+      responses:
+        '200':
+          description: Webhook created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WebhookCreateResponse'
+              example:
+                data:
+                  id: 1
+                  url: 'https://example.com/mailtrap/webhooks'
+                  active: true
+                  webhook_type: email_sending
+                  payload_format: json
+                  sending_stream: transactional
+                  domain_id: 435
+                  event_types:
+                    - delivery
+                    - bounce
+                  signing_secret: a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+
+    get:
+      operationId: listWebhooks
+      summary: List webhooks
+      description: Returns all webhooks for the account.
+      tags:
+        - webhooks
+      x-codeSamples:
+        - lang: shell
+          label: 'cURL'
+          source: |
+            curl -X GET https://eu.mailtrap.io/api/webhooks \
+              -H 'Authorization: Bearer YOUR_API_KEY'
+        - lang: javascript
+          label: Node.js
+          source: |
+            import { MailtrapClient } from "mailtrap";
+
+            const accountId = 1000001;
+            const client = new MailtrapClient({ token: "YOUR_API_KEY", accountId });
+
+            const webhooks = await client.webhooks.getList();
+            console.log(webhooks);
+        - lang: php
+          label: PHP
+          source: |
+            <?php
+            use Mailtrap\Config;
+            use Mailtrap\Helper\ResponseHelper;
+            use Mailtrap\MailtrapSendingClient;
+
+            $config = new Config($_ENV['MAILTRAP_API_KEY']);
+            $accountId = $_ENV['MAILTRAP_ACCOUNT_ID'];
+            $webhooks = (new MailtrapSendingClient($config))->webhooks($accountId);
+
+            $response = $webhooks->getWebhooks();
+            var_dump(ResponseHelper::toArray($response));
+        - lang: python
+          label: Python
+          source: |
+            import mailtrap as mt
+
+            client = mt.MailtrapClient(token="YOUR_API_KEY", account_id=1000001)
+
+            webhooks = client.webhooks_api.webhooks.get_list()
+            print(webhooks)
+        - lang: ruby
+          label: Ruby
+          source: |
+            require 'mailtrap'
+
+            client = Mailtrap::Client.new(api_key: 'YOUR_API_KEY')
+            account_id = 1000001
+            webhooks = Mailtrap::WebhooksAPI.new(account_id, client)
+
+            puts webhooks.list
+        - lang: csharp
+          label: .NET
+          source: |
+            using Mailtrap;
+
+            using var mailtrapFactory = new MailtrapClientFactory("YOUR_API_KEY");
+            var client = mailtrapFactory.CreateClient();
+
+            var accountId = 1000001;
+            var webhooks = await client.Account(accountId).Webhooks().GetAll();
+            Console.WriteLine(webhooks.Count);
+        - lang: java
+          label: Java
+          source: |
+            import io.mailtrap.config.MailtrapConfig;
+            import io.mailtrap.factory.MailtrapClientFactory;
+
+            var config = new MailtrapConfig.Builder().token("YOUR_API_KEY").build();
+            var client = MailtrapClientFactory.createMailtrapClient(config);
+
+            long accountId = 1000001L;
+            var webhooks = client.generalApi().webhooks().getAllWebhooks(accountId);
+            System.out.println(webhooks);
+        - lang: go
+          label: Go
+          source: |
+            package main
+
+            import (
+            	"context"
+            	"fmt"
+            	"log"
+            	"os"
+
+            	"github.com/mailtrap/mailtrap-go"
+            )
+
+            func main() {
+            	client, err := mailtrap.NewClient(os.Getenv("MAILTRAP_API_TOKEN"))
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	webhooks, _, err := client.Webhooks.List(context.Background())
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	for _, webhook := range webhooks {
+            		fmt.Printf("%d %s (%s, active: %t)\n", webhook.ID, webhook.URL, webhook.WebhookType, webhook.Active)
+            	}
+            }
+      responses:
+        '200':
+          description: List of webhooks
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Webhook'
+              example:
+                data:
+                  - id: 1
+                    url: 'https://example.com/mailtrap/webhooks'
+                    active: true
+                    webhook_type: email_sending
+                    payload_format: json
+                    sending_stream: transactional
+                    domain_id: 435
+                    event_types:
+                      - delivery
+                      - bounce
+                  - id: 2
+                    url: 'https://example.com/mailtrap/webhooks'
+                    active: true
+                    webhook_type: audit_log
+                    payload_format: json
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /api/webhooks/{webhook_id}:
+    get:
+      operationId: getWebhook
+      summary: Get a webhook
+      description: Returns a single webhook by ID.
+      tags:
+        - webhooks
+      x-codeSamples:
+        - lang: shell
+          label: 'cURL'
+          source: |
+            curl -X GET https://eu.mailtrap.io/api/webhooks/{webhook_id} \
+              -H 'Authorization: Bearer YOUR_API_KEY'
+        - lang: javascript
+          label: Node.js
+          source: |
+            import { MailtrapClient } from "mailtrap";
+
+            const accountId = 1000001;
+            const client = new MailtrapClient({ token: "YOUR_API_KEY", accountId });
+
+            const webhookId = 123;
+            const webhook = await client.webhooks.get(webhookId);
+            console.log(webhook);
+        - lang: php
+          label: PHP
+          source: |
+            <?php
+            use Mailtrap\Config;
+            use Mailtrap\Helper\ResponseHelper;
+            use Mailtrap\MailtrapSendingClient;
+
+            $config = new Config($_ENV['MAILTRAP_API_KEY']);
+            $accountId = $_ENV['MAILTRAP_ACCOUNT_ID'];
+            $webhooks = (new MailtrapSendingClient($config))->webhooks($accountId);
+
+            $webhookId = $_ENV['MAILTRAP_WEBHOOK_ID'];
+            $response = $webhooks->getWebhook($webhookId);
+            var_dump(ResponseHelper::toArray($response));
+        - lang: python
+          label: Python
+          source: |
+            import mailtrap as mt
+
+            client = mt.MailtrapClient(token="YOUR_API_KEY", account_id=1000001)
+
+            webhook_id = 123
+            webhook = client.webhooks_api.webhooks.get_by_id(webhook_id)
+            print(webhook)
+        - lang: ruby
+          label: Ruby
+          source: |
+            require 'mailtrap'
+
+            client = Mailtrap::Client.new(api_key: 'YOUR_API_KEY')
+            account_id = 1000001
+            webhooks = Mailtrap::WebhooksAPI.new(account_id, client)
+
+            webhook_id = 123
+            puts webhooks.get(webhook_id)
+        - lang: csharp
+          label: .NET
+          source: |
+            using Mailtrap;
+
+            using var mailtrapFactory = new MailtrapClientFactory("YOUR_API_KEY");
+            var client = mailtrapFactory.CreateClient();
+
+            var accountId = 1000001;
+            var webhookId = 123;
+            var webhook = await client.Account(accountId).Webhook(webhookId).GetDetails();
+            Console.WriteLine(webhook.Url);
+        - lang: java
+          label: Java
+          source: |
+            import io.mailtrap.config.MailtrapConfig;
+            import io.mailtrap.factory.MailtrapClientFactory;
+
+            var config = new MailtrapConfig.Builder().token("YOUR_API_KEY").build();
+            var client = MailtrapClientFactory.createMailtrapClient(config);
+
+            long accountId = 1000001L;
+            long webhookId = 123L;
+            var webhook = client.generalApi().webhooks().getWebhook(accountId, webhookId);
+            System.out.println(webhook);
+        - lang: go
+          label: Go
+          source: |
+            package main
+
+            import (
+            	"context"
+            	"fmt"
+            	"log"
+            	"os"
+
+            	"github.com/mailtrap/mailtrap-go"
+            )
+
+            func main() {
+            	client, err := mailtrap.NewClient(os.Getenv("MAILTRAP_API_TOKEN"))
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	webhook, _, err := client.Webhooks.Get(context.Background(), 1000001)
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	fmt.Printf("%s (%s): %v\n", webhook.URL, webhook.PayloadFormat, webhook.EventTypes)
+            }
+      parameters:
+        - $ref: '#/components/parameters/webhook_id'
+      responses:
+        '200':
+          description: Webhook details
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Webhook'
+              example:
+                data:
+                  id: 1
+                  url: 'https://example.com/mailtrap/webhooks'
+                  active: true
+                  webhook_type: email_sending
+                  payload_format: json
+                  sending_stream: transactional
+                  domain_id: 435
+                  event_types:
+                    - delivery
+                    - bounce
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    patch:
+      operationId: updateWebhook
+      summary: Update a webhook
+      description: |
+        Update an existing webhook.
+      tags:
+        - webhooks
+      x-codeSamples:
+        - lang: shell
+          label: 'cURL'
+          source: |
+            curl -X PATCH https://eu.mailtrap.io/api/webhooks/{webhook_id} \
+              -H 'Authorization: Bearer YOUR_API_KEY' \
+              -H 'Content-Type: application/json' \
+              -d '{
+                "webhook": {
+                  "active": false
+                }
+              }'
+        - lang: javascript
+          label: Node.js
+          source: |
+            import { MailtrapClient } from "mailtrap";
+
+            const accountId = 1000001;
+            const client = new MailtrapClient({ token: "YOUR_API_KEY", accountId });
+
+            const webhookId = 123;
+            const webhook = await client.webhooks.update(webhookId, { active: false });
+            console.log(webhook);
+        - lang: php
+          label: PHP
+          source: |
+            <?php
+            use Mailtrap\Config;
+            use Mailtrap\DTO\Request\Webhook\UpdateWebhook;
+            use Mailtrap\Helper\ResponseHelper;
+            use Mailtrap\MailtrapSendingClient;
+
+            $config = new Config($_ENV['MAILTRAP_API_KEY']);
+            $accountId = $_ENV['MAILTRAP_ACCOUNT_ID'];
+            $webhooks = (new MailtrapSendingClient($config))->webhooks($accountId);
+
+            $webhookId = $_ENV['MAILTRAP_WEBHOOK_ID'];
+            $response = $webhooks->updateWebhook($webhookId, new UpdateWebhook(active: false));
+            var_dump(ResponseHelper::toArray($response));
+        - lang: python
+          label: Python
+          source: |
+            import mailtrap as mt
+
+            client = mt.MailtrapClient(token="YOUR_API_KEY", account_id=1000001)
+
+            webhook_id = 123
+            webhook = client.webhooks_api.webhooks.update(
+                webhook_id, mt.UpdateWebhookParams(active=False)
+            )
+            print(webhook)
+        - lang: ruby
+          label: Ruby
+          source: |
+            require 'mailtrap'
+
+            client = Mailtrap::Client.new(api_key: 'YOUR_API_KEY')
+            account_id = 1000001
+            webhooks = Mailtrap::WebhooksAPI.new(account_id, client)
+
+            webhook_id = 123
+            puts webhooks.update(webhook_id, active: false)
+        - lang: csharp
+          label: .NET
+          source: |
+            using Mailtrap;
+            using Mailtrap.Webhooks.Requests;
+
+            using var mailtrapFactory = new MailtrapClientFactory("YOUR_API_KEY");
+            var client = mailtrapFactory.CreateClient();
+
+            var accountId = 1000001;
+            var webhookId = 123;
+            var request = new UpdateWebhookRequest { Active = false };
+            var webhook = await client.Account(accountId).Webhook(webhookId).Update(request);
+            Console.WriteLine(webhook.Active);
+        - lang: java
+          label: Java
+          source: |
+            import io.mailtrap.config.MailtrapConfig;
+            import io.mailtrap.factory.MailtrapClientFactory;
+            import io.mailtrap.model.request.webhooks.UpdateWebhookRequest;
+            import io.mailtrap.model.request.webhooks.WebhookInput;
+
+            var config = new MailtrapConfig.Builder().token("YOUR_API_KEY").build();
+            var client = MailtrapClientFactory.createMailtrapClient(config);
+
+            long accountId = 1000001L;
+            long webhookId = 123L;
+            var request = new UpdateWebhookRequest(WebhookInput.builder().active(false).build());
+            var webhook = client.generalApi().webhooks().updateWebhook(accountId, webhookId, request);
+            System.out.println(webhook);
+        - lang: go
+          label: Go
+          source: |
+            package main
+
+            import (
+            	"context"
+            	"fmt"
+            	"log"
+            	"os"
+
+            	"github.com/mailtrap/mailtrap-go"
+            )
+
+            func main() {
+            	client, err := mailtrap.NewClient(os.Getenv("MAILTRAP_API_TOKEN"))
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	// Only url, active, payload_format and event_types are mutable.
+            	webhook, _, err := client.Webhooks.Update(context.Background(), 1000001, &mailtrap.UpdateWebhookRequest{
+            		URL:           "https://example.com/mailtrap/webhook/v2",
+            		Active:        mailtrap.Ptr(false),
+            		PayloadFormat: mailtrap.PayloadFormatJSONLines,
+            		EventTypes:    []string{mailtrap.WebhookEventDelivery, mailtrap.WebhookEventSpamComplaint},
+            	})
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	fmt.Printf("updated webhook %d: %s (active: %t)\n", webhook.ID, webhook.URL, webhook.Active)
+            }
+      parameters:
+        - $ref: '#/components/parameters/webhook_id'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - webhook
+              properties:
+                webhook:
+                  type: object
+                  properties:
+                    url:
+                      type: string
+                      format: uri
+                      description: The URL that will receive webhook payloads.
+                      example: 'https://example.com/mailtrap/webhooks'
+                    active:
+                      type: boolean
+                      description: Whether the webhook is active.
+                      example: false
+                    payload_format:
+                      type: string
+                      description: Format of the webhook payload.
+                      enum:
+                        - json
+                        - jsonlines
+                      example: json
+                    event_types:
+                      type: array
+                      description: List of event types to subscribe to. Applicable only for `email_sending` and `campaigns` webhooks.
+                      items:
+                        type: string
+                        enum:
+                          - delivery
+                          - soft_bounce
+                          - bounce
+                          - suspension
+                          - unsubscribe
+                          - open
+                          - spam_complaint
+                          - click
+                          - reject
+                      example:
+                        - delivery
+                        - bounce
+                        - unsubscribe
+                    inbound_inbox_id:
+                      type: integer
+                      description: |
+                        ID of the inbound inbox the webhook is linked to.
+                        Applicable only for `inbound_receiving` webhooks.
+                      example: 1
+      responses:
+        '200':
+          description: Webhook updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Webhook'
+              example:
+                data:
+                  id: 1
+                  url: 'https://example.com/mailtrap/webhooks'
+                  active: false
+                  webhook_type: email_sending
+                  payload_format: json
+                  sending_stream: transactional
+                  domain_id: 435
+                  event_types:
+                    - delivery
+                    - bounce
+                    - unsubscribe
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+
+    delete:
+      operationId: deleteWebhook
+      summary: Delete a webhook
+      description: Permanently delete a webhook.
+      tags:
+        - webhooks
+      x-codeSamples:
+        - lang: shell
+          label: 'cURL'
+          source: |
+            curl -X DELETE https://eu.mailtrap.io/api/webhooks/{webhook_id} \
+              -H 'Authorization: Bearer YOUR_API_KEY'
+        - lang: javascript
+          label: Node.js
+          source: |
+            import { MailtrapClient } from "mailtrap";
+
+            const accountId = 1000001;
+            const client = new MailtrapClient({ token: "YOUR_API_KEY", accountId });
+
+            const webhookId = 123;
+            await client.webhooks.delete(webhookId);
+        - lang: php
+          label: PHP
+          source: |
+            <?php
+            use Mailtrap\Config;
+            use Mailtrap\Helper\ResponseHelper;
+            use Mailtrap\MailtrapSendingClient;
+
+            $config = new Config($_ENV['MAILTRAP_API_KEY']);
+            $accountId = $_ENV['MAILTRAP_ACCOUNT_ID'];
+            $webhooks = (new MailtrapSendingClient($config))->webhooks($accountId);
+
+            $webhookId = $_ENV['MAILTRAP_WEBHOOK_ID'];
+            $response = $webhooks->deleteWebhook($webhookId);
+            var_dump(ResponseHelper::toArray($response));
+        - lang: python
+          label: Python
+          source: |
+            import mailtrap as mt
+
+            client = mt.MailtrapClient(token="YOUR_API_KEY", account_id=1000001)
+
+            webhook_id = 123
+            client.webhooks_api.webhooks.delete(webhook_id)
+        - lang: ruby
+          label: Ruby
+          source: |
+            require 'mailtrap'
+
+            client = Mailtrap::Client.new(api_key: 'YOUR_API_KEY')
+            account_id = 1000001
+            webhooks = Mailtrap::WebhooksAPI.new(account_id, client)
+
+            webhook_id = 123
+            webhooks.delete(webhook_id)
+        - lang: csharp
+          label: .NET
+          source: |
+            using Mailtrap;
+
+            using var mailtrapFactory = new MailtrapClientFactory("YOUR_API_KEY");
+            var client = mailtrapFactory.CreateClient();
+
+            var accountId = 1000001;
+            var webhookId = 123;
+            await client.Account(accountId).Webhook(webhookId).Delete();
+        - lang: java
+          label: Java
+          source: |
+            import io.mailtrap.config.MailtrapConfig;
+            import io.mailtrap.factory.MailtrapClientFactory;
+
+            var config = new MailtrapConfig.Builder().token("YOUR_API_KEY").build();
+            var client = MailtrapClientFactory.createMailtrapClient(config);
+
+            long accountId = 1000001L;
+            long webhookId = 123L;
+            client.generalApi().webhooks().deleteWebhook(accountId, webhookId);
+        - lang: go
+          label: Go
+          source: |
+            package main
+
+            import (
+            	"context"
+            	"fmt"
+            	"log"
+            	"os"
+
+            	"github.com/mailtrap/mailtrap-go"
+            )
+
+            func main() {
+            	client, err := mailtrap.NewClient(os.Getenv("MAILTRAP_API_TOKEN"))
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	// Delete returns the webhook it removed.
+            	webhook, _, err := client.Webhooks.Delete(context.Background(), 1000001)
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	fmt.Printf("deleted webhook %d (%s)\n", webhook.ID, webhook.URL)
+            }
+      parameters:
+        - $ref: '#/components/parameters/webhook_id'
+      responses:
+        '200':
+          description: Webhook deleted successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Webhook'
+              example:
+                data:
+                  id: 1
+                  url: 'https://example.com/mailtrap/webhooks'
+                  active: true
+                  webhook_type: audit_log
+                  payload_format: json
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+components:
+  securitySchemes:
+    HeaderAuth:
+      type: apiKey
+      description: API token in Api-Token header
+      in: header
+      name: Api-Token
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: Bearer token authentication
+
+  parameters:
+    domain_id:
+      name: domain_id
+      in: path
+      required: true
+      description: Domain ID
+      schema:
+        type: integer
+        example: 1
+
+    suppression_id:
+      name: suppression_id
+      in: path
+      required: true
+      description: The suppression UUID
+      schema:
+        type: string
+        format: uuid
+        example: 64d71bf3-1276-417b-86e1-8e66f138acfe
+
+    tracking_opt_out_id:
+      name: tracking_opt_out_id
+      in: path
+      required: true
+      description: The tracking opt-out UUID
+      schema:
+        type: string
+        format: uuid
+        example: 64d71bf3-1276-417b-86e1-8e66f138acfe
+
+    sending_message_id:
+      name: sending_message_id
+      in: path
+      required: true
+      description: Message UUID
+      schema:
+        type: string
+        format: uuid
+
+    webhook_id:
+      name: webhook_id
+      in: path
+      required: true
+      description: Webhook ID
+      schema:
+        type: integer
+        example: 1
+
+    StartDateQueryFilter:
+      name: start_date
+      description: Start date for which to include the results.
+      in: query
+      required: true
+      schema:
+        type: string
+        format: date
+        example: '2025-01-01'
+    EndDateQueryFilter:
+      name: end_date
+      description: End date for which to include the results.
+      in: query
+      required: true
+      schema:
+        type: string
+        format: date
+        example: '2025-12-31'
+    SendingDomainIDsQueryFilter:
+      name: 'sending_domain_ids[]'
+      description: |-
+        IDs of the sending domains for which to include the results, as returned by the Sending
+        Domains API. If not provided, results for every sending domain the API token can access are
+        included. An ID outside those returns `400`.
+      in: query
+      schema:
+        type: array
+        items:
+          type: integer
+          format: int64
+        example:
+          - 3938
+          - 3939
+    SendingStreamsQueryFilter:
+      name: 'sending_streams[]'
+      description: |-
+        Sending streams for which to include the results. If not provided, results for both streams
+        are included. Campaign and automation traffic is in neither stream; it is reported by
+        `GET /api/marketing/stats`.
+      in: query
+      schema:
+        type: array
+        items:
+          type: string
+          enum:
+            - transactional
+            - bulk
+        example:
+          - transactional
+          - bulk
+    CategoriesQueryFilter:
+      name: 'categories[]'
+      description: 'Categories for which to include the results. If not provided, results for all categories will be included.'
+      in: query
+      schema:
+        type: array
+        items:
+          type: string
+        example:
+          - Welcome Email
+          - Password Reset
+    ESPsQueryFilter:
+      name: 'email_service_providers[]'
+      description: 'Email service providers for which to include the results. If not provided, results for all ESPs will be included.'
+      in: query
+      schema:
+        type: array
+        items:
+          type: string
+          enum:
+            - Google
+            - Yahoo
+            - Outlook
+            - Hey
+            - Google Workspace
+            - Zoho Email
+            - ProtonMail
+            - Yandex
+            - iCloud
+            - Office 365
+            - Amazon SES (Simple Email Service)
+            - Proofpoint Email Protection
+            - Mimecast Email Protection
+            - GMX.net
+            - Rackspace
+            - OVH hosted
+            - Linode hosted
+            - GoDaddy
+            - Symantec Email Protection
+            - Barracuda Email Protection
+            - Cisco Email Protection
+            - FastMail
+            - Naver
+            - Seznam
+            - Comcast
+            - Spectrum
+        example:
+          - Google
+          - Yahoo
+
+  schemas:
+    Domain:
+      type: object
+      properties:
+        id:
+          type: integer
+        domain_name:
+          type: string
+        demo:
+          type: boolean
+        compliance_status:
+          type: string
+          description: |
+            Indicates the compliance verification status of the domain.
+            The domain must reach `compliant` status before you can send emails
+            in production.
+
+            - `demo` - A demo domain provided by Mailtrap. Can only send emails to the account owner.
+            - `demo_exhausted` - A demo domain that has used up its sending allowance. Cannot send emails.
+            - `unverified_dns` - Domain DNS records have not been verified yet. Open your domain on the [Domains](https://eu.mailtrap.io/domains) page and follow the [Sending Domain Setup](https://docs.mailtrap.io/email-api-smtp/setup/sending-domain) guide.
+            - `missing_company_info` - Account is missing required company information. Go to [Company Information](https://eu.mailtrap.io/settings/account?current_tab=company_information) and fill in the required details.
+            - `under_review` - Domain is undergoing automatic compliance review. No action needed — typically completes within 2 minutes.
+            - `awaiting_questionnaire` - Automatic review required additional information. Open your domain on the [Domains](https://eu.mailtrap.io/domains) page and fill in the compliance questionnaire.
+            - `awaiting_card_verification` - Compliance questionnaire was submitted but credit card identity verification is still needed. Open your domain on the [Domains](https://eu.mailtrap.io/domains) page and enter card details. The charged amount is refunded immediately and the card is not stored.
+            - `non_compliant` - Domain did not pass compliance checks. Sending is not allowed. Contact [Mailtrap Support](mailto:support@mailtrap.io) for details and next steps.
+            - `compliant` - Domain has passed all compliance checks and is ready to send emails.
+            - `suspended` - Domain sending has been suspended. Contact [Mailtrap Support](mailto:support@mailtrap.io) to resolve the issue.
+          enum:
+            - demo
+            - demo_exhausted
+            - unverified_dns
+            - missing_company_info
+            - under_review
+            - awaiting_questionnaire
+            - awaiting_card_verification
+            - non_compliant
+            - compliant
+            - suspended
+        dns_verified:
+          type: boolean
+        dns_verified_at:
+          type:
+            - string
+            - 'null'
+          example: '2024-12-26T09:40:44.161Z'
+        dns_records:
+          type: array
+          items:
+            type: object
+            properties:
+              key:
+                type: string
+              domain:
+                type: string
+              name:
+                type: string
+              status:
+                type: string
+                enum:
+                  - pass
+                  - fail
+                  - unchecked
+                  - missing
+                  - softfail
+                  - network_error
+              type:
+                type: string
+              value:
+                type: string
+        open_tracking_enabled:
+          type: boolean
+        click_tracking_enabled:
+          type: boolean
+        tracking_opt_out_enabled:
+          type: boolean
+          description: |
+            When enabled, recipients can opt out of open and click tracking via a link in tracked emails.
+            Requires open or click tracking to be enabled.
+        auto_unsubscribe_link_enabled:
+          type: boolean
+        custom_domain_tracking_enabled:
+          type: boolean
+        health_alerts_enabled:
+          type: boolean
+        critical_alerts_enabled:
+          type: boolean
+        alert_recipient_email:
+          type:
+            - string
+            - 'null'
+        inbound_enabled:
+          type: boolean
+          description: |
+            Whether inbound email is enabled for this domain. When enabled, an
+            `MX` record (`key: inbound_mx`) is added to `dns_records` for inbound
+            mail; see `inbound_verified`.
+        inbound_verified:
+          type: boolean
+          description: |
+            Whether the domain's inbound MX records have been verified. Inbound
+            mail is only accepted once this is `true`.
+        permissions:
+          type: object
+          properties:
+            can_read:
+              type: boolean
+            can_update:
+              type: boolean
+            can_destroy:
+              type: boolean
+      example:
+        id: 435
+        domain_name: mailtrap.io
+        demo: false
+        compliance_status: compliant
+        dns_verified: true
+        dns_verified_at: '2024-12-26T09:40:44.161Z'
+        dns_records:
+          - key: verification
+            domain: ve6wza2rbpe60x7z.mailtrap.io
+            type: CNAME
+            value: smtp.mailtrap.live
+            status: pass
+            name: ve6wza2rbpe60x7z
+          - key: dkim1
+            domain: rwmt1._domainkey.mailtrap.io
+            type: CNAME
+            value: rwmt1.dkim.smtp.mailtrap.live
+            status: pass
+            name: rwmt1._domainkey
+          - key: dkim2
+            domain: rwmt2._domainkey.mailtrap.io
+            type: CNAME
+            value: rwmt2.dkim.smtp.mailtrap.live
+            status: pass
+            name: rwmt2._domainkey
+          - key: dmarc
+            domain: _dmarc.mailtrap.io
+            type: TXT
+            value: 'v=DMARC1; p=none; rua=mailto:dmarc@smtp.mailtrap.live; ruf=mailto:dmarc@smtp.mailtrap.live; rf=afrf; pct=100'
+            status: pass
+            name: _dmarc
+          - key: link_verification
+            domain: mt-link.mailtrap.io
+            type: CNAME
+            value: t.mailtrap.live
+            status: pass
+            name: mt-link
+          - key: inbound_mx
+            domain: mailtrap.io
+            type: MX
+            value: inbound-mailtrap.io
+            status: pass
+            name: '@'
+        open_tracking_enabled: true
+        click_tracking_enabled: true
+        tracking_opt_out_enabled: false
+        auto_unsubscribe_link_enabled: true
+        custom_domain_tracking_enabled: true
+        health_alerts_enabled: true
+        critical_alerts_enabled: true
+        alert_recipient_email: john.doe@mailtrap.io
+        inbound_enabled: true
+        inbound_verified: true
+        permissions:
+          can_read: true
+          can_update: true
+          can_destroy: true
+
+    UpdateDomainRequest:
+      type: object
+      properties:
+        open_tracking_enabled:
+          type: boolean
+          description: Enable open tracking for emails sent from this domain
+        click_tracking_enabled:
+          type: boolean
+          description: Enable click tracking for links in emails sent from this domain
+        tracking_opt_out_enabled:
+          type: boolean
+          description: |
+            Enable the tracking opt-out link in tracked emails sent from this domain.
+            Requires open or click tracking to be enabled.
+        auto_unsubscribe_link_enabled:
+          type: boolean
+          description: Automatically add an unsubscribe link to emails sent from this domain
+        inbound_enabled:
+          type: boolean
+          description: |
+            Enable inbound email for this domain so it can be attached to an
+            inbound inbox as a catch-all. The domain's inbound MX records must
+            be verified before inbound mail is accepted (see `inbound_verified`).
+
+    CompanyInfo:
+      type: object
+      properties:
+        name:
+          type:
+            - string
+            - 'null'
+          description: Company or individual name
+        address:
+          type:
+            - string
+            - 'null'
+          description: Street address
+        city:
+          type:
+            - string
+            - 'null'
+          description: City
+        country:
+          type:
+            - string
+            - 'null'
+          description: Country
+        phone:
+          type:
+            - string
+            - 'null'
+          description: Phone number
+        zip_code:
+          type:
+            - string
+            - 'null'
+          description: ZIP or postal code
+        privacy_policy_url:
+          type:
+            - string
+            - 'null'
+          format: uri
+          description: URL to the privacy policy page
+        terms_of_service_url:
+          type:
+            - string
+            - 'null'
+          format: uri
+          description: URL to the terms of service page
+        website_url:
+          type:
+            - string
+            - 'null'
+          format: uri
+          description: Company website URL or LinkedIn / personal website
+        info_level:
+          type: string
+          enum:
+            - business
+            - individual
+          description: Whether the sender is a business or individual
+      example:
+        name: Mailtrap
+        address: 123 Main St
+        city: San Francisco
+        country: US
+        phone: '+1-555-0100'
+        zip_code: '94105'
+        privacy_policy_url: 'https://mailtrap.io/privacy'
+        terms_of_service_url: 'https://mailtrap.io/terms'
+        website_url: 'https://eu.mailtrap.io'
+        info_level: business
+
+    CompanyInfoRequest:
+      type: object
+      required:
+        - name
+        - address
+        - city
+        - country
+        - zip_code
+        - website_url
+      properties:
+        name:
+          type: string
+          description: Company or individual name
+          example: Mailtrap
+        address:
+          type: string
+          description: Street address
+          example: 123 Main St
+        city:
+          type: string
+          description: City
+          example: San Francisco
+        country:
+          type: string
+          description: Country
+          example: US
+        phone:
+          type: string
+          description: Phone number
+          example: '+1-555-0100'
+        zip_code:
+          type: string
+          description: ZIP or postal code
+          example: '94105'
+        privacy_policy_url:
+          type: string
+          format: uri
+          description: URL to the privacy policy page
+          example: 'https://mailtrap.io/privacy'
+        terms_of_service_url:
+          type: string
+          format: uri
+          description: URL to the terms of service page
+          example: 'https://mailtrap.io/terms'
+        website_url:
+          type: string
+          format: uri
+          description: Company website URL
+          example: 'https://eu.mailtrap.io'
+        info_level:
+          type: string
+          enum:
+            - business
+            - individual
+          description: Whether the sender is a business or individual
+          example: business
+
+    CompanyInfoUpdateRequest:
+      type: object
+      description: |
+        All fields are optional. Only the fields provided in the request will be updated.
+      properties:
+        name:
+          type: string
+          description: Company or individual name
+          example: Mailtrap
+        address:
+          type: string
+          description: Street address
+          example: 123 Main St
+        city:
+          type: string
+          description: City
+          example: San Francisco
+        country:
+          type: string
+          description: Country
+          example: US
+        phone:
+          type: string
+          description: Phone number
+          example: '+1-555-0100'
+        zip_code:
+          type: string
+          description: ZIP or postal code
+          example: '94105'
+        privacy_policy_url:
+          type: string
+          format: uri
+          description: URL to the privacy policy page
+          example: 'https://mailtrap.io/privacy'
+        terms_of_service_url:
+          type: string
+          format: uri
+          description: URL to the terms of service page
+          example: 'https://mailtrap.io/terms'
+        website_url:
+          type: string
+          format: uri
+          description: Company website URL
+          example: 'https://eu.mailtrap.io'
+        info_level:
+          type: string
+          enum:
+            - business
+            - individual
+          description: Whether the sender is a business or individual
+          example: business
+
+    Suppression:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: The suppression UUID
+          example: 64d71bf3-1276-417b-86e1-8e66f138acfe
+        type:
+          type: string
+          enum: [hard bounce, unsubscription, spam complaint, manual import]
+          description: Reason for the suppression
+          example: hard bounce
+        created_at:
+          type: string
+          format: date-time
+          example: '2025-01-15T10:30:00Z'
+        email:
+          type: string
+          format: email
+          example: suppressed@example.com
+        sending_stream:
+          type: string
+          enum: [transactional, bulk, any]
+          example: transactional
+        domain_name:
+          type: [string, 'null']
+          example: example.com
+        message_bounce_category:
+          type: [string, 'null']
+        message_category:
+          type: [string, 'null']
+        message_client_ip:
+          type: [string, 'null']
+        message_created_at:
+          type: [string, 'null']
+          format: date-time
+        message_esp_response:
+          type: [string, 'null']
+        message_esp_server_type:
+          type: [string, 'null']
+        message_outgoing_ip:
+          type: [string, 'null']
+        message_recipient_mx_name:
+          type: [string, 'null']
+        message_sender_email:
+          type: [string, 'null']
+        message_subject:
+          type: [string, 'null']
+
+    TrackingOptOut:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: The tracking opt-out UUID
+          example: 64d71bf3-1276-417b-86e1-8e66f138acfe
+        email:
+          type: string
+          format: email
+          example: tracked@example.com
+        created_at:
+          type: string
+          format: date-time
+          example: '2025-01-15T10:30:00Z'
+        domain_name:
+          type: string
+          description: Sending domain this tracking opt-out applies to
+          example: example.com
+
+    Webhook:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        url:
+          type: string
+          format: uri
+          example: 'https://example.com/mailtrap/webhooks'
+        active:
+          type: boolean
+          example: true
+        webhook_type:
+          type: string
+          enum:
+            - email_sending
+            - campaigns
+            - audit_log
+            - inbound_receiving
+          example: email_sending
+        payload_format:
+          type: string
+          enum:
+            - json
+            - jsonlines
+          example: json
+        sending_stream:
+          type:
+            - string
+            - 'null'
+          enum:
+            - transactional
+            - bulk
+            - null
+          description: |
+            Sending stream the webhook is subscribed to. Applicable only for
+            `email_sending` webhooks.
+          example: transactional
+        domain_id:
+          type:
+            - integer
+            - 'null'
+          description: |
+            Scopes the webhook to a specific domain ID, or all domains if
+            omitted. Applicable only for `email_sending` and `campaigns`
+            webhooks.
+          example: 435
+        inbound_inbox_id:
+          type:
+            - integer
+            - 'null'
+          description: |
+            ID of the inbound inbox the webhook is linked to. Applicable only
+            for `inbound_receiving` webhooks.
+          example: 1
+        event_types:
+          type: array
+          description: |
+            List of event types the webhook is subscribed to. Applicable only
+            for `email_sending` and `campaigns` webhooks.
+          items:
+            type: string
+            enum:
+              - delivery
+              - soft_bounce
+              - bounce
+              - suspension
+              - unsubscribe
+              - open
+              - spam_complaint
+              - click
+              - reject
+          example:
+            - delivery
+            - bounce
+
+    WebhookCreateResponse:
+      type: object
+      properties:
+        data:
+          allOf:
+            - $ref: '#/components/schemas/Webhook'
+            - type: object
+              properties:
+                signing_secret:
+                  type: string
+                  description: |
+                    Secret key for verifying webhook payload signatures using HMAC SHA-256. Only returned on creation.
+                  example: a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6
+
+    UnprocessableEntity:
+      type: object
+      description: |-
+        Validation errors per field. Keys are attribute names; values are arrays of human-readable messages.
+        Some endpoints may also return a `base` key with general validation errors.
+      properties:
+        errors:
+          type: object
+          additionalProperties:
+            type: array
+            items:
+              type: string
+      example:
+        errors:
+          email:
+            - can't be blank
+          domain:
+            - can't be blank
+          sending_stream:
+            - 'is invalid. Allowed values: transactional, bulk.'
+          base:
+            - "Validation failed: Domain name can't be blank, Tracking domain name is not a valid domain name"
+
+    SendingStats:
+      title: SendingStats
+      type: object
+      properties:
+        delivery_count:
+          type: integer
+          example: 190
+        delivery_rate:
+          type: number
+          format: double
+          example: 0.95
+        bounce_count:
+          type: integer
+          example: 10
+        bounce_rate:
+          type: number
+          format: double
+          example: 0.05
+        open_count:
+          type: integer
+          example: 171
+        open_rate:
+          type: number
+          format: double
+          example: 0.9
+        click_count:
+          type: integer
+          example: 133
+        click_rate:
+          type: number
+          format: double
+          example: 0.7
+        spam_count:
+          type: integer
+          example: 3
+        spam_rate:
+          type: number
+          format: double
+          example: 0.02
+
+    BadRequest:
+      title: BadRequestResponse
+      description: |
+        Invalid parameters. Some endpoints return an empty body with HTTP 400; when present, a message may use an `error` field.
+      type: object
+      properties:
+        error:
+          type: string
+          example: Bad Request
+      example:
+        error: Bad Request
+
+    RateLimitExceededResponse:
+      title: RateLimitExceededResponse
+      type: object
+      properties:
+        errors:
+          type: string
+          description: Error message
+          example: Rate limit exceeded
+      example:
+        errors: Rate limit exceeded
+
+    EmailLogsListResponse:
+      type: object
+      required:
+        - messages
+        - total_count
+        - next_page_cursor
+      properties:
+        messages:
+          type: array
+          items:
+            type: object
+            properties:
+              message_id:
+                type: string
+                format: uuid
+              status:
+                type: string
+                enum: [delivered, not_delivered, enqueued, opted_out]
+              subject:
+                type: string
+                nullable: true
+              rfc_message_id:
+                type: string
+                nullable: true
+                description: Value of the RFC 5322 `Message-ID` header.
+              in_reply_to:
+                type: string
+                nullable: true
+                description: Value of the RFC 5322 `In-Reply-To` header.
+              references:
+                type: array
+                items:
+                  type: string
+                description: Values of the RFC 5322 `References` header.
+              thread_id:
+                type: string
+                nullable: true
+                description: |
+                  ID of the inbound thread this message belongs to, or null if
+                  the message is not part of one. Use it with the Inbound
+                  Threads endpoints to fetch the full conversation.
+              from:
+                type: string
+              to:
+                type: string
+              sent_at:
+                type: string
+                format: date-time
+              client_ip:
+                type: string
+                nullable: true
+              category:
+                type: string
+                nullable: true
+              custom_variables:
+                type: object
+              sending_stream:
+                type: string
+                enum: [transactional, bulk]
+              sending_domain_id:
+                type: integer
+              template_id:
+                type: integer
+                nullable: true
+              template_variables:
+                type: object
+              opens_count:
+                type: integer
+              clicks_count:
+                type: integer
+        total_count:
+          type: integer
+          description: Total number of messages matching the filters (before pagination).
+        next_page_cursor:
+          type: string
+          format: uuid
+          nullable: true
+          description: Message UUID to use as search_after for the next page. Null if no more pages.
+      example:
+        messages:
+          - message_id: 'a1b2c3d4-e5f6-7890-abcd-ef1234567890'
+            status: delivered
+            subject: Welcome to our service
+            from: sender@example.com
+            to: recipient@example.com
+            sent_at: '2025-01-15T10:30:00Z'
+            client_ip: 203.0.113.42
+            category: Welcome Email
+            custom_variables: {}
+            sending_stream: transactional
+            sending_domain_id: 3938
+            template_id: 100
+            template_variables: {}
+            opens_count: 2
+            clicks_count: 1
+          - message_id: 'b2c3d4e5-f6a7-8901-bcde-f12345678901'
+            status: delivered
+            subject: Your order confirmation
+            from: orders@example.com
+            to: customer@example.com
+            sent_at: '2025-01-15T11:00:00Z'
+            client_ip: null
+            category: Order Confirmation
+            custom_variables: { order_id: '12345' }
+            sending_stream: transactional
+            sending_domain_id: 3938
+            template_id: null
+            template_variables: {}
+            opens_count: 0
+            clicks_count: 0
+        total_count: 150
+        next_page_cursor: 'b2c3d4e5-f6a7-8901-bcde-f12345678901'
+
+    SendingMessage:
+      type: object
+      properties:
+        message_id:
+          type: string
+          format: uuid
+        status:
+          type: string
+          enum: [delivered, not_delivered, enqueued, opted_out]
+        subject:
+          type: string
+          nullable: true
+        rfc_message_id:
+          type: string
+          nullable: true
+          description: Value of the RFC 5322 `Message-ID` header.
+        in_reply_to:
+          type: string
+          nullable: true
+          description: Value of the RFC 5322 `In-Reply-To` header.
+        references:
+          type: array
+          items:
+            type: string
+          description: Values of the RFC 5322 `References` header.
+        thread_id:
+          type: string
+          nullable: true
+          description: |
+            ID of the inbound thread this message belongs to, or null if the
+            message is not part of one. Use it with the Inbound Threads
+            endpoints to fetch the full conversation.
+        from:
+          type: string
+        to:
+          type: string
+        sent_at:
+          type: string
+          format: date-time
+        client_ip:
+          type: string
+          nullable: true
+        category:
+          type: string
+          nullable: true
+        custom_variables:
+          type: object
+        sending_stream:
+          type: string
+          enum: [transactional, bulk]
+        sending_domain_id:
+          type: integer
+        template_id:
+          type: integer
+          nullable: true
+        template_variables:
+          type: object
+        opens_count:
+          type: integer
+        clicks_count:
+          type: integer
+        raw_message_url:
+          type: string
+          format: uri
+          description: Signed URL to download raw .eml message (temporary).
+        events:
+          type: array
+          items:
+            $ref: '#/components/schemas/MessageEvent'
+      example:
+        message_id: 'a1b2c3d4-e5f6-7890-abcd-ef1234567890'
+        status: delivered
+        subject: Welcome to our service
+        from: sender@example.com
+        to: recipient@example.com
+        sent_at: '2025-01-15T10:30:00Z'
+        client_ip: 203.0.113.42
+        category: Welcome Email
+        custom_variables: {}
+        sending_stream: transactional
+        sending_domain_id: 3938
+        template_id: 100
+        template_variables: {}
+        opens_count: 2
+        clicks_count: 1
+        raw_message_url: 'https://storage.example.com/signed/eml/a1b2c3d4-e5f6-7890-abcd-ef1234567890?token=...'
+        events:
+          - event_type: click
+            created_at: '2025-01-15T10:35:00Z'
+            details:
+              click_url: 'https://example.com/track/click/abc123'
+              web_ip_address: 198.51.100.50
+          - event_type: spam
+            created_at: '2025-01-15T10:40:00Z'
+            details:
+              spam_feedback_type: abuse
+
+    MessageEvent:
+      description: Event with type-specific details. Use event_type to determine which details schema applies.
+      discriminator:
+        propertyName: event_type
+        mapping:
+          delivery: '#/components/schemas/MessageEventDelivery'
+          open: '#/components/schemas/MessageEventOpen'
+          click: '#/components/schemas/MessageEventClick'
+          soft_bounce: '#/components/schemas/MessageEventBounce'
+          bounce: '#/components/schemas/MessageEventBounce'
+          spam: '#/components/schemas/MessageEventSpam'
+          unsubscribe: '#/components/schemas/MessageEventUnsubscribe'
+          suspension: '#/components/schemas/MessageEventReject'
+          reject: '#/components/schemas/MessageEventReject'
+      oneOf:
+        - $ref: '#/components/schemas/MessageEventDelivery'
+        - $ref: '#/components/schemas/MessageEventOpen'
+        - $ref: '#/components/schemas/MessageEventClick'
+        - $ref: '#/components/schemas/MessageEventBounce'
+        - $ref: '#/components/schemas/MessageEventSpam'
+        - $ref: '#/components/schemas/MessageEventUnsubscribe'
+        - $ref: '#/components/schemas/MessageEventReject'
+      example:
+        event_type: click
+        created_at: '2025-01-15T10:35:00Z'
+        details:
+          click_url: 'https://example.com/track/click/abc123'
+          web_ip_address: 198.51.100.50
+
+    MessageEventDelivery:
+      type: object
+      required: [event_type, created_at, details]
+      properties:
+        event_type:
+          type: string
+          enum: [delivery]
+        created_at:
+          type: string
+          format: date-time
+        details:
+          $ref: '#/components/schemas/EventDetailsDelivery'
+
+    MessageEventOpen:
+      type: object
+      required: [event_type, created_at, details]
+      properties:
+        event_type:
+          type: string
+          enum: [open]
+        created_at:
+          type: string
+          format: date-time
+        details:
+          $ref: '#/components/schemas/EventDetailsOpen'
+
+    MessageEventClick:
+      type: object
+      required: [event_type, created_at, details]
+      properties:
+        event_type:
+          type: string
+          enum: [click]
+        created_at:
+          type: string
+          format: date-time
+        details:
+          $ref: '#/components/schemas/EventDetailsClick'
+
+    MessageEventBounce:
+      type: object
+      required: [event_type, created_at, details]
+      properties:
+        event_type:
+          type: string
+          enum: [soft_bounce, bounce]
+        created_at:
+          type: string
+          format: date-time
+        details:
+          $ref: '#/components/schemas/EventDetailsBounce'
+
+    MessageEventSpam:
+      type: object
+      required: [event_type, created_at, details]
+      properties:
+        event_type:
+          type: string
+          enum: [spam]
+        created_at:
+          type: string
+          format: date-time
+        details:
+          $ref: '#/components/schemas/EventDetailsSpam'
+
+    MessageEventUnsubscribe:
+      type: object
+      required: [event_type, created_at, details]
+      properties:
+        event_type:
+          type: string
+          enum: [unsubscribe]
+        created_at:
+          type: string
+          format: date-time
+        details:
+          $ref: '#/components/schemas/EventDetailsUnsubscribe'
+
+    MessageEventReject:
+      type: object
+      required: [event_type, created_at, details]
+      properties:
+        event_type:
+          type: string
+          enum: [suspension, reject]
+        created_at:
+          type: string
+          format: date-time
+        details:
+          $ref: '#/components/schemas/EventDetailsReject'
+
+    EventDetailsDelivery:
+      type: object
+      description: For event_type = delivery
+      additionalProperties: false
+      properties:
+        sending_ip:
+          type: string
+          nullable: true
+        recipient_mx:
+          type: string
+          nullable: true
+        email_service_provider:
+          type: string
+          nullable: true
+      example:
+        sending_ip: 192.0.2.1
+        recipient_mx: gmail-smtp-in.l.google.com
+        email_service_provider: Google
+
+    EventDetailsOpen:
+      type: object
+      description: For event_type = open
+      additionalProperties: false
+      properties:
+        web_ip_address:
+          type: string
+          nullable: true
+      example:
+        web_ip_address: 198.51.100.50
+
+    EventDetailsClick:
+      type: object
+      description: For event_type = click
+      additionalProperties: false
+      properties:
+        click_url:
+          type: string
+          nullable: true
+        web_ip_address:
+          type: string
+          nullable: true
+      example:
+        click_url: 'https://example.com/track/click/abc123'
+        web_ip_address: 198.51.100.50
+
+    EventDetailsBounce:
+      type: object
+      description: For event_type = soft_bounce or bounce
+      additionalProperties: false
+      properties:
+        sending_ip:
+          type: string
+          nullable: true
+        recipient_mx:
+          type: string
+          nullable: true
+        email_service_provider:
+          type: string
+          nullable: true
+        email_service_provider_status:
+          type: string
+          nullable: true
+        email_service_provider_response:
+          type: string
+          nullable: true
+        bounce_category:
+          type: string
+          nullable: true
+      example:
+        sending_ip: 192.0.2.1
+        recipient_mx: mx.example.com
+        email_service_provider: Google
+        email_service_provider_status: 5.7.1
+        email_service_provider_response: User unknown
+        bounce_category: invalid_recipient
+
+    EventDetailsSpam:
+      type: object
+      description: For event_type = spam
+      additionalProperties: false
+      properties:
+        spam_feedback_type:
+          type: string
+          nullable: true
+      example:
+        spam_feedback_type: abuse
+
+    EventDetailsUnsubscribe:
+      type: object
+      description: For event_type = unsubscribe
+      additionalProperties: false
+      properties:
+        web_ip_address:
+          type: string
+          nullable: true
+      example:
+        web_ip_address: 198.51.100.50
+
+    EventDetailsReject:
+      type: object
+      description: For event_type = suspension or reject
+      additionalProperties: false
+      properties:
+        reject_reason:
+          type: string
+          nullable: true
+      example:
+        reject_reason: Policy rejection
+
+    EmailLogsListFilters:
+      type: object
+      description: |
+        Key-value map of filter name to filter spec. Each spec has operator and optional value.
+        Date range uses sent_after / sent_before at top level of filters (see below).
+        In query params, array values use bracket notation: `filters[field][value][]=a&filters[field][value][]=b`.
+      properties:
+        sent_after:
+          type: string
+          format: date-time
+          description: Start of sent-at range (ISO 8601). Must be before or equal to sent_before.
+          example: '2025-01-01T00:00:00Z'
+        sent_before:
+          type: string
+          format: date-time
+          description: End of sent-at range (ISO 8601). Must be after or equal to sent_after.
+          example: '2025-01-31T23:59:59Z'
+        to:
+          $ref: '#/components/schemas/FilterTo'
+        from:
+          $ref: '#/components/schemas/FilterFrom'
+        subject:
+          $ref: '#/components/schemas/FilterSubject'
+        status:
+          $ref: '#/components/schemas/FilterStatus'
+        events:
+          $ref: '#/components/schemas/FilterEvents'
+        clicks_count:
+          $ref: '#/components/schemas/FilterClicksCount'
+        opens_count:
+          $ref: '#/components/schemas/FilterOpensCount'
+        client_ip:
+          $ref: '#/components/schemas/FilterClientIp'
+        sending_ip:
+          $ref: '#/components/schemas/FilterSendingIp'
+        email_service_provider_response:
+          $ref: '#/components/schemas/FilterEmailServiceProviderResponse'
+        email_service_provider:
+          $ref: '#/components/schemas/FilterEmailServiceProvider'
+        recipient_mx:
+          $ref: '#/components/schemas/FilterRecipientMx'
+        category:
+          $ref: '#/components/schemas/FilterCategory'
+        sending_domain_id:
+          $ref: '#/components/schemas/FilterSendingDomainId'
+        sending_stream:
+          $ref: '#/components/schemas/FilterSendingStream'
+
+    FilterCiEqualString:
+      type: object
+      required: [operator, value]
+      properties:
+        operator:
+          type: string
+          enum: [ci_equal, ci_not_equal]
+          description: "ci_* = case-insensitive"
+        value:
+          oneOf:
+            - type: string
+            - type: array
+              items:
+                type: string
+
+    FilterCiContainString:
+      type: object
+      required: [operator, value]
+      properties:
+        operator:
+          type: string
+          enum: [ci_contain, ci_not_contain]
+          description: "ci_* = case-insensitive"
+        value:
+          type: string
+
+    FilterEqualString:
+      type: object
+      required: [operator, value]
+      properties:
+        operator:
+          type: string
+          enum: [equal, not_equal]
+        value:
+          oneOf:
+            - type: string
+            - type: array
+              items:
+                type: string
+
+    FilterContainString:
+      type: object
+      required: [operator, value]
+      properties:
+        operator:
+          type: string
+          enum: [contain, not_contain]
+        value:
+          type: string
+
+    FilterEmptyString:
+      type: object
+      required: [operator]
+      properties:
+        operator:
+          type: string
+          enum: [empty, not_empty]
+
+    FilterTo:
+      oneOf:
+        - $ref: '#/components/schemas/FilterCiEqualString'
+        - $ref: '#/components/schemas/FilterCiContainString'
+      discriminator:
+        propertyName: operator
+        mapping:
+          ci_equal: '#/components/schemas/FilterCiEqualString'
+          ci_not_equal: '#/components/schemas/FilterCiEqualString'
+          ci_contain: '#/components/schemas/FilterCiContainString'
+          ci_not_contain: '#/components/schemas/FilterCiContainString'
+      example:
+        operator: ci_equal
+        value: recipient@example.com
+
+    FilterFrom:
+      oneOf:
+        - $ref: '#/components/schemas/FilterCiEqualString'
+        - $ref: '#/components/schemas/FilterCiContainString'
+      discriminator:
+        propertyName: operator
+        mapping:
+          ci_equal: '#/components/schemas/FilterCiEqualString'
+          ci_not_equal: '#/components/schemas/FilterCiEqualString'
+          ci_contain: '#/components/schemas/FilterCiContainString'
+          ci_not_contain: '#/components/schemas/FilterCiContainString'
+      example:
+        operator: ci_contain
+        value: noreply@example.com
+
+    FilterSubject:
+      oneOf:
+        - $ref: '#/components/schemas/FilterCiEqualString'
+        - $ref: '#/components/schemas/FilterCiContainString'
+        - $ref: '#/components/schemas/FilterEmptyString'
+      discriminator:
+        propertyName: operator
+        mapping:
+          ci_equal: '#/components/schemas/FilterCiEqualString'
+          ci_not_equal: '#/components/schemas/FilterCiEqualString'
+          ci_contain: '#/components/schemas/FilterCiContainString'
+          ci_not_contain: '#/components/schemas/FilterCiContainString'
+          empty: '#/components/schemas/FilterEmptyString'
+          not_empty: '#/components/schemas/FilterEmptyString'
+      example:
+        operator: ci_contain
+        value: Order confirmation
+
+    FilterStatus:
+      type: object
+      required: [operator, value]
+      properties:
+        operator:
+          type: string
+          enum: [equal, not_equal]
+        value:
+          oneOf:
+            - type: string
+              enum: [delivered, not_delivered, enqueued, opted_out]
+            - type: array
+              items:
+                type: string
+                enum: [delivered, not_delivered, enqueued, opted_out]
+
+    FilterEvents:
+      type: object
+      required: [operator, value]
+      properties:
+        operator:
+          type: string
+          enum: [include_event, not_include_event]
+        value:
+          oneOf:
+            - type: string
+              enum: [delivery, open, click, bounce, spam, unsubscribe, soft_bounce, reject, suspension]
+            - type: array
+              items:
+                type: string
+                enum: [delivery, open, click, bounce, spam, unsubscribe, soft_bounce, reject, suspension]
+
+    FilterClicksCount:
+      type: object
+      required: [operator, value]
+      properties:
+        operator:
+          type: string
+          enum: [equal, greater_than, less_than]
+        value:
+          type: integer
+      example:
+        operator: greater_than
+        value: 0
+
+    FilterOpensCount:
+      type: object
+      required: [operator, value]
+      properties:
+        operator:
+          type: string
+          enum: [equal, greater_than, less_than]
+        value:
+          type: integer
+      example:
+        operator: equal
+        value: 1
+
+    FilterClientIp:
+      oneOf:
+        - $ref: '#/components/schemas/FilterEqualString'
+        - $ref: '#/components/schemas/FilterContainString'
+      discriminator:
+        propertyName: operator
+        mapping:
+          equal: '#/components/schemas/FilterEqualString'
+          not_equal: '#/components/schemas/FilterEqualString'
+          contain: '#/components/schemas/FilterContainString'
+          not_contain: '#/components/schemas/FilterContainString'
+      example:
+        operator: equal
+        value: 203.0.113.42
+
+    FilterSendingIp:
+      oneOf:
+        - $ref: '#/components/schemas/FilterEqualString'
+        - $ref: '#/components/schemas/FilterContainString'
+      discriminator:
+        propertyName: operator
+        mapping:
+          equal: '#/components/schemas/FilterEqualString'
+          not_equal: '#/components/schemas/FilterEqualString'
+          contain: '#/components/schemas/FilterContainString'
+          not_contain: '#/components/schemas/FilterContainString'
+      example:
+        operator: contain
+        value: 192.0.2
+
+    FilterEmailServiceProviderResponse:
+      oneOf:
+        - $ref: '#/components/schemas/FilterCiEqualString'
+        - $ref: '#/components/schemas/FilterCiContainString'
+      discriminator:
+        propertyName: operator
+        mapping:
+          ci_equal: '#/components/schemas/FilterCiEqualString'
+          ci_not_equal: '#/components/schemas/FilterCiEqualString'
+          ci_contain: '#/components/schemas/FilterCiContainString'
+          ci_not_contain: '#/components/schemas/FilterCiContainString'
+      example:
+        operator: ci_contain
+        value: User unknown
+
+    FilterEmailServiceProvider:
+      type: object
+      required: [operator, value]
+      properties:
+        operator:
+          type: string
+          enum: [equal, not_equal]
+        value:
+          oneOf:
+            - type: string
+            - type: array
+              items:
+                type: string
+      example:
+        operator: equal
+        value: Google
+
+    FilterRecipientMx:
+      oneOf:
+        - $ref: '#/components/schemas/FilterCiEqualString'
+        - $ref: '#/components/schemas/FilterCiContainString'
+      discriminator:
+        propertyName: operator
+        mapping:
+          ci_equal: '#/components/schemas/FilterCiEqualString'
+          ci_not_equal: '#/components/schemas/FilterCiEqualString'
+          ci_contain: '#/components/schemas/FilterCiContainString'
+          ci_not_contain: '#/components/schemas/FilterCiContainString'
+      example:
+        operator: ci_equal
+        value: gmail-smtp-in.l.google.com
+
+    FilterCategory:
+      type: object
+      required: [operator, value]
+      properties:
+        operator:
+          type: string
+          enum: [equal, not_equal]
+        value:
+          oneOf:
+            - type: string
+            - type: array
+              items:
+                type: string
+      example:
+        operator: equal
+        value: Welcome Email
+
+    FilterSendingDomainId:
+      type: object
+      required: [operator, value]
+      properties:
+        operator:
+          type: string
+          enum: [equal, not_equal]
+        value:
+          oneOf:
+            - type: integer
+            - type: array
+              items:
+                type: integer
+      example:
+        operator: equal
+        value: 3938
+
+    FilterSendingStream:
+      type: object
+      required: [operator, value]
+      properties:
+        operator:
+          type: string
+          enum: [equal, not_equal]
+        value:
+          oneOf:
+            - type: string
+              enum: [transactional, bulk]
+            - type: array
+              items:
+                type: string
+                enum: [transactional, bulk]
+      example:
+        operator: equal
+        value: transactional
+
+    UnauthenticatedResponse:
+      title: UnauthenticatedResponse
+      type: object
+      properties:
+        error:
+          type: string
+          description: Error message
+          example: Incorrect API token
+      example:
+        error: Incorrect API token
+
+    PermissionsDeniedResponse:
+      title: PermissionsDeniedResponse
+      type: object
+      properties:
+        errors:
+          type: string
+          description: Error message
+          example: Account access forbidden
+      example:
+        errors: Account access forbidden
+
+    NotFoundResponse:
+      title: NotFoundResponse
+      type: object
+      properties:
+        error:
+          type: string
+          description: Error message
+          example: Not Found
+      example:
+        error: Not Found
+
+  responses:
+    Unauthorized:
+      description: Returns unauthorized error message. Check your credentials.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/UnauthenticatedResponse'
+          example:
+            error: Incorrect API token
+
+    Forbidden:
+      description: Returns forbidden error message. Check your permissions.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/PermissionsDeniedResponse'
+          example:
+            errors: Account access forbidden
+
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/NotFoundResponse'
+          example:
+            error: Not Found
+
+    UnprocessableEntity:
+      description: Validation errors
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/UnprocessableEntity'
+          example:
+            errors:
+              email:
+                - can't be blank
+              domain:
+                - can't be blank
+              sending_stream:
+                - 'is invalid. Allowed values: transactional, bulk.'
+              base:
+                - "Validation failed: Domain name can't be blank, Tracking domain name is not a valid domain name"
+
+    BAD_REQUEST:
+      description: Bad request - invalid parameters.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/BadRequest'
+          example:
+            error: Bad Request
+
+    LIMIT_EXCEEDED:
+      description: Rate limit exceeded for the current account.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/RateLimitExceededResponse'
+          example:
+            errors: Rate limit exceeded
+
+    DomainResponse:
+      description: Domain details
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Domain'
+
+    CompanyInfoResponse:
+      description: Company information
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              data:
+                $ref: '#/components/schemas/CompanyInfo'
+
+    DomainsResponse:
+      description: List of domains
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              data:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Domain'
+
+    GetSuppressionsResponse:
+      description: List of suppressions
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              $ref: '#/components/schemas/Suppression'
+
+    DeleteSuppressionResponse:
+      description: Suppression deleted
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Suppression'
+
+    CreateSuppressionResponse:
+      description: Suppression created
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              data:
+                $ref: '#/components/schemas/Suppression'
+
+    GetTrackingOptOutsResponse:
+      description: List of tracking opt-outs
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              data:
+                type: array
+                items:
+                  $ref: '#/components/schemas/TrackingOptOut'
+              last_id:
+                type:
+                  - string
+                  - 'null'
+                format: uuid
+                description: |
+                  Cursor for the next page. Present when the response is a full page (1000 records);
+                  pass this value as the `last_id` query parameter to continue. `null` when there are no more pages.
+                example: 64d71bf3-1276-417b-86e1-8e66f138acfe
+
+    DeleteTrackingOptOutResponse:
+      description: Tracking opt-out deleted
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/TrackingOptOut'
+
+    CreateTrackingOptOutResponse:
+      description: Tracking opt-out created
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              data:
+                $ref: '#/components/schemas/TrackingOptOut'

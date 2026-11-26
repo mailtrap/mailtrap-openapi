@@ -1,0 +1,2761 @@
+openapi: 3.1.0
+info:
+  description: Account management and administration
+  version: 2.0.0
+  title: Account Management
+  contact:
+    name: Mailtrap
+    url: 'https://docs.mailtrap.io'
+    email: support@mailtrap.io
+  license:
+    name: Creative Commons Attribution-ShareAlike 4.0 International (CC BY-SA 4.0)
+    url: 'https://creativecommons.org/licenses/by-sa/4.0/'
+security:
+  - HeaderAuth: []
+  - BearerAuth: []
+servers:
+  - description: Mailtrap API
+    url: 'https://eu.mailtrap.io'
+tags:
+  - name: Accounts
+    x-page-title: Accounts
+
+  - name: Account Accesses
+    x-page-title: Access Control
+
+  - name: API Tokens
+    x-page-title: API Tokens
+
+  - name: Permissions
+    x-page-title: Permissions
+
+  - name: Billing
+    x-page-title: Billing
+
+  - name: Organizations
+    x-page-title: Organizations
+paths:
+  /api/accounts:
+    get:
+      operationId: getAllAccounts
+      summary: List account(s) you have access to
+      description: |
+        This endpoint returns account details for the authenticated user. If you are using [Organizations and Sub-Accounts](https://docs.mailtrap.io/account-and-organization/management/organization-and-sub-accounts) and the API token was created at the organization level, the response will include all accounts within the organization.
+      tags:
+        - Accounts
+      x-codeSamples:
+        - lang: shell
+          label: 'cURL'
+          source: |
+            curl -X GET https://eu.mailtrap.io/api/accounts \
+              -H 'Authorization: Bearer YOUR_API_KEY'
+        - lang: javascript
+          label: Node.js
+          source: |
+            import { MailtrapClient } from "mailtrap";
+
+            const client = new MailtrapClient({
+              token: "YOUR_API_KEY"
+            });
+
+            async function listAccounts() {
+              const accounts = await client.general.accounts.getAllAccounts();
+            }
+
+            listAccounts();
+        - lang: php
+          label: PHP
+          source: |
+            <?php
+            use Mailtrap\Config;
+            use Mailtrap\Helper\ResponseHelper;
+            use Mailtrap\MailtrapGeneralClient;
+
+            $config = new Config($_ENV['MAILTRAP_API_KEY']);
+            $generalAccounts = (new MailtrapGeneralClient($config))->accounts();
+
+            $response = $generalAccounts->getList();
+            var_dump(ResponseHelper::toArray($response));
+        - lang: python
+          label: Python
+          source: |
+            import mailtrap as mt
+
+            client = mt.MailtrapClient(token="YOUR_API_KEY")
+
+            accounts = client.general_api.accounts.get_list()
+
+            for account in accounts:
+                print(f"Account: {account.name}")
+                print(f"ID: {account.id}")
+                print(f"Access Level: {account.access_levels[0]}")
+        - lang: ruby
+          label: Ruby
+          source: |
+            require 'mailtrap'
+
+            client = Mailtrap::Client.new(api_key: ENV['MAILTRAP_API_KEY'])
+            accounts = Mailtrap::AccountsAPI.new(client)
+
+            accounts.list.each do |account|
+              puts "Account: #{account.name}"
+              puts "ID: #{account.id}"
+            end
+        - lang: csharp
+          label: .NET
+          source: |
+            using Mailtrap;
+
+            using var mailtrapFactory = new MailtrapClientFactory("YOUR_API_KEY");
+            var client = mailtrapFactory.CreateClient();
+            var accounts = await client.Accounts().GetAll();
+
+            foreach (var account in accounts)
+            {
+                Console.WriteLine($"Account: {account.Name}");
+                Console.WriteLine($"ID: {account.Id}");
+                Console.WriteLine($"Access Level: {account.AccessLevels[0]}");
+            }
+        - lang: java
+          label: Java
+          source: |
+            import io.mailtrap.config.MailtrapConfig;
+            import io.mailtrap.factory.MailtrapClientFactory;
+
+            var config = new MailtrapConfig.Builder()
+                .token("YOUR_API_KEY")
+                .build();
+
+            var client = MailtrapClientFactory.createMailtrapClient(config);
+
+            var accounts = client.generalApi().accounts().getAllAccounts();
+
+            for (var account : accounts) {
+                System.out.println("Account: " + account.getName());
+                System.out.println("ID: " + account.getId());
+                System.out.println("Access Level: " + account.getAccessLevels().get(0));
+            }
+        - lang: go
+          label: Go
+          source: |
+            package main
+
+            import (
+            	"context"
+            	"fmt"
+            	"log"
+            	"os"
+
+            	"github.com/mailtrap/mailtrap-go"
+            )
+
+            func main() {
+            	client, err := mailtrap.NewClient(os.Getenv("MAILTRAP_API_TOKEN"))
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	accounts, _, err := client.Accounts.List(context.Background())
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	for _, account := range accounts {
+            		fmt.Printf("%d %s (access levels %v)\n", account.ID, account.Name, account.AccessLevels)
+            	}
+            }
+        - lang: hcl
+          label: Terraform
+          source: |
+            # looking an account up lists them: GET /api/accounts
+            terraform {
+              required_providers {
+                mailtrap = {
+                  source = "mailtrap/mailtrap"
+                }
+              }
+            }
+
+            # The token is read from the MAILTRAP_API_TOKEN environment variable.
+            provider "mailtrap" {}
+
+            # With no filters the token must map to exactly one account.
+            data "mailtrap_account" "current" {
+              name = "Acme Corp"
+            }
+
+            output "account_id" {
+              value = data.mailtrap_account.current.id
+            }
+      responses:
+        '200':
+          description: 'Returns the list of accounts to which the API token has access. **access_levels** can return 1000 (account owner), 100 (admin), 10 (viewer).'
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: integer
+                    name:
+                      type: string
+                    access_levels:
+                      type: array
+                      items:
+                        type: integer
+              example:
+                - id: 26730
+                  name: James
+                  access_levels:
+                    - 100
+                - id: 26731
+                  name: John
+                  access_levels:
+                    - 1000
+        '401':
+          $ref: '#/components/responses/UNAUTHENTICATED'
+  '/api/account_accesses':
+    get:
+      operationId: getAllUsersInAccount
+      summary: List User & Invite account accesses
+      description: |-
+        Get list of account accesses for which `specifier_type` is `User` or `Invite`. You have to have
+        account admin/owner permissions for this endpoint to work.
+
+        If you specify `project_ids`, `sandbox_ids` or `domain_ids`, the endpoint will return account
+        accesses for these resources.
+      tags:
+        - Account Accesses
+      x-codeSamples:
+        - lang: shell
+          label: 'cURL'
+          source: |
+            curl -X GET https://eu.mailtrap.io/api/account_accesses \
+              -H 'Authorization: Bearer YOUR_API_KEY'
+        - lang: javascript
+          label: Node.js
+          source: |
+            const { MailtrapClient } = require("mailtrap");
+            const client = new MailtrapClient({ token: "YOUR_API_KEY", accountId: YOUR_ACCOUNT_ID });
+
+            async function listAccesses() {
+              const accesses = await client.general.accountAccesses.listAccountAccesses();
+            }
+
+            listAccesses();
+        - lang: php
+          label: PHP
+          source: |
+            <?php
+            use Mailtrap\Config;
+            use Mailtrap\Helper\ResponseHelper;
+            use Mailtrap\MailtrapGeneralClient;
+
+            $accountId = $_ENV['MAILTRAP_ACCOUNT_ID'];
+            $config = new Config($_ENV['MAILTRAP_API_KEY']);
+            $generalUsers = (new MailtrapGeneralClient($config))->users($accountId);
+
+            $response = $generalUsers->getList();
+            var_dump(ResponseHelper::toArray($response));
+        - lang: python
+          label: Python
+          source: |
+            import mailtrap as mt
+
+            account_id = "YOUR_ACCOUNT_ID"
+
+            client = mt.MailtrapClient(token="YOUR_API_KEY")
+            accesses = client.general_api.account_accesses.get_list(account_id)
+            for access in accesses:
+                print(f"User: {access.specifier.email}, Level: {access.permission_level}")
+        - lang: ruby
+          label: Ruby
+          source: |
+            require 'mailtrap'
+
+            client = Mailtrap::Client.new(api_key: ENV['MAILTRAP_API_KEY'])
+            account_accesses = Mailtrap::AccountAccessesAPI.new(YOUR_ACCOUNT_ID, client)
+
+            account_accesses.list.each do |access|
+              puts access.specifier
+            end
+
+            # With optional filters
+            puts account_accesses.list(domain_ids: [1, 2])
+            puts account_accesses.list(inbox_ids: [12, 34])
+            puts account_accesses.list(project_ids: [100, 200])
+        - lang: csharp
+          label: C#
+          source: |
+            using Mailtrap;
+            using var mailtrapFactory = new MailtrapClientFactory("YOUR_API_KEY");
+            var client = mailtrapFactory.CreateClient();
+            var accesses = await client.Account(YOUR_ACCOUNT_ID).Accesses().Fetch();
+        - lang: java
+          label: Java
+          source: |
+            import io.mailtrap.config.MailtrapConfig;
+            import io.mailtrap.factory.MailtrapClientFactory;
+            import io.mailtrap.model.request.accountaccesses.ListAccountAccessQueryParams;
+            
+            var config = new MailtrapConfig.Builder().token("YOUR_API_KEY").build();
+            var client = MailtrapClientFactory.createMailtrapClient(config);
+            
+            var response = client.generalApi().accountAccesses().listUserAndInviteAccountAccesses(accountId, ListAccountAccessQueryParams.empty());
+        - lang: go
+          label: Go
+          source: |
+            package main
+
+            import (
+            	"context"
+            	"fmt"
+            	"log"
+            	"os"
+
+            	"github.com/mailtrap/mailtrap-go"
+            )
+
+            func main() {
+            	client, err := mailtrap.NewClient(os.Getenv("MAILTRAP_API_TOKEN"))
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	// Pass nil for no filters. Requires account admin or owner permissions.
+            	accesses, _, err := client.AccountAccesses.List(context.Background(), &mailtrap.AccountAccessListOptions{
+            		DomainIDs: []int64{1000001},
+            	})
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	for _, access := range accesses {
+            		fmt.Printf("%d %s (%s)\n", access.ID, access.Specifier.Email, access.SpecifierType)
+            	}
+            }
+      parameters:
+        - name: project_ids
+          description: The identifiers of the projects for which to include the results
+          in: query
+          schema:
+            type: array
+            items:
+              type: string
+            example:
+              - '3938'
+        - name: sandbox_ids
+          description: The identifiers of the sandboxes for which to include the results
+          in: query
+          schema:
+            type: array
+            items:
+              type: string
+            example:
+              - '3757'
+        - schema:
+            type: array
+            items:
+              type: string
+            example:
+              - '3883'
+          in: query
+          name: domain_ids
+          description: The identifiers of the domains for which to include the results
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AccountAccess'
+        '401':
+          $ref: '#/components/responses/UNAUTHENTICATED'
+        '403':
+          $ref: '#/components/responses/PERMISSION_DENIED'
+  '/api/account_accesses/{account_access_id}':
+    delete:
+      operationId: deleteAccountAccessById
+      summary: Remove account access
+      description: |-
+        If specifier type is User, it removes user permissions.
+
+        If specifier type is Invite or ApiToken, it removes specifier along with permissions.
+
+        You have to be an account admin/owner for this endpoint to work.
+      tags:
+        - Account Accesses
+      x-codeSamples:
+        - lang: shell
+          label: 'cURL'
+          source: |
+            curl -X DELETE https://eu.mailtrap.io/api/account_accesses/{account_access_id} \
+              -H 'Authorization: Bearer YOUR_API_KEY'
+        - lang: javascript
+          label: Node.js
+          source: |
+            const { MailtrapClient } = require("mailtrap");
+            const client = new MailtrapClient({ token: "YOUR_API_KEY", accountId: YOUR_ACCOUNT_ID });
+
+            async function deleteAccess() {
+              await client.general.accountAccesses.removeAccountAccess(accessId);
+            }
+
+            deleteAccess();
+        - lang: php
+          label: PHP
+          source: |
+            <?php
+            use Mailtrap\Config;
+            use Mailtrap\MailtrapGeneralClient;
+
+            $accountId = $_ENV['MAILTRAP_ACCOUNT_ID'];
+            $accountAccessId = $_ENV['MAILTRAP_ACCOUNT_ACCESS_ID'];
+            $config = new Config($_ENV['MAILTRAP_API_KEY']);
+            $generalUsers = (new MailtrapGeneralClient($config))->users($accountId);
+            
+            $response = $generalUsers->delete($accountAccessId);
+            var_dump($response->getStatusCode());
+        - lang: python
+          label: Python
+          source: |
+            import mailtrap as mt
+
+            account_id = "YOUR_ACCOUNT_ID"
+            access_id = "ACCESS_ID"
+
+            client = mt.MailtrapClient(token="YOUR_API_KEY")
+            client.general_api.account_accesses.delete(account_id, access_id)
+        - lang: ruby
+          label: Ruby
+          source: |
+            require 'mailtrap'
+
+            client = Mailtrap::Client.new(api_key: ENV['MAILTRAP_API_KEY'])
+            account_accesses = Mailtrap::AccountAccessesAPI.new(YOUR_ACCOUNT_ID, client)
+
+            account_accesses.delete(ACCOUNT_ACCESS_ID)
+        - lang: csharp
+          label: C#
+          source: |
+            using Mailtrap;
+            using var mailtrapFactory = new MailtrapClientFactory("YOUR_API_KEY");
+            var client = mailtrapFactory.CreateClient();
+            await client.Account(YOUR_ACCOUNT_ID).Access(accessId).Delete();
+        - lang: java
+          label: Java
+          source: |
+            import io.mailtrap.config.MailtrapConfig;
+            import io.mailtrap.factory.MailtrapClientFactory;
+            
+            var config = new MailtrapConfig.Builder().token("YOUR_API_KEY").build();
+            var client = MailtrapClientFactory.createMailtrapClient(config);
+            
+            client.generalApi().accountAccesses().removeAccountAccess(accessId, accountId);
+        - lang: go
+          label: Go
+          source: |
+            package main
+
+            import (
+            	"context"
+            	"fmt"
+            	"log"
+            	"os"
+
+            	"github.com/mailtrap/mailtrap-go"
+            )
+
+            func main() {
+            	client, err := mailtrap.NewClient(os.Getenv("MAILTRAP_API_TOKEN"))
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	if _, err := client.AccountAccesses.Delete(context.Background(), 1000001); err != nil {
+            		log.Fatal(err)
+            	}
+
+            	fmt.Println("account access removed")
+            }
+      responses:
+        '200':
+          description: Returns confirmation of successful deletion and id of the deleted access.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: integer
+              example:
+                id: 2981
+        '401':
+          $ref: '#/components/responses/UNAUTHENTICATED'
+        '403':
+          $ref: '#/components/responses/PERMISSION_DENIED'
+        '404':
+          $ref: '#/components/responses/NOT_FOUND'
+    parameters:
+      - schema:
+          type: integer
+          format: int64
+          minimum: 1
+          example: 4788
+        name: account_access_id
+        in: path
+        description: Unique account access ID
+        required: true
+  '/api/account_accesses/{account_access_id}/permissions/bulk':
+    put:
+      operationId: updateUserPermissions
+      summary: Manage user or token permissions
+      description: |-
+        Manage user or token permissions. For this endpoint, you should send an array of objects (in JSON format) as the body of the request.
+        If you send a combination of **resource_type** and **resource_id** that already exists, the permission is **updated**.
+        If the combination doesn't exist, the permission is **created**.
+        Permissions of an expired API token cannot be updated; such requests are rejected with a 422 error.
+      tags:
+        - Permissions
+      x-codeSamples:
+        - lang: shell
+          label: 'cURL'
+          source: |
+            curl -X PUT https://eu.mailtrap.io/api/account_accesses/{account_access_id}/permissions/bulk \
+              -H 'Authorization: Bearer YOUR_API_KEY' \
+              -H 'Content-Type: application/json' \
+              -d '{
+                "permissions": [
+                  {"resource_id": "3281", "resource_type": "account", "access_level": "viewer"}
+                ]
+              }'
+        - lang: javascript
+          label: Node.js
+          source: |
+            const { MailtrapClient } = require("mailtrap");
+            const client = new MailtrapClient({ token: "YOUR_API_KEY", accountId: YOUR_ACCOUNT_ID });
+
+            async function bulkUpdatePermissions() {
+              await client.general.permissions.bulkPermissionsUpdate(accessId, [
+                { resourceId: "3281", resourceType: "account", accessLevel: "viewer" }
+              ]);
+            }
+
+            bulkUpdatePermissions();
+        - lang: php
+          label: PHP
+          source: |
+            <?php
+            use Mailtrap\Config;
+            use Mailtrap\DTO\Request\Permission\CreateOrUpdatePermission;
+            use Mailtrap\DTO\Request\Permission\DestroyPermission;
+            use Mailtrap\DTO\Request\Permission\PermissionInterface;
+            use Mailtrap\DTO\Request\Permission\Permissions;
+            use Mailtrap\Helper\ResponseHelper;
+            use Mailtrap\MailtrapGeneralClient;
+
+            $accountId = $_ENV['MAILTRAP_ACCOUNT_ID'];
+            $config = new Config($_ENV['MAILTRAP_API_KEY']);
+            $generalPermissions = (new MailtrapGeneralClient($config))->permissions($accountId);
+
+            $accountAccessId = $_ENV['MAILTRAP_ACCOUNT_ACCESS_ID'];
+
+            // resource IDs
+            $projectResourceId = $_ENV['MAILTRAP_NEW_PROJECT_RESOURCE_ID'];
+            $inboxResourceId = $_ENV['MAILTRAP_INBOX_RESOURCE_ID'];
+            $destroyProjectResourceId = $_ENV['MAILTRAP_OLD_PROJECT_RESOURCE_ID'];
+        
+            $permissions = new Permissions(
+                new CreateOrUpdatePermission($projectResourceId, PermissionInterface::TYPE_PROJECT, 10), // viewer = 10
+                new CreateOrUpdatePermission($inboxResourceId, PermissionInterface::TYPE_INBOX, 100), // admin = 100
+                new DestroyPermission($destroyProjectResourceId, PermissionInterface::TYPE_PROJECT),
+            );
+        
+            $response = $generalPermissions->update($accountAccessId, $permissions);
+        
+            // print the response body (array)
+            var_dump(ResponseHelper::toArray($response));
+        - lang: python
+          label: Python
+          source: |
+            import mailtrap as mt
+
+            access_id = "ACCESS_ID"
+            account_access_id = "ACCOUNT_ACCESS_ID"
+
+            client = mt.MailtrapClient(token="YOUR_API_KEY")
+            client.general_api.permissions.bulk_permissions_update(
+                access_id,
+                account_access_id,
+                permissions=[
+                    mt.PermissionResourceParams(
+                        resource_id="3281", resource_type="account", access_level="viewer"
+                    )
+                ]
+            )
+        - lang: ruby
+          label: Ruby
+          source: |
+            require 'mailtrap'
+
+            client = Mailtrap::Client.new(api_key: 'YOUR_API_KEY')
+            account_id = 1000001
+            permissions = Mailtrap::PermissionsAPI.new(account_id, client)
+
+            account_access_id = 5142
+            permissions.bulk_update(
+              account_access_id,
+              [
+                { resource_id: '3281', resource_type: 'account', access_level: 'viewer' },
+                { resource_id: '3809', resource_type: 'sandbox', _destroy: true }
+              ]
+            )
+        - lang: csharp
+          label: C#
+          source: |
+            using Mailtrap;
+            var client = new MailtrapClient("YOUR_API_KEY");
+            var permissions = new[] { new Permission { ResourceId = "3281", ResourceType = "account", AccessLevel = "viewer" } };
+            await client.Account(accountId).Permissions(accessId).BulkUpdate(permissions);
+        - lang: java
+          label: Java
+          source: |
+            import io.mailtrap.config.MailtrapConfig;
+            import io.mailtrap.factory.MailtrapClientFactory;
+            import io.mailtrap.model.AccessLevel;
+            import io.mailtrap.model.ResourceType;
+            import io.mailtrap.model.request.permissions.ManagePermissionsRequest;
+            import io.mailtrap.model.request.permissions.Permission;
+  
+            var config = new MailtrapConfig.Builder().token("YOUR_API_KEY").build();
+            var client = MailtrapClientFactory.createMailtrapClient(config);
+            
+            final ManagePermissionsRequest request = new ManagePermissionsRequest(List.of(
+                new Permission(
+                    "3281",
+                    ResourceType.ACCOUNT,
+                    AccessLevel.VIEWER,
+                    false
+                )
+            ));
+            
+            client.generalApi().permissions().managePermissions(accessId, accountId, request);
+        - lang: go
+          label: Go
+          source: |
+            package main
+
+            import (
+            	"context"
+            	"fmt"
+            	"log"
+            	"os"
+
+            	"github.com/mailtrap/mailtrap-go"
+            )
+
+            func main() {
+            	client, err := mailtrap.NewClient(os.Getenv("MAILTRAP_API_TOKEN"))
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	// A resource_type/resource_id pair that already exists is updated, otherwise it
+            	// is created. Set Destroy to remove a permission instead.
+            	_, err = client.Permissions.BulkUpdate(context.Background(), 1000001, []*mailtrap.PermissionUpdate{
+            		{
+            			ResourceID:   "3000001",
+            			ResourceType: mailtrap.ResourceTypeSandbox,
+            			AccessLevel:  mailtrap.PermissionLevelAdmin,
+            		},
+            		{
+            			ResourceID:   "3000002",
+            			ResourceType: mailtrap.ResourceTypeSandbox,
+            			Destroy:      true,
+            		},
+            	})
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	fmt.Println("permissions updated")
+            }
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                permissions:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      resource_id:
+                        type: string
+                      resource_type:
+                        type: string
+                        enum:
+                          - account
+                          - billing
+                          - project
+                          - sandbox
+                          - domain
+                          - email_campaign_permission_scope
+                      access_level:
+                        type: string
+                        additionalProperties:
+                          type:
+                            - string
+                            - integer
+                        description: |-
+                          Use a number or string. The higher the number, the more rights the specifier has:
+                          - 100 or "admin"
+                          - 10 or "viewer"
+                      _destroy:
+                        type: boolean
+                        description: '(Optional) If true, instead of creating/updating the permission, it destroys it.'
+            example:
+              permissions:
+                - resource_id: '3281'
+                  resource_type: account
+                  access_level: viewer
+                - resource_id: '3809'
+                  resource_type: sandbox
+                  _destroy: true
+      responses:
+        '200':
+          description: Returns message about successful update of permissions.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+              example:
+                message: Permissions have been updated!
+        '401':
+          $ref: '#/components/responses/UNAUTHENTICATED'
+        '403':
+          $ref: '#/components/responses/PERMISSION_DENIED'
+        '404':
+          $ref: '#/components/responses/NOT_FOUND'
+        '422':
+          $ref: '#/components/responses/UNPROCESSABLE_ENTITY'
+    parameters:
+      - schema:
+          type: integer
+          format: int64
+          minimum: 1
+          example: 5142
+        name: account_access_id
+        in: path
+        required: true
+        description: Unique account access ID
+  '/api/permissions/resources':
+    get:
+      operationId: getResources
+      summary: Get resources
+      description: 'Get all resources in your account (Sandboxes, Projects, Domains, Email Campaigns, Billing and Account itself) to which the token has admin access.'
+      tags:
+        - Permissions
+      x-codeSamples:
+        - lang: shell
+          label: 'cURL'
+          source: |
+            curl -X GET https://eu.mailtrap.io/api/permissions/resources \
+              -H 'Authorization: Bearer YOUR_API_KEY'
+        - lang: javascript
+          label: Node.js
+          source: |
+            const { MailtrapClient } = require("mailtrap");
+            const client = new MailtrapClient({ token: "YOUR_API_KEY", accountId: YOUR_ACCOUNT_ID });
+
+            async function getResources() {
+              const resources = await client.general.permissions.getResources();
+            }
+
+            getResources();
+        - lang: php
+          label: PHP
+          source: |
+            <?php
+            use Mailtrap\Config;
+            use Mailtrap\Helper\ResponseHelper;
+            use Mailtrap\MailtrapGeneralClient;
+
+            $accountId = $_ENV['MAILTRAP_ACCOUNT_ID'];
+            $config = new Config($_ENV['MAILTRAP_API_KEY']);
+            $generalPermissions = (new MailtrapGeneralClient($config))->permissions($accountId);
+
+            $response = $generalPermissions->getResources();
+            var_dump(ResponseHelper::toArray($response));
+        - lang: python
+          label: Python
+          source: |
+            import mailtrap as mt
+
+            account_id = "YOUR_ACCOUNT_ID"
+
+            client = mt.MailtrapClient(token="YOUR_API_KEY")
+            resources = client.general_api.permissions.get_resources(account_id)
+            print(resources)
+        - lang: ruby
+          label: Ruby
+          source: |
+            require 'mailtrap'
+
+            client = Mailtrap::Client.new(api_key: 'YOUR_API_KEY')
+            account_id = 1000001
+            permissions = Mailtrap::PermissionsAPI.new(account_id, client)
+
+            puts permissions.resources
+        - lang: csharp
+          label: C#
+          source: |
+            using Mailtrap;
+            using var mailtrapFactory = new MailtrapClientFactory("YOUR_API_KEY");
+            var client = mailtrapFactory.CreateClient();
+            var resources = await client.Account(YOUR_ACCOUNT_ID).Permissions().GetAll();
+        - lang: java
+          label: Java
+          source: |
+            import io.mailtrap.config.MailtrapConfig;
+            import io.mailtrap.factory.MailtrapClientFactory;
+            
+            var config = new MailtrapConfig.Builder().token("YOUR_API_KEY").build();
+            var client = MailtrapClientFactory.createMailtrapClient(config);
+            
+            var response = client.generalApi().permissions().getResources(accountId);
+        - lang: go
+          label: Go
+          source: |
+            package main
+
+            import (
+            	"context"
+            	"fmt"
+            	"log"
+            	"os"
+
+            	"github.com/mailtrap/mailtrap-go"
+            )
+
+            func main() {
+            	client, err := mailtrap.NewClient(os.Getenv("MAILTRAP_API_TOKEN"))
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	resources, _, err := client.Permissions.Resources(context.Background())
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	// The response is a hierarchy: an account holds projects, which hold sandboxes.
+            	for _, resource := range resources {
+            		fmt.Printf("%s %d %s (%d child resource(s))\n", resource.Type, resource.ID, resource.Name, len(resource.Resources))
+            	}
+            }
+      responses:
+        '200':
+          description: |-
+            Returns the resources nested according to their hierarchy.
+
+            - **access_level** in this response represents the access level of the token used to make the request.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PermissionResourceNode'
+              example:
+                - id: 1774100
+                  name: Account
+                  type: account
+                  access_level: 100
+                  resources:
+                    - id: 1774100
+                      name: Templates
+                      type: email_template_permission_scope
+                      access_level: 100
+                      resources: []
+                    - id: 2550469
+                      name: My Project
+                      type: project
+                      access_level: 100
+                      resources:
+                        - id: 4117907
+                          name: My Sandbox
+                          type: sandbox
+                          access_level: 100
+                          resources: []
+        '401':
+          $ref: '#/components/responses/UNAUTHENTICATED'
+        '403':
+          $ref: '#/components/responses/PERMISSION_DENIED'
+  '/api/api_tokens':
+    get:
+      operationId: listApiTokens
+      summary: List API tokens
+      description: Returns all API tokens visible to the current API token.
+      tags:
+        - API Tokens
+      x-codeSamples:
+        - lang: shell
+          label: cURL
+          source: |
+            curl -X GET https://eu.mailtrap.io/api/api_tokens \
+              -H 'Authorization: Bearer YOUR_API_KEY'
+        - lang: javascript
+          label: Node.js
+          source: |
+            import { MailtrapClient } from "mailtrap";
+
+            const accountId = 1000001;
+            const client = new MailtrapClient({ token: "YOUR_API_KEY", accountId });
+
+            const tokens = await client.general.apiTokens.getList();
+            console.log(tokens);
+        - lang: php
+          label: PHP
+          source: |
+            <?php
+            use Mailtrap\Config;
+            use Mailtrap\Helper\ResponseHelper;
+            use Mailtrap\MailtrapGeneralClient;
+
+            $config = new Config($_ENV['MAILTRAP_API_KEY']);
+            $accountId = $_ENV['MAILTRAP_ACCOUNT_ID'];
+            $apiTokens = (new MailtrapGeneralClient($config))->apiTokens($accountId);
+
+            $response = $apiTokens->getApiTokens();
+            var_dump(ResponseHelper::toArray($response));
+        - lang: python
+          label: Python
+          source: |
+            import mailtrap as mt
+
+            client = mt.MailtrapClient(token="YOUR_API_KEY")
+
+            account_id = 1000001
+            tokens = client.general_api.api_tokens.get_list(account_id)
+            print(tokens)
+        - lang: ruby
+          label: Ruby
+          source: |
+            require 'mailtrap'
+
+            client = Mailtrap::Client.new(api_key: 'YOUR_API_KEY')
+            account_id = 1000001
+            api_tokens = Mailtrap::ApiTokensAPI.new(account_id, client)
+
+            puts api_tokens.list
+        - lang: csharp
+          label: .NET
+          source: |
+            using Mailtrap;
+
+            using var mailtrapFactory = new MailtrapClientFactory("YOUR_API_KEY");
+            var client = mailtrapFactory.CreateClient();
+
+            var accountId = 1000001;
+            var tokens = await client.Account(accountId).ApiTokens().GetAll();
+            Console.WriteLine(tokens.Count);
+        - lang: java
+          label: Java
+          source: |
+            import io.mailtrap.config.MailtrapConfig;
+            import io.mailtrap.factory.MailtrapClientFactory;
+
+            var config = new MailtrapConfig.Builder().token("YOUR_API_KEY").build();
+            var client = MailtrapClientFactory.createMailtrapClient(config);
+
+            long accountId = 1000001L;
+            var tokens = client.generalApi().apiTokens().getAllApiTokens(accountId);
+            System.out.println(tokens);
+        - lang: go
+          label: Go
+          source: |
+            package main
+
+            import (
+            	"context"
+            	"fmt"
+            	"log"
+            	"os"
+
+            	"github.com/mailtrap/mailtrap-go"
+            )
+
+            func main() {
+            	client, err := mailtrap.NewClient(os.Getenv("MAILTRAP_API_TOKEN"))
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	tokens, _, err := client.APITokens.List(context.Background())
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	for _, token := range tokens {
+            		fmt.Printf("%d %s (...%s, expires %s)\n", token.ID, token.Name, token.Last4Digits, token.ExpiresAt)
+            	}
+            }
+      responses:
+        '200':
+          description: List of API tokens
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ApiToken'
+        '401':
+          $ref: '#/components/responses/UNAUTHENTICATED'
+    post:
+      operationId: createApiToken
+      summary: Create API token
+      description: |-
+        Creates a new API token for the account with the given name and resource permissions.
+        Unless `expires_at` is provided, the token expires 1 year after creation.
+        Pass `"expires_at": null` to create a token that never expires.
+        `expires_at` must be in the future and no more than 5 years ahead;
+        past or unparseable values are rejected with a 422 error.
+      tags:
+        - API Tokens
+      x-codeSamples:
+        - lang: shell
+          label: cURL
+          source: |
+            curl -X POST https://eu.mailtrap.io/api/api_tokens \
+              -H 'Authorization: Bearer YOUR_API_KEY' \
+              -H 'Content-Type: application/json' \
+              -d '{
+                "name": "My API Token",
+                "expires_at": "2027-06-01T00:00:00Z",
+                "resources": [
+                  {"resource_type": "account", "resource_id": 3229, "access_level": 100}
+                ]
+              }'
+        - lang: javascript
+          label: Node.js
+          source: |
+            import { MailtrapClient } from "mailtrap";
+
+            const accountId = 1000001;
+            const client = new MailtrapClient({ token: "YOUR_API_KEY", accountId });
+
+            // The full token value is returned only once — store it securely.
+            const token = await client.general.apiTokens.create({
+              name: "My API Token",
+              resources: [
+                { resource_type: "account", resource_id: accountId, access_level: 100 },
+              ],
+            });
+            console.log(token);
+        - lang: php
+          label: PHP
+          source: |
+            <?php
+            use Mailtrap\Config;
+            use Mailtrap\DTO\Request\Permission\CreateOrUpdatePermission;
+            use Mailtrap\DTO\Request\Permission\PermissionInterface;
+            use Mailtrap\DTO\Request\Permission\Permissions;
+            use Mailtrap\Helper\ResponseHelper;
+            use Mailtrap\MailtrapGeneralClient;
+
+            $config = new Config($_ENV['MAILTRAP_API_KEY']);
+            $accountId = $_ENV['MAILTRAP_ACCOUNT_ID'];
+            $apiTokens = (new MailtrapGeneralClient($config))->apiTokens($accountId);
+
+            $permissions = new Permissions(
+                new CreateOrUpdatePermission($accountId, PermissionInterface::TYPE_ACCOUNT, 100)
+            );
+
+            $response = $apiTokens->createApiToken('My API Token', $permissions);
+            var_dump(ResponseHelper::toArray($response));
+        - lang: python
+          label: Python
+          source: |
+            import mailtrap as mt
+
+            client = mt.MailtrapClient(token="YOUR_API_KEY")
+
+            account_id = 1000001
+            # The full token value is returned only once — store it securely.
+            token = client.general_api.api_tokens.create(
+                account_id=account_id,
+                token_params=mt.CreateApiTokenParams(
+                    name="My API Token",
+                    resources=[
+                        mt.ApiTokenResource(
+                            resource_type="account", resource_id=account_id, access_level=100
+                        )
+                    ],
+                ),
+            )
+            print(token)
+        - lang: ruby
+          label: Ruby
+          source: |
+            require 'mailtrap'
+
+            client = Mailtrap::Client.new(api_key: 'YOUR_API_KEY')
+            account_id = 1000001
+            api_tokens = Mailtrap::ApiTokensAPI.new(account_id, client)
+
+            # The full token value is returned only once — store it securely.
+            token = api_tokens.create(
+              name: 'My API Token',
+              resources: [
+                { resource_type: 'account', resource_id: account_id, access_level: 100 }
+              ]
+            )
+            puts token
+        - lang: csharp
+          label: .NET
+          source: |
+            using Mailtrap;
+            using Mailtrap.ApiTokens.Requests;
+            using Mailtrap.Core.Models;
+
+            using var mailtrapFactory = new MailtrapClientFactory("YOUR_API_KEY");
+            var client = mailtrapFactory.CreateClient();
+
+            var accountId = 1000001;
+            var request = new CreateApiTokenRequest { Name = "My API Token" };
+            request.Resources.Add(new ApiTokenAccessRequest(ResourceType.Account, accountId, AccessLevel.Admin));
+
+            // The full token value is returned only once — store it securely.
+            var token = await client.Account(accountId).ApiTokens().Create(request);
+            Console.WriteLine(token.Token);
+        - lang: java
+          label: Java
+          source: |
+            import io.mailtrap.config.MailtrapConfig;
+            import io.mailtrap.factory.MailtrapClientFactory;
+            import io.mailtrap.model.AccessLevel;
+            import io.mailtrap.model.ResourceType;
+            import io.mailtrap.model.request.apitokens.ApiTokenResource;
+            import io.mailtrap.model.request.apitokens.CreateApiTokenRequest;
+            import java.util.List;
+
+            var config = new MailtrapConfig.Builder().token("YOUR_API_KEY").build();
+            var client = MailtrapClientFactory.createMailtrapClient(config);
+
+            long accountId = 1000001L;
+            var request = new CreateApiTokenRequest(
+                "My API Token",
+                List.of(new ApiTokenResource(ResourceType.ACCOUNT, accountId, AccessLevel.ADMIN)));
+
+            // The full token value is returned only once — store it securely.
+            var token = client.generalApi().apiTokens().createApiToken(accountId, request);
+            System.out.println(token);
+        - lang: go
+          label: Go
+          source: |
+            package main
+
+            import (
+            	"context"
+            	"fmt"
+            	"log"
+            	"os"
+
+            	"github.com/mailtrap/mailtrap-go"
+            )
+
+            func main() {
+            	client, err := mailtrap.NewClient(os.Getenv("MAILTRAP_API_TOKEN"))
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	token, _, err := client.APITokens.Create(context.Background(), &mailtrap.CreateAPITokenRequest{
+            		Name: "CI deploy token",
+            		Resources: []*mailtrap.APITokenPermission{
+            			{
+            				ResourceType: mailtrap.ResourceTypeSandbox,
+            				ResourceID:   3000001,
+            				AccessLevel:  mailtrap.AccessLevelAdmin,
+            			},
+            		},
+            	})
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	// The full token value is returned only here: store it securely.
+            	fmt.Printf("created token %d: %s\n", token.ID, token.Token)
+            }
+        - lang: hcl
+          label: Terraform
+          source: |
+            # terraform apply creates the token: POST /api/api_tokens
+            # Provider docs: https://registry.terraform.io/providers/mailtrap/mailtrap/latest/docs
+            terraform {
+              required_providers {
+                mailtrap = {
+                  source = "mailtrap/mailtrap"
+                }
+              }
+            }
+
+            # The token is read from the MAILTRAP_API_TOKEN environment variable.
+            provider "mailtrap" {}
+
+            resource "mailtrap_api_token" "ci" {
+              name = "CI deploy token"
+
+              resources = [
+                {
+                  resource_type = "sandbox"
+                  resource_id   = 3000001
+                  access_level  = 100
+                },
+              ]
+            }
+
+            # token is returned only on create, and is unavailable after an import.
+            output "api_token" {
+              value     = mailtrap_api_token.ci.token
+              sensitive = true
+            }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateApiTokenRequest'
+      responses:
+        '200':
+          description: Created API token (includes full token value once)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiTokenWithToken'
+        '401':
+          $ref: '#/components/responses/UNAUTHENTICATED'
+        '403':
+          $ref: '#/components/responses/PERMISSION_DENIED'
+        '422':
+          $ref: '#/components/responses/UNPROCESSABLE_ENTITY'
+  '/api/api_tokens/{id}':
+    get:
+      operationId: getApiToken
+      summary: Get API token
+      description: Returns a single API token by id.
+      tags:
+        - API Tokens
+      x-codeSamples:
+        - lang: shell
+          label: cURL
+          source: |
+            curl -X GET https://eu.mailtrap.io/api/api_tokens/{id} \
+              -H 'Authorization: Bearer YOUR_API_KEY'
+        - lang: javascript
+          label: Node.js
+          source: |
+            import { MailtrapClient } from "mailtrap";
+
+            const accountId = 1000001;
+            const client = new MailtrapClient({ token: "YOUR_API_KEY", accountId });
+
+            const apiTokenId = 123;
+            const token = await client.general.apiTokens.get(apiTokenId);
+            console.log(token);
+        - lang: php
+          label: PHP
+          source: |
+            <?php
+            use Mailtrap\Config;
+            use Mailtrap\Helper\ResponseHelper;
+            use Mailtrap\MailtrapGeneralClient;
+
+            $config = new Config($_ENV['MAILTRAP_API_KEY']);
+            $accountId = $_ENV['MAILTRAP_ACCOUNT_ID'];
+            $apiTokens = (new MailtrapGeneralClient($config))->apiTokens($accountId);
+
+            $apiTokenId = $_ENV['MAILTRAP_API_TOKEN_ID'];
+            $response = $apiTokens->getApiToken($apiTokenId);
+            var_dump(ResponseHelper::toArray($response));
+        - lang: python
+          label: Python
+          source: |
+            import mailtrap as mt
+
+            client = mt.MailtrapClient(token="YOUR_API_KEY")
+
+            account_id = 1000001
+            api_token_id = 123
+            token = client.general_api.api_tokens.get_by_id(account_id, api_token_id)
+            print(token)
+        - lang: ruby
+          label: Ruby
+          source: |
+            require 'mailtrap'
+
+            client = Mailtrap::Client.new(api_key: 'YOUR_API_KEY')
+            account_id = 1000001
+            api_token_id = 123
+            api_tokens = Mailtrap::ApiTokensAPI.new(account_id, client)
+
+            puts api_tokens.get(api_token_id)
+        - lang: csharp
+          label: .NET
+          source: |
+            using Mailtrap;
+
+            using var mailtrapFactory = new MailtrapClientFactory("YOUR_API_KEY");
+            var client = mailtrapFactory.CreateClient();
+
+            var accountId = 1000001;
+            var apiTokenId = 123;
+            var token = await client.Account(accountId).ApiToken(apiTokenId).GetDetails();
+            Console.WriteLine(token.Name);
+        - lang: java
+          label: Java
+          source: |
+            import io.mailtrap.config.MailtrapConfig;
+            import io.mailtrap.factory.MailtrapClientFactory;
+
+            var config = new MailtrapConfig.Builder().token("YOUR_API_KEY").build();
+            var client = MailtrapClientFactory.createMailtrapClient(config);
+
+            long accountId = 1000001L;
+            long apiTokenId = 123L;
+            var token = client.generalApi().apiTokens().getApiToken(accountId, apiTokenId);
+            System.out.println(token);
+        - lang: go
+          label: Go
+          source: |
+            package main
+
+            import (
+            	"context"
+            	"fmt"
+            	"log"
+            	"os"
+
+            	"github.com/mailtrap/mailtrap-go"
+            )
+
+            func main() {
+            	client, err := mailtrap.NewClient(os.Getenv("MAILTRAP_API_TOKEN"))
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	// The full token value is not included; it is returned only on create and reset.
+            	token, _, err := client.APITokens.Get(context.Background(), 1000001)
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	fmt.Printf("%s (...%s), created by %s\n", token.Name, token.Last4Digits, token.CreatedBy)
+            }
+      parameters:
+        - $ref: '#/components/parameters/api_token_id'
+      responses:
+        '200':
+          description: API token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiToken'
+        '401':
+          $ref: '#/components/responses/UNAUTHENTICATED'
+        '404':
+          $ref: '#/components/responses/NOT_FOUND'
+    delete:
+      operationId: deleteApiToken
+      summary: Delete API token
+      description: Permanently deletes an API token.
+      tags:
+        - API Tokens
+      x-codeSamples:
+        - lang: shell
+          label: cURL
+          source: |
+            curl -X DELETE https://eu.mailtrap.io/api/api_tokens/{id} \
+              -H 'Authorization: Bearer YOUR_API_KEY'
+        - lang: javascript
+          label: Node.js
+          source: |
+            import { MailtrapClient } from "mailtrap";
+
+            const accountId = 1000001;
+            const client = new MailtrapClient({ token: "YOUR_API_KEY", accountId });
+
+            const apiTokenId = 123;
+            await client.general.apiTokens.delete(apiTokenId);
+        - lang: php
+          label: PHP
+          source: |
+            <?php
+            use Mailtrap\Config;
+            use Mailtrap\MailtrapGeneralClient;
+
+            $config = new Config($_ENV['MAILTRAP_API_KEY']);
+            $accountId = $_ENV['MAILTRAP_ACCOUNT_ID'];
+            $apiTokens = (new MailtrapGeneralClient($config))->apiTokens($accountId);
+
+            $apiTokenId = $_ENV['MAILTRAP_API_TOKEN_ID'];
+            $response = $apiTokens->deleteApiToken($apiTokenId);
+            echo $response->getStatusCode(); // 204
+        - lang: python
+          label: Python
+          source: |
+            import mailtrap as mt
+
+            client = mt.MailtrapClient(token="YOUR_API_KEY")
+
+            account_id = 1000001
+            api_token_id = 123
+            client.general_api.api_tokens.delete(account_id, api_token_id)
+        - lang: ruby
+          label: Ruby
+          source: |
+            require 'mailtrap'
+
+            client = Mailtrap::Client.new(api_key: 'YOUR_API_KEY')
+            account_id = 1000001
+            api_token_id = 123
+            api_tokens = Mailtrap::ApiTokensAPI.new(account_id, client)
+
+            api_tokens.delete(api_token_id)
+        - lang: csharp
+          label: .NET
+          source: |
+            using Mailtrap;
+
+            using var mailtrapFactory = new MailtrapClientFactory("YOUR_API_KEY");
+            var client = mailtrapFactory.CreateClient();
+
+            var accountId = 1000001;
+            var apiTokenId = 123;
+            await client.Account(accountId).ApiToken(apiTokenId).Delete();
+        - lang: java
+          label: Java
+          source: |
+            import io.mailtrap.config.MailtrapConfig;
+            import io.mailtrap.factory.MailtrapClientFactory;
+
+            var config = new MailtrapConfig.Builder().token("YOUR_API_KEY").build();
+            var client = MailtrapClientFactory.createMailtrapClient(config);
+
+            long accountId = 1000001L;
+            long apiTokenId = 123L;
+            client.generalApi().apiTokens().deleteApiToken(accountId, apiTokenId);
+        - lang: go
+          label: Go
+          source: |
+            package main
+
+            import (
+            	"context"
+            	"fmt"
+            	"log"
+            	"os"
+
+            	"github.com/mailtrap/mailtrap-go"
+            )
+
+            func main() {
+            	client, err := mailtrap.NewClient(os.Getenv("MAILTRAP_API_TOKEN"))
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	if _, err := client.APITokens.Delete(context.Background(), 1000001); err != nil {
+            		log.Fatal(err)
+            	}
+
+            	fmt.Println("API token deleted")
+            }
+      parameters:
+        - $ref: '#/components/parameters/api_token_id'
+      responses:
+        '204':
+          description: Token deleted (no body)
+        '401':
+          $ref: '#/components/responses/UNAUTHENTICATED'
+        '403':
+          $ref: '#/components/responses/PERMISSION_DENIED'
+        '404':
+          $ref: '#/components/responses/NOT_FOUND'
+  '/api/api_tokens/{id}/reset':
+    post:
+      operationId: resetApiToken
+      summary: Reset API token
+      description: |
+        Expires the requested token and creates a new token with the same permissions.
+        The old token stops working after a short grace period. The response includes
+        the new token value (store it securely; it is only returned once).
+        Unless `expires_at` is provided, the new token expires 1 year after the reset.
+        Pass `"expires_at": null` to create a token that never expires.
+        `expires_at` must be in the future and no more than 5 years ahead;
+        past or unparseable values are rejected with a 422 error.
+        Tokens that have already expired cannot be reset (returns a 422 error).
+      tags:
+        - API Tokens
+      x-codeSamples:
+        - lang: shell
+          label: cURL
+          source: |
+            curl -X POST https://eu.mailtrap.io/api/api_tokens/{id}/reset \
+              -H 'Authorization: Bearer YOUR_API_KEY' \
+              -H 'Content-Type: application/json' \
+              -d '{"expires_at": "2027-06-01T00:00:00Z"}'
+        - lang: javascript
+          label: Node.js
+          source: |
+            import { MailtrapClient } from "mailtrap";
+
+            const accountId = 1000001;
+            const client = new MailtrapClient({ token: "YOUR_API_KEY", accountId });
+
+            const apiTokenId = 123;
+            // The new token value is returned only once — store it securely.
+            const token = await client.general.apiTokens.reset(apiTokenId);
+            console.log(token);
+        - lang: php
+          label: PHP
+          source: |
+            <?php
+            use Mailtrap\Config;
+            use Mailtrap\Helper\ResponseHelper;
+            use Mailtrap\MailtrapGeneralClient;
+
+            $config = new Config($_ENV['MAILTRAP_API_KEY']);
+            $accountId = $_ENV['MAILTRAP_ACCOUNT_ID'];
+            $apiTokens = (new MailtrapGeneralClient($config))->apiTokens($accountId);
+
+            $apiTokenId = $_ENV['MAILTRAP_API_TOKEN_ID'];
+            $response = $apiTokens->resetApiToken($apiTokenId);
+            var_dump(ResponseHelper::toArray($response));
+        - lang: python
+          label: Python
+          source: |
+            import mailtrap as mt
+
+            client = mt.MailtrapClient(token="YOUR_API_KEY")
+
+            account_id = 1000001
+            api_token_id = 123
+            # The new token value is returned only once — store it securely.
+            token = client.general_api.api_tokens.reset(account_id, api_token_id)
+            print(token)
+        - lang: ruby
+          label: Ruby
+          source: |
+            require 'mailtrap'
+
+            client = Mailtrap::Client.new(api_key: 'YOUR_API_KEY')
+            account_id = 1000001
+            api_token_id = 123
+            api_tokens = Mailtrap::ApiTokensAPI.new(account_id, client)
+
+            # The new token value is returned only once — store it securely.
+            puts api_tokens.reset(api_token_id)
+        - lang: csharp
+          label: .NET
+          source: |
+            using Mailtrap;
+
+            using var mailtrapFactory = new MailtrapClientFactory("YOUR_API_KEY");
+            var client = mailtrapFactory.CreateClient();
+
+            var accountId = 1000001;
+            var apiTokenId = 123;
+            // The new token value is returned only once — store it securely.
+            var token = await client.Account(accountId).ApiToken(apiTokenId).Reset();
+            Console.WriteLine(token.Token);
+        - lang: java
+          label: Java
+          source: |
+            import io.mailtrap.config.MailtrapConfig;
+            import io.mailtrap.factory.MailtrapClientFactory;
+
+            var config = new MailtrapConfig.Builder().token("YOUR_API_KEY").build();
+            var client = MailtrapClientFactory.createMailtrapClient(config);
+
+            long accountId = 1000001L;
+            long apiTokenId = 123L;
+            // The new token value is returned only once — store it securely.
+            var token = client.generalApi().apiTokens().resetApiToken(accountId, apiTokenId);
+            System.out.println(token);
+        - lang: go
+          label: Go
+          source: |
+            package main
+
+            import (
+            	"context"
+            	"fmt"
+            	"log"
+            	"os"
+
+            	"github.com/mailtrap/mailtrap-go"
+            )
+
+            func main() {
+            	client, err := mailtrap.NewClient(os.Getenv("MAILTRAP_API_TOKEN"))
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	// Reset expires the token and issues a replacement with the same permissions.
+            	// Pass nil to send no body and apply the server default expiration.
+            	token, _, err := client.APITokens.Reset(context.Background(), 1000001, nil)
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	// The new token value is returned only here: store it securely.
+            	fmt.Printf("token %d reset: %s\n", token.ID, token.Token)
+            }
+      parameters:
+        - $ref: '#/components/parameters/api_token_id'
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                expires_at:
+                  type: string
+                  format: date-time
+                  nullable: true
+                  description: |-
+                    When the new token expires (ISO 8601 date-time, must be in the future).
+                    Must be no more than 5 years in the future.
+                    If omitted, the new token expires 1 year after the reset.
+                    Pass null to create a token that never expires.
+                    Past or unparseable values are rejected with a 422 error.
+            example:
+              expires_at: '2027-06-01T00:00:00Z'
+      responses:
+        '200':
+          description: New API token (includes full token value once)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiTokenWithToken'
+        '401':
+          $ref: '#/components/responses/UNAUTHENTICATED'
+        '403':
+          $ref: '#/components/responses/PERMISSION_DENIED'
+        '404':
+          $ref: '#/components/responses/NOT_FOUND'
+        '422':
+          $ref: '#/components/responses/UNPROCESSABLE_ENTITY'
+  '/api/billing/usage':
+    get:
+      operationId: getAccountBillingUsage
+      summary: Get current billing cycle usage
+      description: Get current billing cycle usage for Email Sandbox, Email Live Sending, and Email Marketing.
+      tags:
+        - Billing
+      x-codeSamples:
+        - lang: shell
+          label: 'cURL'
+          source: |
+            curl -X GET https://eu.mailtrap.io/api/billing/usage \
+              -H 'Authorization: Bearer YOUR_API_KEY'
+        - lang: javascript
+          label: Node.js
+          source: |
+            const { MailtrapClient } = require("mailtrap");
+            const client = new MailtrapClient({ token: "YOUR_API_KEY", accountId: YOUR_ACCOUNT_ID });
+
+            async function getUsage() {
+              const usage = await client.general.billing.getCurrentBillingCycleUsage();
+            }
+
+            getUsage();
+        - lang: php
+          label: PHP
+          source: |
+            <?php
+            use Mailtrap\Config;
+            use Mailtrap\Helper\ResponseHelper;
+            use Mailtrap\MailtrapGeneralClient;
+
+            $accountId = $_ENV['MAILTRAP_ACCOUNT_ID'];
+            $config = new Config($_ENV['MAILTRAP_API_KEY']);
+            $billing = (new MailtrapGeneralClient($config))->billing($accountId);
+
+            $response = $billing->getBillingUsage();
+            var_dump(ResponseHelper::toArray($response));
+        - lang: python
+          label: Python
+          source: |
+            import mailtrap as mt
+
+            account_id = "YOUR_ACCOUNT_ID"
+  
+            client = mt.MailtrapClient(token="YOUR_API_KEY")
+            usage = client.general_api.billing.get_current_billing_usage(account_id)
+            print(f"Sandbox sent: {usage.testing.usage.sent_messages_count.current}/{usage.testing.usage.sent_messages_count.limit}")
+        - lang: ruby
+          label: Ruby
+          source: |
+            require 'mailtrap'
+
+            client = Mailtrap::Client.new(api_key: ENV['MAILTRAP_API_KEY'])
+            billing = Mailtrap::BillingAPI.new(YOUR_ACCOUNT_ID, client)
+
+            puts "Usage: #{billing.usage}"
+        - lang: csharp
+          label: C#
+          source: |
+            using Mailtrap;
+            using var mailtrapFactory = new MailtrapClientFactory("YOUR_API_KEY");
+            var client = mailtrapFactory.CreateClient();
+            var usage = await client.Account(YOUR_ACCOUNT_ID).Billing().GetUsage();
+        - lang: java
+          label: Java
+          source: |
+            import io.mailtrap.config.MailtrapConfig;
+            import io.mailtrap.factory.MailtrapClientFactory;
+            
+            var config = new MailtrapConfig.Builder().token("YOUR_API_KEY").build();
+            var client = MailtrapClientFactory.createMailtrapClient(config);
+            
+            var response = client.generalApi().billing().getCurrentBillingCycleUsage(accountId);
+        - lang: go
+          label: Go
+          source: |
+            package main
+
+            import (
+            	"context"
+            	"fmt"
+            	"log"
+            	"os"
+
+            	"github.com/mailtrap/mailtrap-go"
+            )
+
+            func main() {
+            	client, err := mailtrap.NewClient(os.Getenv("MAILTRAP_API_TOKEN"))
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	usage, _, err := client.Billing.Usage(context.Background())
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	fmt.Printf("cycle %s to %s\n", usage.Billing.CycleStart, usage.Billing.CycleEnd)
+            	// A product is nil when the account has no plan for it.
+            	if usage.Sending != nil {
+            		sent := usage.Sending.Usage.SentMessagesCount
+            		fmt.Printf("sending (%s): %d of %d\n", usage.Sending.Plan.Name, sent.Current, sent.Limit)
+            	}
+            }
+      responses:
+        '200':
+          description: Returns an object with current billing cycle usage for Email Sandbox, Email Live Sending, and Email Marketing if available.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  billing:
+                    type: object
+                    properties:
+                      cycle_start:
+                        type: string
+                        format: date-time
+                      cycle_end:
+                        type: string
+                        format: date-time
+                  testing:
+                    type: object
+                    properties:
+                      plan:
+                        type: object
+                        properties:
+                          name:
+                            type: string
+                      usage:
+                        type: object
+                        properties:
+                          sent_messages_count:
+                            type: object
+                            properties:
+                              current:
+                                type: integer
+                              limit:
+                                type: integer
+                          forwarded_messages_count:
+                            type: object
+                            properties:
+                              current:
+                                type: integer
+                              limit:
+                                type: integer
+                  sending:
+                    type: object
+                    properties:
+                      plan:
+                        type: object
+                        properties:
+                          name:
+                            type: string
+                      usage:
+                        type: object
+                        properties:
+                          sent_messages_count:
+                            type: object
+                            properties:
+                              current:
+                                type: integer
+                              limit:
+                                type: integer
+                  marketing:
+                    type: object
+                    properties:
+                      plan:
+                        type: object
+                        properties:
+                          name:
+                            type: string
+                      usage:
+                        type: object
+                        properties:
+                          sent_messages_count:
+                            type: object
+                            properties:
+                              current:
+                                type: integer
+                              limit:
+                                type: integer
+              example:
+                billing:
+                  cycle_start: '2024-02-15T21:11:59.624Z'
+                  cycle_end: '2024-02-15T21:11:59.624Z'
+                testing:
+                  plan:
+                    name: Individual
+                  usage:
+                    sent_messages_count:
+                      current: 1234
+                      limit: 5000
+                    forwarded_messages_count:
+                      current: 0
+                      limit: 100
+                sending:
+                  plan:
+                    name: Basic 10K
+                  usage:
+                    sent_messages_count:
+                      current: 6789
+                      limit: 10000
+                marketing:
+                  plan:
+                    name: Marketing Pro
+                  usage:
+                    sent_messages_count:
+                      current: 1500
+                      limit: 10000
+        '401':
+          $ref: '#/components/responses/UNAUTHENTICATED'
+        '403':
+          $ref: '#/components/responses/PERMISSION_DENIED'
+  '/api/organizations/{organization_id}/sub_accounts':
+    get:
+      operationId: getOrganizationSubAccounts
+      summary: Get organization sub accounts
+      description: Get a list of sub accounts for the specified organization. You must have sub account management permissions for this organization.
+      tags:
+        - Organizations
+      x-codeSamples:
+        - lang: shell
+          label: 'cURL'
+          source: |
+            curl -X GET https://eu.mailtrap.io/api/organizations/{organization_id}/sub_accounts \
+              -H 'Authorization: Bearer YOUR_API_KEY'
+        - lang: javascript
+          label: Node.js
+          source: |
+            import { MailtrapClient } from "mailtrap";
+
+            const organizationId = 2000002;
+            const client = new MailtrapClient({ token: "YOUR_API_KEY", organizationId });
+
+            const subAccounts = await client.organizations.subAccounts.getList();
+            console.log(subAccounts);
+        - lang: php
+          label: PHP
+          source: |
+            <?php
+            use Mailtrap\Config;
+            use Mailtrap\Helper\ResponseHelper;
+            use Mailtrap\MailtrapGeneralClient;
+
+            $config = new Config($_ENV['MAILTRAP_API_KEY']);
+            $organizationId = $_ENV['MAILTRAP_ORGANIZATION_ID'];
+            $subAccounts = (new MailtrapGeneralClient($config))->organization($organizationId)->subAccounts();
+
+            $response = $subAccounts->getSubAccounts();
+            var_dump(ResponseHelper::toArray($response));
+        - lang: python
+          label: Python
+          source: |
+            import mailtrap as mt
+
+            organization_id = 2000002
+            client = mt.MailtrapClient(token="YOUR_API_KEY", organization_id=organization_id)
+
+            sub_accounts = client.organizations_api.sub_accounts.get_list()
+            print(sub_accounts)
+        - lang: ruby
+          label: Ruby
+          source: |
+            require 'mailtrap'
+
+            client = Mailtrap::Client.new(api_key: 'YOUR_API_KEY')
+            organization_id = 2000002
+            sub_accounts = Mailtrap::SubAccountsAPI.new(organization_id, client)
+
+            puts sub_accounts.list
+        - lang: csharp
+          label: .NET
+          source: |
+            using Mailtrap;
+
+            using var mailtrapFactory = new MailtrapClientFactory("YOUR_API_KEY");
+            // Sub-accounts live under /organizations/{id}, so use the organization client.
+            var client = mailtrapFactory.CreateOrganizationClient();
+
+            var organizationId = 2000002;
+            var subAccounts = await client.Organization(organizationId).SubAccounts().GetAll();
+            Console.WriteLine(subAccounts.Count);
+        - lang: java
+          label: Java
+          source: |
+            import io.mailtrap.config.MailtrapConfig;
+            import io.mailtrap.factory.MailtrapClientFactory;
+
+            var config = new MailtrapConfig.Builder().token("YOUR_API_KEY").build();
+            var client = MailtrapClientFactory.createMailtrapClient(config);
+
+            long organizationId = 2000002L;
+            var subAccounts = client.organizationsApi().subAccounts().getSubAccounts(organizationId);
+            System.out.println(subAccounts);
+        - lang: go
+          label: Go
+          source: |
+            package main
+
+            import (
+            	"context"
+            	"fmt"
+            	"log"
+            	"os"
+
+            	"github.com/mailtrap/mailtrap-go"
+            )
+
+            func main() {
+            	client, err := mailtrap.NewClient(os.Getenv("MAILTRAP_API_TOKEN"), mailtrap.WithOrganizationID(2000001))
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	// The sub-account endpoints target the organization set with WithOrganizationID.
+            	subAccounts, _, err := client.SubAccounts.List(context.Background())
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	for _, subAccount := range subAccounts {
+            		fmt.Printf("%d %s\n", subAccount.ID, subAccount.Name)
+            	}
+            }
+      responses:
+        '200':
+          description: Returns the list of sub accounts belonging to the organization.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/SubAccount'
+              example:
+                - id: 12345
+                  name: Development Team Account
+                - id: 12346
+                  name: QA Team Account
+        '401':
+          $ref: '#/components/responses/UNAUTHENTICATED'
+        '403':
+          description: Insufficient organization permissions or wrong organization.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PermissionsDeniedResponse'
+              example:
+                errors: Access forbidden
+    post:
+      operationId: createOrganizationSubAccount
+      summary: Create organization sub account
+      description: Create a new sub account under the specified organization. You must have sub account management permissions for this organization.
+      tags:
+        - Organizations
+      x-codeSamples:
+        - lang: shell
+          label: 'cURL'
+          source: |
+            curl -X POST https://eu.mailtrap.io/api/organizations/{organization_id}/sub_accounts \
+              -H 'Authorization: Bearer YOUR_API_KEY' \
+              -H 'Content-Type: application/json' \
+              -d '{
+                "account": {
+                  "name": "New Team Account"
+                }
+              }'
+        - lang: javascript
+          label: Node.js
+          source: |
+            import { MailtrapClient } from "mailtrap";
+
+            const organizationId = 2000002;
+            const client = new MailtrapClient({ token: "YOUR_API_KEY", organizationId });
+
+            const subAccount = await client.organizations.subAccounts
+              .create({ name: "New Team Account" });
+            console.log(subAccount);
+        - lang: php
+          label: PHP
+          source: |
+            <?php
+            use Mailtrap\Config;
+            use Mailtrap\Helper\ResponseHelper;
+            use Mailtrap\MailtrapGeneralClient;
+
+            $config = new Config($_ENV['MAILTRAP_API_KEY']);
+            $organizationId = $_ENV['MAILTRAP_ORGANIZATION_ID'];
+            $subAccounts = (new MailtrapGeneralClient($config))->organization($organizationId)->subAccounts();
+
+            $response = $subAccounts->createSubAccount('New Team Account');
+            var_dump(ResponseHelper::toArray($response));
+        - lang: python
+          label: Python
+          source: |
+            import mailtrap as mt
+
+            organization_id = 2000002
+            client = mt.MailtrapClient(token="YOUR_API_KEY", organization_id=organization_id)
+
+            sub_account = client.organizations_api.sub_accounts.create(
+                mt.CreateSubAccountParams(name="New Team Account")
+            )
+            print(sub_account)
+        - lang: ruby
+          label: Ruby
+          source: |
+            require 'mailtrap'
+
+            client = Mailtrap::Client.new(api_key: 'YOUR_API_KEY')
+            organization_id = 2000002
+            sub_accounts = Mailtrap::SubAccountsAPI.new(organization_id, client)
+
+            sub_account = sub_accounts.create(name: 'New Team Account')
+            puts sub_account
+        - lang: csharp
+          label: .NET
+          source: |
+            using Mailtrap;
+            using Mailtrap.Organizations.Requests;
+
+            using var mailtrapFactory = new MailtrapClientFactory("YOUR_API_KEY");
+            // Sub-accounts live under /organizations/{id}, so use the organization client.
+            var client = mailtrapFactory.CreateOrganizationClient();
+
+            var organizationId = 2000002;
+            var request = new CreateSubAccountRequest
+            {
+                Account = new SubAccountAttributes { Name = "New Team Account" },
+            };
+            var subAccount = await client.Organization(organizationId).SubAccounts().Create(request);
+            Console.WriteLine(subAccount.Id);
+        - lang: java
+          label: Java
+          source: |
+            import io.mailtrap.config.MailtrapConfig;
+            import io.mailtrap.factory.MailtrapClientFactory;
+            import io.mailtrap.model.request.subaccounts.CreateSubAccountRequest;
+            import io.mailtrap.model.request.subaccounts.SubAccountInput;
+
+            var config = new MailtrapConfig.Builder().token("YOUR_API_KEY").build();
+            var client = MailtrapClientFactory.createMailtrapClient(config);
+
+            long organizationId = 2000002L;
+            var request = new CreateSubAccountRequest(new SubAccountInput("New Team Account"));
+            var subAccount = client.organizationsApi().subAccounts()
+                .createSubAccount(organizationId, request);
+            System.out.println(subAccount);
+        - lang: go
+          label: Go
+          source: |
+            package main
+
+            import (
+            	"context"
+            	"fmt"
+            	"log"
+            	"os"
+
+            	"github.com/mailtrap/mailtrap-go"
+            )
+
+            func main() {
+            	client, err := mailtrap.NewClient(os.Getenv("MAILTRAP_API_TOKEN"), mailtrap.WithOrganizationID(2000001))
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	// The sub-account endpoints target the organization set with WithOrganizationID.
+            	subAccount, _, err := client.SubAccounts.Create(context.Background(), "Acme Corp")
+            	if err != nil {
+            		log.Fatal(err)
+            	}
+
+            	fmt.Printf("created sub-account %d (%s)\n", subAccount.ID, subAccount.Name)
+            }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - account
+              properties:
+                account:
+                  type: object
+                  required:
+                    - name
+                  properties:
+                    name:
+                      type: string
+                      description: Name of the sub account to create
+                      example: New Team Account
+      responses:
+        '200':
+          description: Sub account created successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SubAccount'
+              example:
+                id: 12347
+                name: New Team Account
+        '400':
+          description: Bad request - invalid parameters.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          $ref: '#/components/responses/UNAUTHENTICATED'
+        '403':
+          description: Insufficient organization permissions or wrong organization.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PermissionsDeniedResponse'
+              example:
+                errors: Access forbidden
+        '422':
+          description: Unprocessable entity - validation errors.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnprocessableEntity'
+    parameters:
+      - $ref: '#/components/parameters/organization_id'
+  '/api/organizations/{organization_id}/sub_accounts/{sub_account_id}':
+    delete:
+      operationId: deleteOrganizationSubAccount
+      summary: Delete organization sub account
+      description: |-
+        Delete a sub account of the specified organization. You must have admin permissions for the
+        organization; sub account management permissions are not enough. The organization must also
+        have the Organization & Sub-accounts feature enabled.
+
+        The sub account and all of its data – projects, sandboxes, emails and domains – are removed
+        permanently and cannot be restored. Deleting the organization's last sub account also deletes
+        the organization.
+
+        Rate limit: 10 requests per minute per organization.
+      tags:
+        - Organizations
+      x-codeSamples:
+        - lang: shell
+          label: 'cURL'
+          source: |
+            curl -X DELETE https://eu.mailtrap.io/api/organizations/{organization_id}/sub_accounts/{sub_account_id} \
+              -H 'Authorization: Bearer YOUR_API_KEY'
+        - lang: javascript
+          label: Node.js
+          source: |
+            import { MailtrapClient } from "mailtrap";
+
+            const organizationId = 2000002;
+            const client = new MailtrapClient({ token: "YOUR_API_KEY", organizationId });
+
+            const subAccountId = 12347;
+            await client.organizations.subAccounts.delete(subAccountId);
+        - lang: php
+          label: PHP
+          source: |
+            <?php
+            use Mailtrap\Config;
+            use Mailtrap\MailtrapGeneralClient;
+
+            $config = new Config($_ENV['MAILTRAP_API_KEY']);
+            $organizationId = (int) $_ENV['MAILTRAP_ORGANIZATION_ID'];
+            $subAccounts = (new MailtrapGeneralClient($config))->organization($organizationId)->subAccounts();
+
+            $subAccountId = (int) $_ENV['MAILTRAP_SUB_ACCOUNT_ID'];
+            $response = $subAccounts->deleteSubAccount($subAccountId);
+            echo $response->getStatusCode(); // 204
+        - lang: python
+          label: Python
+          source: |
+            import mailtrap as mt
+
+            organization_id = 2000002
+            client = mt.MailtrapClient(token="YOUR_API_KEY", organization_id=organization_id)
+
+            sub_account_id = 12347
+            client.organizations_api.sub_accounts.delete(sub_account_id)
+        - lang: ruby
+          label: Ruby
+          source: |
+            require 'mailtrap'
+
+            client = Mailtrap::Client.new(api_key: 'YOUR_API_KEY')
+            organization_id = 2000002
+            sub_accounts = Mailtrap::SubAccountsAPI.new(organization_id, client)
+
+            sub_account_id = 12347
+            sub_accounts.delete(sub_account_id)
+        - lang: csharp
+          label: .NET
+          source: |
+            using Mailtrap;
+
+            using var mailtrapFactory = new MailtrapClientFactory("YOUR_API_KEY");
+            // Sub-accounts live under /organizations/{id}, so use the organization client.
+            var client = mailtrapFactory.CreateOrganizationClient();
+
+            var organizationId = 2000002;
+            var subAccountId = 12347;
+            await client.Organization(organizationId).SubAccount(subAccountId).Delete();
+        - lang: java
+          label: Java
+          source: |
+            import io.mailtrap.config.MailtrapConfig;
+            import io.mailtrap.factory.MailtrapClientFactory;
+
+            var config = new MailtrapConfig.Builder().token("YOUR_API_KEY").build();
+            var client = MailtrapClientFactory.createMailtrapClient(config);
+
+            long organizationId = 2000002L;
+            long subAccountId = 12347L;
+            client.organizationsApi().subAccounts().deleteSubAccount(organizationId, subAccountId);
+      responses:
+        '204':
+          description: Sub account deleted successfully. No content is returned.
+        '401':
+          $ref: '#/components/responses/UNAUTHENTICATED'
+        '403':
+          description: |-
+            Insufficient organization permissions, wrong organization, or the Organization &
+            Sub-accounts feature is disabled for this organization.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PermissionsDeniedResponse'
+              example:
+                errors: Access forbidden
+        '404':
+          $ref: '#/components/responses/NOT_FOUND'
+        '409':
+          description: Another deletion of the same sub account is already in progress.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                errors: Another action in progress. Wait until it's finished
+        '429':
+          $ref: '#/components/responses/LIMIT_EXCEEDED'
+    parameters:
+      - $ref: '#/components/parameters/organization_id'
+      - $ref: '#/components/parameters/sub_account_id'
+components:
+  schemas:
+    SubAccount:
+      title: SubAccount
+      description: Represents a sub account within an organization
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 12345
+          description: The unique identifier of the sub account
+        name:
+          type: string
+          example: Development Team Account
+          description: The name of the sub account
+    PermissionResourceNode:
+      title: Permission resource node
+      description: |
+        Nested resource tree for permission management. `type` values include `account`, `project`, `sandbox`,
+        `domain`, `email_template_permission_scope`, `email_campaign_permission_scope`, and others.
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        type:
+          type: string
+        access_level:
+          type: integer
+        resources:
+          type: array
+          items:
+            $ref: '#/components/schemas/PermissionResourceNode'
+    AccountAccess:
+      title: AccountAccess
+      description: Assigns resource-specific permissions to a specifier.
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 42
+          description: The unique identifier of the account access
+        specifier_type:
+          type: string
+          enum:
+            - User
+            - Invite
+            - ApiToken
+          example: User
+          description: The type of the specifier that has permissions to the resources
+        specifier:
+          anyOf:
+            - description: Describes a specifier of type `User`
+              properties:
+                id:
+                  type: integer
+                  description: User unique identifier
+                email:
+                  type: string
+                  format: email
+                  description: User email
+                name:
+                  type: string
+                  description: User name
+                two_factor_authentication_enabled:
+                  type: boolean
+                  description: Indicates whether two-factor authentication (2FA) is enabled for the user
+            - description: Describes a specifier of type `Invite`
+              properties:
+                id:
+                  type: integer
+                  description: Invite unique identifier
+                email:
+                  type: string
+                  format: email
+                  description: Email of the invited user
+            - description: Describes a specifier of type `ApiToken`
+              properties:
+                id:
+                  type: integer
+                  description: Api token unique identifier
+                name:
+                  type: string
+                  description: Api token name
+                author_name:
+                  type: string
+                  description: Describes the origin of the token
+                  example: System
+                masked_token:
+                  type: string
+                  description: The token value with all but the last characters masked
+                expires_at:
+                  type: string
+                  format: date-time
+                  description: Api token expiration time
+          description: Entity that has permissions to the resources
+          type: object
+        resources:
+          type: array
+          description: A list of resources to which the specifier has access
+          items:
+            type: object
+            properties:
+              resource_id:
+                type: integer
+                description: The unique identifier of resource to which the specifier has access
+              resource_type:
+                type: string
+                description: The type of resource to which the specifier has access
+                enum:
+                  - account
+                  - billing
+                  - organization
+                  - project
+                  - sandbox
+                  - domain
+                  - email_campaign_permission_scope
+              access_level:
+                type: integer
+                enum:
+                  - 1000
+                  - 100
+                  - 50
+                  - 10
+                  - 1
+                description: |-
+                  The higher the value, the more rights the specifier has:
+                  - 1000 is for owner
+                  - 100 is for admin
+                  - 50 is for viewer+
+                  - 10 is for viewer
+                  - 1 is for indeterminate
+        permissions:
+          type: object
+          description: Describes the specifier's permissions to resources
+          properties:
+            can_read:
+              type: boolean
+            can_update:
+              type: boolean
+            can_destroy:
+              type: boolean
+            can_leave:
+              type: boolean
+    NotFoundResponse:
+      title: NotFoundResponse
+      type: object
+      properties:
+        error:
+          type: string
+          description: Error message
+          example: Not Found
+      example:
+        error: Not Found
+    PermissionsDeniedResponse:
+      title: PermissionsDeniedResponse
+      type: object
+      properties:
+        errors:
+          type: string
+          example: Account access forbidden
+      example:
+        errors: Account access forbidden
+    RateLimitExceededResponse:
+      title: RateLimitExceededResponse
+      type: object
+      properties:
+        errors:
+          type: string
+          description: Error message
+          example: Rate limit exceeded
+      example:
+        errors: Rate limit exceeded
+    UnauthenticatedResponse:
+      title: UnauthenticatedResponse
+      type: object
+      properties:
+        error:
+          type: string
+          description: Error message
+          example: Incorrect API token
+      example:
+        error: Incorrect API token
+    ErrorResponse:
+      title: ErrorResponse
+      type: object
+      properties:
+        errors:
+          type: string
+          description: Error message
+          example: Unexpected error
+    UnprocessableEntity:
+      title: UnprocessableEntity
+      type: object
+      properties:
+        errors:
+          type: object
+          description: Validation errors per attribute. Entire record errors are under `base` key.
+          additionalProperties:
+            type: array
+            items:
+              type: string
+      example:
+        errors:
+          base:
+            - No permissions selected. Please choose at least one.
+    ApiToken:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          description: API token ID
+        name:
+          type: string
+          description: Token display name
+        last_4_digits:
+          type: string
+          description: Last 4 characters of the token (full token is only shown on create or reset)
+        created_by:
+          type: string
+          description: Name of the user or token that created this token
+        expires_at:
+          type: string
+          format: date-time
+          nullable: true
+          description: When the token expires (ISO 8601); null if the token does not expire
+        resources:
+          type: array
+          description: Permissions granted to this token
+          items:
+            $ref: '#/components/schemas/ResourcePermission'
+      example:
+        id: 12345
+        name: My API Token
+        last_4_digits: 'x7k9'
+        created_by: user@example.com
+        expires_at: null
+        resources:
+          - resource_type: account
+            resource_id: 3229
+            access_level: 100
+    ApiTokenWithToken:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          description: API token ID
+        name:
+          type: string
+          description: Token display name
+        last_4_digits:
+          type: string
+          description: Last 4 characters of the token (full token is only shown on create or reset)
+        created_by:
+          type: string
+          description: Name of the user or token that created this token
+        expires_at:
+          type: string
+          format: date-time
+          nullable: true
+          description: When the token expires (ISO 8601); null if the token does not expire
+        resources:
+          type: array
+          description: Permissions granted to this token
+          items:
+            $ref: '#/components/schemas/ResourcePermission'
+        token:
+          type: string
+          description: Full token value (only returned on create or reset; store securely)
+      example:
+        id: 12345
+        name: My API Token
+        last_4_digits: 'x7k9'
+        created_by: user@example.com
+        expires_at: null
+        resources:
+          - resource_type: account
+            resource_id: 3229
+            access_level: 100
+        token: 'a1b2c3d4e5f6...'
+    ResourcePermission:
+      type: object
+      properties:
+        resource_type:
+          type: string
+          enum:
+            - account
+            - project
+            - sandbox
+            - domain
+          description: Resource type for this permission
+        resource_id:
+          oneOf:
+            - type: integer
+            - type: string
+          description: Resource identifier
+        access_level:
+          type: integer
+          enum: [10, 100]
+          description: 10 = viewer, 100 = admin.
+      example:
+        resource_type: account
+        resource_id: 3229
+        access_level: 100
+    CreateApiTokenRequest:
+      type: object
+      required:
+        - name
+      properties:
+        name:
+          type: string
+          maxLength: 100
+          description: Display name for the token
+        expires_at:
+          type: string
+          format: date-time
+          nullable: true
+          description: |-
+            When the token expires (ISO 8601 date-time, must be in the future).
+            Must be no more than 5 years in the future.
+            If omitted, the token expires 1 year after creation.
+            Pass null to create a token that never expires.
+            Past or unparseable values are rejected with a 422 error.
+        resources:
+          type: array
+          description: Permissions to assign to the token
+          items:
+            $ref: '#/components/schemas/ResourcePermissionInput'
+      example:
+        name: My API Token
+        expires_at: '2027-06-01T00:00:00Z'
+        resources:
+          - resource_type: account
+            resource_id: 3229
+            access_level: 100
+    ResourcePermissionInput:
+      type: object
+      required:
+        - resource_type
+        - resource_id
+        - access_level
+      properties:
+        resource_type:
+          $ref: '#/components/schemas/ResourceType'
+        resource_id:
+          oneOf:
+            - type: integer
+            - type: string
+        access_level:
+          $ref: '#/components/schemas/AccessLevel'
+      example:
+        resource_type: account
+        resource_id: 3229
+        access_level: 100
+    ResourceType:
+      type: string
+      enum:
+        - account
+        - project
+        - sandbox
+        - domain
+      description: Resource type for API token permissions.
+      example: account
+    AccessLevel:
+      type: integer
+      enum: [10, 100]
+      description: 10 = viewer, 100 = admin.
+      example: 100
+  securitySchemes:
+    HeaderAuth:
+      type: apiKey
+      description: Pass the API token in the Api-Token
+      in: header
+      name: Api-Token
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  responses:
+    UNAUTHENTICATED:
+      description: Returns unauthorized error message. Check your credentials.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/UnauthenticatedResponse'
+          example:
+            error: Incorrect API token
+    PERMISSION_DENIED:
+      description: Returns forbidden error message. Check your permissions.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/PermissionsDeniedResponse'
+          example:
+            errors: Account access forbidden
+    NOT_FOUND:
+      description: Returns not found error message
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/NotFoundResponse'
+          example:
+            error: Not Found
+    LIMIT_EXCEEDED:
+      description: Rate limit exceeded.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/RateLimitExceededResponse'
+          example:
+            errors: Rate limit exceeded
+    UNPROCESSABLE_ENTITY:
+      description: Validation error or other business rule violation
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/UnprocessableEntity'
+  parameters:
+    sub_account_id:
+      description: Unique sub account ID
+      name: sub_account_id
+      in: path
+      required: true
+      schema:
+        type: integer
+        format: int64
+        minimum: 1
+        example: 12345
+    organization_id:
+      description: Unique organization ID
+      name: organization_id
+      in: path
+      required: true
+      schema:
+        type: integer
+        format: int64
+        minimum: 1
+        example: 1001
+    api_token_id:
+      description: API token ID
+      name: id
+      in: path
+      required: true
+      schema:
+        type: integer
+        format: int64
+        example: 12345

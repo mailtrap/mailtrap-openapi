@@ -1,0 +1,4525 @@
+openapi: 3.1.0
+info:
+  title: Inbound
+  version: 2.0.0
+  description: |
+    Receive and inspect inbound email in Mailtrap. Inboxes are organized into
+    folders and accept messages at their generated inbound address. Use the
+    Messages endpoints to list, fetch, and delete received mail, and pair them
+    with an `inbound_receiving` webhook to be notified the moment a new
+    message arrives.
+
+    For a complete guide, see [Inbound](https://docs.mailtrap.io/inbound-email/overview).
+  contact:
+    name: Mailtrap Support
+    url: "https://docs.mailtrap.io"
+    email: support@mailtrap.io
+  license:
+    name: Creative Commons Attribution-ShareAlike 4.0 International (CC BY-SA 4.0)
+    url: "https://creativecommons.org/licenses/by-sa/4.0/"
+  x-logo:
+    url: "https://mailtrap.io/wp-content/uploads/2021/04/mailtrap-logo.svg"
+
+servers:
+  - description: Mailtrap API
+    url: "https://eu.mailtrap.io"
+
+security:
+  - HeaderAuth: []
+  - BearerAuth: []
+
+tags:
+  - name: folders
+    x-page-title: Folders
+    x-page-description: Organize inbound inboxes
+    description: |
+      Folders group inbound inboxes within an account. Every inbox belongs to
+      exactly one folder.
+
+  - name: inboxes
+    x-page-title: Inboxes
+    x-page-description: Receive inbound email
+    description: |
+      An inbox is the destination for inbound email. Each inbox is created
+      inside a folder and gets a unique generated address that can receive
+      mail from any sender.
+
+  - name: messages
+    x-page-title: Messages
+    x-page-description: List, inspect, and respond to received messages
+    description: |
+      Inbound messages are the emails delivered to an inbox. Use these
+      endpoints to page through recent messages, fetch the full body and
+      attachments, reply to or forward a message, or delete one you no longer
+      need.
+
+  - name: threads
+    x-page-title: Threads
+    x-page-description: Group related messages into conversations
+    description: |
+      A thread groups the inbound and sent messages that belong to the
+      same conversation. Use these endpoints to page through an inbox's
+      threads, fetch a single thread with its messages embedded, or delete a
+      thread.
+
+  - name: forward-rules
+    x-page-title: Forward Rules
+    x-page-description: Automatically forward received messages
+    description: |
+      Forward rules automatically forward copies of an inbox's incoming
+      messages to other addresses. Each rule has a set of conditions and a
+      set of destinations. A rule matches a message when all of its
+      conditions match (a rule without conditions matches every message),
+      and every matching rule forwards the message. An address named by
+      several matching rules receives a single copy.
+
+      An inbox can have up to 5 rules, each with up to 5 conditions and 5
+      destinations. The outcome for each destination is reported in the
+      `forwards` field of each received message in the Messages and
+      Threads endpoints.
+
+paths:
+  /api/inbound/folders:
+    get:
+      operationId: listInboundFolders
+      summary: List folders
+      description: |
+        Returns the inbound folders in the account that the API token has
+        access to, oldest first. Folders the token can reach only through an
+        inbox-level permission are not included. The list is not paginated.
+      tags:
+        - folders
+      x-codeSamples:
+        - lang: shell
+          label: "cURL"
+          source: |
+            curl -X GET https://eu.mailtrap.io/api/inbound/folders \
+              -H 'Authorization: Bearer YOUR_API_KEY'
+        - lang: javascript
+          label: Node.js
+          source: |
+            import { MailtrapClient } from "mailtrap";
+
+            const client = new MailtrapClient({ token: "YOUR_API_KEY" });
+
+            const folders = await client.inbound.folders.getList();
+            console.log(folders);
+        - lang: php
+          label: PHP
+          source: |
+            <?php
+            use Mailtrap\Config;
+            use Mailtrap\Helper\ResponseHelper;
+            use Mailtrap\MailtrapInboundClient;
+
+            $config = new Config($_ENV['MAILTRAP_API_KEY']);
+            $folders = (new MailtrapInboundClient($config))->folders();
+
+            $response = $folders->getList();
+            var_dump(ResponseHelper::toArray($response));
+        - lang: python
+          label: Python
+          source: |
+            import mailtrap as mt
+
+            client = mt.MailtrapClient(token="YOUR_API_KEY")
+
+            folders = client.inbound_api.folders.get_list()
+            print(folders)
+        - lang: ruby
+          label: Ruby
+          source: |
+            require 'mailtrap'
+
+            client = Mailtrap::Client.new(api_key: 'YOUR_API_KEY')
+            folders = Mailtrap::InboundFoldersAPI.new(client)
+
+            puts folders.list
+        - lang: csharp
+          label: .NET
+          source: |
+            using Mailtrap;
+
+            using var mailtrapFactory = new MailtrapClientFactory("YOUR_API_KEY");
+            var client = mailtrapFactory.CreateClient();
+
+            var folders = await client.Inbound().Folders().GetAll();
+            Console.WriteLine(folders.Count);
+        - lang: java
+          label: Java
+          source: |
+            import io.mailtrap.config.MailtrapConfig;
+            import io.mailtrap.factory.MailtrapClientFactory;
+
+            var config = new MailtrapConfig.Builder().token("YOUR_API_KEY").build();
+            var client = MailtrapClientFactory.createMailtrapClient(config);
+
+            var folders = client.inboundApi().folders().getList();
+            System.out.println(folders);
+      responses:
+        "200":
+          description: List of folders
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Folder"
+              example:
+                - id: 1
+                  name: Support
+                - id: 2
+                  name: Sales
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+
+    post:
+      operationId: createInboundFolder
+      summary: Create a folder
+      description: Create a new inbound folder.
+      tags:
+        - folders
+      x-codeSamples:
+        - lang: shell
+          label: "cURL"
+          source: |
+            curl -X POST https://eu.mailtrap.io/api/inbound/folders \
+              -H 'Authorization: Bearer YOUR_API_KEY' \
+              -H 'Content-Type: application/json' \
+              -d '{ "name": "Support" }'
+        - lang: javascript
+          label: Node.js
+          source: |
+            import { MailtrapClient } from "mailtrap";
+
+            const client = new MailtrapClient({ token: "YOUR_API_KEY" });
+
+            const folder = await client.inbound.folders.create({ name: "Support" });
+            console.log(folder);
+        - lang: php
+          label: PHP
+          source: |
+            <?php
+            use Mailtrap\Config;
+            use Mailtrap\DTO\Request\Inbound\CreateInboundFolder;
+            use Mailtrap\Helper\ResponseHelper;
+            use Mailtrap\MailtrapInboundClient;
+
+            $config = new Config($_ENV['MAILTRAP_API_KEY']);
+            $folders = (new MailtrapInboundClient($config))->folders();
+
+            $response = $folders->create(new CreateInboundFolder('Support'));
+            var_dump(ResponseHelper::toArray($response));
+        - lang: python
+          label: Python
+          source: |
+            import mailtrap as mt
+
+            client = mt.MailtrapClient(token="YOUR_API_KEY")
+
+            folder = client.inbound_api.folders.create(
+                mt.CreateInboundFolderParams(name="Support")
+            )
+            print(folder)
+        - lang: ruby
+          label: Ruby
+          source: |
+            require 'mailtrap'
+
+            client = Mailtrap::Client.new(api_key: 'YOUR_API_KEY')
+            folders = Mailtrap::InboundFoldersAPI.new(client)
+
+            folder = folders.create(name: 'Support')
+            puts folder
+        - lang: csharp
+          label: .NET
+          source: |
+            using Mailtrap;
+            using Mailtrap.Inbound.Requests;
+
+            using var mailtrapFactory = new MailtrapClientFactory("YOUR_API_KEY");
+            var client = mailtrapFactory.CreateClient();
+
+            var folder = await client.Inbound().Folders()
+                .Create(new CreateInboundFolderRequest { Name = "Support" });
+            Console.WriteLine(folder.Id);
+        - lang: java
+          label: Java
+          source: |
+            import io.mailtrap.config.MailtrapConfig;
+            import io.mailtrap.factory.MailtrapClientFactory;
+            import io.mailtrap.model.request.inbound.CreateInboundFolderRequest;
+
+            var config = new MailtrapConfig.Builder().token("YOUR_API_KEY").build();
+            var client = MailtrapClientFactory.createMailtrapClient(config);
+
+            var folder = client.inboundApi().folders()
+                .create(CreateInboundFolderRequest.builder().name("Support").build());
+            System.out.println(folder);
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/FolderInput"
+      responses:
+        "201":
+          description: Folder created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Folder"
+              example:
+                id: 1
+                name: Support
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "422":
+          $ref: "#/components/responses/UnprocessableEntity"
+
+  /api/inbound/folders/{folder_id}:
+    get:
+      operationId: getInboundFolder
+      summary: Get a folder
+      description: Returns a single inbound folder.
+      tags:
+        - folders
+      parameters:
+        - $ref: "#/components/parameters/folder_id"
+      x-codeSamples:
+        - lang: shell
+          label: "cURL"
+          source: |
+            curl -X GET https://eu.mailtrap.io/api/inbound/folders/{folder_id} \
+              -H 'Authorization: Bearer YOUR_API_KEY'
+        - lang: javascript
+          label: Node.js
+          source: |
+            import { MailtrapClient } from "mailtrap";
+
+            const client = new MailtrapClient({ token: "YOUR_API_KEY" });
+
+            const folderId = 1;
+            const folder = await client.inbound.folders.get(folderId);
+            console.log(folder);
+        - lang: php
+          label: PHP
+          source: |
+            <?php
+            use Mailtrap\Config;
+            use Mailtrap\Helper\ResponseHelper;
+            use Mailtrap\MailtrapInboundClient;
+
+            $config = new Config($_ENV['MAILTRAP_API_KEY']);
+            $folders = (new MailtrapInboundClient($config))->folders();
+
+            $folderId = $_ENV['MAILTRAP_INBOUND_FOLDER_ID'];
+            $response = $folders->getById($folderId);
+            var_dump(ResponseHelper::toArray($response));
+        - lang: python
+          label: Python
+          source: |
+            import mailtrap as mt
+
+            client = mt.MailtrapClient(token="YOUR_API_KEY")
+
+            folder_id = 1
+            folder = client.inbound_api.folders.get_by_id(folder_id)
+            print(folder)
+        - lang: ruby
+          label: Ruby
+          source: |
+            require 'mailtrap'
+
+            client = Mailtrap::Client.new(api_key: 'YOUR_API_KEY')
+            folders = Mailtrap::InboundFoldersAPI.new(client)
+
+            folder_id = 1
+            puts folders.get(folder_id)
+        - lang: csharp
+          label: .NET
+          source: |
+            using Mailtrap;
+
+            using var mailtrapFactory = new MailtrapClientFactory("YOUR_API_KEY");
+            var client = mailtrapFactory.CreateClient();
+
+            var folderId = 1;
+            var folder = await client.Inbound().Folder(folderId).GetDetails();
+            Console.WriteLine(folder.Name);
+        - lang: java
+          label: Java
+          source: |
+            import io.mailtrap.config.MailtrapConfig;
+            import io.mailtrap.factory.MailtrapClientFactory;
+
+            var config = new MailtrapConfig.Builder().token("YOUR_API_KEY").build();
+            var client = MailtrapClientFactory.createMailtrapClient(config);
+
+            long folderId = 1L;
+            var folder = client.inboundApi().folders().getById(folderId);
+            System.out.println(folder);
+      responses:
+        "200":
+          description: Folder details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Folder"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+    patch:
+      operationId: updateInboundFolder
+      summary: Update a folder
+      description: Update an inbound folder.
+      tags:
+        - folders
+      parameters:
+        - $ref: "#/components/parameters/folder_id"
+      x-codeSamples:
+        - lang: shell
+          label: "cURL"
+          source: |
+            curl -X PATCH https://eu.mailtrap.io/api/inbound/folders/{folder_id} \
+              -H 'Authorization: Bearer YOUR_API_KEY' \
+              -H 'Content-Type: application/json' \
+              -d '{ "name": "Customer Success" }'
+        - lang: javascript
+          label: Node.js
+          source: |
+            import { MailtrapClient } from "mailtrap";
+
+            const client = new MailtrapClient({ token: "YOUR_API_KEY" });
+
+            const folderId = 1;
+            const folder = await client.inbound.folders.update(folderId, { name: "Customer Success" });
+            console.log(folder);
+        - lang: php
+          label: PHP
+          source: |
+            <?php
+            use Mailtrap\Config;
+            use Mailtrap\DTO\Request\Inbound\UpdateInboundFolder;
+            use Mailtrap\Helper\ResponseHelper;
+            use Mailtrap\MailtrapInboundClient;
+
+            $config = new Config($_ENV['MAILTRAP_API_KEY']);
+            $folders = (new MailtrapInboundClient($config))->folders();
+
+            $folderId = $_ENV['MAILTRAP_INBOUND_FOLDER_ID'];
+            $response = $folders->update($folderId, new UpdateInboundFolder('Customer Success'));
+            var_dump(ResponseHelper::toArray($response));
+        - lang: python
+          label: Python
+          source: |
+            import mailtrap as mt
+
+            client = mt.MailtrapClient(token="YOUR_API_KEY")
+
+            folder_id = 1
+            folder = client.inbound_api.folders.update(
+                folder_id, mt.UpdateInboundFolderParams(name="Customer Success")
+            )
+            print(folder)
+        - lang: ruby
+          label: Ruby
+          source: |
+            require 'mailtrap'
+
+            client = Mailtrap::Client.new(api_key: 'YOUR_API_KEY')
+            folders = Mailtrap::InboundFoldersAPI.new(client)
+
+            folder_id = 1
+            puts folders.update(folder_id, name: 'Customer Success')
+        - lang: csharp
+          label: .NET
+          source: |
+            using Mailtrap;
+            using Mailtrap.Inbound.Requests;
+
+            using var mailtrapFactory = new MailtrapClientFactory("YOUR_API_KEY");
+            var client = mailtrapFactory.CreateClient();
+
+            var folderId = 1;
+            var folder = await client.Inbound().Folder(folderId)
+                .Update(new UpdateInboundFolderRequest { Name = "Customer Success" });
+            Console.WriteLine(folder.Name);
+        - lang: java
+          label: Java
+          source: |
+            import io.mailtrap.config.MailtrapConfig;
+            import io.mailtrap.factory.MailtrapClientFactory;
+            import io.mailtrap.model.request.inbound.UpdateInboundFolderRequest;
+
+            var config = new MailtrapConfig.Builder().token("YOUR_API_KEY").build();
+            var client = MailtrapClientFactory.createMailtrapClient(config);
+
+            long folderId = 1L;
+            var folder = client.inboundApi().folders()
+                .update(folderId, UpdateInboundFolderRequest.builder().name("Customer Success").build());
+            System.out.println(folder);
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/FolderInput"
+      responses:
+        "200":
+          description: Folder updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Folder"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "422":
+          $ref: "#/components/responses/UnprocessableEntity"
+
+    delete:
+      operationId: deleteInboundFolder
+      summary: Delete a folder
+      description: |
+        Permanently delete an inbound folder along with all of its inboxes,
+        including their `inbound_receiving` webhooks and forward rules.
+        Requires admin access to the folder.
+      tags:
+        - folders
+      parameters:
+        - $ref: "#/components/parameters/folder_id"
+      x-codeSamples:
+        - lang: shell
+          label: "cURL"
+          source: |
+            curl -X DELETE https://eu.mailtrap.io/api/inbound/folders/{folder_id} \
+              -H 'Authorization: Bearer YOUR_API_KEY'
+        - lang: javascript
+          label: Node.js
+          source: |
+            import { MailtrapClient } from "mailtrap";
+
+            const client = new MailtrapClient({ token: "YOUR_API_KEY" });
+
+            const folderId = 1;
+            await client.inbound.folders.delete(folderId);
+        - lang: php
+          label: PHP
+          source: |
+            <?php
+            use Mailtrap\Config;
+            use Mailtrap\MailtrapInboundClient;
+
+            $config = new Config($_ENV['MAILTRAP_API_KEY']);
+            $folders = (new MailtrapInboundClient($config))->folders();
+
+            $folderId = $_ENV['MAILTRAP_INBOUND_FOLDER_ID'];
+            $response = $folders->delete($folderId);
+            echo $response->getStatusCode(); // 204
+        - lang: python
+          label: Python
+          source: |
+            import mailtrap as mt
+
+            client = mt.MailtrapClient(token="YOUR_API_KEY")
+
+            folder_id = 1
+            client.inbound_api.folders.delete(folder_id)
+        - lang: ruby
+          label: Ruby
+          source: |
+            require 'mailtrap'
+
+            client = Mailtrap::Client.new(api_key: 'YOUR_API_KEY')
+            folders = Mailtrap::InboundFoldersAPI.new(client)
+
+            folder_id = 1
+            folders.delete(folder_id)
+        - lang: csharp
+          label: .NET
+          source: |
+            using Mailtrap;
+
+            using var mailtrapFactory = new MailtrapClientFactory("YOUR_API_KEY");
+            var client = mailtrapFactory.CreateClient();
+
+            var folderId = 1;
+            await client.Inbound().Folder(folderId).Delete();
+        - lang: java
+          label: Java
+          source: |
+            import io.mailtrap.config.MailtrapConfig;
+            import io.mailtrap.factory.MailtrapClientFactory;
+
+            var config = new MailtrapConfig.Builder().token("YOUR_API_KEY").build();
+            var client = MailtrapClientFactory.createMailtrapClient(config);
+
+            long folderId = 1L;
+            client.inboundApi().folders().delete(folderId);
+      responses:
+        "204":
+          description: Folder deleted
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  /api/inbound/folders/{folder_id}/inboxes:
+    get:
+      operationId: listInboundInboxes
+      summary: List inboxes
+      description: |
+        Returns the inboxes in a folder that the API token has access to,
+        oldest first. The list is not paginated. Returns `404` when the token
+        has no access to the folder itself.
+      tags:
+        - inboxes
+      parameters:
+        - $ref: "#/components/parameters/folder_id"
+      x-codeSamples:
+        - lang: shell
+          label: "cURL"
+          source: |
+            curl -X GET https://eu.mailtrap.io/api/inbound/folders/{folder_id}/inboxes \
+              -H 'Authorization: Bearer YOUR_API_KEY'
+        - lang: javascript
+          label: Node.js
+          source: |
+            import { MailtrapClient } from "mailtrap";
+
+            const client = new MailtrapClient({ token: "YOUR_API_KEY" });
+
+            const folderId = 1;
+            const inboxes = await client.inbound.inboxes.getList(folderId);
+            console.log(inboxes);
+        - lang: php
+          label: PHP
+          source: |
+            <?php
+            use Mailtrap\Config;
+            use Mailtrap\Helper\ResponseHelper;
+            use Mailtrap\MailtrapInboundClient;
+
+            $config = new Config($_ENV['MAILTRAP_API_KEY']);
+            $folderId = $_ENV['MAILTRAP_INBOUND_FOLDER_ID'];
+            $inboxes = (new MailtrapInboundClient($config))->inboxes($folderId);
+
+            $response = $inboxes->getList();
+            var_dump(ResponseHelper::toArray($response));
+        - lang: python
+          label: Python
+          source: |
+            import mailtrap as mt
+
+            client = mt.MailtrapClient(token="YOUR_API_KEY")
+
+            folder_id = 1
+            inboxes = client.inbound_api.inboxes.get_list(folder_id)
+            print(inboxes)
+        - lang: ruby
+          label: Ruby
+          source: |
+            require 'mailtrap'
+
+            client = Mailtrap::Client.new(api_key: 'YOUR_API_KEY')
+            inboxes = Mailtrap::InboundInboxesAPI.new(client)
+
+            folder_id = 1
+            puts inboxes.list(folder_id)
+        - lang: csharp
+          label: .NET
+          source: |
+            using Mailtrap;
+
+            using var mailtrapFactory = new MailtrapClientFactory("YOUR_API_KEY");
+            var client = mailtrapFactory.CreateClient();
+
+            var folderId = 1;
+            var inboxes = await client.Inbound().Folder(folderId).Inboxes().GetAll();
+            Console.WriteLine(inboxes.Count);
+        - lang: java
+          label: Java
+          source: |
+            import io.mailtrap.config.MailtrapConfig;
+            import io.mailtrap.factory.MailtrapClientFactory;
+
+            var config = new MailtrapConfig.Builder().token("YOUR_API_KEY").build();
+            var client = MailtrapClientFactory.createMailtrapClient(config);
+
+            long folderId = 1L;
+            var inboxes = client.inboundApi().inboxes().getList(folderId);
+            System.out.println(inboxes);
+      responses:
+        "200":
+          description: List of inboxes
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Inbox"
+              example:
+                - id: 1
+                  name: Support tickets
+                  address: "support-tickets-1a2b3c4d@inbound-mailtrap.io"
+                  domain_id: 892
+                - id: 2
+                  name: Replies
+                  address: "*@your-domain.com"
+                  domain_id: 894
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+    post:
+      operationId: createInboundInbox
+      summary: Create an inbox
+      description: |
+        Create a new inbox in a folder. Requires admin access to the folder.
+        An account can have at most 300 inboxes.
+
+        By default Mailtrap generates the inbox `address` automatically based
+        on the `name`.
+
+        To create a catch-all inbox on your own domain, pass `domain_id` — the
+        ID of one of the account's custom sending domains. The inbox then
+        receives mail sent to any address on that domain, and its `address` is
+        returned as `*@your-domain.com`. Each domain can be attached to only one
+        inbox.
+      tags:
+        - inboxes
+      parameters:
+        - $ref: "#/components/parameters/folder_id"
+      x-codeSamples:
+        - lang: shell
+          label: "cURL"
+          source: |
+            curl -X POST https://eu.mailtrap.io/api/inbound/folders/{folder_id}/inboxes \
+              -H 'Authorization: Bearer YOUR_API_KEY' \
+              -H 'Content-Type: application/json' \
+              -d '{ "name": "Support tickets" }'
+        - lang: javascript
+          label: Node.js
+          source: |
+            import { MailtrapClient } from "mailtrap";
+
+            const client = new MailtrapClient({ token: "YOUR_API_KEY" });
+
+            // Omit domain_id for a Mailtrap-hosted inbox; pass it for a custom-domain inbox.
+            const folderId = 1;
+            const inbox = await client.inbound.inboxes.create(folderId, { name: "Support tickets" });
+            console.log(inbox);
+        - lang: php
+          label: PHP
+          source: |
+            <?php
+            use Mailtrap\Config;
+            use Mailtrap\DTO\Request\Inbound\CreateInboundInbox;
+            use Mailtrap\Helper\ResponseHelper;
+            use Mailtrap\MailtrapInboundClient;
+
+            $config = new Config($_ENV['MAILTRAP_API_KEY']);
+            $folderId = $_ENV['MAILTRAP_INBOUND_FOLDER_ID'];
+            $inboxes = (new MailtrapInboundClient($config))->inboxes($folderId);
+
+            // Omit the domain id for a Mailtrap-hosted inbox; pass it for a custom-domain inbox.
+            $response = $inboxes->create(new CreateInboundInbox('Support tickets'));
+            var_dump(ResponseHelper::toArray($response));
+        - lang: python
+          label: Python
+          source: |
+            import mailtrap as mt
+
+            client = mt.MailtrapClient(token="YOUR_API_KEY")
+
+            # Omit domain_id for a Mailtrap-hosted inbox; pass it for a custom-domain inbox.
+            folder_id = 1
+            inbox = client.inbound_api.inboxes.create(
+                folder_id, mt.CreateInboundInboxParams(name="Support tickets")
+            )
+            print(inbox)
+        - lang: ruby
+          label: Ruby
+          source: |
+            require 'mailtrap'
+
+            client = Mailtrap::Client.new(api_key: 'YOUR_API_KEY')
+            inboxes = Mailtrap::InboundInboxesAPI.new(client)
+
+            # Omit domain_id for a Mailtrap-hosted inbox; pass it for a custom-domain inbox.
+            folder_id = 1
+            inbox = inboxes.create(folder_id, name: 'Support tickets')
+            puts inbox
+        - lang: csharp
+          label: .NET
+          source: |
+            using Mailtrap;
+            using Mailtrap.Inbound.Requests;
+
+            using var mailtrapFactory = new MailtrapClientFactory("YOUR_API_KEY");
+            var client = mailtrapFactory.CreateClient();
+
+            // Omit DomainId for a Mailtrap-hosted inbox; set it for a custom-domain inbox.
+            var folderId = 1;
+            var inbox = await client.Inbound().Folder(folderId).Inboxes()
+                .Create(new CreateInboundInboxRequest { Name = "Support tickets" });
+            Console.WriteLine(inbox.Id);
+        - lang: java
+          label: Java
+          source: |
+            import io.mailtrap.config.MailtrapConfig;
+            import io.mailtrap.factory.MailtrapClientFactory;
+            import io.mailtrap.model.request.inbound.CreateInboundInboxRequest;
+
+            var config = new MailtrapConfig.Builder().token("YOUR_API_KEY").build();
+            var client = MailtrapClientFactory.createMailtrapClient(config);
+
+            // Omit domainId for a Mailtrap-hosted inbox; set it for a custom-domain inbox.
+            long folderId = 1L;
+            var inbox = client.inboundApi().inboxes()
+                .create(folderId, CreateInboundInboxRequest.builder().name("Support tickets").build());
+            System.out.println(inbox);
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/InboxCreateInput"
+      responses:
+        "201":
+          description: Inbox created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Inbox"
+              examples:
+                mailtrapHosted:
+                  summary: Mailtrap-hosted inbox
+                  value:
+                    id: 1
+                    name: Support tickets
+                    address: "support-tickets-1a2b3c4d@inbound-mailtrap.io"
+                    domain_id: 892
+                customDomain:
+                  summary: Custom-domain (catch-all) inbox
+                  value:
+                    id: 2
+                    name: Support tickets
+                    address: "*@your-domain.com"
+                    domain_id: 894
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "422":
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnprocessableEntity"
+              examples:
+                name_taken:
+                  summary: Name already used in the account
+                  value:
+                    errors:
+                      name:
+                        - has already been taken
+                domain_not_found:
+                  summary: Unknown or inaccessible domain_id
+                  value:
+                    errors:
+                      domain_id:
+                        - does not exist
+                domain_taken:
+                  summary: Domain already attached to another inbox
+                  value:
+                    errors:
+                      domain_id:
+                        - has already been taken
+                inbox_limit:
+                  summary: Account inbox limit reached
+                  value:
+                    errors:
+                      base:
+                        - account cannot have more than 300 inboxes
+
+  /api/inbound/folders/{folder_id}/inboxes/{inbox_id}:
+    get:
+      operationId: getInboundInbox
+      summary: Get an inbox
+      description: Returns a single inbox.
+      tags:
+        - inboxes
+      parameters:
+        - $ref: "#/components/parameters/folder_id"
+        - $ref: "#/components/parameters/inbox_id"
+      x-codeSamples:
+        - lang: shell
+          label: "cURL"
+          source: |
+            curl -X GET https://eu.mailtrap.io/api/inbound/folders/{folder_id}/inboxes/{inbox_id} \
+              -H 'Authorization: Bearer YOUR_API_KEY'
+        - lang: javascript
+          label: Node.js
+          source: |
+            import { MailtrapClient } from "mailtrap";
+
+            const client = new MailtrapClient({ token: "YOUR_API_KEY" });
+
+            const folderId = 1;
+            const inboxId = 42;
+            const inbox = await client.inbound.inboxes.get(folderId, inboxId);
+            console.log(inbox);
+        - lang: php
+          label: PHP
+          source: |
+            <?php
+            use Mailtrap\Config;
+            use Mailtrap\Helper\ResponseHelper;
+            use Mailtrap\MailtrapInboundClient;
+
+            $config = new Config($_ENV['MAILTRAP_API_KEY']);
+            $folderId = $_ENV['MAILTRAP_INBOUND_FOLDER_ID'];
+            $inboxes = (new MailtrapInboundClient($config))->inboxes($folderId);
+
+            $inboxId = $_ENV['MAILTRAP_INBOUND_INBOX_ID'];
+            $response = $inboxes->getById($inboxId);
+            var_dump(ResponseHelper::toArray($response));
+        - lang: python
+          label: Python
+          source: |
+            import mailtrap as mt
+
+            client = mt.MailtrapClient(token="YOUR_API_KEY")
+
+            folder_id = 1
+            inbox_id = 42
+            inbox = client.inbound_api.inboxes.get_by_id(folder_id, inbox_id)
+            print(inbox)
+        - lang: ruby
+          label: Ruby
+          source: |
+            require 'mailtrap'
+
+            client = Mailtrap::Client.new(api_key: 'YOUR_API_KEY')
+            inboxes = Mailtrap::InboundInboxesAPI.new(client)
+
+            folder_id = 1
+            inbox_id = 42
+            puts inboxes.get(folder_id, inbox_id)
+        - lang: csharp
+          label: .NET
+          source: |
+            using Mailtrap;
+
+            using var mailtrapFactory = new MailtrapClientFactory("YOUR_API_KEY");
+            var client = mailtrapFactory.CreateClient();
+
+            var folderId = 1;
+            var inboxId = 42;
+            var inbox = await client.Inbound().Folder(folderId).Inbox(inboxId).GetDetails();
+            Console.WriteLine(inbox.Address);
+        - lang: java
+          label: Java
+          source: |
+            import io.mailtrap.config.MailtrapConfig;
+            import io.mailtrap.factory.MailtrapClientFactory;
+
+            var config = new MailtrapConfig.Builder().token("YOUR_API_KEY").build();
+            var client = MailtrapClientFactory.createMailtrapClient(config);
+
+            long folderId = 1L;
+            long inboxId = 42L;
+            var inbox = client.inboundApi().inboxes().getById(folderId, inboxId);
+            System.out.println(inbox);
+      responses:
+        "200":
+          description: Inbox details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Inbox"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+    patch:
+      operationId: updateInboundInbox
+      summary: Update an inbox
+      description: |
+        Rename an inbox. Only `name` can be changed: `address` and `domain_id`
+        are fixed at creation, and a `domain_id` sent here is ignored.
+      tags:
+        - inboxes
+      parameters:
+        - $ref: "#/components/parameters/folder_id"
+        - $ref: "#/components/parameters/inbox_id"
+      x-codeSamples:
+        - lang: shell
+          label: "cURL"
+          source: |
+            curl -X PATCH https://eu.mailtrap.io/api/inbound/folders/{folder_id}/inboxes/{inbox_id} \
+              -H 'Authorization: Bearer YOUR_API_KEY' \
+              -H 'Content-Type: application/json' \
+              -d '{ "name": "Support tickets v2" }'
+        - lang: javascript
+          label: Node.js
+          source: |
+            import { MailtrapClient } from "mailtrap";
+
+            const client = new MailtrapClient({ token: "YOUR_API_KEY" });
+
+            const folderId = 1;
+            const inboxId = 42;
+            const inbox = await client.inbound.inboxes.update(folderId, inboxId, { name: "Support tickets v2" });
+            console.log(inbox);
+        - lang: php
+          label: PHP
+          source: |
+            <?php
+            use Mailtrap\Config;
+            use Mailtrap\DTO\Request\Inbound\UpdateInboundInbox;
+            use Mailtrap\Helper\ResponseHelper;
+            use Mailtrap\MailtrapInboundClient;
+
+            $config = new Config($_ENV['MAILTRAP_API_KEY']);
+            $folderId = $_ENV['MAILTRAP_INBOUND_FOLDER_ID'];
+            $inboxes = (new MailtrapInboundClient($config))->inboxes($folderId);
+
+            $inboxId = $_ENV['MAILTRAP_INBOUND_INBOX_ID'];
+            $response = $inboxes->update($inboxId, new UpdateInboundInbox('Support tickets v2'));
+            var_dump(ResponseHelper::toArray($response));
+        - lang: python
+          label: Python
+          source: |
+            import mailtrap as mt
+
+            client = mt.MailtrapClient(token="YOUR_API_KEY")
+
+            folder_id = 1
+            inbox_id = 42
+            inbox = client.inbound_api.inboxes.update(
+                folder_id, inbox_id, mt.UpdateInboundInboxParams(name="Support tickets v2")
+            )
+            print(inbox)
+        - lang: ruby
+          label: Ruby
+          source: |
+            require 'mailtrap'
+
+            client = Mailtrap::Client.new(api_key: 'YOUR_API_KEY')
+            inboxes = Mailtrap::InboundInboxesAPI.new(client)
+
+            folder_id = 1
+            inbox_id = 42
+            puts inboxes.update(folder_id, inbox_id, name: 'Support tickets v2')
+        - lang: csharp
+          label: .NET
+          source: |
+            using Mailtrap;
+            using Mailtrap.Inbound.Requests;
+
+            using var mailtrapFactory = new MailtrapClientFactory("YOUR_API_KEY");
+            var client = mailtrapFactory.CreateClient();
+
+            var folderId = 1;
+            var inboxId = 42;
+            var inbox = await client.Inbound().Folder(folderId).Inbox(inboxId)
+                .Update(new UpdateInboundInboxRequest { Name = "Support tickets v2" });
+            Console.WriteLine(inbox.Name);
+        - lang: java
+          label: Java
+          source: |
+            import io.mailtrap.config.MailtrapConfig;
+            import io.mailtrap.factory.MailtrapClientFactory;
+            import io.mailtrap.model.request.inbound.UpdateInboundInboxRequest;
+
+            var config = new MailtrapConfig.Builder().token("YOUR_API_KEY").build();
+            var client = MailtrapClientFactory.createMailtrapClient(config);
+
+            long folderId = 1L;
+            long inboxId = 42L;
+            var inbox = client.inboundApi().inboxes()
+                .update(folderId, inboxId, UpdateInboundInboxRequest.builder().name("Support tickets v2").build());
+            System.out.println(inbox);
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/InboxInput"
+      responses:
+        "200":
+          description: Inbox updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Inbox"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "422":
+          $ref: "#/components/responses/UnprocessableEntity"
+
+    delete:
+      operationId: deleteInboundInbox
+      summary: Delete an inbox
+      description: |
+        Permanently delete an inbox and all its received messages.
+      tags:
+        - inboxes
+      parameters:
+        - $ref: "#/components/parameters/folder_id"
+        - $ref: "#/components/parameters/inbox_id"
+      x-codeSamples:
+        - lang: shell
+          label: "cURL"
+          source: |
+            curl -X DELETE https://eu.mailtrap.io/api/inbound/folders/{folder_id}/inboxes/{inbox_id} \
+              -H 'Authorization: Bearer YOUR_API_KEY'
+        - lang: javascript
+          label: Node.js
+          source: |
+            import { MailtrapClient } from "mailtrap";
+
+            const client = new MailtrapClient({ token: "YOUR_API_KEY" });
+
+            const folderId = 1;
+            const inboxId = 42;
+            await client.inbound.inboxes.delete(folderId, inboxId);
+        - lang: php
+          label: PHP
+          source: |
+            <?php
+            use Mailtrap\Config;
+            use Mailtrap\MailtrapInboundClient;
+
+            $config = new Config($_ENV['MAILTRAP_API_KEY']);
+            $folderId = $_ENV['MAILTRAP_INBOUND_FOLDER_ID'];
+            $inboxes = (new MailtrapInboundClient($config))->inboxes($folderId);
+
+            $inboxId = $_ENV['MAILTRAP_INBOUND_INBOX_ID'];
+            $response = $inboxes->delete($inboxId);
+            echo $response->getStatusCode(); // 204
+        - lang: python
+          label: Python
+          source: |
+            import mailtrap as mt
+
+            client = mt.MailtrapClient(token="YOUR_API_KEY")
+
+            folder_id = 1
+            inbox_id = 42
+            client.inbound_api.inboxes.delete(folder_id, inbox_id)
+        - lang: ruby
+          label: Ruby
+          source: |
+            require 'mailtrap'
+
+            client = Mailtrap::Client.new(api_key: 'YOUR_API_KEY')
+            inboxes = Mailtrap::InboundInboxesAPI.new(client)
+
+            folder_id = 1
+            inbox_id = 42
+            inboxes.delete(folder_id, inbox_id)
+        - lang: csharp
+          label: .NET
+          source: |
+            using Mailtrap;
+
+            using var mailtrapFactory = new MailtrapClientFactory("YOUR_API_KEY");
+            var client = mailtrapFactory.CreateClient();
+
+            var folderId = 1;
+            var inboxId = 42;
+            await client.Inbound().Folder(folderId).Inbox(inboxId).Delete();
+        - lang: java
+          label: Java
+          source: |
+            import io.mailtrap.config.MailtrapConfig;
+            import io.mailtrap.factory.MailtrapClientFactory;
+
+            var config = new MailtrapConfig.Builder().token("YOUR_API_KEY").build();
+            var client = MailtrapClientFactory.createMailtrapClient(config);
+
+            long folderId = 1L;
+            long inboxId = 42L;
+            client.inboundApi().inboxes().delete(folderId, inboxId);
+      responses:
+        "204":
+          description: Inbox deleted
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  /api/inbound/inboxes/{inbox_id}/messages:
+    get:
+      operationId: listInboundMessages
+      summary: List messages
+      description: |
+        Returns inbound messages received by the inbox within your account's
+        log retention window, ordered by `received_at` descending, up to 100
+        per page.
+
+        List responses use cursor pagination. When more results are available
+        the response includes a `last_id`; pass it back as the `last_id` query
+        parameter to get the next page. When `last_id` is `null` you have
+        reached the end.
+      tags:
+        - messages
+      parameters:
+        - $ref: "#/components/parameters/inbox_id"
+        - name: last_id
+          in: query
+          required: false
+          description: |
+            Opaque cursor from the previous response's `last_id`. Pass it back
+            unchanged to fetch the next page; omit on the first request. A
+            malformed cursor returns `400`.
+          schema:
+            type: string
+            example: "WzE3NzgyMzYyMDAwMDAsIjxhYmNAc2VuZGVyLmV4YW1wbGU-Il0="
+      x-codeSamples:
+        - lang: shell
+          label: "cURL"
+          source: |
+            curl -X GET 'https://eu.mailtrap.io/api/inbound/inboxes/{inbox_id}/messages' \
+              -H 'Authorization: Bearer YOUR_API_KEY'
+        - lang: javascript
+          label: Node.js
+          source: |
+            import { MailtrapClient } from "mailtrap";
+
+            const client = new MailtrapClient({ token: "YOUR_API_KEY" });
+
+            // Pass { last_id: page.last_id } to fetch the next page.
+            const inboxId = 42;
+            const page = await client.inbound.messages.getList(inboxId);
+            console.log(page.data, page.total_count, page.last_id);
+        - lang: php
+          label: PHP
+          source: |
+            <?php
+            use Mailtrap\Config;
+            use Mailtrap\Helper\ResponseHelper;
+            use Mailtrap\MailtrapInboundClient;
+
+            $config = new Config($_ENV['MAILTRAP_API_KEY']);
+            $inboxId = $_ENV['MAILTRAP_INBOUND_INBOX_ID'];
+            $messages = (new MailtrapInboundClient($config))->messages($inboxId);
+
+            // Pass a last_id string to fetch the next page.
+            $response = $messages->getList();
+            var_dump(ResponseHelper::toArray($response));
+        - lang: python
+          label: Python
+          source: |
+            import mailtrap as mt
+
+            client = mt.MailtrapClient(token="YOUR_API_KEY")
+
+            # Pass last_id=page.last_id to fetch the next page.
+            inbox_id = 42
+            page = client.inbound_api.messages.get_list(inbox_id)
+            print(page.data, page.total_count, page.last_id)
+        - lang: ruby
+          label: Ruby
+          source: |
+            require 'mailtrap'
+
+            client = Mailtrap::Client.new(api_key: 'YOUR_API_KEY')
+            messages = Mailtrap::InboundMessagesAPI.new(client)
+
+            # Pass last_id: page.last_id to fetch the next page.
+            inbox_id = 42
+            page = messages.list(inbox_id)
+            puts page.total_count
+        - lang: csharp
+          label: .NET
+          source: |
+            using Mailtrap;
+
+            using var mailtrapFactory = new MailtrapClientFactory("YOUR_API_KEY");
+            var client = mailtrapFactory.CreateClient();
+
+            var inboxId = 42;
+            var page = await client.Inbound().Inbox(inboxId).Messages().List();
+            Console.WriteLine(page.TotalCount);
+        - lang: java
+          label: Java
+          source: |
+            import io.mailtrap.config.MailtrapConfig;
+            import io.mailtrap.factory.MailtrapClientFactory;
+
+            var config = new MailtrapConfig.Builder().token("YOUR_API_KEY").build();
+            var client = MailtrapClientFactory.createMailtrapClient(config);
+
+            // Pass the previous page's last id to paginate (null for the first page).
+            long inboxId = 42L;
+            var page = client.inboundApi().messages().list(inboxId, null);
+            System.out.println(page.getTotalCount());
+      responses:
+        "200":
+          description: List of messages
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MessagesListResponse"
+              example:
+                data:
+                  - id: "1700000000000123"
+                    inbox_id: 1
+                    from: "sender@example.com"
+                    to:
+                      - "support-tickets-1a2b3c4d@inbound-mailtrap.io"
+                    cc: []
+                    bcc: []
+                    reply_to: null
+                    subject: Hello
+                    rfc_message_id: "<abc@sender.example>"
+                    in_reply_to: null
+                    references: []
+                    headers:
+                      mime-version: "1.0"
+                    size: 4096
+                    html_size: 512
+                    text_size: 128
+                    received_at: "2026-05-08T10:30:00.000Z"
+                    thread_id: "1700000000000124"
+                    attachments:
+                      - attachment_id: att-1
+                        size: 1024
+                        filename: logo.png
+                        content_type: image/png
+                        content_disposition: inline
+                        content_id: "logo@example.com"
+                    forwards:
+                      - rule_id: 7
+                        rule_name: "Copy to support team"
+                        destination: "team@example.com"
+                        status: forwarded
+                        reason: null
+                        message_id: "f47ac10b-58cc-4372-a567-0e02b2c3d479"
+                total_count: 1
+                last_id: null
+        "400":
+          description: Invalid `last_id` cursor
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnprocessableEntity"
+              example:
+                errors:
+                  base:
+                    - Invalid last_id cursor
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  /api/inbound/inboxes/{inbox_id}/messages/{id}:
+    get:
+      operationId: getInboundMessage
+      summary: Get a message
+      description: |
+        Returns a single inbound message together with URLs for the
+        raw `.eml` file and for each attachment, plus the decoded HTML and
+        plain-text bodies. URLs expire after one hour.
+      tags:
+        - messages
+      parameters:
+        - $ref: "#/components/parameters/inbox_id"
+        - $ref: "#/components/parameters/message_id"
+      x-codeSamples:
+        - lang: shell
+          label: "cURL"
+          source: |
+            curl -X GET https://eu.mailtrap.io/api/inbound/inboxes/{inbox_id}/messages/{id} \
+              -H 'Authorization: Bearer YOUR_API_KEY'
+        - lang: javascript
+          label: Node.js
+          source: |
+            import { MailtrapClient } from "mailtrap";
+
+            const client = new MailtrapClient({ token: "YOUR_API_KEY" });
+
+            const inboxId = 42;
+            const messageId = "1700000000000123";
+            const message = await client.inbound.messages.get(inboxId, messageId);
+            console.log(message.subject);
+        - lang: php
+          label: PHP
+          source: |
+            <?php
+            use Mailtrap\Config;
+            use Mailtrap\Helper\ResponseHelper;
+            use Mailtrap\MailtrapInboundClient;
+
+            $config = new Config($_ENV['MAILTRAP_API_KEY']);
+            $inboxId = $_ENV['MAILTRAP_INBOUND_INBOX_ID'];
+            $messages = (new MailtrapInboundClient($config))->messages($inboxId);
+
+            $messageId = $_ENV['MAILTRAP_INBOUND_MESSAGE_ID'];
+            $response = $messages->getById($messageId);
+            var_dump(ResponseHelper::toArray($response));
+        - lang: python
+          label: Python
+          source: |
+            import mailtrap as mt
+
+            client = mt.MailtrapClient(token="YOUR_API_KEY")
+
+            inbox_id = 42
+            message_id = "1700000000000123"
+            message = client.inbound_api.messages.get_by_id(inbox_id, message_id)
+            print(message.subject)
+        - lang: ruby
+          label: Ruby
+          source: |
+            require 'mailtrap'
+
+            client = Mailtrap::Client.new(api_key: 'YOUR_API_KEY')
+            messages = Mailtrap::InboundMessagesAPI.new(client)
+
+            inbox_id = 42
+            message_id = '1700000000000123'
+            puts messages.get(inbox_id, message_id)
+        - lang: csharp
+          label: .NET
+          source: |
+            using Mailtrap;
+
+            using var mailtrapFactory = new MailtrapClientFactory("YOUR_API_KEY");
+            var client = mailtrapFactory.CreateClient();
+
+            var inboxId = 42;
+            var messageId = "1700000000000123";
+            var message = await client.Inbound().Inbox(inboxId).Message(messageId).GetDetails();
+            Console.WriteLine(message.Subject);
+        - lang: java
+          label: Java
+          source: |
+            import io.mailtrap.config.MailtrapConfig;
+            import io.mailtrap.factory.MailtrapClientFactory;
+
+            var config = new MailtrapConfig.Builder().token("YOUR_API_KEY").build();
+            var client = MailtrapClientFactory.createMailtrapClient(config);
+
+            long inboxId = 42L;
+            String messageId = "1700000000000123";
+            var message = client.inboundApi().messages().get(inboxId, messageId);
+            System.out.println(message.getSubject());
+      responses:
+        "200":
+          description: Message details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MessageDetails"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+    delete:
+      operationId: deleteInboundMessage
+      summary: Delete a message
+      description: |
+        Permanently delete an inbound message and its stored body and
+        attachments.
+      tags:
+        - messages
+      parameters:
+        - $ref: "#/components/parameters/inbox_id"
+        - $ref: "#/components/parameters/message_id"
+      x-codeSamples:
+        - lang: shell
+          label: "cURL"
+          source: |
+            curl -X DELETE https://eu.mailtrap.io/api/inbound/inboxes/{inbox_id}/messages/{id} \
+              -H 'Authorization: Bearer YOUR_API_KEY'
+        - lang: javascript
+          label: Node.js
+          source: |
+            import { MailtrapClient } from "mailtrap";
+
+            const client = new MailtrapClient({ token: "YOUR_API_KEY" });
+
+            const inboxId = 42;
+            const messageId = "1700000000000123";
+            await client.inbound.messages.delete(inboxId, messageId);
+        - lang: php
+          label: PHP
+          source: |
+            <?php
+            use Mailtrap\Config;
+            use Mailtrap\MailtrapInboundClient;
+
+            $config = new Config($_ENV['MAILTRAP_API_KEY']);
+            $inboxId = $_ENV['MAILTRAP_INBOUND_INBOX_ID'];
+            $messages = (new MailtrapInboundClient($config))->messages($inboxId);
+
+            $messageId = $_ENV['MAILTRAP_INBOUND_MESSAGE_ID'];
+            $response = $messages->delete($messageId);
+            echo $response->getStatusCode(); // 204
+        - lang: python
+          label: Python
+          source: |
+            import mailtrap as mt
+
+            client = mt.MailtrapClient(token="YOUR_API_KEY")
+
+            inbox_id = 42
+            message_id = "1700000000000123"
+            client.inbound_api.messages.delete(inbox_id, message_id)
+        - lang: ruby
+          label: Ruby
+          source: |
+            require 'mailtrap'
+
+            client = Mailtrap::Client.new(api_key: 'YOUR_API_KEY')
+            messages = Mailtrap::InboundMessagesAPI.new(client)
+
+            inbox_id = 42
+            message_id = '1700000000000123'
+            messages.delete(inbox_id, message_id)
+        - lang: csharp
+          label: .NET
+          source: |
+            using Mailtrap;
+
+            using var mailtrapFactory = new MailtrapClientFactory("YOUR_API_KEY");
+            var client = mailtrapFactory.CreateClient();
+
+            var inboxId = 42;
+            var messageId = "1700000000000123";
+            await client.Inbound().Inbox(inboxId).Message(messageId).Delete();
+        - lang: java
+          label: Java
+          source: |
+            import io.mailtrap.config.MailtrapConfig;
+            import io.mailtrap.factory.MailtrapClientFactory;
+
+            var config = new MailtrapConfig.Builder().token("YOUR_API_KEY").build();
+            var client = MailtrapClientFactory.createMailtrapClient(config);
+
+            long inboxId = 42L;
+            String messageId = "1700000000000123";
+            client.inboundApi().messages().delete(inboxId, messageId);
+      responses:
+        "204":
+          description: Message deleted
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  /api/inbound/inboxes/{inbox_id}/messages/{id}/reply:
+    post:
+      operationId: replyToInboundMessage
+      summary: Reply to a message
+      description: |
+        Send a reply to an inbound message. The reply is threaded to the
+        original and its subject is prefixed with `Re:` (unless it already
+        starts with one).
+
+        By default the reply is addressed to the original sender (its
+        `Reply-To`, or `From` when absent). Pass `to` to override the
+        recipients — an explicit empty array sends to `cc`/`bcc` only — or add
+        `cc`/`bcc`.
+
+        The sender depends on the inbox type:
+
+        - **Mailtrap-hosted inbox** — always sends from the inbox's own
+          generated address. Supplying `from` is rejected with `400`.
+        - **Custom-domain inbox** — you supply `from`, whose address must
+          belong to the inbox's domain. The token needs admin access on that
+          sending domain.
+      tags:
+        - messages
+      parameters:
+        - $ref: "#/components/parameters/inbox_id"
+        - $ref: "#/components/parameters/message_id"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SendMessageInput"
+            example:
+              text: "Thanks for reaching out. We are looking into it."
+              html: "<p>Thanks for reaching out. We are looking into it.</p>"
+      x-codeSamples:
+        - lang: shell
+          label: "cURL"
+          source: |
+            curl -X POST https://eu.mailtrap.io/api/inbound/inboxes/{inbox_id}/messages/{id}/reply \
+              -H 'Authorization: Bearer YOUR_API_KEY' \
+              -H 'Content-Type: application/json' \
+              -d '{ "text": "Thanks for reaching out. We are looking into it." }'
+        - lang: javascript
+          label: Node.js
+          source: |
+            import { MailtrapClient } from "mailtrap";
+
+            const client = new MailtrapClient({ token: "YOUR_API_KEY" });
+
+            const inboxId = 42;
+            const messageId = "1700000000000123";
+            const result = await client.inbound.messages.reply(inboxId, messageId, {
+              text: "Thanks for reaching out. We are looking into it.",
+              html: "<p>Thanks for reaching out. We are looking into it.</p>",
+            });
+            console.log(result.message_ids);
+        - lang: php
+          label: PHP
+          source: |
+            <?php
+            use Mailtrap\Config;
+            use Mailtrap\Helper\ResponseHelper;
+            use Mailtrap\MailtrapInboundClient;
+            use Symfony\Component\Mime\Email;
+
+            $config = new Config($_ENV['MAILTRAP_API_KEY']);
+            $inboxId = $_ENV['MAILTRAP_INBOUND_INBOX_ID'];
+            $messages = (new MailtrapInboundClient($config))->messages($inboxId);
+
+            $email = (new Email())
+                ->text('Thanks for reaching out. We are looking into it.')
+                ->html('<p>Thanks for reaching out. We are looking into it.</p>');
+
+            $messageId = $_ENV['MAILTRAP_INBOUND_MESSAGE_ID'];
+            $response = $messages->reply($messageId, $email);
+            var_dump(ResponseHelper::toArray($response));
+        - lang: python
+          label: Python
+          source: |
+            import mailtrap as mt
+
+            client = mt.MailtrapClient(token="YOUR_API_KEY")
+
+            inbox_id = 42
+            message_id = "1700000000000123"
+            result = client.inbound_api.messages.reply(
+                inbox_id,
+                message_id,
+                mt.ReplyInboundMessageParams(
+                    text="Thanks for reaching out. We are looking into it.",
+                    html="<p>Thanks for reaching out. We are looking into it.</p>",
+                ),
+            )
+            print(result.message_ids)
+        - lang: ruby
+          label: Ruby
+          source: |
+            require 'mailtrap'
+
+            client = Mailtrap::Client.new(api_key: 'YOUR_API_KEY')
+            messages = Mailtrap::InboundMessagesAPI.new(client)
+
+            inbox_id = 42
+            message_id = '1700000000000123'
+            result = messages.reply(
+              inbox_id, message_id,
+              text: 'Thanks for reaching out. We are looking into it.',
+              html: '<p>Thanks for reaching out. We are looking into it.</p>'
+            )
+            puts result.message_ids
+        - lang: csharp
+          label: .NET
+          source: |
+            using Mailtrap;
+            using Mailtrap.Inbound.Requests;
+
+            using var mailtrapFactory = new MailtrapClientFactory("YOUR_API_KEY");
+            var client = mailtrapFactory.CreateClient();
+
+            var inboxId = 42;
+            var messageId = "1700000000000123";
+            var result = await client.Inbound().Inbox(inboxId).Message(messageId)
+                .Reply(new ReplyInboundMessageRequest
+                {
+                    Text = "Thanks for reaching out. We are looking into it.",
+                    Html = "<p>Thanks for reaching out. We are looking into it.</p>",
+                });
+            Console.WriteLine(string.Join(",", result.MessageIds));
+        - lang: java
+          label: Java
+          source: |
+            import io.mailtrap.config.MailtrapConfig;
+            import io.mailtrap.factory.MailtrapClientFactory;
+            import io.mailtrap.model.request.inbound.InboundReplyRequest;
+
+            var config = new MailtrapConfig.Builder().token("YOUR_API_KEY").build();
+            var client = MailtrapClientFactory.createMailtrapClient(config);
+
+            long inboxId = 42L;
+            String messageId = "1700000000000123";
+            var result = client.inboundApi().messages().reply(inboxId, messageId,
+                InboundReplyRequest.builder()
+                    .text("Thanks for reaching out. We are looking into it.")
+                    .html("<p>Thanks for reaching out. We are looking into it.</p>")
+                    .build());
+            System.out.println(result);
+      responses:
+        "201":
+          $ref: "#/components/responses/SendMessageAccepted"
+        "400":
+          $ref: "#/components/responses/SendMessageBadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/SendMessageForbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "413":
+          $ref: "#/components/responses/PayloadTooLarge"
+        "429":
+          $ref: "#/components/responses/TooManyRequests"
+
+  /api/inbound/inboxes/{inbox_id}/messages/{id}/reply_all:
+    post:
+      operationId: replyAllToInboundMessage
+      summary: Reply all to a message
+      description: |
+        Send a reply to an inbound message and copy the original's other
+        recipients. Behaves exactly like the Reply to a message operation,
+        except `cc` defaults to the original's `To` + `Cc` — minus the inbox's
+        own addresses and the sender (already in `To`).
+
+        Pass `to` or `cc` to override the computed recipients (an explicit
+        empty `cc` sends no copies), or add `bcc`. As with a plain reply, the
+        subject is prefixed with `Re:`.
+      tags:
+        - messages
+      parameters:
+        - $ref: "#/components/parameters/inbox_id"
+        - $ref: "#/components/parameters/message_id"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SendMessageInput"
+            example:
+              text: "Thanks all. Adding my colleague to the thread."
+      x-codeSamples:
+        - lang: shell
+          label: "cURL"
+          source: |
+            curl -X POST https://eu.mailtrap.io/api/inbound/inboxes/{inbox_id}/messages/{id}/reply_all \
+              -H 'Authorization: Bearer YOUR_API_KEY' \
+              -H 'Content-Type: application/json' \
+              -d '{ "text": "Thanks all. Adding my colleague to the thread." }'
+        - lang: javascript
+          label: Node.js
+          source: |
+            import { MailtrapClient } from "mailtrap";
+
+            const client = new MailtrapClient({ token: "YOUR_API_KEY" });
+
+            const inboxId = 42;
+            const messageId = "1700000000000123";
+            const result = await client.inbound.messages.replyAll(inboxId, messageId, {
+              text: "Thanks all. Adding my colleague to the thread.",
+            });
+            console.log(result.message_ids);
+        - lang: php
+          label: PHP
+          source: |
+            <?php
+            use Mailtrap\Config;
+            use Mailtrap\Helper\ResponseHelper;
+            use Mailtrap\MailtrapInboundClient;
+            use Symfony\Component\Mime\Email;
+
+            $config = new Config($_ENV['MAILTRAP_API_KEY']);
+            $inboxId = $_ENV['MAILTRAP_INBOUND_INBOX_ID'];
+            $messages = (new MailtrapInboundClient($config))->messages($inboxId);
+
+            $email = (new Email())->text('Thanks all. Adding my colleague to the thread.');
+
+            $messageId = $_ENV['MAILTRAP_INBOUND_MESSAGE_ID'];
+            $response = $messages->replyAll($messageId, $email);
+            var_dump(ResponseHelper::toArray($response));
+        - lang: python
+          label: Python
+          source: |
+            import mailtrap as mt
+
+            client = mt.MailtrapClient(token="YOUR_API_KEY")
+
+            inbox_id = 42
+            message_id = "1700000000000123"
+            result = client.inbound_api.messages.reply_all(
+                inbox_id,
+                message_id,
+                mt.ReplyInboundMessageParams(text="Thanks all. Adding my colleague to the thread."),
+            )
+            print(result.message_ids)
+        - lang: ruby
+          label: Ruby
+          source: |
+            require 'mailtrap'
+
+            client = Mailtrap::Client.new(api_key: 'YOUR_API_KEY')
+            messages = Mailtrap::InboundMessagesAPI.new(client)
+
+            inbox_id = 42
+            message_id = '1700000000000123'
+            result = messages.reply_all(inbox_id, message_id, text: 'Thanks all. Adding my colleague to the thread.')
+            puts result.message_ids
+        - lang: csharp
+          label: .NET
+          source: |
+            using Mailtrap;
+            using Mailtrap.Inbound.Requests;
+
+            using var mailtrapFactory = new MailtrapClientFactory("YOUR_API_KEY");
+            var client = mailtrapFactory.CreateClient();
+
+            var inboxId = 42;
+            var messageId = "1700000000000123";
+            var result = await client.Inbound().Inbox(inboxId).Message(messageId)
+                .ReplyAll(new ReplyInboundMessageRequest
+                {
+                    Text = "Thanks all. Adding my colleague to the thread.",
+                });
+            Console.WriteLine(string.Join(",", result.MessageIds));
+        - lang: java
+          label: Java
+          source: |
+            import io.mailtrap.config.MailtrapConfig;
+            import io.mailtrap.factory.MailtrapClientFactory;
+            import io.mailtrap.model.request.inbound.InboundReplyRequest;
+
+            var config = new MailtrapConfig.Builder().token("YOUR_API_KEY").build();
+            var client = MailtrapClientFactory.createMailtrapClient(config);
+
+            long inboxId = 42L;
+            String messageId = "1700000000000123";
+            var result = client.inboundApi().messages().replyAll(inboxId, messageId,
+                InboundReplyRequest.builder()
+                    .text("Thanks all. Adding my colleague to the thread.")
+                    .build());
+            System.out.println(result);
+      responses:
+        "201":
+          $ref: "#/components/responses/SendMessageAccepted"
+        "400":
+          $ref: "#/components/responses/SendMessageBadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/SendMessageForbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "413":
+          $ref: "#/components/responses/PayloadTooLarge"
+        "429":
+          $ref: "#/components/responses/TooManyRequests"
+
+  /api/inbound/inboxes/{inbox_id}/messages/{id}/forward:
+    post:
+      operationId: forwardInboundMessage
+      summary: Forward a message
+      description: |
+        Forward an inbound message to new recipients. The subject is prefixed
+        with `Fwd:` (unless it already starts with one). The original message is
+        always carried along: its rendered body is quoted below your optional
+        note and its attachments are re-attached (any attachments you supply are
+        added on top).
+
+        A forward has no implicit recipient — address it with `to` (and/or
+        `cc`/`bcc`). The `from` rules match those of the Reply operation:
+        rejected for Mailtrap-hosted inboxes, required-and-domain-bound for
+        custom-domain inboxes.
+      tags:
+        - messages
+      parameters:
+        - $ref: "#/components/parameters/inbox_id"
+        - $ref: "#/components/parameters/message_id"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SendMessageInput"
+            example:
+              to:
+                - email: "colleague@example.com"
+                  name: "A. Colleague"
+              text: "Please take a look at the message below."
+      x-codeSamples:
+        - lang: shell
+          label: "cURL"
+          source: |
+            curl -X POST https://eu.mailtrap.io/api/inbound/inboxes/{inbox_id}/messages/{id}/forward \
+              -H 'Authorization: Bearer YOUR_API_KEY' \
+              -H 'Content-Type: application/json' \
+              -d '{ "to": [{ "email": "colleague@example.com" }], "text": "Please take a look at the message below." }'
+        - lang: javascript
+          label: Node.js
+          source: |
+            import { MailtrapClient } from "mailtrap";
+
+            const client = new MailtrapClient({ token: "YOUR_API_KEY" });
+
+            const inboxId = 42;
+            const messageId = "1700000000000123";
+            const result = await client.inbound.messages.forward(inboxId, messageId, {
+              to: [{ email: "colleague@example.com" }],
+              text: "Please take a look at the message below.",
+            });
+            console.log(result.message_ids);
+        - lang: php
+          label: PHP
+          source: |
+            <?php
+            use Mailtrap\Config;
+            use Mailtrap\Helper\ResponseHelper;
+            use Mailtrap\MailtrapInboundClient;
+            use Symfony\Component\Mime\Address;
+            use Symfony\Component\Mime\Email;
+
+            $config = new Config($_ENV['MAILTRAP_API_KEY']);
+            $inboxId = $_ENV['MAILTRAP_INBOUND_INBOX_ID'];
+            $messages = (new MailtrapInboundClient($config))->messages($inboxId);
+
+            $email = (new Email())
+                ->to(new Address('colleague@example.com'))
+                ->text('Please take a look at the message below.');
+
+            $messageId = $_ENV['MAILTRAP_INBOUND_MESSAGE_ID'];
+            $response = $messages->forward($messageId, $email);
+            var_dump(ResponseHelper::toArray($response));
+        - lang: python
+          label: Python
+          source: |
+            import mailtrap as mt
+
+            client = mt.MailtrapClient(token="YOUR_API_KEY")
+
+            inbox_id = 42
+            message_id = "1700000000000123"
+            result = client.inbound_api.messages.forward(
+                inbox_id,
+                message_id,
+                mt.ForwardInboundMessageParams(
+                    to=[mt.Address(email="colleague@example.com")],
+                    text="Please take a look at the message below.",
+                ),
+            )
+            print(result.message_ids)
+        - lang: ruby
+          label: Ruby
+          source: |
+            require 'mailtrap'
+
+            client = Mailtrap::Client.new(api_key: 'YOUR_API_KEY')
+            messages = Mailtrap::InboundMessagesAPI.new(client)
+
+            inbox_id = 42
+            message_id = '1700000000000123'
+            result = messages.forward(
+              inbox_id, message_id,
+              to: [{ email: 'colleague@example.com' }],
+              text: 'Please take a look at the message below.'
+            )
+            puts result.message_ids
+        - lang: csharp
+          label: .NET
+          source: |
+            using Mailtrap;
+            using Mailtrap.Emails.Models;
+            using Mailtrap.Inbound.Requests;
+
+            using var mailtrapFactory = new MailtrapClientFactory("YOUR_API_KEY");
+            var client = mailtrapFactory.CreateClient();
+
+            var inboxId = 42;
+            var messageId = "1700000000000123";
+            var result = await client.Inbound().Inbox(inboxId).Message(messageId)
+                .Forward(new ForwardInboundMessageRequest
+                {
+                    To = [new EmailAddress("colleague@example.com")],
+                    Text = "Please take a look at the message below.",
+                });
+            Console.WriteLine(string.Join(",", result.MessageIds));
+        - lang: java
+          label: Java
+          source: |
+            import io.mailtrap.config.MailtrapConfig;
+            import io.mailtrap.factory.MailtrapClientFactory;
+            import io.mailtrap.model.request.emails.Address;
+            import io.mailtrap.model.request.inbound.InboundForwardRequest;
+            import java.util.List;
+
+            var config = new MailtrapConfig.Builder().token("YOUR_API_KEY").build();
+            var client = MailtrapClientFactory.createMailtrapClient(config);
+
+            long inboxId = 42L;
+            String messageId = "1700000000000123";
+            var result = client.inboundApi().messages().forward(inboxId, messageId,
+                InboundForwardRequest.builder()
+                    .to(List.of(new Address("colleague@example.com")))
+                    .text("Please take a look at the message below.")
+                    .build());
+            System.out.println(result);
+      responses:
+        "201":
+          $ref: "#/components/responses/SendMessageAccepted"
+        "400":
+          $ref: "#/components/responses/SendMessageBadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/SendMessageForbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "413":
+          $ref: "#/components/responses/PayloadTooLarge"
+        "429":
+          $ref: "#/components/responses/TooManyRequests"
+
+  /api/inbound/inboxes/{inbox_id}/threads:
+    get:
+      operationId: listInboundThreads
+      summary: List threads
+      description: |
+        Returns the inbox's conversation threads, ordered by most recent
+        activity first.
+
+        Only threads and messages within your plan's retention window are
+        included; the per-thread aggregates (message count, size, senders,
+        recipients, attachments) are computed over those accessible messages.
+
+        Use `search` to narrow the list to threads whose subject, or any
+        message's `from`, `to`, `cc`, or `bcc` address, contains the given
+        text.
+
+        Results use cursor pagination, up to 100 threads per page. When more
+        results are available the response includes a `last_id`; pass it
+        back as the `last_id` query parameter (together with the same
+        `search`, if any) to get the next page. When `last_id` is `null` you
+        have reached the end.
+      tags:
+        - threads
+      parameters:
+        - $ref: "#/components/parameters/inbox_id"
+        - name: last_id
+          in: query
+          required: false
+          description: |
+            Opaque cursor from the previous response's `last_id`. Omit on the
+            first request. A malformed cursor returns `400`.
+          schema:
+            type: string
+            example: "WzE3NzgyNDE5MDAwMDAsIjE3MDAwMDAwMDAwMDAxMjMiXQ=="
+        - name: search
+          in: query
+          required: false
+          description: |
+            Case-insensitive substring match against the thread subject and
+            the `from`, `to`, `cc`, and `bcc` addresses of its messages.
+            Wildcard characters (`*`, `?`) are matched literally. Leading and
+            trailing whitespace is ignored; a blank value returns the
+            unfiltered list. `total_count` reflects the filtered result.
+          schema:
+            type: string
+            maxLength: 256
+            example: "acme"
+      x-codeSamples:
+        - lang: shell
+          label: "cURL"
+          source: |
+            curl -X GET 'https://eu.mailtrap.io/api/inbound/inboxes/{inbox_id}/threads' \
+              -H 'Authorization: Bearer YOUR_API_KEY'
+        - lang: javascript
+          label: Node.js
+          source: |
+            import { MailtrapClient } from "mailtrap";
+
+            const client = new MailtrapClient({ token: "YOUR_API_KEY" });
+
+            // Pass { last_id: page.last_id } to fetch the next page.
+            const inboxId = 42;
+            const page = await client.inbound.threads.getList(inboxId);
+            console.log(page.data, page.total_count, page.last_id);
+        - lang: php
+          label: PHP
+          source: |
+            <?php
+            use Mailtrap\Config;
+            use Mailtrap\Helper\ResponseHelper;
+            use Mailtrap\MailtrapInboundClient;
+
+            $config = new Config($_ENV['MAILTRAP_API_KEY']);
+            $inboxId = $_ENV['MAILTRAP_INBOUND_INBOX_ID'];
+            $threads = (new MailtrapInboundClient($config))->threads($inboxId);
+
+            // Pass a last_id string to fetch the next page.
+            $response = $threads->getList();
+            var_dump(ResponseHelper::toArray($response));
+        - lang: python
+          label: Python
+          source: |
+            import mailtrap as mt
+
+            client = mt.MailtrapClient(token="YOUR_API_KEY")
+
+            # Pass last_id=page.last_id to fetch the next page.
+            inbox_id = 42
+            page = client.inbound_api.threads.get_list(inbox_id)
+            print(page.data, page.total_count, page.last_id)
+        - lang: ruby
+          label: Ruby
+          source: |
+            require 'mailtrap'
+
+            client = Mailtrap::Client.new(api_key: 'YOUR_API_KEY')
+            threads = Mailtrap::InboundThreadsAPI.new(client)
+
+            # Pass last_id: page.last_id to fetch the next page.
+            inbox_id = 42
+            page = threads.list(inbox_id)
+            puts page.total_count
+        - lang: csharp
+          label: .NET
+          source: |
+            using Mailtrap;
+
+            using var mailtrapFactory = new MailtrapClientFactory("YOUR_API_KEY");
+            var client = mailtrapFactory.CreateClient();
+
+            var inboxId = 42;
+            var page = await client.Inbound().Inbox(inboxId).Threads().List();
+            Console.WriteLine(page.TotalCount);
+        - lang: java
+          label: Java
+          source: |
+            import io.mailtrap.config.MailtrapConfig;
+            import io.mailtrap.factory.MailtrapClientFactory;
+
+            var config = new MailtrapConfig.Builder().token("YOUR_API_KEY").build();
+            var client = MailtrapClientFactory.createMailtrapClient(config);
+
+            // Pass the previous page's last id to paginate (null for the first page).
+            long inboxId = 42L;
+            var page = client.inboundApi().threads().list(inboxId, null);
+            System.out.println(page.getTotalCount());
+      responses:
+        "200":
+          description: List of threads
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ThreadsListResponse"
+              example:
+                data:
+                  - id: "1700000000000124"
+                    subject: "Support request"
+                    message_count: 2
+                    size: 16384
+                    first_message_at: "2026-04-01T09:00:00.000Z"
+                    last_received_at: "2026-05-08T10:30:00.000Z"
+                    last_sent_at: "2026-05-08T11:40:00.000Z"
+                    last_activity_at: "2026-05-08T11:40:00.000Z"
+                    last_message_id: "1700000000000456"
+                    senders:
+                      - "customer@example.com"
+                      - "support-tickets-1a2b3c4d@inbound-mailtrap.io"
+                    recipients:
+                      - "support-tickets-1a2b3c4d@inbound-mailtrap.io"
+                      - "customer@example.com"
+                    attachments:
+                      - attachment_id: att-1
+                        filename: invoice.pdf
+                        size: 20480
+                        content_type: application/pdf
+                        content_disposition: attachment
+                        content_id: null
+                        download_url: "https://s3.amazonaws.com/inbound-mail/att-1?X-Amz-Signature=..."
+                        download_url_expires_at: "2026-05-08T13:05:00.000Z"
+                total_count: 1
+                last_id: null
+        "400":
+          description: Invalid `last_id` cursor or `search` value
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnprocessableEntity"
+              examples:
+                invalid_cursor:
+                  summary: Malformed cursor
+                  value:
+                    errors:
+                      base:
+                        - Invalid last_id cursor
+                search_too_long:
+                  summary: Search text over 256 characters
+                  value:
+                    errors:
+                      search:
+                        - is too long (maximum is 256 characters)
+                search_not_string:
+                  summary: Search passed as an array or object
+                  value:
+                    errors:
+                      search:
+                        - must be a string
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  /api/inbound/inboxes/{inbox_id}/threads/{id}:
+    get:
+      operationId: getInboundThread
+      summary: Get a thread
+      description: |
+        Returns a single thread with its messages embedded, ordered oldest
+        first.
+
+        Each message carries a `visibility_status`:
+
+        - `available` — the message is within your plan's retention window. The
+          full envelope, subject, RFC headers, decoded bodies, and attachment
+          download URLs are included. Sent messages also carry their delivery
+          outcome in `delivery`; received messages carry their forward-rule
+          outcomes in `forwards`.
+        - `placeholder` — the message is outside the retention window, or is
+          no longer stored. Only `visibility_status` and `direction` are
+          returned; every other field is omitted and no attachment download
+          URLs are issued.
+
+        The thread-level aggregates (`message_count`, `size`, `senders`,
+        `recipients`, `attachments`, `last_message_id`) are computed over the
+        `available` messages only.
+      tags:
+        - threads
+      parameters:
+        - $ref: "#/components/parameters/inbox_id"
+        - $ref: "#/components/parameters/thread_id"
+      x-codeSamples:
+        - lang: shell
+          label: "cURL"
+          source: |
+            curl -X GET https://eu.mailtrap.io/api/inbound/inboxes/{inbox_id}/threads/{id} \
+              -H 'Authorization: Bearer YOUR_API_KEY'
+        - lang: javascript
+          label: Node.js
+          source: |
+            import { MailtrapClient } from "mailtrap";
+
+            const client = new MailtrapClient({ token: "YOUR_API_KEY" });
+
+            const inboxId = 42;
+            const threadId = "1700000000000124";
+            const thread = await client.inbound.threads.get(inboxId, threadId);
+            console.log(thread);
+        - lang: php
+          label: PHP
+          source: |
+            <?php
+            use Mailtrap\Config;
+            use Mailtrap\Helper\ResponseHelper;
+            use Mailtrap\MailtrapInboundClient;
+
+            $config = new Config($_ENV['MAILTRAP_API_KEY']);
+            $inboxId = $_ENV['MAILTRAP_INBOUND_INBOX_ID'];
+            $threads = (new MailtrapInboundClient($config))->threads($inboxId);
+
+            $threadId = $_ENV['MAILTRAP_INBOUND_THREAD_ID'];
+            $response = $threads->getById($threadId);
+            var_dump(ResponseHelper::toArray($response));
+        - lang: python
+          label: Python
+          source: |
+            import mailtrap as mt
+
+            client = mt.MailtrapClient(token="YOUR_API_KEY")
+
+            inbox_id = 42
+            thread_id = "1700000000000124"
+            thread = client.inbound_api.threads.get_by_id(inbox_id, thread_id)
+            print(thread)
+        - lang: ruby
+          label: Ruby
+          source: |
+            require 'mailtrap'
+
+            client = Mailtrap::Client.new(api_key: 'YOUR_API_KEY')
+            threads = Mailtrap::InboundThreadsAPI.new(client)
+
+            inbox_id = 42
+            thread_id = '1700000000000124'
+            puts threads.get(inbox_id, thread_id)
+        - lang: csharp
+          label: .NET
+          source: |
+            using Mailtrap;
+
+            using var mailtrapFactory = new MailtrapClientFactory("YOUR_API_KEY");
+            var client = mailtrapFactory.CreateClient();
+
+            var inboxId = 42;
+            var threadId = "1700000000000124";
+            var thread = await client.Inbound().Inbox(inboxId).Thread(threadId).GetDetails();
+            Console.WriteLine(thread.Messages.Count);
+        - lang: java
+          label: Java
+          source: |
+            import io.mailtrap.config.MailtrapConfig;
+            import io.mailtrap.factory.MailtrapClientFactory;
+
+            var config = new MailtrapConfig.Builder().token("YOUR_API_KEY").build();
+            var client = MailtrapClientFactory.createMailtrapClient(config);
+
+            long inboxId = 42L;
+            String threadId = "1700000000000124";
+            var thread = client.inboundApi().threads().get(inboxId, threadId);
+            System.out.println(thread);
+      responses:
+        "200":
+          description: Thread details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Thread"
+              example:
+                id: "1700000000000124"
+                subject: "Support request"
+                message_count: 2
+                size: 16384
+                first_message_at: "2026-04-01T09:00:00.000Z"
+                last_received_at: "2026-05-08T10:30:00.000Z"
+                last_sent_at: "2026-05-08T11:40:00.000Z"
+                last_activity_at: "2026-05-08T11:40:00.000Z"
+                last_message_id: "1700000000000456"
+                senders:
+                  - "customer@example.com"
+                  - "support-tickets-1a2b3c4d@inbound-mailtrap.io"
+                recipients:
+                  - "support-tickets-1a2b3c4d@inbound-mailtrap.io"
+                  - "customer@example.com"
+                attachments:
+                  - attachment_id: att-1
+                    filename: invoice.pdf
+                    size: 20480
+                    content_type: application/pdf
+                    content_disposition: attachment
+                    content_id: null
+                    download_url: "https://s3.amazonaws.com/inbound-mail/att-1?X-Amz-Signature=..."
+                    download_url_expires_at: "2026-05-08T13:05:00.000Z"
+                messages:
+                  - visibility_status: placeholder
+                    direction: inbound
+                  - visibility_status: available
+                    direction: inbound
+                    id: "1700000000000123"
+                    message_group_id: null
+                    subject: "Re: Support request"
+                    rfc_message_id: "<abc@customer.example>"
+                    in_reply_to: "<root@customer.example>"
+                    references:
+                      - "<root@customer.example>"
+                    from: "customer@example.com"
+                    to:
+                      - "support-tickets-1a2b3c4d@inbound-mailtrap.io"
+                    cc: []
+                    bcc: []
+                    reply_to: null
+                    created_at: "2026-05-08T10:30:00.000Z"
+                    email_size: 8192
+                    text_body: "I still need help with my order. Invoice attached."
+                    html_body: "<p>I still need help with my order. Invoice attached.</p>"
+                    attachments:
+                      - attachment_id: att-1
+                        filename: invoice.pdf
+                        size: 20480
+                        content_type: application/pdf
+                        content_disposition: attachment
+                        content_id: null
+                        download_url: "https://s3.amazonaws.com/inbound-mail/att-1?X-Amz-Signature=..."
+                        download_url_expires_at: "2026-05-08T13:05:00.000Z"
+                    forwards:
+                      - rule_id: 7
+                        rule_name: "Copy to support team"
+                        destination: "team@example.com"
+                        status: forwarded
+                        reason: null
+                        message_id: "f47ac10b-58cc-4372-a567-0e02b2c3d479"
+                  - visibility_status: available
+                    direction: outbound
+                    id: "1a2b3c4d-5e6f-7a8b-9c0d-1e2f3a4b5c6d"
+                    message_group_id: "98f7e6d5-4c3b-2a1b-0c9d-8e7f6a5b4c3d"
+                    subject: "Re: Support request"
+                    rfc_message_id: "<def@send.example>"
+                    in_reply_to: "<abc@customer.example>"
+                    references:
+                      - "<root@customer.example>"
+                      - "<abc@customer.example>"
+                    from: "support-tickets-1a2b3c4d@inbound-mailtrap.io"
+                    to:
+                      - "customer@example.com"
+                    cc: []
+                    bcc: []
+                    reply_to: null
+                    created_at: "2026-05-08T11:40:00.000Z"
+                    email_size: 8192
+                    text_body: "Happy to help — could you share your order ID?"
+                    html_body: "<p>Happy to help — could you share your order ID?</p>"
+                    attachments: []
+                    delivery:
+                      to: "customer@example.com"
+                      status: delivered
+                      delivered_at: "2026-05-08T11:40:05.000Z"
+                      bounced_at: null
+                      rejected_at: null
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+    delete:
+      operationId: deleteInboundThread
+      summary: Delete a thread
+      description: |
+        Delete a thread. The thread stops appearing in list and get
+        responses immediately; the inbound messages it contains are then
+        deleted in the background. Sent messages are not deleted.
+      tags:
+        - threads
+      parameters:
+        - $ref: "#/components/parameters/inbox_id"
+        - $ref: "#/components/parameters/thread_id"
+      x-codeSamples:
+        - lang: shell
+          label: "cURL"
+          source: |
+            curl -X DELETE https://eu.mailtrap.io/api/inbound/inboxes/{inbox_id}/threads/{id} \
+              -H 'Authorization: Bearer YOUR_API_KEY'
+        - lang: javascript
+          label: Node.js
+          source: |
+            import { MailtrapClient } from "mailtrap";
+
+            const client = new MailtrapClient({ token: "YOUR_API_KEY" });
+
+            const inboxId = 42;
+            const threadId = "1700000000000124";
+            await client.inbound.threads.delete(inboxId, threadId);
+        - lang: php
+          label: PHP
+          source: |
+            <?php
+            use Mailtrap\Config;
+            use Mailtrap\MailtrapInboundClient;
+
+            $config = new Config($_ENV['MAILTRAP_API_KEY']);
+            $inboxId = $_ENV['MAILTRAP_INBOUND_INBOX_ID'];
+            $threads = (new MailtrapInboundClient($config))->threads($inboxId);
+
+            $threadId = $_ENV['MAILTRAP_INBOUND_THREAD_ID'];
+            $response = $threads->delete($threadId);
+            echo $response->getStatusCode(); // 204
+        - lang: python
+          label: Python
+          source: |
+            import mailtrap as mt
+
+            client = mt.MailtrapClient(token="YOUR_API_KEY")
+
+            inbox_id = 42
+            thread_id = "1700000000000124"
+            client.inbound_api.threads.delete(inbox_id, thread_id)
+        - lang: ruby
+          label: Ruby
+          source: |
+            require 'mailtrap'
+
+            client = Mailtrap::Client.new(api_key: 'YOUR_API_KEY')
+            threads = Mailtrap::InboundThreadsAPI.new(client)
+
+            inbox_id = 42
+            thread_id = '1700000000000124'
+            threads.delete(inbox_id, thread_id)
+        - lang: csharp
+          label: .NET
+          source: |
+            using Mailtrap;
+
+            using var mailtrapFactory = new MailtrapClientFactory("YOUR_API_KEY");
+            var client = mailtrapFactory.CreateClient();
+
+            var inboxId = 42;
+            var threadId = "1700000000000124";
+            await client.Inbound().Inbox(inboxId).Thread(threadId).Delete();
+        - lang: java
+          label: Java
+          source: |
+            import io.mailtrap.config.MailtrapConfig;
+            import io.mailtrap.factory.MailtrapClientFactory;
+
+            var config = new MailtrapConfig.Builder().token("YOUR_API_KEY").build();
+            var client = MailtrapClientFactory.createMailtrapClient(config);
+
+            long inboxId = 42L;
+            String threadId = "1700000000000124";
+            client.inboundApi().threads().delete(inboxId, threadId);
+      responses:
+        "204":
+          description: Thread deleted
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  /api/inbound/inboxes/{inbox_id}/forward_rules:
+    get:
+      operationId: listInboundForwardRules
+      summary: List forward rules
+      description: |
+        Returns the inbox's forward rules, ordered by creation (oldest first).
+        The list is not paginated; an inbox holds at most 5 rules.
+      tags:
+        - forward-rules
+      parameters:
+        - $ref: "#/components/parameters/inbox_id"
+      x-codeSamples:
+        - lang: shell
+          label: "cURL"
+          source: |
+            curl -X GET https://eu.mailtrap.io/api/inbound/inboxes/{inbox_id}/forward_rules \
+              -H 'Authorization: Bearer YOUR_API_KEY'
+        - lang: javascript
+          label: Node.js
+          source: |
+            import { MailtrapClient } from "mailtrap";
+
+            const client = new MailtrapClient({ token: "YOUR_API_KEY" });
+
+            const inboxId = 42;
+            const rules = await client.inbound.forwardRules.getList(inboxId);
+            console.log(rules.data);
+        - lang: php
+          label: PHP
+          source: |
+            <?php
+            use Mailtrap\Config;
+            use Mailtrap\Helper\ResponseHelper;
+            use Mailtrap\MailtrapInboundClient;
+
+            $config = new Config($_ENV['MAILTRAP_API_KEY']);
+            $inboxId = $_ENV['MAILTRAP_INBOUND_INBOX_ID'];
+            $forwardRules = (new MailtrapInboundClient($config))->forwardRules($inboxId);
+
+            $response = $forwardRules->getList();
+            var_dump(ResponseHelper::toArray($response));
+        - lang: python
+          label: Python
+          source: |
+            import mailtrap as mt
+
+            client = mt.MailtrapClient(token="YOUR_API_KEY")
+
+            inbox_id = 42
+            rules = client.inbound_api.forward_rules.get_list(inbox_id)
+            print(rules)
+        - lang: ruby
+          label: Ruby
+          source: |
+            require 'mailtrap'
+
+            client = Mailtrap::Client.new(api_key: 'YOUR_API_KEY')
+            forward_rules = Mailtrap::InboundForwardRulesAPI.new(client)
+
+            inbox_id = 42
+            puts forward_rules.list(inbox_id)
+        - lang: csharp
+          label: .NET
+          source: |
+            using Mailtrap;
+
+            using var mailtrapFactory = new MailtrapClientFactory("YOUR_API_KEY");
+            var client = mailtrapFactory.CreateClient();
+
+            var inboxId = 42;
+            var rules = await client.Inbound().Inbox(inboxId).ForwardRules().GetAll();
+            Console.WriteLine(rules.Count);
+        - lang: java
+          label: Java
+          source: |
+            import io.mailtrap.config.MailtrapConfig;
+            import io.mailtrap.factory.MailtrapClientFactory;
+
+            var config = new MailtrapConfig.Builder().token("YOUR_API_KEY").build();
+            var client = MailtrapClientFactory.createMailtrapClient(config);
+
+            long inboxId = 42L;
+            var rules = client.inboundApi().forwardRules().getList(inboxId);
+            System.out.println(rules);
+      responses:
+        "200":
+          description: List of forward rules
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ForwardRulesListResponse"
+              example:
+                data:
+                  - id: 7
+                    name: Copy billing mail to finance
+                    created_at: "2026-05-08T10:30:00.000Z"
+                    updated_at: "2026-05-08T10:30:00.000Z"
+                    conditions:
+                      - match_type: sender
+                        operator: ends_with
+                        value: "@billing.example.com"
+                        header_key: null
+                    destinations:
+                      - email: "finance@example.com"
+                  - id: 8
+                    name: Forward everything to archive
+                    created_at: "2026-05-08T11:00:00.000Z"
+                    updated_at: "2026-05-08T11:00:00.000Z"
+                    conditions: []
+                    destinations:
+                      - email: "archive@example.com"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+    post:
+      operationId: createInboundForwardRule
+      summary: Create a forward rule
+      description: |
+        Create a forward rule on the inbox. The rule, its conditions, and its
+        destinations are validated and saved together: if any part is
+        invalid, nothing is created.
+
+        An inbox can have at most 5 forward rules; each rule can have at most
+        5 conditions and 5 destinations.
+      tags:
+        - forward-rules
+      parameters:
+        - $ref: "#/components/parameters/inbox_id"
+      x-codeSamples:
+        - lang: shell
+          label: "cURL"
+          source: |
+            curl -X POST https://eu.mailtrap.io/api/inbound/inboxes/{inbox_id}/forward_rules \
+              -H 'Authorization: Bearer YOUR_API_KEY' \
+              -H 'Content-Type: application/json' \
+              -d '{
+                "name": "Copy billing mail to finance",
+                "conditions": [
+                  { "match_type": "sender", "operator": "ends_with", "value": "@billing.example.com" }
+                ],
+                "destinations": [
+                  { "email": "finance@example.com" }
+                ]
+              }'
+        - lang: javascript
+          label: Node.js
+          source: |
+            import { MailtrapClient } from "mailtrap";
+
+            const client = new MailtrapClient({ token: "YOUR_API_KEY" });
+
+            const inboxId = 42;
+            const rule = await client.inbound.forwardRules.create(inboxId, {
+              name: "Copy billing mail to finance",
+              conditions: [
+                { match_type: "sender", operator: "ends_with", value: "@billing.example.com" },
+              ],
+              destinations: [{ email: "finance@example.com" }],
+            });
+            console.log(rule.data);
+        - lang: php
+          label: PHP
+          source: |
+            <?php
+            use Mailtrap\Config;
+            use Mailtrap\DTO\Request\Inbound\CreateInboundForwardRule;
+            use Mailtrap\DTO\Request\Inbound\InboundForwardRule;
+            use Mailtrap\DTO\Request\Inbound\InboundForwardRuleCondition;
+            use Mailtrap\DTO\Request\Inbound\InboundForwardRuleDestination;
+            use Mailtrap\Helper\ResponseHelper;
+            use Mailtrap\MailtrapInboundClient;
+
+            $config = new Config($_ENV['MAILTRAP_API_KEY']);
+            $inboxId = $_ENV['MAILTRAP_INBOUND_INBOX_ID'];
+            $forwardRules = (new MailtrapInboundClient($config))->forwardRules($inboxId);
+
+            $response = $forwardRules->create(new CreateInboundForwardRule(
+                name: 'Copy billing mail to finance',
+                conditions: [
+                    new InboundForwardRuleCondition(
+                        matchType: InboundForwardRule::MATCH_TYPE_SENDER,
+                        operator: InboundForwardRule::OPERATOR_ENDS_WITH,
+                        value: '@billing.example.com'
+                    ),
+                ],
+                destinations: [new InboundForwardRuleDestination('finance@example.com')],
+            ));
+            var_dump(ResponseHelper::toArray($response));
+        - lang: python
+          label: Python
+          source: |
+            import mailtrap as mt
+
+            client = mt.MailtrapClient(token="YOUR_API_KEY")
+
+            inbox_id = 42
+            rule = client.inbound_api.forward_rules.create(
+                inbox_id,
+                mt.CreateInboundForwardRuleParams(
+                    name="Copy billing mail to finance",
+                    conditions=[
+                        mt.InboundForwardRuleConditionParams(
+                            match_type="sender",
+                            operator="ends_with",
+                            value="@billing.example.com",
+                        )
+                    ],
+                    destinations=[mt.InboundForwardRuleDestination(email="finance@example.com")],
+                ),
+            )
+            print(rule)
+        - lang: ruby
+          label: Ruby
+          source: |
+            require 'mailtrap'
+
+            client = Mailtrap::Client.new(api_key: 'YOUR_API_KEY')
+            forward_rules = Mailtrap::InboundForwardRulesAPI.new(client)
+
+            inbox_id = 42
+            rule = forward_rules.create(
+              inbox_id,
+              name: 'Copy billing mail to finance',
+              conditions: [{ match_type: 'sender', operator: 'ends_with', value: '@billing.example.com' }],
+              destinations: [{ email: 'finance@example.com' }]
+            )
+            puts rule
+        - lang: csharp
+          label: .NET
+          source: |
+            using Mailtrap;
+            using Mailtrap.Inbound.Models;
+            using Mailtrap.Inbound.Requests;
+
+            using var mailtrapFactory = new MailtrapClientFactory("YOUR_API_KEY");
+            var client = mailtrapFactory.CreateClient();
+
+            var inboxId = 42;
+            var rule = await client.Inbound().Inbox(inboxId).ForwardRules()
+                .Create(new CreateInboundForwardRuleRequest
+                {
+                    Name = "Copy billing mail to finance",
+                    Conditions =
+                    [
+                        new InboundForwardRuleCondition
+                        {
+                            MatchType = ForwardRuleMatchType.Sender,
+                            Operator = ForwardRuleOperator.EndsWith,
+                            Value = "@billing.example.com"
+                        }
+                    ],
+                    Destinations = [new InboundForwardRuleDestination { Email = "finance@example.com" }]
+                });
+            Console.WriteLine(rule.Id);
+        - lang: java
+          label: Java
+          source: |
+            import io.mailtrap.config.MailtrapConfig;
+            import io.mailtrap.factory.MailtrapClientFactory;
+            import io.mailtrap.model.InboundForwardRuleMatchType;
+            import io.mailtrap.model.InboundForwardRuleOperator;
+            import io.mailtrap.model.request.inbound.CreateInboundForwardRuleRequest;
+            import io.mailtrap.model.request.inbound.InboundForwardRuleConditionInput;
+            import io.mailtrap.model.response.inbound.InboundForwardRuleDestination;
+
+            import java.util.List;
+
+            var config = new MailtrapConfig.Builder().token("YOUR_API_KEY").build();
+            var client = MailtrapClientFactory.createMailtrapClient(config);
+
+            long inboxId = 42L;
+            var rule = client.inboundApi().forwardRules().create(inboxId, CreateInboundForwardRuleRequest.builder()
+                .name("Copy billing mail to finance")
+                .conditions(List.of(InboundForwardRuleConditionInput.builder()
+                    .matchType(InboundForwardRuleMatchType.SENDER)
+                    .operator(InboundForwardRuleOperator.ENDS_WITH)
+                    .value("@billing.example.com")
+                    .build()))
+                .destinations(List.of(new InboundForwardRuleDestination("finance@example.com")))
+                .build());
+            System.out.println(rule);
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ForwardRuleCreateInput"
+            example:
+              name: Copy billing mail to finance
+              conditions:
+                - match_type: sender
+                  operator: ends_with
+                  value: "@billing.example.com"
+              destinations:
+                - email: "finance@example.com"
+      responses:
+        "201":
+          description: Forward rule created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ForwardRuleResponse"
+              example:
+                data:
+                  id: 7
+                  name: Copy billing mail to finance
+                  created_at: "2026-05-08T10:30:00.000Z"
+                  updated_at: "2026-05-08T10:30:00.000Z"
+                  conditions:
+                    - match_type: sender
+                      operator: ends_with
+                      value: "@billing.example.com"
+                      header_key: null
+                  destinations:
+                    - email: "finance@example.com"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "422":
+          $ref: "#/components/responses/ForwardRuleUnprocessableEntity"
+
+  /api/inbound/inboxes/{inbox_id}/forward_rules/{id}:
+    get:
+      operationId: getInboundForwardRule
+      summary: Get a forward rule
+      description: Returns a single forward rule with its conditions and destinations.
+      tags:
+        - forward-rules
+      parameters:
+        - $ref: "#/components/parameters/inbox_id"
+        - $ref: "#/components/parameters/forward_rule_id"
+      x-codeSamples:
+        - lang: shell
+          label: "cURL"
+          source: |
+            curl -X GET https://eu.mailtrap.io/api/inbound/inboxes/{inbox_id}/forward_rules/{id} \
+              -H 'Authorization: Bearer YOUR_API_KEY'
+        - lang: javascript
+          label: Node.js
+          source: |
+            import { MailtrapClient } from "mailtrap";
+
+            const client = new MailtrapClient({ token: "YOUR_API_KEY" });
+
+            const inboxId = 42;
+            const ruleId = 7;
+            const rule = await client.inbound.forwardRules.get(inboxId, ruleId);
+            console.log(rule.data);
+        - lang: php
+          label: PHP
+          source: |
+            <?php
+            use Mailtrap\Config;
+            use Mailtrap\Helper\ResponseHelper;
+            use Mailtrap\MailtrapInboundClient;
+
+            $config = new Config($_ENV['MAILTRAP_API_KEY']);
+            $inboxId = $_ENV['MAILTRAP_INBOUND_INBOX_ID'];
+            $forwardRules = (new MailtrapInboundClient($config))->forwardRules($inboxId);
+
+            $ruleId = $_ENV['MAILTRAP_INBOUND_FORWARD_RULE_ID'];
+            $response = $forwardRules->getById($ruleId);
+            var_dump(ResponseHelper::toArray($response));
+        - lang: python
+          label: Python
+          source: |
+            import mailtrap as mt
+
+            client = mt.MailtrapClient(token="YOUR_API_KEY")
+
+            inbox_id = 42
+            rule_id = 7
+            rule = client.inbound_api.forward_rules.get_by_id(inbox_id, rule_id)
+            print(rule)
+        - lang: ruby
+          label: Ruby
+          source: |
+            require 'mailtrap'
+
+            client = Mailtrap::Client.new(api_key: 'YOUR_API_KEY')
+            forward_rules = Mailtrap::InboundForwardRulesAPI.new(client)
+
+            inbox_id = 42
+            rule_id = 7
+            puts forward_rules.get(inbox_id, rule_id)
+        - lang: csharp
+          label: .NET
+          source: |
+            using Mailtrap;
+
+            using var mailtrapFactory = new MailtrapClientFactory("YOUR_API_KEY");
+            var client = mailtrapFactory.CreateClient();
+
+            var inboxId = 42;
+            var ruleId = 7;
+            var rule = await client.Inbound().Inbox(inboxId).ForwardRule(ruleId).GetDetails();
+            Console.WriteLine(rule.Name);
+        - lang: java
+          label: Java
+          source: |
+            import io.mailtrap.config.MailtrapConfig;
+            import io.mailtrap.factory.MailtrapClientFactory;
+
+            var config = new MailtrapConfig.Builder().token("YOUR_API_KEY").build();
+            var client = MailtrapClientFactory.createMailtrapClient(config);
+
+            long inboxId = 42L;
+            long ruleId = 7L;
+            var rule = client.inboundApi().forwardRules().getById(inboxId, ruleId);
+            System.out.println(rule);
+      responses:
+        "200":
+          description: Forward rule details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ForwardRuleResponse"
+              example:
+                data:
+                  id: 9
+                  name: Escalate urgent tickets
+                  created_at: "2026-05-08T10:30:00.000Z"
+                  updated_at: "2026-05-08T12:15:00.000Z"
+                  conditions:
+                    - match_type: header
+                      operator: equal
+                      value: "high"
+                      header_key: "X-Priority-Level"
+                    - match_type: recipient
+                      operator: starts_with
+                      value: "support"
+                      header_key: null
+                  destinations:
+                    - email: "oncall@example.com"
+                    - email: "lead@example.com"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+    patch:
+      operationId: updateInboundForwardRule
+      summary: Update a forward rule
+      description: |
+        Partially update a forward rule. Only the fields present in the
+        request are changed:
+
+        - `name` renames the rule.
+        - `conditions`, when present, replaces the whole condition set. An
+          empty array removes every condition, so the rule matches all
+          messages.
+        - `destinations`, when present, replaces the whole destination set.
+
+        Omitted fields are left unchanged. The update is applied atomically:
+        if any part is invalid, the rule is left as it was.
+      tags:
+        - forward-rules
+      parameters:
+        - $ref: "#/components/parameters/inbox_id"
+        - $ref: "#/components/parameters/forward_rule_id"
+      x-codeSamples:
+        - lang: shell
+          label: "cURL"
+          source: |
+            curl -X PATCH https://eu.mailtrap.io/api/inbound/inboxes/{inbox_id}/forward_rules/{id} \
+              -H 'Authorization: Bearer YOUR_API_KEY' \
+              -H 'Content-Type: application/json' \
+              -d '{
+                "destinations": [
+                  { "email": "finance@example.com" },
+                  { "email": "accounting@example.com" }
+                ]
+              }'
+        - lang: javascript
+          label: Node.js
+          source: |
+            import { MailtrapClient } from "mailtrap";
+
+            const client = new MailtrapClient({ token: "YOUR_API_KEY" });
+
+            const inboxId = 42;
+            const ruleId = 7;
+            const rule = await client.inbound.forwardRules.update(inboxId, ruleId, {
+              destinations: [
+                { email: "finance@example.com" },
+                { email: "accounting@example.com" },
+              ],
+            });
+            console.log(rule.data);
+        - lang: php
+          label: PHP
+          source: |
+            <?php
+            use Mailtrap\Config;
+            use Mailtrap\DTO\Request\Inbound\InboundForwardRuleDestination;
+            use Mailtrap\DTO\Request\Inbound\UpdateInboundForwardRule;
+            use Mailtrap\Helper\ResponseHelper;
+            use Mailtrap\MailtrapInboundClient;
+
+            $config = new Config($_ENV['MAILTRAP_API_KEY']);
+            $inboxId = $_ENV['MAILTRAP_INBOUND_INBOX_ID'];
+            $forwardRules = (new MailtrapInboundClient($config))->forwardRules($inboxId);
+
+            $ruleId = $_ENV['MAILTRAP_INBOUND_FORWARD_RULE_ID'];
+            $response = $forwardRules->update($ruleId, new UpdateInboundForwardRule(
+                destinations: [
+                    new InboundForwardRuleDestination('finance@example.com'),
+                    new InboundForwardRuleDestination('accounting@example.com'),
+                ],
+            ));
+            var_dump(ResponseHelper::toArray($response));
+        - lang: python
+          label: Python
+          source: |
+            import mailtrap as mt
+
+            client = mt.MailtrapClient(token="YOUR_API_KEY")
+
+            inbox_id = 42
+            rule_id = 7
+            rule = client.inbound_api.forward_rules.update(
+                inbox_id,
+                rule_id,
+                mt.UpdateInboundForwardRuleParams(
+                    destinations=[
+                        mt.InboundForwardRuleDestination(email="finance@example.com"),
+                        mt.InboundForwardRuleDestination(email="accounting@example.com"),
+                    ]
+                ),
+            )
+            print(rule)
+        - lang: ruby
+          label: Ruby
+          source: |
+            require 'mailtrap'
+
+            client = Mailtrap::Client.new(api_key: 'YOUR_API_KEY')
+            forward_rules = Mailtrap::InboundForwardRulesAPI.new(client)
+
+            inbox_id = 42
+            rule_id = 7
+            puts forward_rules.update(
+              inbox_id,
+              rule_id,
+              destinations: [{ email: 'finance@example.com' }, { email: 'accounting@example.com' }]
+            )
+        - lang: csharp
+          label: .NET
+          source: |
+            using Mailtrap;
+            using Mailtrap.Inbound.Models;
+            using Mailtrap.Inbound.Requests;
+
+            using var mailtrapFactory = new MailtrapClientFactory("YOUR_API_KEY");
+            var client = mailtrapFactory.CreateClient();
+
+            var inboxId = 42;
+            var ruleId = 7;
+            var rule = await client.Inbound().Inbox(inboxId).ForwardRule(ruleId)
+                .Update(new UpdateInboundForwardRuleRequest
+                {
+                    Destinations =
+                    [
+                        new InboundForwardRuleDestination { Email = "finance@example.com" },
+                        new InboundForwardRuleDestination { Email = "accounting@example.com" }
+                    ]
+                });
+            Console.WriteLine(rule.Destinations.Count);
+        - lang: java
+          label: Java
+          source: |
+            import io.mailtrap.config.MailtrapConfig;
+            import io.mailtrap.factory.MailtrapClientFactory;
+            import io.mailtrap.model.request.inbound.UpdateInboundForwardRuleRequest;
+            import io.mailtrap.model.response.inbound.InboundForwardRuleDestination;
+
+            import java.util.List;
+
+            var config = new MailtrapConfig.Builder().token("YOUR_API_KEY").build();
+            var client = MailtrapClientFactory.createMailtrapClient(config);
+
+            long inboxId = 42L;
+            long ruleId = 7L;
+            var rule = client.inboundApi().forwardRules().update(inboxId, ruleId, UpdateInboundForwardRuleRequest.builder()
+                .destinations(List.of(
+                    new InboundForwardRuleDestination("finance@example.com"),
+                    new InboundForwardRuleDestination("accounting@example.com")))
+                .build());
+            System.out.println(rule);
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ForwardRuleUpdateInput"
+            example:
+              destinations:
+                - email: "finance@example.com"
+                - email: "accounting@example.com"
+      responses:
+        "200":
+          description: Forward rule updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ForwardRuleResponse"
+              example:
+                data:
+                  id: 7
+                  name: Copy billing mail to finance
+                  created_at: "2026-05-08T10:30:00.000Z"
+                  updated_at: "2026-05-08T12:15:00.000Z"
+                  conditions:
+                    - match_type: sender
+                      operator: ends_with
+                      value: "@billing.example.com"
+                      header_key: null
+                  destinations:
+                    - email: "finance@example.com"
+                    - email: "accounting@example.com"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "422":
+          $ref: "#/components/responses/ForwardRuleUnprocessableEntity"
+
+    delete:
+      operationId: deleteInboundForwardRule
+      summary: Delete a forward rule
+      description: |
+        Permanently delete a forward rule along with its conditions and
+        destinations. Messages already forwarded are not affected.
+      tags:
+        - forward-rules
+      parameters:
+        - $ref: "#/components/parameters/inbox_id"
+        - $ref: "#/components/parameters/forward_rule_id"
+      x-codeSamples:
+        - lang: shell
+          label: "cURL"
+          source: |
+            curl -X DELETE https://eu.mailtrap.io/api/inbound/inboxes/{inbox_id}/forward_rules/{id} \
+              -H 'Authorization: Bearer YOUR_API_KEY'
+        - lang: javascript
+          label: Node.js
+          source: |
+            import { MailtrapClient } from "mailtrap";
+
+            const client = new MailtrapClient({ token: "YOUR_API_KEY" });
+
+            const inboxId = 42;
+            const ruleId = 7;
+            await client.inbound.forwardRules.delete(inboxId, ruleId);
+        - lang: php
+          label: PHP
+          source: |
+            <?php
+            use Mailtrap\Config;
+            use Mailtrap\MailtrapInboundClient;
+
+            $config = new Config($_ENV['MAILTRAP_API_KEY']);
+            $inboxId = $_ENV['MAILTRAP_INBOUND_INBOX_ID'];
+            $forwardRules = (new MailtrapInboundClient($config))->forwardRules($inboxId);
+
+            $ruleId = $_ENV['MAILTRAP_INBOUND_FORWARD_RULE_ID'];
+            $response = $forwardRules->delete($ruleId);
+            echo $response->getStatusCode(); // 204
+        - lang: python
+          label: Python
+          source: |
+            import mailtrap as mt
+
+            client = mt.MailtrapClient(token="YOUR_API_KEY")
+
+            inbox_id = 42
+            rule_id = 7
+            client.inbound_api.forward_rules.delete(inbox_id, rule_id)
+        - lang: ruby
+          label: Ruby
+          source: |
+            require 'mailtrap'
+
+            client = Mailtrap::Client.new(api_key: 'YOUR_API_KEY')
+            forward_rules = Mailtrap::InboundForwardRulesAPI.new(client)
+
+            inbox_id = 42
+            rule_id = 7
+            forward_rules.delete(inbox_id, rule_id)
+        - lang: csharp
+          label: .NET
+          source: |
+            using Mailtrap;
+
+            using var mailtrapFactory = new MailtrapClientFactory("YOUR_API_KEY");
+            var client = mailtrapFactory.CreateClient();
+
+            var inboxId = 42;
+            var ruleId = 7;
+            await client.Inbound().Inbox(inboxId).ForwardRule(ruleId).Delete();
+        - lang: java
+          label: Java
+          source: |
+            import io.mailtrap.config.MailtrapConfig;
+            import io.mailtrap.factory.MailtrapClientFactory;
+
+            var config = new MailtrapConfig.Builder().token("YOUR_API_KEY").build();
+            var client = MailtrapClientFactory.createMailtrapClient(config);
+
+            long inboxId = 42L;
+            long ruleId = 7L;
+            client.inboundApi().forwardRules().delete(inboxId, ruleId);
+      responses:
+        "204":
+          description: Forward rule deleted
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+components:
+  securitySchemes:
+    HeaderAuth:
+      type: apiKey
+      description: API token in Api-Token header
+      in: header
+      name: Api-Token
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: Bearer token authentication
+
+  parameters:
+    folder_id:
+      name: folder_id
+      in: path
+      required: true
+      description: Inbound folder ID
+      schema:
+        type: integer
+        example: 1
+
+    inbox_id:
+      name: inbox_id
+      in: path
+      required: true
+      description: Inbound inbox ID
+      schema:
+        type: integer
+        example: 1
+
+    message_id:
+      name: id
+      in: path
+      required: true
+      description: Inbound message ID
+      schema:
+        type: string
+        example: "1700000000000123"
+
+    thread_id:
+      name: id
+      in: path
+      required: true
+      description: Inbound thread ID
+      schema:
+        type: string
+        example: "1700000000000123"
+
+    forward_rule_id:
+      name: id
+      in: path
+      required: true
+      description: Forward rule ID
+      schema:
+        type: integer
+        example: 7
+
+  schemas:
+    Folder:
+      type: object
+      required:
+        - id
+        - name
+      properties:
+        id:
+          type: integer
+          example: 1
+        name:
+          type: string
+          example: Support
+
+    FolderInput:
+      type: object
+      required:
+        - name
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 100
+          description: Folder name. Must be unique within the account.
+          example: Support
+
+    Inbox:
+      type: object
+      required:
+        - id
+        - name
+        - address
+        - domain_id
+      properties:
+        id:
+          type: integer
+          example: 1
+        name:
+          type: string
+          example: Support tickets
+        address:
+          type: string
+          description: |
+            The inbox's inbound address. For a standard Mailtrap-hosted inbox
+            this is a unique generated address. For a custom-domain inbox it is
+            the catch-all form `*@your-domain.com`, which receives mail sent to
+            any address on that domain.
+          example: "support-tickets-1a2b3c4d@inbound-mailtrap.io"
+        domain_id:
+          type: integer
+          description: |
+            ID of the sending domain the inbox is attached to. For a
+            custom-domain inbox this is your own sending domain; for a standard
+            hosted inbox it is the Mailtrap-managed domain backing the inbox.
+          example: 892
+
+    InboxInput:
+      type: object
+      required:
+        - name
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 100
+          description: Inbox name. Must be unique within the account, across all folders.
+          example: Support tickets
+
+    InboxCreateInput:
+      type: object
+      required:
+        - name
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 100
+          description: Inbox name. Must be unique within the account, across all folders.
+          example: Support tickets
+        domain_id:
+          type: integer
+          description: |
+            ID of one of the account's custom sending domains. Attaches the
+            inbox to that domain, creating a catch-all inbox that receives mail
+            for any address on it. Omit to create a standard Mailtrap-hosted
+            inbox. A domain can be attached to only one inbox; an unknown or
+            inaccessible ID returns `422` with `domain_id: ["does not exist"]`.
+          example: 894
+
+    Attachment:
+      type: object
+      properties:
+        attachment_id:
+          type: string
+          example: att-1
+        size:
+          type:
+            - integer
+            - "null"
+          example: 1024
+        filename:
+          type:
+            - string
+            - "null"
+          example: logo.png
+        content_type:
+          type:
+            - string
+            - "null"
+          example: image/png
+        content_disposition:
+          type:
+            - string
+            - "null"
+          enum:
+            - attachment
+            - inline
+            - null
+          example: inline
+        content_id:
+          type:
+            - string
+            - "null"
+          description: |
+            `Content-ID` header value, used to reference inline attachments
+            from the HTML body.
+          example: "logo@example.com"
+
+    AttachmentWithDownloadUrl:
+      allOf:
+        - $ref: "#/components/schemas/Attachment"
+        - type: object
+          properties:
+            download_url:
+              type:
+                - string
+                - "null"
+              format: uri
+              description: URL to download the attachment. Expires after one hour.
+              example: "https://s3.amazonaws.com/inbound-mail/att-1?X-Amz-Signature=..."
+            download_url_expires_at:
+              type:
+                - string
+                - "null"
+              format: date-time
+              example: "2026-05-08T11:30:00.000Z"
+
+    Message:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Mailtrap object ID for the message (not the `Message-ID` header value).
+          example: "1700000000000123"
+        inbox_id:
+          type: integer
+          example: 1
+        from:
+          type:
+            - string
+            - "null"
+          example: "sender@example.com"
+        to:
+          type: array
+          items:
+            type: string
+          example:
+            - "support-tickets-1a2b3c4d@inbound-mailtrap.io"
+        cc:
+          type: array
+          items:
+            type: string
+          example: []
+        bcc:
+          type: array
+          items:
+            type: string
+          example: []
+        reply_to:
+          type:
+            - string
+            - "null"
+          example: null
+        subject:
+          type:
+            - string
+            - "null"
+          example: Hello
+        rfc_message_id:
+          type:
+            - string
+            - "null"
+          description: Value of the original `Message-ID` header.
+          example: "<abc@sender.example>"
+        in_reply_to:
+          type:
+            - string
+            - "null"
+          example: null
+        references:
+          type: array
+          items:
+            type: string
+          example: []
+        headers:
+          type:
+            - object
+            - "null"
+          additionalProperties:
+            type: string
+          description: |
+            Selected headers from the original message, lowercased.
+          example:
+            mime-version: "1.0"
+            return-path: "<sender@example.com>"
+        size:
+          type:
+            - integer
+            - "null"
+          description: Total size of the raw message in bytes.
+          example: 4096
+        html_size:
+          type:
+            - integer
+            - "null"
+          description: Size of the HTML body in bytes. Zero if the message has no HTML part.
+          example: 512
+        text_size:
+          type:
+            - integer
+            - "null"
+          description: Size of the plain-text body in bytes. Zero if the message has no text part.
+          example: 128
+        received_at:
+          type: string
+          format: date-time
+          example: "2026-05-08T10:30:00.000Z"
+        thread_id:
+          type:
+            - string
+            - "null"
+          description: |
+            ID of the thread this message belongs to. Use it with the Threads
+            endpoints to fetch the full conversation.
+          example: "1700000000000124"
+        attachments:
+          type: array
+          items:
+            $ref: "#/components/schemas/Attachment"
+        forwards:
+          type: array
+          description: |
+            Outcome of each forward-rule destination this message was
+            forwarded to. An empty array when no forward rule matched.
+          items:
+            $ref: "#/components/schemas/ForwardOutcome"
+
+    MessageDetails:
+      allOf:
+        - $ref: "#/components/schemas/Message"
+        - type: object
+          properties:
+            attachments:
+              type: array
+              items:
+                $ref: "#/components/schemas/AttachmentWithDownloadUrl"
+            raw_message_url:
+              type:
+                - string
+                - "null"
+              format: uri
+              description: |
+                URL to download the raw `.eml` file. Expires after one hour.
+              example: "https://s3.amazonaws.com/inbound-mail/raw.eml?X-Amz-Signature=..."
+            raw_message_expires_at:
+              type:
+                - string
+                - "null"
+              format: date-time
+              example: "2026-05-08T11:30:00.000Z"
+            html_body:
+              type:
+                - string
+                - "null"
+              description: Decoded HTML body. `null` when the message has no HTML part.
+              example: "<html><body>Hello</body></html>"
+            text_body:
+              type:
+                - string
+                - "null"
+              description: Decoded plain-text body. `null` when the message has no text part.
+              example: "Hello"
+
+    MessagesListResponse:
+      type: object
+      required:
+        - data
+        - total_count
+        - last_id
+      properties:
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/Message"
+        total_count:
+          type: integer
+          description: Total number of messages within the retention window.
+          example: 1
+        last_id:
+          type:
+            - string
+            - "null"
+          description: |
+            Cursor for the next page. `null` when there are no more results.
+          example: null
+
+    Address:
+      type: object
+      required:
+        - email
+      properties:
+        email:
+          type: string
+          format: email
+          example: "recipient@example.com"
+        name:
+          type: string
+          example: "Jane Doe"
+
+    EmailAttachment:
+      type: object
+      required:
+        - content
+        - filename
+      properties:
+        content:
+          type: string
+          description: Base64-encoded attachment content.
+          example: "PGh0bWw+PGJvZHk+SGVsbG88L2JvZHk+PC9odG1sPg=="
+        filename:
+          type: string
+          example: "invoice.pdf"
+        type:
+          type: string
+          description: MIME type of the attachment.
+          example: "application/pdf"
+        disposition:
+          type: string
+          enum:
+            - attachment
+            - inline
+          default: attachment
+          example: attachment
+        content_id:
+          type: string
+          description: |
+            `Content-ID` used to reference an inline attachment from the HTML
+            body. Only relevant when `disposition` is `inline`.
+          example: "invoice@example.com"
+
+    SendMessageInput:
+      type: object
+      description: |
+        Options for the sent message. All fields are optional. `reply` and
+        `reply_all` must carry a body (`text` and/or `html`); `forward` may omit
+        it, since the original message is quoted automatically. `forward` has
+        no default recipient, so supply at least one in `to`, `cc`, or `bcc`.
+        Addresses use the Email Live Sending API `{ email, name }` shape.
+        Missing bodies or recipients are rejected by the Email Live Sending API
+        with `400`.
+      properties:
+        from:
+          allOf:
+            - $ref: "#/components/schemas/Address"
+          description: |
+            Sender address. Rejected for Mailtrap-hosted inboxes (they always
+            send from their own address); required for custom-domain inboxes,
+            where the address must belong to the inbox's domain.
+        to:
+          type: array
+          maxItems: 1000
+          items:
+            $ref: "#/components/schemas/Address"
+        cc:
+          type: array
+          maxItems: 1000
+          items:
+            $ref: "#/components/schemas/Address"
+        bcc:
+          type: array
+          maxItems: 1000
+          items:
+            $ref: "#/components/schemas/Address"
+        reply_to:
+          $ref: "#/components/schemas/Address"
+        text:
+          type: string
+          description: Plain-text body.
+          example: "Thanks for reaching out. We are looking into it."
+        html:
+          type: string
+          description: HTML body.
+          example: "<p>Thanks for reaching out. We are looking into it.</p>"
+        category:
+          type: string
+          maxLength: 255
+          description: Email Live Sending category for the sent message.
+          example: "Support reply"
+        attachments:
+          type: array
+          items:
+            $ref: "#/components/schemas/EmailAttachment"
+        headers:
+          type: object
+          additionalProperties:
+            type: string
+          description: |
+            Custom headers to add to the sent message. `In-Reply-To` and
+            `References` are always set from the original message and cannot be
+            overridden.
+          example:
+            X-Custom-Header: "value"
+        custom_variables:
+          type: object
+          additionalProperties:
+            type: string
+          description: Email Live Sending custom variables for the sent message.
+          example:
+            ticket_id: "12345"
+
+    SendMessageResult:
+      type: object
+      required:
+        - message_ids
+      properties:
+        message_ids:
+          type: array
+          description: |
+            UUIDs assigned by the Email Live Sending API to the sent message, one
+            per recipient. These are the sent message's UUIDs — not the inbound
+            message ID acted on, nor an RFC `Message-ID` header value.
+          items:
+            type: string
+          example:
+            - "1a2b3c4d-5e6f-7a8b-9c0d-1e2f3a4b5c6d"
+
+    SendMessageError:
+      type: object
+      properties:
+        errors:
+          oneOf:
+            - type: string
+            - type: array
+              items:
+                type: string
+
+    ThreadSummary:
+      type: object
+      description: |
+        Summary of a thread. All aggregates are computed over the messages you
+        can still access (those within the plan's retention window). The
+        `subject` and the `*_at` timestamps describe the whole thread,
+        including messages outside the retention window.
+      required:
+        - id
+        - subject
+        - message_count
+        - size
+        - first_message_at
+        - last_received_at
+        - last_sent_at
+        - last_activity_at
+        - last_message_id
+        - senders
+        - recipients
+        - attachments
+      properties:
+        id:
+          type: string
+          example: "1700000000000124"
+        subject:
+          type:
+            - string
+            - "null"
+          description: Subject of the thread's root message.
+          example: "Support request"
+        message_count:
+          type: integer
+          description: |
+            Number of accessible messages in the thread. Messages sent together
+            (reply-all fan-out) count once.
+          example: 2
+        size:
+          type: integer
+          description: Combined size of the accessible messages, in bytes.
+          example: 16384
+        first_message_at:
+          type: string
+          format: date-time
+          example: "2026-04-01T09:00:00.000Z"
+        last_received_at:
+          type:
+            - string
+            - "null"
+          format: date-time
+          description: When the most recent inbound message arrived, if any.
+          example: "2026-05-08T10:30:00.000Z"
+        last_sent_at:
+          type:
+            - string
+            - "null"
+          format: date-time
+          description: When the most recent message was sent, if any.
+          example: "2026-05-08T11:40:00.000Z"
+        last_activity_at:
+          type: string
+          format: date-time
+          description: Timestamp of the most recent message in either direction.
+          example: "2026-05-08T11:40:00.000Z"
+        last_message_id:
+          type:
+            - string
+            - "null"
+          description: ID of the most recent accessible message in the thread.
+          example: "1700000000000456"
+        senders:
+          type: array
+          description: Distinct `from` addresses across the accessible messages.
+          items:
+            type: string
+          example:
+            - "customer@example.com"
+            - "support-tickets-1a2b3c4d@inbound-mailtrap.io"
+        recipients:
+          type: array
+          description: Distinct `to`/`cc`/`bcc` addresses across the accessible messages.
+          items:
+            type: string
+          example:
+            - "support-tickets-1a2b3c4d@inbound-mailtrap.io"
+            - "customer@example.com"
+        attachments:
+          type: array
+          description: Attachments across the accessible messages, with download URLs.
+          items:
+            $ref: "#/components/schemas/AttachmentWithDownloadUrl"
+
+    ThreadMessage:
+      type: object
+      description: |
+        A message in a thread. `placeholder` entries (outside the retention
+        window, or no longer stored) carry only `visibility_status` and
+        `direction`. `available` entries add the full envelope, subject, RFC
+        headers, bodies, and attachments. `available` sent (`outbound`)
+        entries additionally carry `delivery`; `available` received
+        (`inbound`) entries additionally carry `forwards`.
+      required:
+        - visibility_status
+        - direction
+      properties:
+        visibility_status:
+          type: string
+          enum:
+            - available
+            - placeholder
+          example: available
+        direction:
+          type: string
+          enum:
+            - inbound
+            - outbound
+          example: inbound
+        id:
+          type: string
+          description: |
+            For inbound messages, the Mailtrap object ID. For sent messages,
+            the Email Live Sending message UUID.
+          example: "1700000000000123"
+        message_group_id:
+          type:
+            - string
+            - "null"
+          description: |
+            Groups the copies of one logical message that was fanned out to
+            multiple recipients (e.g. a reply-all). Messages sharing a
+            `message_group_id` count once toward the thread's `message_count`.
+            `null` for a standalone message.
+          example: null
+        subject:
+          type:
+            - string
+            - "null"
+          example: "Support request"
+        rfc_message_id:
+          type:
+            - string
+            - "null"
+          description: Value of the `Message-ID` header.
+          example: "<abc@customer.example>"
+        in_reply_to:
+          type:
+            - string
+            - "null"
+          example: null
+        references:
+          type: array
+          items:
+            type: string
+          example: []
+        from:
+          type:
+            - string
+            - "null"
+          example: "customer@example.com"
+        to:
+          type: array
+          items:
+            type: string
+          example:
+            - "support-tickets-1a2b3c4d@inbound-mailtrap.io"
+        cc:
+          type: array
+          items:
+            type: string
+          example: []
+        bcc:
+          type: array
+          items:
+            type: string
+          example: []
+        reply_to:
+          type:
+            - string
+            - "null"
+          example: null
+        created_at:
+          type: string
+          format: date-time
+          example: "2026-05-08T10:30:00.000Z"
+        email_size:
+          type: integer
+          description: Size of the message in bytes.
+          example: 8192
+        text_body:
+          type:
+            - string
+            - "null"
+          description: Decoded plain-text body. `null` when the message has no text part.
+          example: "I need help with my order."
+        html_body:
+          type:
+            - string
+            - "null"
+          description: Decoded HTML body. `null` when the message has no HTML part.
+          example: "<p>I need help with my order.</p>"
+        attachments:
+          type: array
+          items:
+            $ref: "#/components/schemas/AttachmentWithDownloadUrl"
+        delivery:
+          $ref: "#/components/schemas/ThreadMessageDelivery"
+        forwards:
+          type: array
+          description: |
+            Outcome of each forward-rule destination this message was
+            forwarded to. Received (`inbound`) messages only; an empty array
+            when no forward rule matched.
+          items:
+            $ref: "#/components/schemas/ForwardOutcome"
+
+    ThreadMessageDelivery:
+      type: object
+      description: |
+        Delivery outcome of a sent message. Sent (`outbound`) messages only.
+      required:
+        - to
+        - status
+        - delivered_at
+        - bounced_at
+        - rejected_at
+      properties:
+        to:
+          type: string
+          description: Recipient address this copy of the message was sent to.
+          example: "customer@example.com"
+        status:
+          type: string
+          enum:
+            - delivered
+            - not_delivered
+            - enqueued
+            - opted_out
+          description: |
+            Delivery status, as shown in Email Logs.
+          example: delivered
+        delivered_at:
+          type:
+            - string
+            - "null"
+          format: date-time
+          description: When the message was delivered. `null` if it was not.
+          example: "2026-05-08T11:40:05.000Z"
+        bounced_at:
+          type:
+            - string
+            - "null"
+          format: date-time
+          description: When the message hard-bounced. `null` if it did not.
+          example: null
+        rejected_at:
+          type:
+            - string
+            - "null"
+          format: date-time
+          description: When the message was rejected before sending, e.g. a suppressed recipient. `null` if it was not.
+          example: null
+
+    ForwardOutcome:
+      type: object
+      required:
+        - rule_id
+        - rule_name
+        - destination
+        - status
+        - reason
+        - message_id
+      properties:
+        rule_id:
+          type: integer
+          description: ID of the forward rule that selected this destination.
+          example: 7
+        rule_name:
+          type:
+            - string
+            - "null"
+          description: Name of the forward rule at the time of forwarding.
+          example: "Copy to support team"
+        destination:
+          type: string
+          description: Address the message was forwarded to.
+          example: "team@example.com"
+        status:
+          type: string
+          enum:
+            - forwarded
+            - rejected
+          description: |
+            `forwarded` when the copy was accepted for sending; `rejected`
+            when it could not be sent.
+          example: forwarded
+        reason:
+          type:
+            - string
+            - "null"
+          description: |
+            Why the forward was rejected, e.g. `loop_prevention` or
+            `fetch_failed`, or the rejection reason returned by the Email Live
+            Sending API.
+            `null` when `status` is `forwarded`.
+          example: null
+        message_id:
+          type:
+            - string
+            - "null"
+          description: |
+            Email Live Sending UUID of the forwarded (sent) message. `null` when
+            `status` is `rejected`.
+          example: "f47ac10b-58cc-4372-a567-0e02b2c3d479"
+
+    Thread:
+      allOf:
+        - $ref: "#/components/schemas/ThreadSummary"
+        - type: object
+          properties:
+            messages:
+              type: array
+              description: The thread's messages, ordered oldest first.
+              items:
+                $ref: "#/components/schemas/ThreadMessage"
+
+    ThreadsListResponse:
+      type: object
+      required:
+        - data
+        - total_count
+        - last_id
+      properties:
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/ThreadSummary"
+        total_count:
+          type: integer
+          description: Total number of threads matching the query.
+          example: 1
+        last_id:
+          type:
+            - string
+            - "null"
+          description: |
+            Cursor for the next page. `null` when there are no more results.
+          example: null
+
+    ForwardRuleCondition:
+      type: object
+      description: |
+        One condition of a forward rule. A rule matches a message only when
+        all of its conditions match. Comparisons are case-insensitive and
+        ignore surrounding whitespace.
+
+        - `match_type: sender` compares against the address in the `From`
+          header.
+        - `match_type: recipient` compares against each address in the `To`
+          and `Cc` headers; `equal`, `contains`, `starts_with`, and
+          `ends_with` match when any address matches, `not_equal` when none
+          is equal to `value`.
+        - `match_type: header` compares against the values of the header
+          named by `header_key` (header names are matched case-insensitively).
+
+        `empty` and `not_empty` test whether the header is absent/blank or
+        present; they are only valid for `header` conditions and take no
+        `value`. Every other operator requires a `value`.
+      required:
+        - match_type
+        - operator
+      properties:
+        match_type:
+          type: string
+          enum:
+            - sender
+            - recipient
+            - header
+          example: sender
+        operator:
+          type: string
+          enum:
+            - equal
+            - not_equal
+            - contains
+            - starts_with
+            - ends_with
+            - empty
+            - not_empty
+          example: ends_with
+        value:
+          type:
+            - string
+            - "null"
+          description: |
+            Text to compare against. Required for every operator except
+            `empty` and `not_empty`, for which it must be omitted.
+          example: "@billing.example.com"
+        header_key:
+          type:
+            - string
+            - "null"
+          description: |
+            Name of the header to inspect. Required when `match_type` is
+            `header`; not used by other match types.
+          example: null
+
+    ForwardRuleDestination:
+      type: object
+      required:
+        - email
+      properties:
+        email:
+          type: string
+          format: email
+          description: |
+            Address that matching messages are forwarded to. Stored
+            lower-cased with surrounding whitespace removed; each address can
+            appear only once per rule (compared case-insensitively).
+          example: "finance@example.com"
+
+    ForwardRule:
+      type: object
+      required:
+        - id
+        - name
+        - created_at
+        - updated_at
+        - conditions
+        - destinations
+      properties:
+        id:
+          type: integer
+          example: 7
+        name:
+          type: string
+          example: Copy billing mail to finance
+        created_at:
+          type: string
+          format: date-time
+          example: "2026-05-08T10:30:00.000Z"
+        updated_at:
+          type: string
+          format: date-time
+          description: |
+            When the rule was last changed, including changes to its
+            conditions or destinations.
+          example: "2026-05-08T10:30:00.000Z"
+        conditions:
+          type: array
+          description: |
+            The rule's conditions, in creation order. An empty array means the
+            rule matches every message.
+          items:
+            $ref: "#/components/schemas/ForwardRuleCondition"
+        destinations:
+          type: array
+          description: |
+            Addresses that matching messages are forwarded to, in creation
+            order. A rule with no destinations forwards nothing.
+          items:
+            $ref: "#/components/schemas/ForwardRuleDestination"
+
+    ForwardRuleCreateInput:
+      type: object
+      required:
+        - name
+      properties:
+        name:
+          type: string
+          maxLength: 100
+          description: Rule name. Must be unique within the inbox.
+          example: Copy billing mail to finance
+        conditions:
+          type: array
+          maxItems: 5
+          description: |
+            Conditions that must all match. Omit or pass an empty array to
+            match every message.
+          items:
+            $ref: "#/components/schemas/ForwardRuleConditionInput"
+        destinations:
+          type: array
+          maxItems: 5
+          description: Addresses to forward matching messages to.
+          items:
+            $ref: "#/components/schemas/ForwardRuleDestination"
+
+    ForwardRuleUpdateInput:
+      type: object
+      description: |
+        All fields are optional. A present `conditions` or `destinations`
+        array replaces the whole set; an omitted one is left unchanged.
+      properties:
+        name:
+          type: string
+          maxLength: 100
+          description: Rule name. Must be unique within the inbox.
+          example: Copy billing mail to finance
+        conditions:
+          type: array
+          maxItems: 5
+          description: |
+            Replacement condition set. Pass an empty array to remove all
+            conditions, so the rule matches every message.
+          items:
+            $ref: "#/components/schemas/ForwardRuleConditionInput"
+        destinations:
+          type: array
+          maxItems: 5
+          description: |
+            Replacement destination set. Pass an empty array to remove all
+            destinations.
+          items:
+            $ref: "#/components/schemas/ForwardRuleDestination"
+
+    ForwardRuleConditionInput:
+      type: object
+      description: |
+        A condition to set on a rule. See `ForwardRuleCondition` for how
+        each `match_type` and `operator` is evaluated.
+      required:
+        - match_type
+        - operator
+      properties:
+        match_type:
+          type: string
+          enum:
+            - sender
+            - recipient
+            - header
+          example: sender
+        operator:
+          type: string
+          enum:
+            - equal
+            - not_equal
+            - contains
+            - starts_with
+            - ends_with
+            - empty
+            - not_empty
+          description: |
+            `empty` and `not_empty` are only valid when `match_type` is
+            `header`.
+          example: ends_with
+        value:
+          type: string
+          description: |
+            Required for every operator except `empty` and `not_empty`, for
+            which it must be omitted.
+          example: "@billing.example.com"
+        header_key:
+          type: string
+          description: |
+            Name of the header to inspect. Required when `match_type` is
+            `header`; omit it for other match types.
+          example: "X-Priority-Level"
+
+    ForwardRuleResponse:
+      type: object
+      required:
+        - data
+      properties:
+        data:
+          $ref: "#/components/schemas/ForwardRule"
+
+    ForwardRulesListResponse:
+      type: object
+      required:
+        - data
+      properties:
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/ForwardRule"
+
+    UnprocessableEntity:
+      type: object
+      properties:
+        errors:
+          type: object
+          additionalProperties:
+            type: array
+            items:
+              type: string
+
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+
+    ForbiddenError:
+      type: object
+      properties:
+        errors:
+          type: string
+
+  responses:
+    Unauthorized:
+      description: Unauthorized
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+          example:
+            error: Incorrect API token
+
+    Forbidden:
+      description: |
+        Forbidden. The token lacks the permission required for this operation
+        (`Access forbidden`), has no access to the account
+        (`Account access forbidden`), or Email Live Sending is not enabled for
+        the organization (empty response body).
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ForbiddenError"
+          examples:
+            insufficient_permissions:
+              summary: Token lacks the required permission
+              value:
+                errors: Access forbidden
+            no_account_access:
+              summary: Token has no access to the account
+              value:
+                errors: Account access forbidden
+
+    NotFound:
+      description: Not found
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+          example:
+            error: Not Found
+
+    UnprocessableEntity:
+      description: Validation error
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/UnprocessableEntity"
+          example:
+            errors:
+              name:
+                - has already been taken
+
+    ForwardRuleUnprocessableEntity:
+      description: |
+        Validation error. Errors on a condition or destination are keyed by
+        the request field and attribute (for example `conditions.operator`
+        or `destinations.email`); the per-inbox rule limit is reported under
+        `base`.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/UnprocessableEntity"
+          examples:
+            invalid_fields:
+              summary: Invalid name and condition
+              value:
+                errors:
+                  name:
+                    - has already been taken
+                  conditions.operator:
+                    - is not included in the list
+                  conditions.value:
+                    - can't be blank
+            invalid_destination:
+              summary: Invalid destination address
+              value:
+                errors:
+                  destinations.email:
+                    - is not a valid email
+            duplicate_destination:
+              summary: Same destination address given twice
+              value:
+                errors:
+                  destinations:
+                    - must be unique
+            too_many_conditions:
+              summary: More than 5 conditions
+              value:
+                errors:
+                  conditions:
+                    - must have at most 5
+            rule_limit:
+              summary: Inbox already has 5 rules
+              value:
+                errors:
+                  base:
+                    - inbox cannot have more than 5 forward rules
+
+    SendMessageAccepted:
+      description: |
+        Message queued for delivery. Returns the UUID(s) the Email Live Sending
+        API assigned to the sent message, one per recipient.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/SendMessageResult"
+          example:
+            message_ids:
+              - "1a2b3c4d-5e6f-7a8b-9c0d-1e2f3a4b5c6d"
+
+    SendMessageBadRequest:
+      description: |
+        The message could not be sent. Returned for an invalid sender (for
+        example a `from` on a Mailtrap-hosted inbox, or one outside the inbox's
+        domain) and for validation errors rejected by the Email Live Sending
+        API.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/SendMessageError"
+          example:
+            errors:
+              - "'from' must be an address on the inbox's domain"
+
+    SendMessageForbidden:
+      description: |
+        The token lacks admin access (on the inbox for a Mailtrap-hosted inbox,
+        or on the inbox's sending domain for a custom-domain inbox), the
+        Mailtrap-hosted sending limit has been reached, or the Email Live
+        Sending API rejected the message.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/SendMessageError"
+          examples:
+            permission:
+              summary: Missing admin access
+              value:
+                errors: Access forbidden
+            sending_limit:
+              summary: Mailtrap-hosted sending limit reached
+              value:
+                errors:
+                  - "Sending usage of this inbox has reached its limit."
+
+    PayloadTooLarge:
+      description: The message exceeds the maximum allowed size.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/SendMessageError"
+          example:
+            errors:
+              - "Message is too large"
+
+    TooManyRequests:
+      description: Too many requests. Retry after a short delay.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/SendMessageError"
+          example:
+            errors:
+              - "Too many requests"
