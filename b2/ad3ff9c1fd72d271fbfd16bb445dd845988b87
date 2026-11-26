@@ -1,0 +1,21 @@
+specs/inbound.openapi.yml
+  s_ed71987c89f446::t_6803cdccb9383f 3990
+  s_ed71987c89f446::t_daf669aeb01a85 4020-4026
+  s_ed71987c89f446::t_fdf53736d74c3d 2415
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "b2ad3ff9c1fd72d271fbfd16bb445dd845988b87",
+  "prompts": {},
+  "sessions": {
+    "s_ed71987c89f446": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "28a91546-f628-4267-96df-007ba1404233",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Piotr Bednarz <piotr.bednarz@railsware.com>"
+    }
+  }
+}

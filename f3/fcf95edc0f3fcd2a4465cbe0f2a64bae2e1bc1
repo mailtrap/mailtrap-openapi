@@ -1,0 +1,25 @@
+specs/account-management.openapi.yml
+  s_45dde43eff7091::t_5d5f8ab1db58a1 1635,2535,2570,2626
+specs/contacts.openapi.yml
+  s_45dde43eff7091::t_5d5f8ab1db58a1 3066,3094,3124
+specs/sandbox.openapi.yml
+  s_45dde43eff7091::t_5d5f8ab1db58a1 5210,5212,5394,5396,5588,5719,5756
+specs/email-sending.openapi.yml
+  s_45dde43eff7091::t_5d5f8ab1db58a1 4712,4714,4717,4725,4738,4740,4749,4760,4808,4810,4813,4821,4834,4836,4845,5014,5016,5018,5030,5040,5042,5053,5055,5057,5059,5061,5063,5078,5088,5098
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "f3fcf95edc0f3fcd2a4465cbe0f2a64bae2e1bc1",
+  "prompts": {},
+  "sessions": {
+    "s_45dde43eff7091": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "8fb29e9f-6b85-4deb-8e48-982c2456ccc1",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Maciej Walusiak <maciej.walusiak@railsware.com>"
+    }
+  }
+}

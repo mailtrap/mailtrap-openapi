@@ -1,0 +1,25 @@
+specs/email-sending.openapi.yml
+  s_a8dc56cb8ebead::t_c6c24be81330de 4752
+  s_a8dc56cb8ebead::t_d4f31480f06272 4783,4798,4886
+  s_a8dc56cb8ebead::t_a420ffe4814f46 2662
+  s_a8dc56cb8ebead::t_889f5391dcbe14 5175-5176
+  s_a8dc56cb8ebead::t_0bd226009d5965 2186
+  s_a8dc56cb8ebead::t_9eca84353bce55 4856
+  s_a8dc56cb8ebead::t_5ac94be6b08c3f 5438
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "e169824644a75b3e4df32996fcae4c047ae0fe53",
+  "prompts": {},
+  "sessions": {
+    "s_a8dc56cb8ebead": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "45c7e0df-fcb7-4368-a891-21e707ed9ec4",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Maciej Walusiak <maciej.walusiak@railsware.com>"
+    }
+  }
+}

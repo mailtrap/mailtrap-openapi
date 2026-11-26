@@ -1,0 +1,21 @@
+specs/email-campaigns.openapi.yml
+  s_0fade624d0d4ae::t_d48d1a3a55503b 1862
+specs/email-sending.openapi.yml
+  s_0fade624d0d4ae::t_f16b60c65a1b7a 51
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "1f74dc4dd1a1c7b93f05250421d3e8dc0e06df13",
+  "prompts": {},
+  "sessions": {
+    "s_0fade624d0d4ae": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "ab08a29a-1b64-41ed-9a60-7b27861e37fd",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "IzikAJ <izikaj@gmail.com>"
+    }
+  }
+}
