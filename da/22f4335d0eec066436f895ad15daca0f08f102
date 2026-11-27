@@ -1,0 +1,116 @@
+scripts/build-eu-specs.mjs
+  s_10283f368a61f9::t_0df9202f052108 1-22
+specs-eu/account-management.openapi.yml
+  s_10283f368a61f9::t_eba04dc0d784e0 1-2761
+specs-eu/contacts.openapi.yml
+  s_10283f368a61f9::t_43df55a81f1002 1-3674
+specs-eu/email-campaigns.openapi.yml
+  s_10283f368a61f9::t_f6141c046d6099 1-2930
+specs-eu/email-sending-bulk.openapi.yml
+  s_10283f368a61f9::t_5c8332565e3842 1-955
+specs-eu/email-sending-transactional.openapi.yml
+  s_10283f368a61f9::t_eb42a555ffafbe 1-924
+specs-eu/email-sending.openapi.yml
+  s_10283f368a61f9::t_c6facdd9cafd4a 1-5661
+specs-eu/inbound.openapi.yml
+  s_10283f368a61f9::t_3f5025c8123249 1-4525
+specs-eu/sandbox-sending.openapi.yml
+  s_10283f368a61f9::t_bdb2dff8e20448 1-1096
+specs-eu/sandbox.openapi.yml
+  s_10283f368a61f9::t_a4bd339bbb3c02 1-6126
+specs-eu/templates.openapi.yml
+  s_10283f368a61f9::t_0bd63afe450aa2 1-2121
+specs-experiments/email-sending-transactional.server-variable.openapi.yml
+  s_10283f368a61f9::t_c0f10fb694aaec 1-927
+specs-experiments/email-sending-transactional.servers-list.openapi.yml
+  s_10283f368a61f9::t_1dd1fbaaac88ce 1-924
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "da22f4335d0eec066436f895ad15daca0f08f102",
+  "prompts": {
+    "4229eb3f1d446723": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "aaeda6b9-5fba-4dd6-9891-072825935574",
+        "model": "claude-opus-4-7"
+      },
+      "human_author": "Volodymyr Pihol <volodymyr.pihol@railsware.com>",
+      "total_additions": 0,
+      "total_deletions": 1,
+      "accepted_lines": 0,
+      "overriden_lines": 0
+    },
+    "6f44c764f4ebac90": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "330ec682-4961-4782-a3d4-6fa549e16412",
+        "model": "claude-opus-4-6"
+      },
+      "human_author": "Volodymyr Pihol <volodymyr.pihol@railsware.com>",
+      "total_additions": 37,
+      "total_deletions": 406,
+      "accepted_lines": 20,
+      "overriden_lines": 0
+    },
+    "76dde93c0525c199": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "8d7b5078-aea8-41c6-8b9b-faf7205f84d9",
+        "model": "claude-opus-4-7"
+      },
+      "human_author": "Volodymyr Pihol <volodymyr.pihol@railsware.com>",
+      "total_additions": 4,
+      "total_deletions": 1,
+      "accepted_lines": 4,
+      "overriden_lines": 0
+    },
+    "789f444e6ef17b02": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "aa7050c9-42f7-408c-a91e-4eb21df1ab59",
+        "model": "claude-opus-4-6"
+      },
+      "human_author": "Volodymyr Pihol <volodymyr.pihol@railsware.com>",
+      "total_additions": 679,
+      "total_deletions": 0,
+      "accepted_lines": 210,
+      "overriden_lines": 56
+    },
+    "9f30ae413007dc65": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "789741f3-da29-4075-a2e4-cfa51af63297",
+        "model": "claude-opus-4-7"
+      },
+      "human_author": "Volodymyr Pihol <volodymyr.pihol@railsware.com>",
+      "total_additions": 109,
+      "total_deletions": 5,
+      "accepted_lines": 109,
+      "overriden_lines": 0
+    },
+    "b5af5d9e38a89e27": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "3cd9de45-d16f-4ea6-bf82-51b8eaab569d",
+        "model": "claude-opus-4-7"
+      },
+      "human_author": "Volodymyr Pihol <volodymyr.pihol@railsware.com>",
+      "total_additions": 151,
+      "total_deletions": 36,
+      "accepted_lines": 151,
+      "overriden_lines": 0
+    }
+  },
+  "sessions": {
+    "s_10283f368a61f9": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "66a836e2-1b6f-427b-bf8e-0b5c799e8e6b",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Volodymyr Pihol <volodymyr.pihol@railsware.com>"
+    }
+  }
+}
