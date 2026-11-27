@@ -212,7 +212,7 @@ tags:
         `must have no keys other than name, operator and value`, `unknown field`,
         `operator is not allowed for this field`, `value must be empty for this operator`,
         `value is required`, `value must be a string`,
-        `value must be a number from -9.223372e+18 to 9.223372e+18`, `value must be a number`,
+        `value must be a number`, `value is out of range`,
         `value must be a date in the format YYYY-MM-DD`,
         `value must be a list of two dates in the format YYYY-MM-DD`,
         `value must have the first date on or before the second`,
