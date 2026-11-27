@@ -157,7 +157,7 @@ tags:
       | Date | A `YYYY-MM-DD` string |
       | `between` | A list of two `YYYY-MM-DD` strings, the first on or before the second |
       | `within_last_day`, `not_within_last_day` | A whole number of days, from 1 to 2147483647 |
-      | Lists | A list of at most 100 contact list IDs. The lists are not looked up |
+      | Lists | A list of at most 100 IDs of the account's contact lists. IDs of deleted lists are accepted |
 
       #### Campaign events
 
@@ -167,8 +167,8 @@ tags:
       holds exactly three conditions, in this order:
 
       - `event_type` with `equal`: `delivery`, `open`, `click` or `soft_bounce`.
-      - `campaign_id` with `optional_equal`: a campaign ID, or `null` or `""` for any campaign. The
-        campaign is not looked up.
+      - `campaign_id` with `optional_equal`: the ID of a campaign of the account, or `null` or `""`
+        for any campaign.
       - `created_at` with a date operator: `within_last_day` (Is Within), `equal` (At Specific Date),
         `less_than` (Before Specific Date), `greater_than` (After Specific Date), `between`
         (Between Dates), or `exist` (Any Date, no `value`).
@@ -218,14 +218,17 @@ tags:
         `value must have the first date on or before the second`,
         `value must be a whole number of days from 1 to 2147483647`,
         `value must be a list of contact list ids`,
-        `value must have at most 100 contact list ids`.
+        `value must have at most 100 contact list ids`,
+        `unknown contact list ids: ` followed by the IDs that are not the account's, for example
+        `unknown contact list ids: 1, 2`.
       - For a campaign event, after `group N, condition M: `:
         `value must be the conditions event_type, campaign_id, created_at, in this order`, or a
         message about one inner condition: `event_type: operator must be equal`,
         `event_type: value must be one of delivery, open, click, soft_bounce`,
         `campaign_id: operator must be optional_equal`,
-        `campaign_id: value must be empty or a campaign id`, or `created_at: ` followed by
-        `operator is not allowed for this field` or one of the date messages above.
+        `campaign_id: value must be empty or a campaign id`, `campaign_id: unknown campaign`, or
+        `created_at: ` followed by `operator is not allowed for this field` or one of the date
+        messages above.
 
       Groups and conditions are numbered from 1. `unknown field` also covers a custom field named
       any other way than `fields.<merge_tag>`, and a field that is being deleted.
